@@ -1,0 +1,5 @@
+html 
+   ${'$'} 
+       var md = {
+       } 
+   $include wz/v08/html/views/error.html

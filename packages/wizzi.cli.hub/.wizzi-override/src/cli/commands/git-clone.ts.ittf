@@ -1,0 +1,55 @@
+module
+    import path from 'path'
+    import 
+        @ downloadGitRepo
+        from '../../actions/gitrepo'
+
+    +
+    export
+        function getParams
+            return
+                [
+                    @ "git clone --owner <name> --package <name> --branch <name> [--dest <path>] [--ittf <path>]"
+                    ._ join('\n')
+    +
+    export
+        function executeCommand
+            param args
+                :any
+            :return
+                :any
+            if args._[0] != "git" || args._[1] != "clone"
+                return
+                    {
+                        @ done false
+            if args.owner && args.owner.length > 0 &&
+                \b args.package && args.package.length > 0 &&
+                \b args.branch && args.branch.length > 0
+                log '...executing git clone', args.owner, args.package, args.branch, args.dest, args.ittf
+                const options
+                    :any
+                    = {}
+                if args.dest && args.dest.length > 0 
+                    set options.destFolder = args.dest
+                if args.ittf && args.ittf.length > 0 
+                    set options.destFolderIttf = args.ittf
+                _ downloadGitRepo
+                    @ args.owner
+                    @ args.package
+                    @ args.branch
+                    @ options
+                    ._ then
+                        =>
+                            param filteredRepoFiles
+                            log 'filteredRepoFiles', Object.keys(filteredRepoFiles)
+                return 
+                    {
+                        @ done true
+            else
+                return
+                    {
+                        @ done true
+                        @ error true
+                        @ message
+                            _ getParams
+

@@ -1,0 +1,38 @@
+module
+
+    import path from 'path'
+    import
+        as gitclone
+        from './commands/git-clone'
+    import
+        as down
+        from './commands/down'
+    const minimist = require('minimist')
+
+    +
+    const commands
+        [
+            @ gitclone
+            @ down
+    
+    +
+    const args = minimist(process.argv.slice(2))
+	log 'args', args
+    
+    function main
+        if args.help
+            for const command of commands
+                const res = command.getParams()
+                info res
+        else
+            for const command of commands
+                const res = command.executeCommand(args)
+                if res.done
+                    if res.error
+                        info res.message
+                    return
+            for const command of commands
+                const res = command.getParams()
+                info res
+    
+    _ main

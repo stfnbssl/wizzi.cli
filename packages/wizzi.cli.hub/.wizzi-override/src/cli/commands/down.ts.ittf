@@ -1,0 +1,372 @@
+module
+    import path from 'path'
+    import App from '../../App'
+    import
+        @ downloadArtifact
+        @ downloadArtifactList
+        @ downloadPackage
+        @ downloadPackageList
+        @ downloadPlugin
+        @ downloadPluginList
+        @ downloadMeta
+        @ downloadMetaList
+        @ downloadTFolder
+        @ downloadTFolderList
+        from '../../actions/download'
+
+    +
+    export
+        function getParams
+            return
+                [
+                    @ "down [--list|--files] [--artifact|--package|--plugin|--meta|--tfolder] --owner <name> [--name <name>] [--dest <path>]"
+                    ._ join('\n')
+    +
+    export
+        function executeCommand
+            param args
+                :any
+            :return
+                :any
+            if args._[0] != "down"
+                return
+                    {
+                        @ done false
+            if !args.owner || (!args.artifact && !args.package && !args.plugin && !args.meta && !args.tfolder)
+                return
+                    _ bad_parameters
+
+            log '...executing down', args.owner, args.name, args.list, args.files, args.artifact, args.package, args.plugin, args.meta, args.tfolder, args.dest
+            const options
+                :any
+                = {}
+            
+            if args.list
+                if !args.dest
+                    return
+                        _ bad_parameters
+                else
+                    set options.destPath
+                        _ path.join
+                            @ args.dest
+                            @ args.owner + '_' + production_kind(args) + 'List.json'
+            elif args.files
+                if !args.dest
+                    return
+                        _ bad_parameters
+                else
+                    set options.destFolder = args.dest
+            else
+                if !args.name || !args.dest
+                    return
+                        _ bad_parameters
+                else
+                    set options.destFolder = args.dest
+
+            if args.list || args.files
+                if args.artifact
+                    _ down_artifactList
+                        @ args.owner
+                        @ options
+                if args.package
+                    _ down_packageList
+                        @ args.owner
+                        @ options
+                if args.plugin
+                    _ down_pluginList
+                        @ args.owner
+                        @ options
+                if args.meta
+                    _ down_metaList
+                        @ args.owner
+                        @ options
+                if args.tfolder
+                    _ down_tFolderList
+                        @ args.owner
+                        @ options
+            else
+                if args.artifact
+                    _ down_artifact
+                        @ args.owner
+                        @ args.name
+                        @ options
+                if args.package
+                    _ down_package
+                        @ args.owner
+                        @ args.name
+                        @ options
+                if args.plugin
+                    _ down_plugin
+                        @ args.owner
+                        @ args.name
+                        @ options
+                if args.meta
+                    _ down_meta
+                        @ args.owner
+                        @ args.name
+                        @ options
+                if args.tfolder
+                    _ down_tFolder
+                        @ args.owner
+                        @ args.name
+                        @ options
+            return 
+                {
+                    @ done true
+
+
+    function production_kind
+        param args
+        if args.artifact
+            return 'artifact'
+        elif args.package
+            return 'package'
+        elif args.plugin
+            return 'plugin'
+        elif args.meta
+            return 'meta'
+        else
+            return 'tfolder'
+
+    function bad_parameters
+        return
+            {
+                @ done true
+                @ error true
+                @ message
+                    _ getParams
+
+    function down_artifactList
+        param owner
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadArtifactList
+                    @ owner
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadArtifactList', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadArtifact.error', err
+                            _ app.services.mongodbClose
+
+    function down_packageList
+        param owner
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadPackageList
+                    @ owner
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadPackageList', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadPackageList.error', err
+                            _ app.services.mongodbClose
+    
+    function down_pluginList
+        param owner
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadPluginList
+                    @ owner
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadPluginList', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadPluginList.error', err
+                            _ app.services.mongodbClose
+    
+    function down_metaList
+        param owner
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadMetaList
+                    @ owner
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadMetaList', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadMetaList.error', err
+                            _ app.services.mongodbClose
+    
+    function down_tFolderList
+        param owner
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadTFolderList
+                    @ owner
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadTFolderList', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadTFolderList.error', err
+                            _ app.services.mongodbClose
+
+    function down_artifact
+        param owner
+            :string
+        param name
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadArtifact
+                    @ owner
+                    @ name
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadArtifact', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadArtifact.error', err
+                            _ app.services.mongodbClose
+
+    function down_package
+        param owner
+            :string
+        param name
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadPackage
+                    @ owner
+                    @ name
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadPackage', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadPackage.error', err
+                            _ app.services.mongodbClose
+
+    function down_plugin
+        param owner
+            :string
+        param name
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadPlugin
+                    @ owner
+                    @ name
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadPlugin', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadPlugin.error', err
+                            _ app.services.mongodbClose
+
+    function down_meta
+        param owner
+            :string
+        param name
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadMeta
+                    @ owner
+                    @ name
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadMeta', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadMeta.error', err
+                            _ app.services.mongodbClose
+
+    function down_tFolder
+        param owner
+            :string
+        param name
+            :string
+        param options
+            :any
+        _ start
+            a_cb_throw(app)
+                _ downloadTFolder
+                    @ owner
+                    @ name
+                    @ options
+                    ._ then
+                        =>
+                            param result
+                            info 'downloadTFolder', Object.keys(result)
+                            _ app.services.mongodbClose
+                    ._ catch
+                        =>
+                            param err
+                            error 'downloadTFolder.error', err
+                            _ app.services.mongodbClose
+
+
+    +
+    async-function start
+        param callback
+        const app
+            await App.start()
+        _ callback
+            @ null
+            @ app

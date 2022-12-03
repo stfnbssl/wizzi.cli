@@ -1,0 +1,408 @@
+module
+    import path from 'path'
+    import 
+        @ config
+        from '../features/config'
+    import 
+        @ artifactApi
+        from '../features/wizzi-production'
+    import App from '../App'
+    import
+        @ downloadArtifact
+        @ downloadArtifactList
+        @ downloadPackage
+        @ downloadPackageList
+        @ downloadPlugin
+        @ downloadPluginList
+        @ downloadMeta
+        @ downloadMetaList
+        @ downloadTFolder
+        @ downloadTFolderList
+        from '../actions/download'
+    import
+        @ uploadArtifact
+        @ uploadPackage
+        @ uploadPlugin
+        @ uploadMeta
+        @ uploadTFolder
+        from '../actions/upload'
+
+    const wizzihubProductionsFolder = "C:/My/wizzi/stfnbssl/wizzihub-productions"
+    var app
+        :any
+
+    export
+        function uploadWizzihubArtifact
+            param name
+            param description
+            param mainIttf
+            param wizziSchema
+            param action
+            log 'uploadWizzihubArtifact.action', action
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    _ uploadArtifact
+                        @ "stfnbssl"
+                        @ decodeURIComponent(name)
+                        @ description
+                        @ mainIttf
+                        @ wizziSchema
+                        {
+                            @ create action == 'create'
+                            @ update action == 'update'
+                            @ sourceFolder
+                                _ path.join
+                                    @ wizzihubProductionsFolder
+                                    @ "uploads"
+                                    @ "artifacts"
+                                    @ name
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadArtifact', name, result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadArtifact.error', err
+                                _ app.services.mongodbClose
+
+    export
+        function uploadWizzihubPackage
+            param name
+            param description
+            param action
+            log 'uploadWizzihubPackage.action', action
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    _ uploadPackage
+                        @ "stfnbssl"
+                        @ decodeURIComponent(name)
+                        @ description
+                        {
+                            @ create action == 'create'
+                            @ update action == 'update'
+                            @ sourceFolder
+                                _ path.join
+                                    @ wizzihubProductionsFolder
+                                    @ "uploads"
+                                    @ "packages"
+                                    @ name
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadPackage', name, result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadPackage.error', err
+                                _ app.services.mongodbClose
+
+    export
+        function uploadWizzihubPlugin
+            param name
+            param description
+            param action
+            log 'uploadWizzihubPlugin.action', action
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    _ uploadPlugin
+                        @ "stfnbssl"
+                        @ decodeURIComponent(name)
+                        @ description
+                        {
+                            @ create action == 'create'
+                            @ update action == 'update'
+                            @ sourceFolder
+                                _ path.join
+                                    @ wizzihubProductionsFolder
+                                    @ "uploads"
+                                    @ "plugins"
+                                    @ name
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadPlugin', name, result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadPlugin.error', err
+                                _ app.services.mongodbClose
+
+
+    export
+        function uploadWizzihubMeta
+            param name
+            param description
+            param action
+            log 'uploadWizzihubMeta.action', action
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    _ uploadMeta
+                        @ "stfnbssl"
+                        @ decodeURIComponent(name)
+                        @ description
+                        {
+                            @ create action == 'create'
+                            @ update action == 'update'
+                            @ sourceFolder
+                                _ path.join
+                                    @ wizzihubProductionsFolder
+                                    @ "uploads"
+                                    @ "metas"
+                                    @ name
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadMeta', name, result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadMeta.error', err
+                                _ app.services.mongodbClose
+
+
+    export
+        function uploadWizzihubTFolder
+            param name
+            param description
+            param action
+            log 'uploadWizzihubTFolder.action', action
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    _ uploadTFolder
+                        @ "stfnbssl"
+                        @ decodeURIComponent(name)
+                        @ description
+                        {
+                            @ create action == 'create'
+                            @ update action == 'update'
+                            @ sourceFolder
+                                _ path.join
+                                    @ wizzihubProductionsFolder
+                                    @ "uploads"
+                                    @ "tfolders"
+                                    @ name
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadTFolder', name, result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadTFolder.error', err
+                                _ app.services.mongodbClose
+
+    export
+        function downloadWizzihub
+            param options
+                :any
+            set options = options || {}
+            _ start
+                a_cb_throw(startedapp)
+                    set app = startedapp
+                    if options.artifacts
+                        _ downloadWizzihubArtifacts
+                            {
+                                @ all false
+                    if options.packages
+                        _ downloadWizzihubPackages
+                            {
+                                @ all false
+                    if options.plugins
+                        _ downloadWizzihubPlugins
+                            {
+                                @ all false
+                    if options.metas
+                        _ downloadWizzihubMetas
+                            {
+                                @ all false
+                    if options.tFolders
+                        _ downloadWizzihubTFolders
+                            {
+                                @ all false
+                    if options.all
+                        _ downloadWizzihubArtifacts
+                            {
+                                @ all true
+
+    function downloadWizzihubArtifacts
+        param options
+            :any
+        set options = options || {}
+        _ downloadArtifactList
+            @ "stfnbssl"
+            {
+                @ destPath
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'downloads'
+                        @ 'artifactList.json'
+                @ destFolder
+                    _ path.join
+                        @ wizzihubProductionsFolder
+                        @ 'downloads'
+                        @ 'artifacts'
+            ._ then
+                =>
+                    param result
+                    log 'downloadArtifactList', result.length
+                    if options.all
+                        _ downloadWizzihubPackages
+                            @ options
+                    else
+                        _ app.services.mongodbClose
+            ._ catch
+                =>
+                    param err
+                    log 'downloadArtifact.error', err
+                    _ app.services.mongodbClose
+    
+    function downloadWizzihubPackages
+        param options
+            :any
+        set options = options || {}
+        _ downloadPackageList
+            @ "stfnbssl"
+            {
+                @ destPath
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'downloads'
+                        @ 'packageList.json'
+                @ destFolder
+                    _ path.join
+                        @ wizzihubProductionsFolder
+                        @ 'downloads'
+                        @ 'packages'
+            ._ then
+                =>
+                    param result
+                    log 'downloadPackageList', result.length
+                    if options.all
+                        _ downloadWizzihubPlugins
+                            @ options
+                    else
+                        _ app.services.mongodbClose
+            ._ catch
+                =>
+                    param err
+                    log 'downloadPackageList.error', err
+                    _ app.services.mongodbClose
+    
+    function downloadWizzihubPlugins
+        param options
+            :any
+        set options = options || {}
+        _ downloadPluginList
+            @ "stfnbssl"
+            {
+                @ destPath
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'downloads'
+                        @ 'pluginList.json'
+                @ destFolder
+                    _ path.join
+                        @ wizzihubProductionsFolder
+                        @ 'downloads'
+                        @ 'plugins'
+            ._ then
+                =>
+                    param result
+                    log 'downloadPluginList', result.length
+                    if options.all                    
+                        _ downloadWizzihubMetas
+                            @ options
+                    else
+                        _ app.services.mongodbClose
+            ._ catch
+                =>
+                    param err
+                    log 'downloadPluginList.error', err
+                    _ app.services.mongodbClose
+    
+    function downloadWizzihubMetas
+        param options
+            :any
+        set options = options || {}
+        _ downloadMetaList
+            @ "stfnbssl"
+            {
+                @ destPath
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'downloads'
+                        @ 'metaList.json'
+                @ destFolder
+                    _ path.join
+                        @ wizzihubProductionsFolder
+                        @ 'downloads'
+                        @ 'metas'
+            ._ then
+                =>
+                    param result
+                    log 'downloadMetaList', result.length
+                    if options.all                    
+                        _ downloadWizzihubTFolders
+                            @ options
+                    else
+                        _ app.services.mongodbClose
+            ._ catch
+                =>
+                    param err
+                    log 'downloadMetaList.error', err
+                    _ app.services.mongodbClose
+    
+    function downloadWizzihubTFolders
+        param options
+            :any
+        set options = options || {}
+        _ downloadTFolderList
+            @ "stfnbssl"
+            {
+                @ destPath
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'downloads'
+                        @ 'tfolderList.json'
+                @ destFolder
+                    _ path.join
+                        @ wizzihubProductionsFolder
+                        @ 'downloads'
+                        @ 'tfolders'
+            ._ then
+                =>
+                    param result
+                    log 'downloadTFolderList', result.length
+                    _ app.services.mongodbClose
+            ._ catch
+                =>
+                    param err
+                    log 'downloadTFolderList.error', err
+                    _ app.services.mongodbClose
+
+    +
+    async-function start
+        param callback
+        const app
+            await App.start()
+        _ callback
+            @ null
+            @ app
+
+

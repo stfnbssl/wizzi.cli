@@ -1,0 +1,333 @@
+module
+    import path from 'path'
+    import
+        @ PackiFiles
+        from '../features/packi/types'
+    import 
+        @ artifactApi
+        @ packageApi
+        @ pluginApi
+        @ tFolderApi
+        @ metaApi
+        from '../features/wizzi-production'
+    import 
+        @ resourceApi
+        from '../features/wizzi-cdn'
+    import
+        @ getFileContents
+        @ getFilteredPackiFiles
+        from './fsrepo'
+    +
+    export
+        function uploadArtifact
+            param owner
+                :string
+            param name
+                :string
+            param description
+                :string
+            param mainIttf
+                :string
+            param wizziSchema
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadArtifact.options', options
+                _ getFilteredPackiFiles
+                    @ options
+                    a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadArtifact.getFilteredPackiFiles )
+                        if options.merge
+                            _ artifactApi.mergeArtifactProductionFiles
+                                @ owner
+                                @ name
+                                @ packiFiles
+                                @ options
+                                a_then_catch_reject( result, :any, , upload.uploadArtifact.artifactApi.mergeArtifactProductionFiles )
+                                    _ resolve
+                                        @ result
+                        elif options.create
+                            _ artifactApi.createArtifactProduction
+                                @ owner
+                                @ name
+                                @ description
+                                @ mainIttf
+                                @ wizziSchema
+                                _ JSON.stringify(packiFiles)
+                                a_then_catch_reject( result, :any, , upload.uploadArtifact.artifactApi.createArtifactProduction )
+                                    _ resolve
+                                        @ result
+                        elif options.update
+                            _ artifactApi.getArtifactProduction
+                                @ owner
+                                @ name
+                                a_then_catch_reject( ap, :any, , upload.uploadArtifact.artifactApi.getArtifactProduction )
+                                    log 'upload.uploadArtifact.artifactApi.getArtifactProduction', Object.keys(ap.item._doc)
+                                    _ artifactApi.updateArtifactProduction
+                                        @ ap.item._doc._id
+                                        @ owner
+                                        @ name
+                                        @ description
+                                        @ mainIttf
+                                        @ wizziSchema
+                                        _ JSON.stringify(packiFiles)
+                                        a_then_catch_reject( result, :any, , upload.uploadArtifact.artifactApi.createArtifactProduction )
+                                            _ resolve
+                                                @ result
+    +
+    export
+        function uploadPackage
+            param owner
+                :string
+            param name
+                :string
+            param description
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadPackage.sourceFolder', options.sourceFolder
+                _ getFilteredPackiFiles
+                    @ options
+                    a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadPackage.getFilteredPackiFiles )
+                        if options.merge
+                            _ packageApi.mergePackageProductionFiles
+                                @ owner
+                                @ name
+                                @ packiFiles
+                                @ options
+                                a_then_catch_reject( result, :any, , upload.uploadPackage.packageApi.mergePackageProductionFiles )
+                                    _ resolve
+                                        @ result
+                        elif options.create
+                            _ packageApi.createPackageProduction
+                                @ owner
+                                @ name
+                                @ description
+                                _ JSON.stringify(packiFiles)
+                                a_then_catch_reject( result, :any, , upload.uploadPackage.packageApi.createPackageProduction )
+                                    _ resolve
+                                        @ result
+                        elif options.update
+                            _ packageApi.getPackageProduction
+                                @ owner
+                                @ name
+                                a_then_catch_reject( ap, :any, , upload.uploadPackage.packageApi.getPackageProduction )
+                                    log 'upload.uploadPackage.packageApi.getPackageProduction', Object.keys(ap.item._doc)
+                                    _ packageApi.updatePackageProduction
+                                        @ ap.item._doc._id
+                                        @ owner
+                                        @ name
+                                        @ description
+                                        _ JSON.stringify(packiFiles)
+                                        a_then_catch_reject( result, :any, , upload.uploadPackage.packageApi.updatePackageProduction )
+                                            _ resolve
+                                                @ result
+
+    +
+    export
+        function uploadPlugin
+            param owner
+                :string
+            param name
+                :string
+            param description
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadPlugin.sourceFolder', options.sourceFolder
+                _ getFilteredPackiFiles
+                    @ options
+                    a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadPlugin.getFilteredPackiFiles )
+                        if options.merge
+                            _ pluginApi.mergePluginProductionFiles
+                                @ owner
+                                @ name
+                                @ packiFiles
+                                @ options
+                                a_then_catch_reject( result, :any, , upload.uploadPackage.pluginApi.mergePluginProductionFiles )
+                                    _ resolve
+                                        @ result
+                        elif options.create
+                            _ pluginApi.createPluginProduction
+                                @ owner
+                                @ name
+                                @ description
+                                _ JSON.stringify(packiFiles)
+                                a_then_catch_reject( result, :any, , upload.uploadPlugin.pluginApi.createPluginProduction )
+                                    _ resolve
+                                        @ result
+                        elif options.update
+                            _ pluginApi.getPluginProduction
+                                @ owner
+                                @ name
+                                a_then_catch_reject( ap, :any, , upload.uploadPlugin.pluginApi.getPluginProduction )
+                                    log 'upload.uploadPlugin.pluginApi.getPluginProduction', Object.keys(ap.item._doc)
+                                    _ pluginApi.updatePluginProduction
+                                        @ ap.item._doc._id
+                                        @ owner
+                                        @ name
+                                        @ description
+                                        _ JSON.stringify(packiFiles)
+                                        a_then_catch_reject( result, :any, , upload.uploadPlugin.pluginApi.updatePluginProduction )
+                                            _ resolve
+                                                @ result
+    +
+    export
+        function uploadTFolder
+            param owner
+                :string
+            param name
+                :string
+            param description
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadTFolder.sourceFolder', options.sourceFolder
+                _ getFilteredPackiFiles
+                    @ options
+                    a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadTFolder.getFilteredPackiFiles )
+                        if options.merge
+                            _ tFolderApi.mergeTFolderFiles
+                                @ owner
+                                @ name
+                                @ packiFiles
+                                @ options
+                                a_then_catch_reject( result, :any, , upload.uploadTFolder.tFolderApi.mergeTFolderProductionFiles )
+                                    _ resolve
+                                        @ result
+                        elif options.create
+                            _ tFolderApi.createTFolder
+                                @ owner
+                                @ name
+                                @ description
+                                _ JSON.stringify(packiFiles)
+                                a_then_catch_reject( result, :any, , upload.uploadTFolder.tFolderApi.createTFolder )
+                                    _ resolve
+                                        @ result
+                        elif options.update
+                            _ tFolderApi.getTFolder
+                                @ owner
+                                @ name
+                                a_then_catch_reject( ap, :any, , upload.uploadTFolder.tFolderApi.getTFolder )
+                                    log 'upload.uploadTFolder.tFolderApi.getTFolder', Object.keys(ap.item._doc)
+                                    _ tFolderApi.updateTFolder
+                                        @ ap.item._doc._id
+                                        @ owner
+                                        @ name
+                                        @ description
+                                        _ JSON.stringify(packiFiles)
+                                        a_then_catch_reject( result, :any, , upload.uploadTFolder.tFolderApi.updateTFolder )
+                                            _ resolve
+                                                @ result
+
+    +
+    export
+        function uploadMeta
+            param owner
+                :string
+            param name
+                :string
+            param description
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadMeta.sourceFolder', options.sourceFolder
+                _ getFilteredPackiFiles
+                    @ options
+                    a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadMeta.getFilteredPackiFiles )
+                        if options.merge
+                            _ metaApi.mergeMetaProductionFiles
+                                @ owner
+                                @ name
+                                @ packiFiles
+                                @ options
+                                a_then_catch_reject( result, :any, , upload.uploadMeta.metaApi.mergeMetaProductionFiles )
+                                    _ resolve
+                                        @ result
+                        elif options.create
+                            _ metaApi.createMetaProduction
+                                @ owner
+                                @ name
+                                @ description
+                                _ JSON.stringify(packiFiles)
+                                a_then_catch_reject( result, :any, , upload.uploadMeta.metaApi.createMetaProduction )
+                                    _ resolve
+                                        @ result
+                        elif options.update
+                            _ metaApi.getMetaProduction
+                                @ owner
+                                @ name
+                                a_then_catch_reject( ap, :any, , upload.uploadMeta.metaApi.getMetaProduction )
+                                    log 'upload.uploadMeta.metaApi.getMetaProduction', Object.keys(ap.item._doc)
+                                    _ metaApi.updateMetaProduction
+                                        @ ap.item._doc._id
+                                        @ owner
+                                        @ name
+                                        @ description
+                                        _ JSON.stringify(packiFiles)
+                                        a_then_catch_reject( result, :any, , upload.uploadMeta.metaApi.updateMetaProduction )
+                                            _ resolve
+                                                @ result
+
+    +
+    export
+        function uploadCdnResource
+            param owner
+                :string
+            param options
+                :any
+            :return
+                :ref Promise
+                    :param any
+            r_promise()
+                log 'uploadCdnResource.sourceFile.sourceFolder', options.sourceFile, options.sourceFolder
+                if options.sourceFile && options.sourceFile.length > 0
+                    _ getFileContents
+                        @ options
+                        a_then_catch_reject( contents, :string, , upload.uploadMeta.getFilteredPackiFiles )
+                            _ resourceApi.createCdnResource
+                                @ owner
+                                @ options.name
+                                @ contents
+                                a_then_catch_reject( result, :any, , upload.uploadCdnResource.resourceApi.createCdnResource )
+                                    _ resolve
+                                        @ result
+                elif options.sourceFolder && options.sourceFolder.length > 0
+                    _ getFilteredPackiFiles
+                        @ options
+                        a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadCdnResource.getFilteredPackiFiles )
+                            const paths = Object.keys(packiFiles)
+                            var count = -1
+                            function execUpload
+                                set count++
+                                if count >= paths.length
+                                    return
+                                        _ resolve
+                                            @ paths
+                                _ resourceApi.createCdnResource
+                                    @ owner
+                                    @ paths[count]
+                                    @ packiFiles[paths[count]].contents
+                                    a_then_catch_reject( result, :any, , upload.uploadCdnResource.resourceApi.createCdnResource )
+                                        log 'uploadCdnResource', paths[count], "uploaded"
+                                        _ execUpload
+                            _ execUpload

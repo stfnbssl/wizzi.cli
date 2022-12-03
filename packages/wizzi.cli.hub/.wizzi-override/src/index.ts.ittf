@@ -1,0 +1,601 @@
+module
+    import path from 'path'
+    const minimist = require('minimist')
+
+    import 
+        @ githubApiCalls
+        from './features/github'
+    import 
+        @ config
+        from './features/config'
+    import 
+        @ artifactApi
+        from './features/wizzi-production'
+    import App from './App'
+    import
+        @ downloadArtifact
+        @ downloadArtifactList
+        @ downloadPackage
+        @ downloadPackageList
+        @ downloadPlugin
+        @ downloadPluginList
+        @ downloadMeta
+        @ downloadMetaList
+        @ downloadTFolder
+        @ downloadTFolderList
+        from './actions/download'
+    import
+        @ uploadArtifact
+        @ uploadPackage
+        @ uploadPlugin
+        @ uploadMeta
+        @ uploadTFolder
+        from './actions/upload'
+    import
+        @ downloadGitRepo
+        from './actions/gitrepo'
+    import
+        @ generateMetaFolder
+        from './actions/generation'
+    import
+        @ downloadWizzihub
+        @ uploadWizzihubArtifact
+        @ uploadWizzihubPackage
+        @ uploadWizzihubPlugin
+        @ uploadWizzihubMeta
+        @ uploadWizzihubTFolder
+        from './jobs/wizzihub'
+    
+    +
+	const args = minimist(process.argv.slice(2))
+	let cmd = args._[0]
+    let p_artifact = args.a || args.artifact
+    let p_package = args.p || args.package
+    let p_plugin = args.l || args.plugin
+    let p_meta = args.m || args.meta
+    let p_tfolder = args.t || args.tfolder
+    let p_create = args.c || args.create
+    let p_update = args.u || args.update
+    let p_schema = args.s || args.schema
+    let p_name = args.n || args.name
+    
+    let p1 = args._[1]
+    let p2 = args._[2]
+    let p3 = args._[3]
+    let p4 = args._[4]
+    info 'args', args, 'cmd', cmd
+    info 'p_create', p_create
+    info 'p_update', p_update
+    info 'p_schema', p_schema
+    info 'p_name', p_name
+    
+    if cmd == 'down'
+        if p1 == 'wizzihub'
+            _ downloadWizzihub
+                {
+                    @ all true
+        elif p1 == 'artifacts'
+            _ downloadWizzihub
+                {
+                    @ artifacts true
+        elif p1 == 'packages'
+            _ downloadWizzihub
+                {
+                    @ packages true
+        elif p1 == 'plugins'
+            _ downloadWizzihub
+                {
+                    @ plugins true
+        elif p1 == 'metas'
+            _ downloadWizzihub
+                {
+                    @ metas true
+        elif p1 == 'tfolders'
+            _ downloadWizzihub
+                {
+                    @ tFolders true
+    elif cmd == 'up'
+        if p_artifact
+            if p_create
+                _ uploadWizzihubArtifact
+                    @ p_create   $$ name
+                    @ undefined $$ description
+                    @ 'index.' + p_schema + '.ittf'  $$ mainIttf
+                    @ p_schema
+                    @ 'create'
+            elif p_update
+                _ uploadWizzihubArtifact    
+                    @ p_update   $$ name
+                    @ undefined $$ description
+                    @ undefined $$ mainIttf
+                    @ undefined $$ wizziSchema
+                    @ 'update'
+        elif p_package
+            if p_create
+                _ uploadWizzihubPackage
+                    @ p_create   $$ name
+                    @ undefined $$ description
+                    @ 'create'
+            elif p_update
+                _ uploadWizzihubPackage
+                    @ p_update   $$ name
+                    @ undefined $$ description
+                    @ 'update'
+        elif p_plugin
+            if p_create
+                _ uploadWizzihubPlugin
+                    @ p_create   $$ name
+                    @ undefined $$ description
+                    @ 'create'
+            elif p_update
+                _ uploadWizzihubPlugin
+                    @ p_update   $$ name
+                    @ undefined $$ description
+                    @ 'update'
+        elif p_meta
+            if p_create
+                _ uploadWizzihubMeta
+                    @ p_create   $$ name
+                    @ undefined $$ description
+                    @ 'create'
+            elif p_update
+                _ uploadWizzihubMeta
+                    @ p_update   $$ name
+                    @ undefined $$ description
+                    @ 'update'
+        elif p_tfolder
+            if p_create
+                _ uploadWizzihubTFolder
+                    @ p_create   $$ name
+                    @ undefined $$ description
+                    @ 'create'
+            elif p_update
+                _ uploadWizzihubTFolder
+                    @ p_update   $$ name
+                    @ undefined $$ description
+                    @ 'update'
+        else
+            log 'nothing to do', cmd, p1, p2, p3, p4
+    elif cmd == 'gen'
+        if p_meta
+            _ generateMetaFolder
+                @ 'stfnbssl'
+                @ p_meta
+                {
+                    @ cliCtxSourceFile 
+                        _ path.join
+                            @ "C:/My/wizzi/stfnbssl/wizzihub-productions/data/metacontexts"
+                            @ p_name + '.json.ittf'
+                    @ destFolder
+                        _ path.join
+                            @ "C:/My/wizzi/stfnbssl/wizzihub-productions/generations/metafolders"
+                            @ p_name
+    else
+        if false
+            _ listRepos
+                ._ then
+                    =>
+                        param result
+                        log 'listRepos', result
+        +
+        if false
+            _ viewRepo
+                @ "stfnbssl"
+                @ "vscode-ittf"
+                ._ then
+                    =>
+                        param result
+                        log 'viewRepo', result.repo._contents
+        +
+        if false
+            _ cloneRepo
+                @ "stfnbssl"
+                @ "vscode-ittf"
+                @ "main"
+                ._ then
+                    =>
+                        param result
+                        log 'cloneRepo', result.cloned
+        if false
+            _ start
+                a_cb_throw(app)
+                    info 'started', app
+                    _ artifactApi.getArtifactProduction
+                        @ "stfnbssl"
+                        @ "quick.html"
+                        ._ then
+                            =>
+                                param result
+                                info 'artifactApi.getArtifactProduction.result', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                error 'artifactApi.getArtifactProduction.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    info 'started', app
+                    _ artifactApi.getArtifactProductionObject
+                        @ "stfnbssl"
+                        @ "quick.html"
+                        ._ then
+                            =>
+                                param result
+                                info 'artifactApi.getArtifactProductionObject.result', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                error 'artifactApi.getArtifactProductionObject.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadArtifact
+                        @ "stfnbssl"
+                        @ "quick.html"
+                        {
+                            @ destFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'quick'
+                                    @ 'html'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadArtifact', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadArtifact.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ uploadArtifact
+                        @ "stfnbssl"
+                        @ "quick.html"
+                        @ "quick.html description"
+                        @ "index.html.ittf"
+                        @ "html"
+                        {
+                            @ sourceFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'quick'
+                                    @ 'html'
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadArtifact', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadArtifact.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ uploadPackage
+                        @ "stfnbssl"
+                        @ "__cli_test__"
+                        @ "CLI Test"
+                        {
+                            @ sourceFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'quick'
+                                    @ 'html'
+                        ._ then
+                            =>
+                                param result
+                                log 'uploadPackage', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'uploadPackage.error', err
+                                _ app.services.mongodbClose
+        +
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadGitRepo
+                        $$ @ "stfnbssl"
+                        $$ @ "vscode-ittf"
+                        $$ @ "main"
+                        @ "tastejs"
+                        @ "todomvc"
+                        @ "gh-pages"
+                        {
+                            @ destFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'tastejs'
+                                    @ 'todomvc'
+                            @ destFolderIttf
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'vanillajs-ittf'
+                            @ filter
+                                function
+                                    param filePath
+                                    return filePath && filePath.startsWith('examples/vanillajs')
+                        ._ then
+                            =>
+                                param result
+                                $$ log 'downloadGitRepo', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadGitRepo.error', err
+                                _ app.services.mongodbClose
+        if false
+            # Merge a local folder into a wizzihub package
+            _ start
+                a_cb_throw(app)
+                    _ uploadPackage
+                        @ "stfnbssl"
+                        @ "__cli_test__"
+                        @ "CLI Test"
+                        {
+                            @ sourceFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'vanillajs-ittf'
+                                    @ 'examples'
+                            @ merge true
+                        ._ then
+                            =>
+                                param result
+                                log 'mergePackage', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'mergePackage.error', err
+                                _ app.services.mongodbClose
+        if false
+            # Merge a local folder into a wizzihub artifact
+            _ start
+                a_cb_throw(app)
+                    _ uploadArtifact
+                        @ "stfnbssl"
+                        @ "lab/vanillajs/html"
+                        @ undefined
+                        @ "index.html.ittf"
+                        @ "html"
+                        {
+                            @ sourceFolder
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'vanillajs-ittf'
+                                    @ 'examples'
+                            @ merge true
+                            @ mergeToFolder 't/three'
+                        ._ then
+                            =>
+                                param result
+                                log 'mergeArtifact', result
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'mergeArtifact.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadArtifactList
+                        @ "stfnbssl"
+                        {
+                            @ destPath
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'artifactList.json'
+                            @ destFolder
+                                _ path.join
+                                    @ 'C:/My/wizzi/stfnbssl/wizzihub-productions'
+                                    @ 'artifacts'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadArtifactList', result.length
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadArtifact.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadPackageList
+                        @ "stfnbssl"
+                        {
+                            @ destPath
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'packageList.json'
+                            @ destFolder
+                                _ path.join
+                                    @ 'C:/My/wizzi/stfnbssl/wizzihub-productions'
+                                    @ 'packages'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadPackageList', result.length
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadPackageList.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadPluginList
+                        @ "stfnbssl"
+                        {
+                            @ destPath
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'pluginList.json'
+                            @ destFolder
+                                _ path.join
+                                    @ 'C:/My/wizzi/stfnbssl/wizzihub-productions'
+                                    @ 'plugins'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadPluginList', result.length
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadPluginList.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadMetaList
+                        @ "stfnbssl"
+                        {
+                            @ destPath
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'metaList.json'
+                            @ destFolder
+                                _ path.join
+                                    @ 'C:/My/wizzi/stfnbssl/wizzihub-productions'
+                                    @ 'metas'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadMetaList', result.length
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadMetaList.error', err
+                                _ app.services.mongodbClose
+        if false
+            _ start
+                a_cb_throw(app)
+                    _ downloadTFolderList
+                        @ "stfnbssl"
+                        {
+                            @ destPath
+                                _ path.join
+                                    @ __dirname
+                                    @ '..'
+                                    @ 'downloads'
+                                    @ 'tfolderList.json'
+                            @ destFolder
+                                _ path.join
+                                    @ 'C:/My/wizzi/stfnbssl/wizzihub-productions'
+                                    @ 'tfolders'
+                        ._ then
+                            =>
+                                param result
+                                log 'downloadTFolderList', result.length
+                                _ app.services.mongodbClose
+                        ._ catch
+                            =>
+                                param err
+                                log 'downloadTFolderList.error', err
+                                _ app.services.mongodbClose
+
+        if false
+            _ uploadWizzihubArtifact    
+                @ 'Cosie%2F7-13-anni%2FData%2FResults'
+                @ 'Risultato elaborazioni pianificazione guide Cosie'
+                @ 'index.json.ittf'
+                @ 'json'
+                @ 'update'
+
+    
+    +
+    async-function start
+        param callback
+        const app
+            await App.start()
+        _ callback
+            @ null
+            @ app
+    +
+    async-function listRepos
+        const repos
+            await 
+                _ githubApiCalls.getRepositories
+                    @ config.githubAccessToken
+        return
+            { 
+                @ repos
+                @ title 'Repositories page'
+    +
+    async-function viewRepo
+        param owner
+            :string
+        param repoName
+            :string
+        const repo
+            await 
+                _ githubApiCalls.getRepository
+                    @ owner
+                    @ repoName
+                    @ config.githubAccessToken
+        return
+            { 
+                @ repo
+                @ title 'Repository page'
+    +
+    async-function cloneRepo
+        param owner
+            :string
+        param repoName
+            :string
+        param branchName
+            :string
+        
+        const clonedBranch
+            await 
+                _ githubApiCalls.cloneBranch
+                    { 
+                        @ owner owner
+                        @ name repoName
+                        @ token config.githubAccessToken
+                    @ branchName || 'main'
+        return
+            { 
+                @ repo repoName
+                @ cloned clonedBranch.files
+                @ commitHistory clonedBranch.commitHistory
+                @ title 'Cloned repository'

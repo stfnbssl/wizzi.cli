@@ -1,0 +1,55 @@
+{
+    $include v08/env/vars
+    
+    name "wizzi.cli.hub"
+    version "0.0.1"
+    description "wizzi.cli.hub"
+    { author
+        name "Stefano Bassoli"
+        email "stfn.bssl@gmail.com"
+    
+    { App
+        name "Wizzi CLI hub"
+        kind "NodeCLI"
+    
+    { Build
+        isCLI true
+        [ features
+            {
+                name "github"
+                hasControllers false
+                useMongoDb false
+            {
+                name "packi"
+                hasControllers false
+                useMongoDb false
+            {
+                name "production"
+                fileName "wizzi-production"
+                hasControllers false
+                useMongoDb true
+            {
+                name "cdn"
+                fileName "wizzi-cdn"
+                hasControllers false
+                useMongoDb true
+        useFeatureGithub true
+        { featureGithub
+            accessToken "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"
+        useFeaturePacki true
+        { featurePacki
+        useWizziProduction true
+        { wizziProduction
+            useCachedProductions false
+        
+        $include config.json
+        
+        $include code.json
+        
+        $include test.json
+        
+        $include wizzi.json
+        
+        $include utils.json
+        
+        $include db.json

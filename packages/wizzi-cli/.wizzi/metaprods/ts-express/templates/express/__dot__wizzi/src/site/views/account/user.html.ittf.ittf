@@ -1,0 +1,6 @@
+html
+    ${'$'}
+        var md = {
+        }
+
+    $include wz/v08/html/viewsount/user.html

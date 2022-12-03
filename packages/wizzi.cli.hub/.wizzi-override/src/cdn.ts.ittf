@@ -1,0 +1,82 @@
+module
+    import path from 'path'
+    const minimist = require('minimist')
+
+    import App from './App'
+    import
+        @ uploadCdnResource
+        from './actions/upload'
+    import
+        @ downloadCdnResource
+        from './actions/download'
+    +
+	const args = minimist(process.argv.slice(2))
+	let cmd = args._[0]
+    let p1 = args._[1]
+    let p2 = args._[2]
+    let p3 = args._[3]
+    info 'args', args, 'cmd', cmd
+    
+    if cmd == 'down'
+        const destFolder
+            _ path.join
+                @ __dirname
+                @ 'downloads'
+                @ 'cdn'
+        if p1 == 'all'
+            _ start
+                a_cb_throw(app)
+                    _ downloadCdnResource
+                        @ 'stfnbssl'
+                        {
+                            @ destFolder destFolder
+                        ._ then
+                            =>
+                                log 'done'
+                                _ app.services.mongodbClose
+
+        else
+            _ start
+                a_cb_throw(app)
+                    _ downloadCdnResource
+                        @ 'stfnbssl'
+                        {
+                            @ name p1
+                            @ destFolder destFolder
+                        ._ then
+                            =>
+                                log 'done'
+                                _ app.services.mongodbClose
+
+
+    if cmd == 'up'
+        if p1 == 'folder'
+            _ uploadFolder
+                @ p2
+
+    function uploadFolder
+        param folder
+        _ start
+            a_cb_throw(app)
+                const sourceFolder
+                    _ path.join
+                        @ __dirname
+                        @ 'uploads'
+                        @ folder
+                _ uploadCdnResource
+                    @ 'stfnbssl'
+                    {
+                        @ sourceFolder sourceFolder
+                    ._ then
+                        =>
+                            log 'done'
+                            _ app.services.mongodbClose
+    +
+    async-function start
+        param callback
+        const app
+            await App.start()
+        _ callback
+            @ null
+            @ app
+    +
