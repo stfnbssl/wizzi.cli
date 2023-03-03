@@ -1,0 +1,81 @@
+$group
+
+    $foreach schema in cliCtx.Schemas
+
+        $file __dot__wizzi/${pkgPath}lib/wizzi/schemas/${schema.name}.wfschema.ittf.ittf
+            wfschema ${schema.name}
+                wfschema(&schema)
+
+        $file __dot__wizzi/${pkgPath}lib/wizzi/models/${schema.name}-mtree-preprocessor.g.js.ittf.ittf
+            module
+                kind es6
+                mtree-preprocessor.js(&schema)
+
+        $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/document/gen/main.js.ittf.ittf
+            module
+                kind es6
+                artifacts-gen-main(&schema)
+
+        $if schema.includes && schema.includes.length > 0
+            $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/document/gen/included_writers.js.ittf.ittf
+                module
+                    kind es6
+                    artifacts-included-writers(&schema)
+
+            $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/document/gen/t/includes.js.ittf.ittf
+                ${"${'$'}"}group
+                    artifacts-includes(&schema)
+
+
+        $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/extended/trans/main.js.ittf.ittf
+            module
+                kind es6
+                artifacts-trans-main(&schema)
+
+        $if schema.hasTextContents
+                
+                $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/extended/trans/t/contents.js.ittf.ittf
+                    ${"${'$'}"}group
+                        ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/trans/extended/contents.js
+                
+                $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/extended/trans/t/comment.js.ittf.ittf
+                    ${"${'$'}"}group
+                        ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/trans/extended/comment.js
+
+                $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/extended/trans/t/biblio.js.ittf.ittf
+                    ${"${'$'}"}group
+                        ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/trans/extended/biblio.js
+
+
+    $
+        var items = [
+            "a_flag",
+            "a_tag",
+            "e_tag",
+            "a_true",
+        ];
+
+    $foreach item in items
+        $file __dot__wizzi/${pkgPath}lib/wizzi/schemas/t/${item}.wfschema.ittf.ittf
+            ${"${'$'}"}group
+                ${'$'}include wz/v08/wizzi/plugin/lib/wizzi/schemas/tfolder/${item}.wfschema
+
+    $
+        var items = [
+            "async-md-gen-items",
+            "async-md",
+            "f_error",
+            "gen",
+            "md-gen-main",
+            "md-trans-main",
+            "statement",
+            "statements-writer",
+            "trans",
+        ];
+
+    $foreach item in items
+        $file __dot__wizzi/${pkgPath}lib/artifacts/t/${item}.js.ittf.ittf
+            ${"${'$'}"}group
+                ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/tfolder/${item}.js
+
+

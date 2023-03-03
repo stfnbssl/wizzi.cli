@@ -1,0 +1,17 @@
+{
+    $include commons
+
+    { App
+        name "Relational DB plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "rdbms"
+            plugin_type "data"
+            hasNamespaces true
+            hasTextContents true
+            [ includes
+
+    { Utils
+        useInflection true

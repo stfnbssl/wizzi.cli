@@ -1,0 +1,18 @@
+{
+    $include commons
+
+    { App
+        name "RAML plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "raml"
+            plugin_type "data"
+            hasNamespaces true
+            hasTextContents true
+            [ includes
+
+    { Utils
+        useInflection true            
+        useParseUrl true            

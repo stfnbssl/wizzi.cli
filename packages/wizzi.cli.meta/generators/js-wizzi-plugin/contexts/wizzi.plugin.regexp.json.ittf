@@ -1,0 +1,14 @@
+{
+    $include commons
+
+    { App
+        name "Regular expressions plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "regexp"
+            plugin_type "syntax_structure"
+            hasNamespaces false
+            hasTextContents false
+            [ includes

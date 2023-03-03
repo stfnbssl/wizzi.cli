@@ -1,0 +1,49 @@
+$group
+
+    $file __dot__wizzi/models/wzctx.json.ittf.ittf
+        {
+            name "${cliCtx.name}"
+            version "0.0.1"
+            description "${cliCtx.description}"
+            { author
+                name "${cliCtx.author.name}"
+                email "${cliCtx.author.email}"
+            { github
+                userid "${cliCtx.github.userid}"
+            { license
+                name "${cliCtx.license.name}"
+                copy "${cliCtx.license.copy}"
+            { Build
+                isWizziPlugin true
+                { utils
+                    useStringifySafe true
+                    useObjectInspect true
+                    $if cliCtx.Utils
+                        $if cliCtx.Utils.useInflection
+                            useInflection true
+                        $if cliCtx.Utils.useParseUrl
+                            useParseUrl true
+            [ Schemas
+                $foreach schema in cliCtx.Schemas
+                    {
+                        name "${schema.name}"
+                        title "${schema.name} wizzi schema"
+                        builtin false
+                        [ modelTransformers
+                            {
+                                name "extended"
+                        [ artifactGenerators
+                            {
+                                name "document"
+                        [ includes
+                            $if schema.includes
+                                $foreach include in schema.includes
+                                    {
+                                        Name "${include.Name}"
+                                        name "${include.name}"
+                                        [ options
+                                            $foreach option in include.options
+                                                {
+                                                    name "${option.name}"
+                                                    type "${option.type}"
+                                                    value "${option.value}"

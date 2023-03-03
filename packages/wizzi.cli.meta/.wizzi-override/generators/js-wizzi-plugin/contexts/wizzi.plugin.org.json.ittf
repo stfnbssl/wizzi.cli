@@ -1,0 +1,14 @@
+{
+    $include commons
+
+    { App
+        name "Organization plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "org"
+            plugin_type "data"
+            hasNamespaces true
+            hasTextContents true
+            [ includes

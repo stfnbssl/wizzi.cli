@@ -1,0 +1,14 @@
+{
+    $include commons
+
+    { App
+        name "C language plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "c"
+            plugin_type "syntax_structure"
+            hasNamespaces false
+            hasTextContents false
+            [ includes

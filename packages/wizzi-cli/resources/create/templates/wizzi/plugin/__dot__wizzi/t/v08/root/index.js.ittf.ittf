@@ -80,7 +80,7 @@ ${'$'}group
 							@ this.provides
 					_ plugin.initialize
 						@ options
-						f_cb( notUsed )
+						a_cb( notUsed )
 							return
 								_ callback
 									@ null

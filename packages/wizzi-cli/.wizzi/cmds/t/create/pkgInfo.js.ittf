@@ -28,7 +28,7 @@ $group
                 if answers.pkg_enterinfo
                     delete answers.pkg_enterinfo
                     _ promptPkgInfo
-                        f_cb(info_answers)
+                        a_cb(info_answers)
                             return 
                                 _ callback
                                     @ null

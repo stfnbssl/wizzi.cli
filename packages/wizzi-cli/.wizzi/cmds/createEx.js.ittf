@@ -30,7 +30,7 @@
                     @ '..'
                     @ 'resources'
                     @ 'create'
-                    @ 'templators'
+                    @ 'generators'
                     @ options.templateGroup
 
             var templatorContextPath

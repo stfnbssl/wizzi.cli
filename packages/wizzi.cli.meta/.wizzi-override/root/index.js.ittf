@@ -1,0 +1,124 @@
+module
+    kind jsfile
+
+    const minimist = require('minimist')
+    const createEx = require('./src/cmds/createEx')
+
+	const args = minimist(process.argv.slice(2))
+	
+	let cmd = args._[0]
+    info 'args', args, 'cmd', cmd
+
+    if cmd == 'ts-node-wizzi-cli-hub'
+        _ createEx
+            {
+                @ templateGroup 'ts-node'
+                @ template 'wizzi.cli.hub'
+                @ pkgName 'wizzi.cli.hub'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.cli/packages/wizzi.cli.hub'
+    elif cmd == 'ts-node-wizzi-cli-meta'
+        _ createEx
+            {
+                @ templateGroup 'ts-node'
+                @ template 'wizzi.cli.meta'
+                @ pkgName 'wizzi.cli.meta'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.cli/packages/wizzi.cli.meta'
+    elif cmd == 'ts-express-demo-sequelize'
+        _ createEx
+            {
+                @ templateGroup 'ts-express'
+                @ template 'demo-sequelize'
+                @ pkgName 'demo.ts.express.sequelize'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/demo.ts.express.sequelize'
+    elif cmd == 'ts-client-vite-react'
+        _ createEx
+            {
+                @ templateGroup 'ts-client'
+                @ template 'vite-react'
+                @ pkgName 'lab.vite.react'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/lab.vite.react'
+    elif cmd == 'ts-client-webpack-react'
+        _ createEx
+            {
+                @ templateGroup 'ts-client'
+                @ template 'webpack-react'
+                @ pkgName 'lab.webpack.react'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.apps/packages/lab.webpack.react'
+    elif cmd == 'ts-express-wizzi-heroku'
+        _ createEx
+            {
+                @ templateGroup 'ts-express'
+                @ template 'wizzi-heroku'
+                @ pkgName 'wizzi-heroku'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.apps/packages/wizzi-heroku'
+    elif cmd == 'ts-express-wizzi'
+        _ createEx
+            {
+                @ templateGroup 'ts-express'
+                @ template 'wizzi'
+                @ pkgName 'wizzi-app'
+    elif cmd == 'wizzi-plugin-svg'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.svg'
+                @ pkgName 'wizzi.plugin.svg'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.svg'
+    elif cmd == 'wizzi-plugin-org'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.org'
+                @ pkgName 'wizzi.plugin.org'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.org'
+    elif cmd == 'wizzi-plugin-c'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.c'
+                @ pkgName 'wizzi.plugin.c'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.c'
+    elif cmd == 'wizzi-plugin-py'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.py'
+                @ pkgName 'wizzi.plugin.py'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.py'
+    elif cmd == 'wizzi-plugin-regexp'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.regexp'
+                @ pkgName 'wizzi.plugin.regexp'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.regexp'
+    elif cmd == 'wizzi-plugin-go'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.go'
+                @ pkgName 'wizzi.plugin.go'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.go'
+    elif cmd == 'wizzi-plugin-rdbms'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.rdbms'
+                @ pkgName 'wizzi.plugin.rdbms'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.rdbms'
+    elif cmd == 'wizzi-plugin-raml'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.raml'
+                @ pkgName 'wizzi.plugin.raml'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.raml'
+    elif cmd == 'wizzi-plugin-java'
+        _ createEx
+            {
+                @ templator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.java'
+                @ pkgName 'wizzi.plugin.java'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.java'
+    else
+        throw new Error("Command unknown: " + cmd)

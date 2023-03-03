@@ -1,0 +1,19 @@
+wfschema raml
+   --- 
+   export-to json
+   $$ export-to xml
+   $$ export-to prettify
+   --- 
+   e raml
+       is-root 
+       r item/s
+       r ittfPanel/s
+   --- 
+   e item
+       a value
+   --- 
+   e ittfPanel
+       tag ittf-panel
+       has-mtree-data 
+   --- 
+   --- 

@@ -1,0 +1,38 @@
+$group
+
+    $foreach schema in cliCtx.Schemas
+
+        $file __dot__wizzi/${pkgPath}examples/${schema.name}_document.js.ittf.ittf
+            module
+                kind es6
+                example-plugin-document(&schema)
+
+        $file __dot__wizzi/${pkgPath}examples/${schema.name}_extended.js.ittf.ittf
+            module
+                kind es6
+                example-plugin-extended(&schema)
+
+        $file __dot__wizzi/${pkgPath}examples/ittf/first.${schema.name}.ittf.ittf.ittf
+            example-ittf(&schema)          
+
+    $
+        var items = [
+            "example_helpers",
+            "example_prints",
+            "example_step",
+            "exec_examples",
+            "exec_levels",
+            "exec_steps",
+            "jsonLoadModelAndGenerateArtifact",
+            "loadModel_with_config",
+            "loadModel_with_config",
+            "loadModel",
+            "loadModelAndGenerateArtifact_with_config",
+            "loadModelAndGenerateArtifact",
+            "loadMTree",
+        ];
+
+    $foreach item in items
+        $file __dot__wizzi/${pkgPath}examples/t/${item}.js.ittf.ittf
+            ${"${'$'}"}group
+                ${'$'}include wz/v08/wizzi/plugin/examples/tfolder/${item}.js

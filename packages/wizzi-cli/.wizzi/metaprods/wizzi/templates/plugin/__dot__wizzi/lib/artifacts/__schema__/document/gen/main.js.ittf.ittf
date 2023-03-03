@@ -26,10 +26,10 @@ module
                 @ ctx
                 f_cb${ '()' }
                     if ctx.artifactGenerationErrors.length > 0
-                        r_cb_err${ '(ctx.artifactGenerationErrors)' }
+                        r_cb_err${"${'('}"} ctx.artifactGenerationErrors
                     else
                         # generation OK
-                        r_cb${ '(ctx)' }
+                        r_cb${"${'('}"} ctx )
 
         $if cliCtx.wizzi_plugin_type == 'prettify'
             $include wz/v08/wizzi/plugin/artifacts/types/prettify/artifact-gen-main.js

@@ -3,10 +3,10 @@ $group
     function newpkg
         param callback
         _ promptPkgType
-            f_cb(type_answers)
+            a_cb(type_answers)
                 if type_answers.pkg_type == 'wizzi_plugin'
                     _ promptWizziPlugin
-                        f_cb(plugin_answers)
+                        a_cb(plugin_answers)
                             set type_answers.__template = 'wizzi_plugin'
                             return
                                 _ promptNext
@@ -18,7 +18,7 @@ $group
                                     @ callback
                 elif type_answers.pkg_type == 'webpack'
                     _ promptWebpack
-                        f_cb(webpack_answers)
+                        a_cb(webpack_answers)
                             if webpack_answers.webpack_type == 'react'
                                 set type_answers.__template = 'webpack_react'
                             elif webpack_answers.webpack_type == 'react_materialui'
@@ -46,7 +46,7 @@ $group
         param prevAnswers
         param callback
         _ fPrompt
-            f_cb(answers)
+            a_cb(answers)
                 return 
                     _ callback
                         @ null

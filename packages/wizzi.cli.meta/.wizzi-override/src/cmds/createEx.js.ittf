@@ -1,0 +1,113 @@
+﻿module
+	kind es6
+
+	const path = require('path')
+	const wizzi = require('wizzi')
+	const wizziUtils = require('wizzi-utils')
+    const verify = wizziUtils.verify
+	const vfile = wizziUtils.vfile
+    const templator = require('./templator')
+    var file = vfile()
+
+    var generators
+        [
+            @ 'ts-node'
+            @ 'ts-express'
+            @ 'ts-client'
+            @ 'js-wizzi-plugin'
+	
+    set module.exports
+		=>
+			param options
+            set options = options || {}
+            if generators.indexOf(options.templator) < 0
+                throw new Error('createEx. Unknown templator: ' + options.templator)
+
+            log 'createEx.options', options
+
+            var templatorFolderPath
+                _ path.join
+                    @ __dirname
+                    @ '..'
+                    @ '..'
+                    @ 'generators'
+                    @ options.templator
+
+            var templatorContextPath
+                _ path.join
+                    @ templatorFolderPath
+                    @ 'contexts'
+                    @ options.context + '.json.ittf'
+            log 'templatorContextPath', templatorContextPath
+
+            var templatorIndex
+                _ path.join
+                    @ templatorFolderPath
+                    @ 'index.ittf.ittf'
+            log 'templatorIndex', templatorIndex
+
+            var tempTemplate
+                _ path.join
+                    @ __dirname
+                    @ '..'
+                    @ '..'
+                    @ 'resources'
+                    @ 'create'
+                    @ 'templates'
+                    @ '__temp'
+                    @ options.templator
+                    @ options.context
+            log 'tempTemplate', tempTemplate
+
+            _ wizzi.model
+                _ path.join
+                    @ templatorContextPath
+                {
+                    { cliCtx
+                        @ pkgName options.pkgName
+                        @ description options.pkgName
+                =>
+                    param err
+                    param cliCtx
+                    if err
+                        error 'createEx.load context.error:', err
+                        return
+                    
+                    log 'createEx.cliCtx', cliCtx
+
+                    $*
+                    _ file.deleteFolder
+                        @ tempTemplate
+                        =>
+                            param err
+                            if err
+                                error 'createEx.delete temp template folder.error:', err
+                                return
+                    *$
+                    
+                    _ templator
+                        @ templatorIndex
+                        @ tempTemplate
+                        @ cliCtx
+                    +
+                    log 'createEx.before genFolder.cliCtx', cliCtx
+                    +
+                    return
+                        _ wizzi.genFolder
+                            @ tempTemplate
+                            {
+                                @ cliCtx cliCtx
+                            {
+                                @ destFolder
+                                    iif options.destPath
+                                        then
+                                            + options.destPath
+                                        else
+                                            _ path.join
+                                                @ 'C:/My/wizzi/stfnbssl/wizzi.meta.demos/packages'
+                                                @ options.pkgName
+                                @ copyInclude ['*']
+                                @ copyExclude []
+                            a_cb_test(genFolderResult)
+                                log 'genFolderResult', genFolderResult
+                                return

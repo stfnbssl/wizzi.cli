@@ -1,0 +1,7 @@
+﻿$group
+    ${'$'}params name, tag|@@null
+    a ${'$'}{name}
+        ${'$'}if tag
+            tag ${'$'}{tag}
+        type boolean
+        default true

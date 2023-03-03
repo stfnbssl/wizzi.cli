@@ -38,7 +38,7 @@ ${'$'}group
                 set itemResult[item.n + 'Wrapped'] = mTree.toIttf(ittfNode)
             _ prettify
                 @ itemResult.ittf
-                f_cb( pretty )
+                a_cb( pretty )
                     set itemResult.ittfPretty = pretty
                     $$ loog 'prettifyIttf', itemResult
                     return
