@@ -1,0 +1,12 @@
+module
+    kind react
+    const rateLimit = require('express-rate-limit')
+    const authLimiter
+        _ rateLimit
+            { 
+                @ windowMs 15 * 60 * 1000
+                @ max 20
+                @ skipSuccessfulRequests true
+    set module.exports =
+        { 
+            @ authLimiter

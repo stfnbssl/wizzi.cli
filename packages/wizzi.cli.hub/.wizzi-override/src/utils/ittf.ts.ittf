@@ -1,0 +1,38 @@
+module
+
+    const WAIT_NAME = 1
+    const IN_NAME = 2
+    const WAIT_VALUE = 3
+    const IN_VALUE = 4
+    export
+        function ittfToMeta
+            param ittf
+            var ret = []
+            var status = WAIT_NAME
+            for var i=0; i<ittf.length; i++
+                var ch = ittf[i]
+                if ch == '\n' || ch == '\r'
+                    set status = WAIT_NAME
+                    _ ret.push(ch)
+                elif ch == ' ' || ch == '\t'
+                    if status == WAIT_NAME
+                        _ ret.push(ch)
+                    elif status = IN_NAME
+                        set status = WAIT_VALUE
+                        _ ret.push(ch)
+                    else
+                        _ ret.push(ch)
+                elif ch == '(' && status == IN_NAME
+                    _ ret.push
+                        @ "$" + "{'('}"
+                    set status = WAIT_VALUE
+                elif ch == '$' && (ittf[i+1] == "{" || (status == WAIT_NAME && i > 0))
+                    _ ret.push
+                        @ "$" + "{'$'}"
+                else
+                    if status == WAIT_NAME
+                        set status = IN_NAME
+                    elif status == WAIT_VALUE
+                        set status = IN_VALUE
+                    _ ret.push(ch)
+            return ret.join("")

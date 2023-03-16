@@ -1,0 +1,22 @@
+module
+    kind react
+    const express = require('express')
+    const swaggerJsdoc = require('swagger-jsdoc')
+    const swaggerUi = require('swagger-ui-express')
+    const swaggerDefinition = require('../../docs/swaggerDef')
+    const router = express.Router()
+    const specs
+        _ swaggerJsdoc
+            { 
+                @ swaggerDefinition
+                [ apis
+                    @ 'src/docs/*.yml'
+                    @ 'src/routes/v1/*.js'
+    _ router.use('/', swaggerUi.serve)
+    _ router.get
+        @ '/'
+        _ swaggerUi.setup
+            @ specs
+            { 
+                @ explorer true
+    set module.exports = router

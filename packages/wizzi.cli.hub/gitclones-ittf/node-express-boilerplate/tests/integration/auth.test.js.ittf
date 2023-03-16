@@ -1,0 +1,937 @@
+module
+    kind react
+    const request = require('supertest')
+    const faker = require('faker')
+    const httpStatus = require('http-status')
+    const httpMocks = require('node-mocks-http')
+    const moment = require('moment')
+    const bcrypt = require('bcryptjs')
+    const app = require('../../src/app')
+    const config = require('../../src/config/config')
+    const auth = require('../../src/middlewares/auth')
+    const 
+        { 
+            @ tokenService
+            @ emailService
+        = require('../../src/services')
+    const ApiError = require('../../src/utils/ApiError')
+    const setupTestDB = require('../utils/setupTestDB')
+    const 
+        { 
+            @ User
+            @ Token
+        = require('../../src/models')
+    const 
+        { 
+            @ roleRights
+        = require('../../src/config/roles')
+    const 
+        { 
+            @ tokenTypes
+        = require('../../src/config/tokens')
+    const 
+        { 
+            @ userOne
+            @ admin
+            @ insertUsers
+        = require('../fixtures/user.fixture')
+    const 
+        { 
+            @ userOneAccessToken
+            @ adminAccessToken
+        = require('../fixtures/token.fixture')
+    _ setupTestDB()
+    _ describe
+        @ 'Auth routes'
+        => 
+            _ describe
+                @ 'POST /v1/auth/register'
+                => 
+                    let newUser
+                    _ beforeEach
+                        => 
+                            set newUser =
+                                { 
+                                    @ name faker.name.findName()
+                                    @ email faker.internet.email().toLowerCase()
+                                    @ password 'password1'
+                    _ test
+                        @ 'should return 201 and successfully register user if request data is ok'
+                        async=> 
+                            const res
+                                await 
+                                    _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.CREATED)
+                            _ expect(res.body.user).not.toHaveProperty('password')
+                            _ expect(res.body.user).toEqual
+                                { 
+                                    @ id expect.anything()
+                                    @ name newUser.name
+                                    @ email newUser.email
+                                    @ role 'user'
+                                    @ isEmailVerified false
+                            const dbUser
+                                await 
+                                    _ User.findById(res.body.user.id)
+                            _ expect(dbUser).toBeDefined()
+                            _ expect(dbUser.password).not.toBe(newUser.password)
+                            _ expect(dbUser).toMatchObject
+                                { 
+                                    @ name newUser.name
+                                    @ email newUser.email
+                                    @ role 'user'
+                                    @ isEmailVerified false
+                            _ expect(res.body.tokens).toEqual
+                                { 
+                                    { access
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                                    { refresh
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                    _ test
+                        @ 'should return 400 error if email is invalid'
+                        async=> 
+                            set newUser.email = 'invalidEmail'
+                            await 
+                                _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 400 error if email is already used'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            set newUser.email = userOne.email
+                            await 
+                                _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 400 error if password length is less than 8 characters'
+                        async=> 
+                            set newUser.password = 'passwo1'
+                            await 
+                                _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 400 error if password does not contain both letters and numbers'
+                        async=> 
+                            set newUser.password = 'password'
+                            await 
+                                _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST)
+                            set newUser.password = '11111111'
+                            await 
+                                _ request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST)
+            _ describe
+                @ 'POST /v1/auth/login'
+                => 
+                    _ test
+                        @ 'should return 200 and login user if email and password match'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const loginCredentials
+                                { 
+                                    @ email userOne.email
+                                    @ password userOne.password
+                            const res
+                                await 
+                                    _ request(app).post('/v1/auth/login').send(loginCredentials).expect(httpStatus.OK)
+                            _ expect(res.body.user).toEqual
+                                { 
+                                    @ id expect.anything()
+                                    @ name userOne.name
+                                    @ email userOne.email
+                                    @ role userOne.role
+                                    @ isEmailVerified userOne.isEmailVerified
+                            _ expect(res.body.tokens).toEqual
+                                { 
+                                    { access
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                                    { refresh
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                    _ test
+                        @ 'should return 401 error if there are no users with that email'
+                        async=> 
+                            const loginCredentials
+                                { 
+                                    @ email userOne.email
+                                    @ password userOne.password
+                            const res
+                                await 
+                                    _ request(app).post('/v1/auth/login').send(loginCredentials).expect(httpStatus.UNAUTHORIZED)
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ code httpStatus.UNAUTHORIZED
+                                    @ message 'Incorrect email or password'
+                    _ test
+                        @ 'should return 401 error if password is wrong'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const loginCredentials
+                                { 
+                                    @ email userOne.email
+                                    @ password 'wrongPassword1'
+                            const res
+                                await 
+                                    _ request(app).post('/v1/auth/login').send(loginCredentials).expect(httpStatus.UNAUTHORIZED)
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ code httpStatus.UNAUTHORIZED
+                                    @ message 'Incorrect email or password'
+            _ describe
+                @ 'POST /v1/auth/logout'
+                => 
+                    _ test
+                        @ 'should return 204 if refresh token is valid'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/logout').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            const dbRefreshTokenDoc
+                                await 
+                                    _ Token.findOne
+                                        { 
+                                            @ token refreshToken
+                            _ expect(dbRefreshTokenDoc).toBe(null)
+                    _ test
+                        @ 'should return 400 error if refresh token is missing from request body'
+                        async=> 
+                            await 
+                                _ request(app).post('/v1/auth/logout').send().expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 404 error if refresh token is not found in the database'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/logout').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+                    _ test
+                        @ 'should return 404 error if refresh token is blacklisted'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH, true)
+                            await 
+                                _ request(app).post('/v1/auth/logout').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+            _ describe
+                @ 'POST /v1/auth/refresh-tokens'
+                => 
+                    _ test
+                        @ 'should return 200 and new auth tokens if refresh token is valid'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH)
+                            const res
+                                await 
+                                    _ request(app).post('/v1/auth/refresh-tokens').send
+                                        { 
+                                            @ refreshToken
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    { access
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                                    { refresh
+                                        @ token expect.anything()
+                                        @ expires expect.anything()
+                            const dbRefreshTokenDoc
+                                await 
+                                    _ Token.findOne
+                                        { 
+                                            @ token res.body.refresh.token
+                            _ expect(dbRefreshTokenDoc).toMatchObject
+                                { 
+                                    @ type tokenTypes.REFRESH
+                                    @ user userOne._id
+                                    @ blacklisted false
+                            const dbRefreshTokenCount
+                                await 
+                                    _ Token.countDocuments()
+                            _ expect(dbRefreshTokenCount).toBe(1)
+                    _ test
+                        @ 'should return 400 error if refresh token is missing from request body'
+                        async=> 
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send().expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 401 error if refresh token is signed using an invalid secret'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH, 'invalidSecret')
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 error if refresh token is not found in the database'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 error if refresh token is blacklisted'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH, true)
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 error if refresh token is expired'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().subtract(1, 'minutes')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 error if user is not found'
+                        async=> 
+                            const expires = moment().add(config.jwt.refreshExpirationDays, 'days')
+                            const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH)
+                            await 
+                                _ request(app).post('/v1/auth/refresh-tokens').send
+                                    { 
+                                        @ refreshToken
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+            _ describe
+                @ 'POST /v1/auth/forgot-password'
+                => 
+                    _ beforeEach
+                        => 
+                            _ jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue()
+                    _ test
+                        @ 'should return 204 and send reset password email to the user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const sendResetPasswordEmailSpy = jest.spyOn(emailService, 'sendResetPasswordEmail')
+                            await 
+                                _ request(app).post('/v1/auth/forgot-password').send
+                                    { 
+                                        @ email userOne.email
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            _ expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String))
+                            const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1]
+                            const dbResetPasswordTokenDoc
+                                await 
+                                    _ Token.findOne
+                                        { 
+                                            @ token resetPasswordToken
+                                            @ user userOne._id
+                            _ expect(dbResetPasswordTokenDoc).toBeDefined()
+                    _ test
+                        @ 'should return 400 if email is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).post('/v1/auth/forgot-password').send().expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 404 if email does not belong to any user'
+                        async=> 
+                            await 
+                                _ request(app).post('/v1/auth/forgot-password').send
+                                    { 
+                                        @ email userOne.email
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+            _ describe
+                @ 'POST /v1/auth/reset-password'
+                => 
+                    _ test
+                        @ 'should return 204 and reset the password'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes')
+                            const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'password2'
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            const dbUser
+                                await 
+                                    _ User.findById(userOne._id)
+                            const isPasswordMatch
+                                await 
+                                    _ bcrypt.compare('password2', dbUser.password)
+                            _ expect(isPasswordMatch).toBe(true)
+                            const dbResetPasswordTokenCount
+                                await 
+                                    _ Token.countDocuments
+                                        { 
+                                            @ user userOne._id
+                                            @ type tokenTypes.RESET_PASSWORD
+                            _ expect(dbResetPasswordTokenCount).toBe(0)
+                    _ test
+                        @ 'should return 400 if reset password token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').send
+                                    { 
+                                        @ password 'password2'
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 401 if reset password token is blacklisted'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes')
+                            const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD, true)
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'password2'
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 if reset password token is expired'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().subtract(1, 'minutes')
+                            const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'password2'
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 if user is not found'
+                        async=> 
+                            const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes')
+                            const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'password2'
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 400 if password is missing or invalid'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes')
+                            const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD)
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'short1'
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password 'password'
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                            await 
+                                _ request(app).post('/v1/auth/reset-password').query
+                                    { 
+                                        @ token resetPasswordToken
+                                    ._ send
+                                        { 
+                                            @ password '11111111'
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+            _ describe
+                @ 'POST /v1/auth/send-verification-email'
+                => 
+                    _ beforeEach
+                        => 
+                            _ jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue()
+                    _ test
+                        @ 'should return 204 and send verification email to the user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const sendVerificationEmailSpy = jest.spyOn(emailService, 'sendVerificationEmail')
+                            await 
+                                _ request(app).post('/v1/auth/send-verification-email').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ userOneAccessToken
+                                        + 
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            _ expect(sendVerificationEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String))
+                            const verifyEmailToken = sendVerificationEmailSpy.mock.calls[0][1]
+                            const dbVerifyEmailToken
+                                await 
+                                    _ Token.findOne
+                                        { 
+                                            @ token verifyEmailToken
+                                            @ user userOne._id
+                            _ expect(dbVerifyEmailToken).toBeDefined()
+                    _ test
+                        @ 'should return 401 error if access token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).post('/v1/auth/send-verification-email').send().expect(httpStatus.UNAUTHORIZED)
+            _ describe
+                @ 'POST /v1/auth/verify-email'
+                => 
+                    _ test
+                        @ 'should return 204 and verify the email'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes')
+                            const verifyEmailToken = tokenService.generateToken(userOne._id, expires)
+                            await 
+                                _ tokenService.saveToken(verifyEmailToken, userOne._id, expires, tokenTypes.VERIFY_EMAIL)
+                            await 
+                                _ request(app).post('/v1/auth/verify-email').query
+                                    { 
+                                        @ token verifyEmailToken
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            const dbUser
+                                await 
+                                    _ User.findById(userOne._id)
+                            _ expect(dbUser.isEmailVerified).toBe(true)
+                            const dbVerifyEmailToken
+                                await 
+                                    _ Token.countDocuments
+                                        { 
+                                            @ user userOne._id
+                                            @ type tokenTypes.VERIFY_EMAIL
+                            _ expect(dbVerifyEmailToken).toBe(0)
+                    _ test
+                        @ 'should return 400 if verify email token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).post('/v1/auth/verify-email').send().expect(httpStatus.BAD_REQUEST)
+                    _ test
+                        @ 'should return 401 if verify email token is blacklisted'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes')
+                            const verifyEmailToken = tokenService.generateToken(userOne._id, expires)
+                            await 
+                                _ tokenService.saveToken(verifyEmailToken, userOne._id, expires, tokenTypes.VERIFY_EMAIL, true)
+                            await 
+                                _ request(app).post('/v1/auth/verify-email').query
+                                    { 
+                                        @ token verifyEmailToken
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 if verify email token is expired'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const expires = moment().subtract(1, 'minutes')
+                            const verifyEmailToken = tokenService.generateToken(userOne._id, expires)
+                            await 
+                                _ tokenService.saveToken(verifyEmailToken, userOne._id, expires, tokenTypes.VERIFY_EMAIL)
+                            await 
+                                _ request(app).post('/v1/auth/verify-email').query
+                                    { 
+                                        @ token verifyEmailToken
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 401 if user is not found'
+                        async=> 
+                            const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes')
+                            const verifyEmailToken = tokenService.generateToken(userOne._id, expires)
+                            await 
+                                _ tokenService.saveToken(verifyEmailToken, userOne._id, expires, tokenTypes.VERIFY_EMAIL)
+                            await 
+                                _ request(app).post('/v1/auth/verify-email').query
+                                    { 
+                                        @ token verifyEmailToken
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+    _ describe
+        @ 'Auth middleware'
+        => 
+            _ test
+                @ 'should call next with no errors if access token is valid'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith()
+                    _ expect(req.user._id).toEqual(userOne._id)
+            _ test
+                @ 'should call next with unauthorized error if access token is not found in header'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const req = httpMocks.createRequest()
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with unauthorized error if access token is not a valid jwt token'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization 'Bearer randomToken'
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with unauthorized error if the token is not an access token'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const expires = moment().add(config.jwt.accessExpirationMinutes, 'minutes')
+                    const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH)
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ refreshToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with unauthorized error if access token is generated with an invalid secret'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const expires = moment().add(config.jwt.accessExpirationMinutes, 'minutes')
+                    const accessToken = tokenService.generateToken(userOne._id, expires, tokenTypes.ACCESS, 'invalidSecret')
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ accessToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with unauthorized error if access token is expired'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const expires = moment().subtract(1, 'minutes')
+                    const accessToken = tokenService.generateToken(userOne._id, expires, tokenTypes.ACCESS)
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ accessToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with unauthorized error if user is not found'
+                async=> 
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth()(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.UNAUTHORIZED
+                                @ message 'Please authenticate'
+            _ test
+                @ 'should call next with forbidden error if user does not have required rights and userId is not in params'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                    const next = jest.fn()
+                    await 
+                        _ auth('anyRight')(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith(expect.any(ApiError))
+                    _ expect(next).toHaveBeenCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ statusCode httpStatus.FORBIDDEN
+                                @ message 'Forbidden'
+            _ test
+                @ 'should call next with no errors if user does not have required rights but userId is in params'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ userOne
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                { params
+                                    @ userId userOne._id.toHexString()
+                    const next = jest.fn()
+                    await 
+                        _ auth('anyRight')(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith()
+            _ test
+                @ 'should call next with no errors if user has required rights'
+                async=> 
+                    await 
+                        _ insertUsers
+                            [ 
+                                @ admin
+                    const req
+                        _ httpMocks.createRequest
+                            { 
+                                { headers
+                                    @ Authorization
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                { params
+                                    @ userId userOne._id.toHexString()
+                    const next = jest.fn()
+                    await 
+                        _ auth(...roleRights.get('admin'))(req, httpMocks.createResponse(), next)
+                    _ expect(next).toHaveBeenCalledWith()

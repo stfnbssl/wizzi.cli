@@ -1,0 +1,11 @@
+module
+    import 
+        @ expect
+        from 'chai'
+    _ describe
+        @ 'Index Test'
+        function 
+            _ it
+                @ 'should always pass'
+                function 
+                    _ expect(true).to.equal(true)

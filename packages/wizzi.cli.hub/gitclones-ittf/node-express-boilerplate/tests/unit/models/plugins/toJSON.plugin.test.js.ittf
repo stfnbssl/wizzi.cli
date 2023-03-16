@@ -1,0 +1,113 @@
+module
+    kind react
+    const mongoose = require('mongoose')
+    const 
+        { 
+            @ toJSON
+        = require('../../../../src/models/plugins')
+    _ describe
+        @ 'toJSON plugin'
+        => 
+            let connection
+            _ beforeEach
+                => 
+                    set connection = mongoose.createConnection()
+            _ it
+                @ 'should replace _id with id'
+                => 
+                    const schema = mongoose.Schema()
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc = new Model()
+                    _ expect(doc.toJSON()).not.toHaveProperty('_id')
+                    _ expect(doc.toJSON()).toHaveProperty('id', doc._id.toString())
+            _ it
+                @ 'should remove __v'
+                => 
+                    const schema = mongoose.Schema()
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc = new Model()
+                    _ expect(doc.toJSON()).not.toHaveProperty('__v')
+            _ it
+                @ 'should remove createdAt and updatedAt'
+                => 
+                    const schema
+                        _ mongoose.Schema
+                            { 
+                            { 
+                                @ timestamps true
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc = new Model()
+                    _ expect(doc.toJSON()).not.toHaveProperty('createdAt')
+                    _ expect(doc.toJSON()).not.toHaveProperty('updatedAt')
+            _ it
+                @ 'should remove any path set as private'
+                => 
+                    const schema
+                        _ mongoose.Schema
+                            { 
+                                { public
+                                    @ type String
+                                { private
+                                    @ type String
+                                    @ private true
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc
+                        new Model
+                            { 
+                                @ public 'some public value'
+                                @ private 'some private value'
+                    _ expect(doc.toJSON()).not.toHaveProperty('private')
+                    _ expect(doc.toJSON()).toHaveProperty('public')
+            _ it
+                @ 'should remove any nested paths set as private'
+                => 
+                    const schema
+                        _ mongoose.Schema
+                            { 
+                                { public
+                                    @ type String
+                                { nested
+                                    { private
+                                        @ type String
+                                        @ private true
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc
+                        new Model
+                            { 
+                                @ public 'some public value'
+                                { nested
+                                    @ private 'some nested private value'
+                    _ expect(doc.toJSON()).not.toHaveProperty('nested.private')
+                    _ expect(doc.toJSON()).toHaveProperty('public')
+            _ it
+                @ 'should also call the schema toJSON transform function'
+                => 
+                    const schema
+                        _ mongoose.Schema
+                            { 
+                                { public
+                                    @ type String
+                                { private
+                                    @ type String
+                            { 
+                                { toJSON
+                                    @ transform
+                                        => 
+                                            param doc
+                                            param ret
+                                            delete ret.private
+                                                # eslint-disable-next-line no-param-reassign
+                    _ schema.plugin(toJSON)
+                    const Model = connection.model('Model', schema)
+                    const doc
+                        new Model
+                            { 
+                                @ public 'some public value'
+                                @ private 'some private value'
+                    _ expect(doc.toJSON()).not.toHaveProperty('private')
+                    _ expect(doc.toJSON()).toHaveProperty('public')

@@ -18,6 +18,9 @@ module
     import 
         @ resourceApi
         from '../features/wizzi-cdn'
+    import
+        @ ittfToMeta 
+        from '../utils/ittf'
     +
     export
         function downloadArtifactList
@@ -28,6 +31,7 @@ module
             :return
                 :ref Promise
                     :param any
+            info 'downloadArtifactList.options.filter', options.filter
             r_promise()
                 _ artifactApi.getArtifactProductionList
                     {
@@ -47,8 +51,12 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
+                                            @ name verify.replaceAll(item.name, '/', '%2F')
                                     _ path.join
                                         @ options.destFolder
+                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                    _ path.join
+                                        @ options.destMetaFolder
                                         @ verify.replaceAll(item.name, '/', '%2F')
                         return
                             _ resolve
@@ -110,8 +118,12 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
+                                            @ name verify.replaceAll(item.name, '/', '%2F')
                                     _ path.join
                                         @ options.destFolder
+                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                    _ path.join
+                                        @ options.destMetaFolder
                                         @ verify.replaceAll(item.name, '/', '%2F')
                         return
                             _ resolve
@@ -173,8 +185,12 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
+                                            @ name verify.replaceAll(item.name, '/', '%2F')
                                     _ path.join
                                         @ options.destFolder
+                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                    _ path.join
+                                        @ options.destMetaFolder
                                         @ verify.replaceAll(item.name, '/', '%2F')
                         return
                             _ resolve
@@ -236,8 +252,12 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
+                                            @ name verify.replaceAll(item.name, '/', '%2F')
                                     _ path.join
                                         @ options.destFolder
+                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                    _ path.join
+                                        @ options.destMetaFolder
                                         @ verify.replaceAll(item.name, '/', '%2F')
                         return
                             _ resolve
@@ -299,8 +319,12 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
+                                            @ name verify.replaceAll(item.name, '/', '%2F')
                                     _ path.join
                                         @ options.destFolder
+                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                    _ path.join
+                                        @ options.destMetaFolder
                                         @ verify.replaceAll(item.name, '/', '%2F')
                         return
                             _ resolve
@@ -375,6 +399,7 @@ module
             :ref PackiFiles
         param options
             :any
+        # loog 'filterPackiFiles.filter', options
         if !options || !options.filter
             return packiFiles
         else
@@ -382,7 +407,8 @@ module
                 :ref PackiFiles
                 {
             foreach k in Object.keys(packiFiles)
-                if options.filter(k, packiFiles[k].type, packiFiles[k].contents)
+                log 'filterPackiFiles', options.name + '/' + k , options.filter(k, packiFiles[k].type, packiFiles[k].contents)
+                if options.filter(options.name + '/' + k, packiFiles[k].type, packiFiles[k].contents)
                     set result[k] = packiFiles[k]
             return result
     +
@@ -391,12 +417,23 @@ module
             :ref PackiFiles
         param destFolder
             :string
+        param destMetaFolder
+            :string
+            :optional
         foreach k in Object.keys(packiFiles)
             _ fSystem.vfile().write
                 _ path.join
                     @ destFolder
                     @ k
                 @ packiFiles[k].contents
+            if destMetaFolder
+                _ fSystem.vfile().write
+                    _ path.join
+                        @ destMetaFolder
+                        @ k + '.ittf'
+                    _ ittfToMeta
+                        @ packiFiles[k].contents
+
     +
     function writeToDest
         param destPath

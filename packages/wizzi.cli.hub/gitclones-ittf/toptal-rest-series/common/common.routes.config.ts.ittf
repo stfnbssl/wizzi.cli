@@ -1,0 +1,25 @@
+module
+    import express from 'express'
+    export 
+        class CommonRoutesConfig
+            :abstract
+            p app
+                :ref express.Application
+            p name
+                :string 
+            ctor 
+                param app
+                    :ref express.Application
+                param name
+                    :string 
+                set this.app = app
+                set this.name = name
+                _ this.configureRoutes()
+            m getName
+                :return
+                    :string 
+                return this.name
+            :m configureRoutes
+                :abstract
+                :return
+                    :ref express.Application

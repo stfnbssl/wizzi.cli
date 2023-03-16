@@ -1,0 +1,22 @@
+module
+    import 
+        @ useEffect
+        from 'react'
+    :interface Properties
+        :p title
+            :string 
+    export-default 
+        function Head
+            { 
+                @ title
+                :ref Properties
+            :return
+                :null 
+            _ useEffect
+                => 
+                    set document.title = title
+                [ 
+                    @ title
+                # eslint-disable-next-line unicorn/no-null
+            return null
+                # eslint-disable-next-line unicorn/no-null

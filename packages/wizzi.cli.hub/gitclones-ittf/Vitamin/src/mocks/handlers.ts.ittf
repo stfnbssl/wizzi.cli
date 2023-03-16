@@ -1,0 +1,15 @@
+module
+    import 
+        @ rest
+        from 'msw'
+    import fruits from './data/fruits.json'
+    const handlers
+        [ 
+            _ rest.get
+                @ 'https://614c99f03c438c00179faa84.mockapi.io/fruits'
+                => 
+                    param _
+                    param response
+                    param context
+                    _ response(context.json(fruits))
+    export-default handlers

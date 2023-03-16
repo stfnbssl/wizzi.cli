@@ -1,0 +1,20 @@
+module
+    kind react
+    const express = require('express')
+    const router = express.Router()
+    const fs = require('fs')
+    const path = require('path')
+    _ router.get
+        @ '/:id'
+        function 
+            param req
+                :ref Request
+            param res
+                :ref Response
+            const fileStream = fs.createReadStream(path.join(process.cwd(), './assets/img/profilePic.png'))
+                #
+                    # Note that we create a path to the file based on the current working
+                    # * directory, not the router file location.
+                    # 
+            _ fileStream.pipe(res)
+    set module.exports = router

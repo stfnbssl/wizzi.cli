@@ -207,33 +207,34 @@ module
             param options
                 :any
             set options = options || {}
+            info 'downloadWizzihub.options.metaFolder', options.metaFolder
+            info 'downloadWizzihub.options.filter', options.filter
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
                     if options.artifacts
+                        set options.all = false
                         _ downloadWizzihubArtifacts
-                            {
-                                @ all false
+                            @ options
                     if options.packages
+                        set options.all = false
                         _ downloadWizzihubPackages
-                            {
-                                @ all false
+                            @ options
                     if options.plugins
+                        set options.all = false
                         _ downloadWizzihubPlugins
-                            {
-                                @ all false
+                            @ options
                     if options.metas
+                        set options.all = false
                         _ downloadWizzihubMetas
-                            {
-                                @ all false
+                            @ options
                     if options.tFolders
+                        set options.all = false
                         _ downloadWizzihubTFolders
-                            {
-                                @ all false
+                            @ options
                     if options.all
                         _ downloadWizzihubArtifacts
-                            {
-                                @ all true
+                            @ options
 
     function downloadWizzihubArtifacts
         param options
@@ -253,6 +254,8 @@ module
                         @ wizzihubProductionsFolder
                         @ 'downloads'
                         @ 'artifacts'
+                @ destMetaFolder options.metaFolder ? path.join(options.metaFolder, 'artifacts') : null
+                @ filter options.filter
             ._ then
                 =>
                     param result
@@ -286,6 +289,8 @@ module
                         @ wizzihubProductionsFolder
                         @ 'downloads'
                         @ 'packages'
+                @ destMetaFolder options.metaFolder ? path.join(options.metaFolder, 'packages') : null
+                @ filter options.filter
             ._ then
                 =>
                     param result
@@ -319,6 +324,8 @@ module
                         @ wizzihubProductionsFolder
                         @ 'downloads'
                         @ 'plugins'
+                @ destMetaFolder options.metaFolder ? path.join(options.metaFolder, 'plugins') : null
+                @ filter options.filter
             ._ then
                 =>
                     param result
@@ -352,6 +359,8 @@ module
                         @ wizzihubProductionsFolder
                         @ 'downloads'
                         @ 'metas'
+                @ destMetaFolder options.metaFolder ? path.join(options.metaFolder, 'metas') : null
+                @ filter options.filter
             ._ then
                 =>
                     param result
@@ -385,6 +394,8 @@ module
                         @ wizzihubProductionsFolder
                         @ 'downloads'
                         @ 'tfolders'
+                @ destMetaFolder options.metaFolder ? path.join(options.metaFolder, 'tfolders') : null
+                @ filter options.filter
             ._ then
                 =>
                     param result

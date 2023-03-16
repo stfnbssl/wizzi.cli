@@ -2,6 +2,12 @@ module
     import path from 'path'
     const minimist = require('minimist')
 
+    #
+        # commands
+        # . gitclone -o owner -n name -b branch
+        # .   example
+        # .      ./node_modules/.bin/ts-node src/index.ts gitclone -o makinhs -n toptal-rest-series -b toptal-article-03
+
     import 
         @ githubApiCalls
         from './features/github'
@@ -58,6 +64,7 @@ module
     let p_update = args.u || args.update
     let p_schema = args.s || args.schema
     let p_name = args.n || args.name
+    let p_filter_string = args.f || args.filter
     
     let p1 = args._[1]
     let p2 = args._[2]
@@ -68,32 +75,53 @@ module
     info 'p_update', p_update
     info 'p_schema', p_schema
     info 'p_name', p_name
+    info 'p_meta', p_meta
+    info 'p_filter_string', p_filter_string
+
+    var p_filter = null
+    if p_filter_string && p_filter_string.length > 0
+        set p_filter
+            function
+                param name
+                return name.startsWith(p_filter_string) 
     
     if cmd == 'down'
         if p1 == 'wizzihub'
             _ downloadWizzihub
                 {
                     @ all true
+                    @ metaFolder p_meta
+                    @ filter p_filter
         elif p1 == 'artifacts'
             _ downloadWizzihub
                 {
                     @ artifacts true
+                    @ metaFolder p_meta
+                    @ filter p_filter
         elif p1 == 'packages'
             _ downloadWizzihub
                 {
                     @ packages true
+                    @ metaFolder p_meta
+                    @ filter p_filter
         elif p1 == 'plugins'
             _ downloadWizzihub
                 {
                     @ plugins true
+                    @ metaFolder p_meta
+                    @ filter p_filter
         elif p1 == 'metas'
             _ downloadWizzihub
                 {
                     @ metas true
+                    @ metaFolder p_meta
+                    @ filter p_filter
         elif p1 == 'tfolders'
             _ downloadWizzihub
                 {
                     @ tFolders true
+                    @ metaFolder p_meta
+                    @ filter p_filter
     elif cmd == 'up'
         if p_artifact
             if p_create
@@ -170,6 +198,48 @@ module
                         _ path.join
                             @ "C:/My/wizzi/stfnbssl/wizzihub-productions/generations/metafolders"
                             @ p_name
+    elif cmd == 'gitclone'
+        let p_owner = args.o || args.owner
+        set p_name = args.n || args.name
+        let p_branch = args.b || args.branch
+        let p_filter = args.f || args.filter
+        info 'repo owner', p_owner
+        info 'repo name', p_name
+        info 'repo branch', p_branch
+        info 'repo filter', p_filter
+        _ downloadGitRepo
+            @ p_owner
+            @ p_name
+            @ p_branch || "master"
+            {
+                @ destFolder
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'gitclones'
+                        @ p_name
+                @ destFolderIttf
+                    _ path.join
+                        @ __dirname
+                        @ '..'
+                        @ 'gitclones-ittf'
+                        @ p_name
+                @ filter
+                    function
+                        param filePath
+                        if p_filter
+                            return filePath && filePath.startsWith(p_filter)
+                        else
+                            return filePath
+            ._ then
+                =>
+                    param result
+                    $$ log 'downloadGitRepo', result
+            ._ catch
+                =>
+                    param err
+                    log 'downloadGitRepo.error', err
+
     else
         if false
             _ listRepos

@@ -1,0 +1,45 @@
+module
+    export 
+        :interface CRUD
+            :p list
+                :=> 
+                    :ref Promise
+                        :param any
+                    param limit
+                        :number 
+                    param page
+                        :number 
+            :p create
+                :=> 
+                    :ref Promise
+                        :param any
+                    param resource
+                        :any 
+            :p putById
+                :=> 
+                    :ref Promise
+                        :param string
+                    param id
+                        :string 
+                    param resource
+                        :any 
+            :p readById
+                :=> 
+                    :ref Promise
+                        :param any
+                    param id
+                        :string 
+            :p deleteById
+                :=> 
+                    :ref Promise
+                        :param string
+                    param id
+                        :string 
+            :p patchById
+                :=> 
+                    :ref Promise
+                        :param string
+                    param id
+                        :string 
+                    param resource
+                        :any 

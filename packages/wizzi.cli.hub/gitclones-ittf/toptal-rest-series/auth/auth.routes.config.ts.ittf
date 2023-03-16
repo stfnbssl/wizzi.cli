@@ -1,0 +1,40 @@
+module
+    import 
+        @ CommonRoutesConfig
+        from '../common/common.routes.config'
+    import authController from './controllers/auth.controller'
+    import jwtMiddleware from './middleware/jwt.middleware'
+    import authMiddleware from './middleware/auth.middleware'
+    import express from 'express'
+    import BodyValidationMiddleware from '../common/middleware/body.validation.middleware'
+    import 
+        @ body
+        from 'express-validator'
+    export 
+        class AuthRoutes
+            super CommonRoutesConfig
+            ctor 
+                param app
+                    :ref express.Application
+                _ super(app, 'AuthRoutes')
+            m configureRoutes
+                :return
+                    :ref express.Application
+                _ this.app.post
+                    `lit 
+                        + /auth
+                    [ 
+                        @ body('email').isEmail()
+                        @ body('password').isString()
+                        @ BodyValidationMiddleware.verifyBodyFieldsErrors
+                        @ authMiddleware.verifyUserPassword
+                        @ authController.createJWT
+                _ this.app.post
+                    `lit 
+                        + /auth/refresh-token
+                    [ 
+                        @ jwtMiddleware.validJWTNeeded
+                        @ jwtMiddleware.verifyRefreshBodyField
+                        @ jwtMiddleware.validRefreshNeeded
+                        @ authController.createJWT
+                return this.app

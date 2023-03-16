@@ -1,0 +1,4 @@
+module
+    kind react
+    set module.exports.authController = require('./auth.controller')
+    set module.exports.userController = require('./user.controller')

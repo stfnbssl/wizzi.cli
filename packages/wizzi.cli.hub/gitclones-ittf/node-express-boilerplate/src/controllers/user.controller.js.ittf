@@ -1,0 +1,76 @@
+module
+    kind react
+    const httpStatus = require('http-status')
+    const pick = require('../utils/pick')
+    const ApiError = require('../utils/ApiError')
+    const catchAsync = require('../utils/catchAsync')
+    const 
+        { 
+            @ userService
+        = require('../services')
+    const createUser
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const user
+                    await 
+                        _ userService.createUser(req.body)
+                _ res.status(httpStatus.CREATED).send(user)
+    const getUsers
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const filter
+                    _ pick
+                        @expr req.query
+                        [ 
+                            @ 'name'
+                            @ 'role'
+                const options
+                    _ pick
+                        @expr req.query
+                        [ 
+                            @ 'sortBy'
+                            @ 'limit'
+                            @ 'page'
+                const result
+                    await 
+                        _ userService.queryUsers(filter, options)
+                _ res.send(result)
+    const getUser
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const user
+                    await 
+                        _ userService.getUserById(req.params.userId)
+                if !user
+                    throw new ApiError(httpStatus.NOT_FOUND, 'User not found')
+                _ res.send(user)
+    const updateUser
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const user
+                    await 
+                        _ userService.updateUserById(req.params.userId, req.body)
+                _ res.send(user)
+    const deleteUser
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                await 
+                    _ userService.deleteUserById(req.params.userId)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    set module.exports =
+        { 
+            @ createUser
+            @ getUsers
+            @ getUser
+            @ updateUser
+            @ deleteUser

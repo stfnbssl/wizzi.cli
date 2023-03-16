@@ -9,6 +9,9 @@ module
     import
         @ wizziProds 
         from '../features/wizzi'
+    import
+        @ ittfToMeta 
+        from '../utils/ittf'
     +
     export
         function getFilteredPackiFiles
@@ -61,12 +64,23 @@ module
                 :ref PackiFiles
             param destFolder
                 :string
+            param destMetaFolder
+                :string
+                :optional
             foreach k in Object.keys(packiFiles)
                 _ fSystem.vfile().write
                     _ path.join
                         @ destFolder
                         @ k
                     @ packiFiles[k].contents
+                if destMetaFolder
+                    _ fSystem.vfile().write
+                        _ path.join
+                            @ destMetaFolder
+                            @ k
+                        _ ittfToMeta
+                            @ packiFiles[k].contents
+                
     +
     export
         function getFileJSON

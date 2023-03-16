@@ -1,0 +1,14 @@
+module
+    kind react
+    const catchAsync
+        => 
+            param fn
+            => 
+                param req
+                param res
+                param next
+                _ Promise.resolve(fn(req, res, next)).catch
+                    => 
+                        param err
+                        _ next(err)
+    set module.exports = catchAsync

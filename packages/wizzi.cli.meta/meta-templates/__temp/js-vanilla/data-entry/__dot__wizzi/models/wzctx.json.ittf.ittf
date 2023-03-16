@@ -1,0 +1,10 @@
+{ 
+   ${'$'}include v08/env/vars
+   --- 
+   $include cli/v08/wzctx-info.json
+   --- 
+   { App
+       name "Test Vite React"
+       kind "Client"
+   --- 
+   { Build

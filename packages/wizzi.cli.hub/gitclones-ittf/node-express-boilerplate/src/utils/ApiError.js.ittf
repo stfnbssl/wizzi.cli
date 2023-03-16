@@ -1,0 +1,17 @@
+module
+    kind react
+    class ApiError
+        super Error
+        ctor 
+            param statusCode
+            param message
+            param isOperational = true
+            param stack = ''
+            _ super(message)
+            set this.statusCode = statusCode
+            set this.isOperational = isOperational
+            if stack
+                set this.stack = stack
+            else
+                _ Error.captureStackTrace(this, this.constructor)
+    set module.exports = ApiError

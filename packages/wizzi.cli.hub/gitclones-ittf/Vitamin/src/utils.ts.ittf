@@ -1,0 +1,34 @@
+module
+    import 
+        @ useLayoutEffect
+        @ useState
+        from 'react'
+        # eslint-disable-next-line import/prefer-default-export
+    export 
+        function useMediaQuery
+            param query
+                :string 
+            :return
+                :boolean 
+            const [matches, setMatches]
+                _ useState
+                    => 
+                        +
+                            @expr matchMedia(query).matches
+            _ useLayoutEffect
+                => 
+                    const mediaQuery = matchMedia(query)
+                    function onMediaQueryChange
+                        :return
+                            :void 
+                        _ setMatches(mediaQuery.matches)
+                    _ mediaQuery.addEventListener('change', onMediaQueryChange)
+                    return 
+                        => 
+                            :return
+                                :void 
+                            _ mediaQuery.removeEventListener('change', onMediaQueryChange)
+                [ 
+                    @ query
+            return matches
+        # eslint-disable-next-line import/prefer-default-export

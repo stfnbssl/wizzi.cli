@@ -1,0 +1,1140 @@
+module
+    kind react
+    const request = require('supertest')
+    const faker = require('faker')
+    const httpStatus = require('http-status')
+    const app = require('../../src/app')
+    const setupTestDB = require('../utils/setupTestDB')
+    const 
+        { 
+            @ User
+        = require('../../src/models')
+    const 
+        { 
+            @ userOne
+            @ userTwo
+            @ admin
+            @ insertUsers
+        = require('../fixtures/user.fixture')
+    const 
+        { 
+            @ userOneAccessToken
+            @ adminAccessToken
+        = require('../fixtures/token.fixture')
+    _ setupTestDB()
+    _ describe
+        @ 'User routes'
+        => 
+            _ describe
+                @ 'POST /v1/users'
+                => 
+                    let newUser
+                    _ beforeEach
+                        => 
+                            set newUser =
+                                { 
+                                    @ name faker.name.findName()
+                                    @ email faker.internet.email().toLowerCase()
+                                    @ password 'password1'
+                                    @ role 'user'
+                    _ test
+                        @ 'should return 201 and successfully create new user if data is ok'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).post('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ send
+                                            @ newUser
+                                        ._ expect
+                                            @expr httpStatus.CREATED
+                            _ expect(res.body).not.toHaveProperty('password')
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ id expect.anything()
+                                    @ name newUser.name
+                                    @ email newUser.email
+                                    @ role newUser.role
+                                    @ isEmailVerified false
+                            const dbUser
+                                await 
+                                    _ User.findById(res.body.id)
+                            _ expect(dbUser).toBeDefined()
+                            _ expect(dbUser.password).not.toBe(newUser.password)
+                            _ expect(dbUser).toMatchObject
+                                { 
+                                    @ name newUser.name
+                                    @ email newUser.email
+                                    @ role newUser.role
+                                    @ isEmailVerified false
+                    _ test
+                        @ 'should be able to create an admin as well'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            set newUser.role = 'admin'
+                            const res
+                                await 
+                                    _ request(app).post('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ send
+                                            @ newUser
+                                        ._ expect
+                                            @expr httpStatus.CREATED
+                            _ expect(res.body.role).toBe('admin')
+                            const dbUser
+                                await 
+                                    _ User.findById(res.body.id)
+                            _ expect(dbUser.role).toBe('admin')
+                    _ test
+                        @ 'should return 401 error if access token is missing'
+                        async=> 
+                            await 
+                                _ request(app).post('/v1/users').send(newUser).expect(httpStatus.UNAUTHORIZED)
+                    _ test
+                        @ 'should return 403 error if logged in user is not admin'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ userOneAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.FORBIDDEN
+                    _ test
+                        @ 'should return 400 error if email is invalid'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            set newUser.email = 'invalidEmail'
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 error if email is already used'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                                        @ userOne
+                            set newUser.email = userOne.email
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 error if password length is less than 8 characters'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            set newUser.password = 'passwo1'
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 error if password does not contain both letters and numbers'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            set newUser.password = 'password'
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                            set newUser.password = '1111111'
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 error if role is neither user nor admin'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            set newUser.role = 'invalid'
+                            await 
+                                _ request(app).post('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                        @ newUser
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+            _ describe
+                @ 'GET /v1/users'
+                => 
+                    _ test
+                        @ 'should return 200 and apply the default query options'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(3)
+                            _ expect(res.body.results[0]).toEqual
+                                { 
+                                    @ id userOne._id.toHexString()
+                                    @ name userOne.name
+                                    @ email userOne.email
+                                    @ role userOne.role
+                                    @ isEmailVerified userOne.isEmailVerified
+                    _ test
+                        @ 'should return 401 if access token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            await 
+                                _ request(app).get('/v1/users').send().expect(httpStatus.UNAUTHORIZED)
+                    _ test
+                        @ 'should return 403 if a non-admin is trying to access all users'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            await 
+                                _ request(app).get('/v1/users').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ userOneAccessToken
+                                        + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.FORBIDDEN
+                    _ test
+                        @ 'should correctly apply filter on name field'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ name userOne.name
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 1
+                            _ expect(res.body.results).toHaveLength(1)
+                            _ expect(res.body.results[0].id).toBe(userOne._id.toHexString())
+                    _ test
+                        @ 'should correctly apply filter on role field'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ role 'user'
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 2
+                            _ expect(res.body.results).toHaveLength(2)
+                            _ expect(res.body.results[0].id).toBe(userOne._id.toHexString())
+                            _ expect(res.body.results[1].id).toBe(userTwo._id.toHexString())
+                    _ test
+                        @ 'should correctly sort the returned array if descending sort param is specified'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ sortBy 'role:desc'
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(3)
+                            _ expect(res.body.results[0].id).toBe(userOne._id.toHexString())
+                            _ expect(res.body.results[1].id).toBe(userTwo._id.toHexString())
+                            _ expect(res.body.results[2].id).toBe(admin._id.toHexString())
+                    _ test
+                        @ 'should correctly sort the returned array if ascending sort param is specified'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ sortBy 'role:asc'
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(3)
+                            _ expect(res.body.results[0].id).toBe(admin._id.toHexString())
+                            _ expect(res.body.results[1].id).toBe(userOne._id.toHexString())
+                            _ expect(res.body.results[2].id).toBe(userTwo._id.toHexString())
+                    _ test
+                        @ 'should correctly sort the returned array if multiple sorting criteria are specified'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ sortBy 'role:desc,name:asc'
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 10
+                                    @ totalPages 1
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(3)
+                            const expectedOrder
+                                [ 
+                                    @ userOne
+                                    @ userTwo
+                                    @ admin
+                                    ._ sort
+                                        => 
+                                            param a
+                                            param b
+                                            if a.role < b.role
+                                                return 1
+                                            if a.role > b.role
+                                                return -1
+                                            return 
+                                                iif a.name < b.name
+                                                    then -1
+                                                    else 1
+                            _ expectedOrder.forEach
+                                => 
+                                    param user
+                                    param index
+                                    _ expect(res.body.results[index].id).toBe(user._id.toHexString())
+                    _ test
+                        @ 'should limit returned array if limit param is specified'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ limit 2
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 1
+                                    @ limit 2
+                                    @ totalPages 2
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(2)
+                            _ expect(res.body.results[0].id).toBe(userOne._id.toHexString())
+                            _ expect(res.body.results[1].id).toBe(userTwo._id.toHexString())
+                    _ test
+                        @ 'should return the correct page if page and limit params are specified'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                                        @ admin
+                            const res
+                                await 
+                                    _ request(app).get('/v1/users').set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                        ._ query
+                                            { 
+                                                @ page 2
+                                                @ limit 2
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ results expect.any(Array)
+                                    @ page 2
+                                    @ limit 2
+                                    @ totalPages 2
+                                    @ totalResults 3
+                            _ expect(res.body.results).toHaveLength(1)
+                            _ expect(res.body.results[0].id).toBe(admin._id.toHexString())
+            _ describe
+                @ 'GET /v1/users/:userId'
+                => 
+                    _ test
+                        @ 'should return 200 and the user object if data is ok'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const res
+                                await 
+                                    _ request(app).get
+                                        `lit 
+                                            + /v1/users/
+                                            @ userOne._id
+                                            + 
+                                        ._ set
+                                            @ 'Authorization'
+                                            `lit 
+                                                + Bearer&nbsp;
+                                                @ userOneAccessToken
+                                                + 
+                                        ._ send
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).not.toHaveProperty('password')
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ id userOne._id.toHexString()
+                                    @ email userOne.email
+                                    @ name userOne.name
+                                    @ role userOne.role
+                                    @ isEmailVerified userOne.isEmailVerified
+                    _ test
+                        @ 'should return 401 error if access token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).get
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 403 error if user is trying to get another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                            await 
+                                _ request(app).get
+                                    `lit 
+                                        + /v1/users/
+                                        @ userTwo._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.FORBIDDEN
+                    _ test
+                        @ 'should return 200 and the user object if admin is trying to get another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ admin
+                            await 
+                                _ request(app).get
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.OK
+                    _ test
+                        @ 'should return 400 error if userId is not a valid mongo id'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            await 
+                                _ request(app).get('/v1/users/invalidId').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 404 error if user is not found'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            await 
+                                _ request(app).get
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+            _ describe
+                @ 'DELETE /v1/users/:userId'
+                => 
+                    _ test
+                        @ 'should return 204 if data is ok'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).delete
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                            const dbUser
+                                await 
+                                    _ User.findById(userOne._id)
+                            _ expect(dbUser).toBeNull()
+                    _ test
+                        @ 'should return 401 error if access token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            await 
+                                _ request(app).delete
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 403 error if user is trying to delete another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                            await 
+                                _ request(app).delete
+                                    `lit 
+                                        + /v1/users/
+                                        @ userTwo._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.FORBIDDEN
+                    _ test
+                        @ 'should return 204 if admin is trying to delete another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ admin
+                            await 
+                                _ request(app).delete
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.NO_CONTENT
+                    _ test
+                        @ 'should return 400 error if userId is not a valid mongo id'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            await 
+                                _ request(app).delete('/v1/users/invalidId').set
+                                    @ 'Authorization'
+                                    `lit 
+                                        + Bearer&nbsp;
+                                        @ adminAccessToken
+                                        + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 404 error if user already is not found'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            await 
+                                _ request(app).delete
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+            _ describe
+                @ 'PATCH /v1/users/:userId'
+                => 
+                    _ test
+                        @ 'should return 200 and successfully update user if data is ok'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                                    @ email faker.internet.email().toLowerCase()
+                                    @ password 'newPassword1'
+                            const res
+                                await 
+                                    _ request(app).patch
+                                        `lit 
+                                            + /v1/users/
+                                            @ userOne._id
+                                            + 
+                                        ._ set
+                                            @ 'Authorization'
+                                            `lit 
+                                                + Bearer&nbsp;
+                                                @ userOneAccessToken
+                                                + 
+                                        ._ send
+                                            @ updateBody
+                                        ._ expect
+                                            @expr httpStatus.OK
+                            _ expect(res.body).not.toHaveProperty('password')
+                            _ expect(res.body).toEqual
+                                { 
+                                    @ id userOne._id.toHexString()
+                                    @ name updateBody.name
+                                    @ email updateBody.email
+                                    @ role 'user'
+                                    @ isEmailVerified false
+                            const dbUser
+                                await 
+                                    _ User.findById(userOne._id)
+                            _ expect(dbUser).toBeDefined()
+                            _ expect(dbUser.password).not.toBe(updateBody.password)
+                            _ expect(dbUser).toMatchObject
+                                { 
+                                    @ name updateBody.name
+                                    @ email updateBody.email
+                                    @ role 'user'
+                    _ test
+                        @ 'should return 401 error if access token is missing'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.UNAUTHORIZED
+                    _ test
+                        @ 'should return 403 if user is updating another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userTwo._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.FORBIDDEN
+                    _ test
+                        @ 'should return 200 and successfully update user if admin is updating another user'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ admin
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.OK
+                    _ test
+                        @ 'should return 404 if admin is updating another user that is not found'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.NOT_FOUND
+                    _ test
+                        @ 'should return 400 error if userId is not a valid mongo id'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ admin
+                            const updateBody
+                                { 
+                                    @ name faker.name.findName()
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/invalidId
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ adminAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 if email is invalid'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ email 'invalidEmail'
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 if email is already taken'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                                        @ userTwo
+                            const updateBody
+                                { 
+                                    @ email userTwo.email
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should not return 400 if email is my email'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ email userOne.email
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.OK
+                    _ test
+                        @ 'should return 400 if password length is less than 8 characters'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ password 'passwo1'
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                    _ test
+                        @ 'should return 400 if password does not contain both letters and numbers'
+                        async=> 
+                            await 
+                                _ insertUsers
+                                    [ 
+                                        @ userOne
+                            const updateBody
+                                { 
+                                    @ password 'password'
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST
+                            set updateBody.password = '11111111'
+                            await 
+                                _ request(app).patch
+                                    `lit 
+                                        + /v1/users/
+                                        @ userOne._id
+                                        + 
+                                    ._ set
+                                        @ 'Authorization'
+                                        `lit 
+                                            + Bearer&nbsp;
+                                            @ userOneAccessToken
+                                            + 
+                                    ._ send
+                                        @ updateBody
+                                    ._ expect
+                                        @expr httpStatus.BAD_REQUEST

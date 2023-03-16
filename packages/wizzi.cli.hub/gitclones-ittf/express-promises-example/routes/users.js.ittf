@@ -1,0 +1,46 @@
+module
+    kind react
+    const express = require('express')
+    const router = express.Router()
+    const userService = require('../services/userService')
+    _ router.get
+        @ '/'
+        function 
+            param req
+                :ref Request
+            param res
+                :ref Response
+            _ (res as any).promise(userService.getAll())
+    _ router.get
+        @ '/errorRoute'
+        function 
+            param req
+                :ref Request
+            param res
+                :ref Response
+            throw new Error('This is synchronous error!')
+    _ router.get
+        @ '/:id'
+        function 
+            param req
+                :ref Request
+            param res
+                :ref Response
+            _ (res as any).promise
+                => 
+                    _ userService.getById(req.params.id)
+    _ router.get
+        @ '/:id/profilePic'
+        async-function 
+            param req
+                :ref Request
+            param res
+                :ref Response
+            try 
+                const url
+                    await 
+                        _ userService.getUserProfilePicUrl(req.params.id)
+                _ (res as any).redirect(url)
+            catch e
+                _ res.promise(Promise.reject(e))
+    set module.exports = router

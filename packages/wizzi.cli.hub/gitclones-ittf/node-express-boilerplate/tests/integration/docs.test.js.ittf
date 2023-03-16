@@ -1,0 +1,19 @@
+module
+    kind react
+    const request = require('supertest')
+    const httpStatus = require('http-status')
+    const app = require('../../src/app')
+    const config = require('../../src/config/config')
+    _ describe
+        @ 'Auth routes'
+        => 
+            _ describe
+                @ 'GET /v1/docs'
+                => 
+                    _ test
+                        @ 'should return 404 when running in production'
+                        async=> 
+                            set config.env = 'production'
+                            await 
+                                _ request(app).get('/v1/docs').send().expect(httpStatus.NOT_FOUND)
+                            set config.env = process.env.NODE_ENV

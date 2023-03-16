@@ -1,0 +1,61 @@
+module
+    kind react
+    const passport = require('passport')
+    const httpStatus = require('http-status')
+    const ApiError = require('../utils/ApiError')
+    const 
+        { 
+            @ roleRights
+        = require('../config/roles')
+    const verifyCallback
+        => 
+            param req
+            param resolve
+            param reject
+            param requiredRights
+            async=> 
+                param err
+                param user
+                param info
+                if err || info || !user
+                    return reject(ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'))
+                set req.user = user
+                if requiredRights.length
+                    const userRights = roleRights.get(user.role)
+                    const hasRequiredRights
+                        _ requiredRights.every
+                            => 
+                                param requiredRight
+                                _ userRights.includes(requiredRight)
+                    if !hasRequiredRights && req.params.userId !== user.id
+                        return reject(ApiError(httpStatus.FORBIDDEN, 'Forbidden'))
+                _ resolve()
+    const auth
+        => 
+            param ...requiredRights
+            async=> 
+                param req
+                param res
+                param next
+                return 
+                    new Promise
+                        => 
+                            param resolve
+                            param reject
+                            _ passport.authenticate
+                                @ 'jwt'
+                                { 
+                                    @ session false
+                                _ verifyCallback(req, resolve, reject, requiredRights)
+                                (
+                                    @ req
+                                    @ res
+                                    @ next
+                        ._ then
+                            => 
+                                _ next()
+                        ._ catch
+                            => 
+                                param err
+                                _ next(err)
+    set module.exports = auth

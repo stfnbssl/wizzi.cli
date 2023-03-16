@@ -79,7 +79,7 @@ $group
         $if wzCtx.Build.useExpress && wzCtx.Build.useLogger
             $if wzCtx.Build.logger.useMorgan
                 @types/morgan "^1.9.3"
-        @types/node "^12.0.0"
+        @types/node "^18.15.0"
         $if wzCtx.Build.useGithub || wzCtx.Build.useFeatureGithub
             @types/node-fetch "^2"
         $if wzCtx.Build.utils.useParseUrl

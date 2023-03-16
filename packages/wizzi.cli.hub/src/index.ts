@@ -1,10 +1,11 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\index.ts.ittf
 */
 import path from 'path';
 const minimist = require('minimist');
+//
 import {githubApiCalls} from './features/github';
 import {config} from './features/config';
 import {artifactApi} from './features/wizzi-production';
@@ -26,6 +27,7 @@ let p_create = args.c || args.create;
 let p_update = args.u || args.update;
 let p_schema = args.s || args.schema;
 let p_name = args.n || args.name;
+let p_filter_string = args.f || args.filter;
 let p1 = args._[1];
 let p2 = args._[2];
 let p3 = args._[3];
@@ -35,35 +37,57 @@ console.log('p_create', p_create);
 console.log('p_update', p_update);
 console.log('p_schema', p_schema);
 console.log('p_name', p_name);
+console.log('p_meta', p_meta);
+console.log('p_filter_string', p_filter_string);
+var p_filter = null;
+if (p_filter_string && p_filter_string.length > 0) {
+    p_filter = function(name) {
+    
+        return name.startsWith(p_filter_string);
+    }
+    ;
+}
 if (cmd == 'down') {
     if (p1 == 'wizzihub') {
         downloadWizzihub({
-            all: true
+            all: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
     else if (p1 == 'artifacts') {
         downloadWizzihub({
-            artifacts: true
+            artifacts: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
     else if (p1 == 'packages') {
         downloadWizzihub({
-            packages: true
+            packages: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
     else if (p1 == 'plugins') {
         downloadWizzihub({
-            plugins: true
+            plugins: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
     else if (p1 == 'metas') {
         downloadWizzihub({
-            metas: true
+            metas: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
     else if (p1 == 'tfolders') {
         downloadWizzihub({
-            tFolders: true
+            tFolders: true, 
+            metaFolder: p_meta, 
+            filter: p_filter
          })
     }
 }
@@ -119,6 +143,36 @@ else if (cmd == 'gen') {
             destFolder: path.join("C:/My/wizzi/stfnbssl/wizzihub-productions/generations/metafolders", p_name)
          })
     }
+}
+else if (cmd == 'gitclone') {
+    let p_owner = args.o || args.owner;
+    p_name = args.n || args.name;
+    let p_branch = args.b || args.branch;
+    let p_filter = args.f || args.filter;
+    console.log('repo owner', p_owner);
+    console.log('repo name', p_name);
+    console.log('repo branch', p_branch);
+    console.log('repo filter', p_filter);
+    downloadGitRepo(p_owner, p_name, p_branch || "master", {
+        destFolder: path.join(__dirname, '..', 'gitclones', p_name), 
+        destFolderIttf: path.join(__dirname, '..', 'gitclones-ittf', p_name), 
+        filter: function(filePath) {
+        
+            if (p_filter) {
+                return filePath && filePath.startsWith(p_filter);
+            }
+            else {
+                return filePath;
+            }
+        }
+     }).then((result) => {
+    
+    }
+    ).catch((err) => {
+    
+        console.log('downloadGitRepo.error', err, __filename);
+    }
+    )
 }
 else {
     if (false) {

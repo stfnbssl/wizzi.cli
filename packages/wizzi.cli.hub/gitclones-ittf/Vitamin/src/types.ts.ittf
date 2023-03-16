@@ -1,0 +1,24 @@
+module
+    export 
+        :interface IFruit
+            :p name
+                :string 
+            :p image
+                :{ 
+                    :p author
+                        :{ 
+                            :p name
+                                :string 
+                            :p url
+                                :string 
+                    :p color
+                        :string 
+                    :p url
+                        :string 
+            :p metadata
+                :[ 
+                    :{ 
+                        :p name
+                            :string 
+                        :p value
+                            :string 

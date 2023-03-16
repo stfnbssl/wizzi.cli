@@ -1,0 +1,16 @@
+module
+    export 
+        :interface CreateUserDto
+            :p email
+                :string 
+            :p password
+                :string 
+            :p firstName
+                :optional 
+                :string 
+            :p lastName
+                :optional 
+                :string 
+            :p permissionFlags
+                :optional 
+                :number 

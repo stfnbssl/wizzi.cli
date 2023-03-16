@@ -1,8 +1,5 @@
 module
-    import
-        @ Application
-        @ Router
-        from 'express'
+    import express from 'express'
     import
         @ ConfigType
         from '../config'
@@ -33,6 +30,8 @@ module
                 :p initialize
                     :=>
                         :void
+                        param app
+                            :ref express.Application
                         param initValues
                             :ref AppInitializerType
     export
@@ -41,10 +40,12 @@ module
                 :p path
                     :string
                 :p router
-                    :ref Router
+                    :ref express.Router
                 :p initialize
                     :=>
                         :void
+                        param app
+                            :ref express.Application
                         param initValues
                             :ref AppInitializerType
     export
@@ -52,7 +53,7 @@ module
             :=>
                 :void
                 param app
-                    :ref Application
+                    :ref express.Application
     export
         :type AppInitializerType
             :{

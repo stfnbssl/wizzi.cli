@@ -1,0 +1,44 @@
+module
+    import 
+        @ screen
+        from '@testing-library/react'
+    import GalleryPage from 'pages/Gallery'
+    import renderWithProviders
+        @ MOBILE_RESOLUTION_HEIGHT
+        @ MOBILE_RESOLUTION_WIDTH
+        from 'testUtils'
+    _ describe
+        @ '<Gallery />'
+        => 
+            _ it
+                @ 'renders'
+                async=> 
+                    _ renderWithProviders
+                        < GalleryPage 
+                    await 
+                        _ expect
+                            _ screen.findByRole
+                                @ 'img'
+                                { 
+                                    @ name 'Apple'
+                            . resolves
+                            ._ toHaveAttribute
+                                @ 'loading'
+                                @ 'eager'
+                    _ expect(screen.getByText('Banana')).toBeInTheDocument()
+            _ it
+                @ 'renders with mobile resolution'
+                async=> 
+                    _ window.resizeTo(MOBILE_RESOLUTION_WIDTH, MOBILE_RESOLUTION_HEIGHT)
+                    _ renderWithProviders
+                        < GalleryPage 
+                    await 
+                        _ expect
+                            _ screen.findByRole
+                                @ 'img'
+                                { 
+                                    @ name 'Grape'
+                            . resolves
+                            ._ toHaveAttribute
+                                @ 'loading'
+                                @ 'lazy'

@@ -1,0 +1,42 @@
+module
+    import LoadingOrError from 'components/LoadingOrError'
+    :import-type 
+        @ ReactElement
+        from 'react'
+    import 
+        @ lazy
+        @ Suspense
+        from 'react'
+    import 
+        @ BrowserRouter
+        @ Route
+        @ Routes
+        from 'react-router-dom'
+    const Gallery
+        _ lazy
+            async=> 
+                _ import
+                    @ 'pages/Gallery'
+    const Details
+        _ lazy
+            async=> 
+                _ import
+                    @ 'pages/Details'
+    export-default 
+        function App
+            :return
+                :ref ReactElement
+            return 
+                < BrowserRouter 
+                    < Suspense 
+                        @ fallback
+                            < LoadingOrError 
+                        < Routes 
+                            < Route 
+                                @ path '/'
+                                @ element
+                                    < Gallery 
+                            < Route 
+                                @ path ':fruitName'
+                                @ element
+                                    < Details 

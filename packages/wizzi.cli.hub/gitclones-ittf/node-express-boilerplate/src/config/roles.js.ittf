@@ -1,0 +1,14 @@
+module
+    kind react
+    const allRoles
+        { 
+            @ user []
+            [ admin
+                @ 'getUsers'
+                @ 'manageUsers'
+    const roles = Object.keys(allRoles)
+    const roleRights = new Map(Object.entries(allRoles))
+    set module.exports =
+        { 
+            @ roles
+            @ roleRights

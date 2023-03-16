@@ -1,6 +1,6 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\download.ts.ittf
 */
 import path from 'path';
@@ -8,9 +8,11 @@ import {fSystem, verify} from 'wizzi-utils';
 import {PackiFiles} from '../features/packi/types';
 import {artifactApi, packageApi, pluginApi, tFolderApi, metaApi} from '../features/wizzi-production';
 import {resourceApi} from '../features/wizzi-cdn';
+import {ittfToMeta} from '../utils/ittf';
 
 export function downloadArtifactList(owner: string, options: any):  Promise<any> {
 
+    console.log('downloadArtifactList.options.filter', options.filter);
     return new Promise((resolve, reject) => 
         
             artifactApi.getArtifactProductionList({
@@ -26,8 +28,9 @@ export function downloadArtifactList(owner: string, options: any):  Promise<any>
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
-                            filter: options.filter
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            filter: options.filter, 
+                            name: verify.replaceAll(item.name, '/', '%2F')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
                     }
                 }
                 return resolve(result.item);
@@ -84,8 +87,9 @@ export function downloadPackageList(owner: string, options: any):  Promise<any> 
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
-                            filter: options.filter
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            filter: options.filter, 
+                            name: verify.replaceAll(item.name, '/', '%2F')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
                     }
                 }
                 return resolve(result.item);
@@ -142,8 +146,9 @@ export function downloadPluginList(owner: string, options: any):  Promise<any> {
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
-                            filter: options.filter
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            filter: options.filter, 
+                            name: verify.replaceAll(item.name, '/', '%2F')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
                     }
                 }
                 return resolve(result.item);
@@ -200,8 +205,9 @@ export function downloadMetaList(owner: string, options: any):  Promise<any> {
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
-                            filter: options.filter
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            filter: options.filter, 
+                            name: verify.replaceAll(item.name, '/', '%2F')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
                     }
                 }
                 return resolve(result.item);
@@ -258,8 +264,9 @@ export function downloadTFolderList(owner: string, options: any):  Promise<any> 
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
-                            filter: options.filter
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            filter: options.filter, 
+                            name: verify.replaceAll(item.name, '/', '%2F')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
                     }
                 }
                 return resolve(result.item);
@@ -337,6 +344,7 @@ export function downloadCdnResource(owner: string, options: any):  Promise<any> 
         );
 }
 
+// loog 'filterPackiFiles.filter', options
 function filterPackiFiles(packiFiles: PackiFiles, options: any) {
 
     if (!options || !options.filter) {
@@ -347,7 +355,8 @@ function filterPackiFiles(packiFiles: PackiFiles, options: any) {
         var i, i_items=Object.keys(packiFiles), i_len=Object.keys(packiFiles).length, k;
         for (i=0; i<i_len; i++) {
             k = Object.keys(packiFiles)[i];
-            if (options.filter(k, packiFiles[k].type, packiFiles[k].contents)) {
+            console.log('filterPackiFiles', options.name + '/' + k , options.filter(k, packiFiles[k].type, packiFiles[k].contents), __filename);
+            if (options.filter(options.name + '/' + k, packiFiles[k].type, packiFiles[k].contents)) {
                 result[k] = packiFiles[k];
             }
         }
@@ -355,12 +364,15 @@ function filterPackiFiles(packiFiles: PackiFiles, options: any) {
     }
 }
 
-function writePackiToDest(packiFiles: PackiFiles, destFolder: string) {
+function writePackiToDest(packiFiles: PackiFiles, destFolder: string, destMetaFolder?: string) {
 
     var i, i_items=Object.keys(packiFiles), i_len=Object.keys(packiFiles).length, k;
     for (i=0; i<i_len; i++) {
         k = Object.keys(packiFiles)[i];
         fSystem.vfile().write(path.join(destFolder, k), packiFiles[k].contents)
+        if (destMetaFolder) {
+            fSystem.vfile().write(path.join(destMetaFolder, k + '.ittf'), ittfToMeta(packiFiles[k].contents))
+        }
     }
 }
 

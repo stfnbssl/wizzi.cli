@@ -224,6 +224,7 @@ export async function cloneBranch(repo: GithubRepoOptions, branch: string = 'mas
                             }
                             
                          });
+                    console.log(repo, dir, __filename);
                     let files = wizzifs.getFiles(dir, {
                         deep: true, 
                         documentContent: true

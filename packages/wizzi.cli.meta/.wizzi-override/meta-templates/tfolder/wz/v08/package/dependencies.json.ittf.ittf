@@ -24,6 +24,8 @@
     ${'$'}if wzCtx.Build.useReact &&  wzCtx.Build.react.useMarkdownPreview
         @uiw/react-markdown-preview "latest"
     ---
+    ${'$'}if wzCtx.Build.useAuthentication
+        argon2 "^0.30.3"
     ${'$'}if wzCtx.Build.useAphrodite
         aphrodite "^2.4.0"
     ${'$'}if wzCtx.Build.isWizziPlugin
@@ -97,6 +99,8 @@
         $$     express-openid-connect "^2.2.1"
         ${'$'}if wzCtx.Build.useSession
             express-session "^1.17.1"
+        ${'$'}if wzCtx.Build.express.useExpressValidator
+            express-validator "^6.15.0"
     ---
     ${'$'}if wzCtx.Build.utils.useFetchPonyfill
         fetch-ponyfill "^7.1.0"
@@ -172,7 +176,7 @@
             morgan "^1.10.0"
     ---
     ${'$'}if wzCtx.Build.utils.useNanoId
-        nanoid "^3.1.22"
+        nanoid "^3.3.4"
     ${'$'}if wzCtx.Build.utils.useNodeCache
         node-cache "^5.1.2"
     ${'$'}if wzCtx.Build.useGithub || wzCtx.Build.useFeatureGithub
@@ -253,8 +257,6 @@
         wizzi-utils "^0.7.22"
     ${'$'}if wzCtx.Build.useWizzi
         wizzi "^0.7.35"
-        ${'$'}if false
-            wizzi.proto "^0.0.1"
         wizzi-tools "^0.7.7"
         wizzi-utils "^0.7.22"
         wizzi-core "^0.7.8"

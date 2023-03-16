@@ -1,0 +1,28 @@
+module
+    :import-type 
+        @ ReactElement
+        from 'react'
+    :interface Properties
+        :p error
+            :optional 
+            :ref Error
+    export-default 
+        function LoadingOrError
+            { 
+                @ error
+                :ref Properties
+            :return
+                :ref ReactElement
+            return 
+                div 
+                    @ className 'flex min-h-screen items-center justify-center'
+                    h1 
+                        @ className 'text-xl'
+                        @ data-testid 'LoadingOrError'
+                        { 
+                            iif error
+                                then error.message
+                                else 'Loading...'
+    set LoadingOrError.defaultProps =
+        { 
+            @ error undefined

@@ -1,14 +1,14 @@
-﻿wfjob wizzi-cli/metaproductions/tfolder-web
+﻿wfjob wizzi-cli/meta-templates/tfolder-wizzi
 	
 	$
         var folders = {
             ittf_wz: path.join(__dirname, 'wz'),
-            dest: path.join(__dirname, '..', '..', '..', 'resources', 'create')
+            dest: path.join(__dirname, '..', '..', '..', 'meta-templates')
         }
 
 	line ittf-wz
 		cwd-folder ${folders.ittf_wz}
-		dest-folder ${folders.dest}/templates/t/wz
+		dest-folder ${folders.dest}/t/wz
         
         wfjob/any_plain(ittf)
         wfjob/any_plain(css)

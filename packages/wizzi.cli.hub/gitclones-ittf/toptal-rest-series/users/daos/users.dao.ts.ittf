@@ -1,0 +1,118 @@
+module
+    import mongooseService from '../../common/services/mongoose.service'
+    import shortid from 'shortid'
+    import debug from 'debug'
+    import 
+        @ CreateUserDto
+        from '../dto/create.user.dto'
+    import 
+        @ PatchUserDto
+        from '../dto/patch.user.dto'
+    import 
+        @ PutUserDto
+        from '../dto/put.user.dto'
+    import 
+        @ PermissionFlag
+        from '../../common/middleware/common.permissionflag.enum'
+    const log
+        :ref debug.IDebugger
+        = debug('app:users-dao')
+    class UsersDao
+        p Schema
+            = mongooseService.getMongoose().Schema
+        p userSchema
+            new this.Schema
+                { 
+                    @ _id String
+                    @ email String
+                    { password
+                        @ type String
+                        @ select false
+                    @ firstName String
+                    @ lastName String
+                    @ permissionFlags Number
+                { 
+                    @ id false
+        p User
+            _ mongooseService.getMongoose().model('Users', this.userSchema)
+        ctor 
+            _ log('Created new instance of UsersDao')
+        m addUser
+            async
+            param userFields
+                :ref CreateUserDto
+            const userId = shortid.generate()
+            const user
+                new this.User
+                    { 
+                        @ _id userId
+                        @ ...userFields
+                        @ permissionFlags PermissionFlag.FREE_PERMISSION
+            await 
+                _ user.save()
+            return userId
+        m getUserByEmail
+            async
+            param email
+                :string 
+            return 
+                _ this.User.findOne
+                    { 
+                        @ email
+                    ._ exec
+        m getUserByEmailWithPassword
+            async
+            param email
+                :string 
+            return 
+                _ this.User.findOne
+                    { 
+                        @ email
+                    ._ select
+                        @ '_id email permissionFlags +password'
+                    ._ exec
+        m removeUserById
+            async
+            param userId
+                :string 
+            return 
+                _ this.User.deleteOne
+                    { 
+                        @ _id userId
+                    ._ exec
+        m getUserById
+            async
+            param userId
+                :string 
+            return 
+                _ this.User.findOne
+                    { 
+                        @ _id userId
+                    ._ populate
+                        @ 'User'
+                    ._ exec
+        m getUsers
+            async
+            param limit = 25
+            param page = 0
+            return this.User.find().limit(limit).skip(limit * page).exec()
+        m updateUserById
+            async
+            param userId
+                :string 
+            param userFields
+                :union 
+                    :ref PatchUserDto
+                    :ref PutUserDto
+            const existingUser
+                await 
+                    _ this.User.findOneAndUpdate
+                        { 
+                            @ _id userId
+                        { 
+                            @ $set userFields
+                        { 
+                            @ new true
+                        ._ exec
+            return existingUser
+    export-default new UsersDao()

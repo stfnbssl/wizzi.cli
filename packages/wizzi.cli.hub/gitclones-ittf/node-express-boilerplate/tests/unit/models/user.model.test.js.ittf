@@ -1,0 +1,70 @@
+module
+    kind react
+    const faker = require('faker')
+    const 
+        { 
+            @ User
+        = require('../../../src/models')
+    _ describe
+        @ 'User model'
+        => 
+            _ describe
+                @ 'User validation'
+                => 
+                    let newUser
+                    _ beforeEach
+                        => 
+                            set newUser =
+                                { 
+                                    @ name faker.name.findName()
+                                    @ email faker.internet.email().toLowerCase()
+                                    @ password 'password1'
+                                    @ role 'user'
+                    _ test
+                        @ 'should correctly validate a valid user'
+                        async=> 
+                            await 
+                                _ expect(new User(newUser).validate()).resolves.toBeUndefined()
+                    _ test
+                        @ 'should throw a validation error if email is invalid'
+                        async=> 
+                            set newUser.email = 'invalidEmail'
+                            await 
+                                _ expect(new User(newUser).validate()).rejects.toThrow()
+                    _ test
+                        @ 'should throw a validation error if password length is less than 8 characters'
+                        async=> 
+                            set newUser.password = 'passwo1'
+                            await 
+                                _ expect(new User(newUser).validate()).rejects.toThrow()
+                    _ test
+                        @ 'should throw a validation error if password does not contain numbers'
+                        async=> 
+                            set newUser.password = 'password'
+                            await 
+                                _ expect(new User(newUser).validate()).rejects.toThrow()
+                    _ test
+                        @ 'should throw a validation error if password does not contain letters'
+                        async=> 
+                            set newUser.password = '11111111'
+                            await 
+                                _ expect(new User(newUser).validate()).rejects.toThrow()
+                    _ test
+                        @ 'should throw a validation error if role is unknown'
+                        async=> 
+                            set newUser.role = 'invalid'
+                            await 
+                                _ expect(new User(newUser).validate()).rejects.toThrow()
+            _ describe
+                @ 'User toJSON()'
+                => 
+                    _ test
+                        @ 'should not return user password when toJSON is called'
+                        => 
+                            const newUser
+                                { 
+                                    @ name faker.name.findName()
+                                    @ email faker.internet.email().toLowerCase()
+                                    @ password 'password1'
+                                    @ role 'user'
+                            _ expect(new User(newUser).toJSON()).not.toHaveProperty('password')

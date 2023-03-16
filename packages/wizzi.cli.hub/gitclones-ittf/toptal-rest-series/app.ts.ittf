@@ -1,0 +1,94 @@
+module
+    import dotenv from 'dotenv'
+    const dotenvResult = dotenv.config()
+    if dotenvResult.error
+        throw dotenvResult.error
+    import express from 'express'
+    import 
+        as http
+        from 'http'
+    import 
+        as winston
+        from 'winston'
+    import 
+        as expressWinston
+        from 'express-winston'
+    import cors from 'cors'
+    import 
+        @ CommonRoutesConfig
+        from './common/common.routes.config'
+    import 
+        @ UsersRoutes
+        from './users/users.routes.config'
+    import 
+        @ AuthRoutes
+        from './auth/auth.routes.config'
+    import debug from 'debug'
+    import helmet from 'helmet'
+    const app
+        :ref express.Application
+        = express()
+    const server
+        :ref http.Server
+        = http.createServer(app)
+    const port = 3000
+    const routes
+        :ref Array
+            :param 
+                :ref CommonRoutesConfig
+        = []
+    const debugLog
+        :ref debug.IDebugger
+        = debug('app')
+    _ app.use(express.json())
+    _ app.use(cors())
+    _ app.use(helmet())
+    const loggerOptions
+        :ref expressWinston.LoggerOptions
+        =
+            { 
+                [ transports
+                    @ new winston.transports.Console()
+                @ format
+                    _ winston.format.combine
+                        _ winston.format.json()
+                        _ winston.format.prettyPrint()
+                        _ winston.format.colorize
+                            { 
+                                @ all true
+    if !process.env.DEBUG
+        set loggerOptions.meta = false
+            # when not debugging, make terse
+        if typeof global.it === 'function'
+            set loggerOptions.level = 'http'
+                # for non-debug test runs, squelch entirely
+    _ app.use(expressWinston.logger(loggerOptions))
+    _ routes.push(UsersRoutes(app))
+    _ routes.push(AuthRoutes(app))
+    const runningMessage
+        `lit 
+            + Server running at http://localhost:
+            @ port
+            + 
+    _ app.get
+        @ '/'
+        => 
+            param req
+                :ref express.Request
+            param res
+                :ref express.Response
+            _ res.status(200).send(runningMessage)
+    export-default 
+        _ server.listen
+            @ port
+            => 
+                _ routes.forEach
+                    => 
+                        param route
+                            :ref CommonRoutesConfig
+                        _ debugLog
+                            `lit 
+                                + Routes configured for&nbsp;
+                                _ route.getName()
+                                + 
+                _ console.log(runningMessage)

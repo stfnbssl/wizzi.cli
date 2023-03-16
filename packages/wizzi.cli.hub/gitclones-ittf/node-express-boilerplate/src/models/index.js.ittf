@@ -1,0 +1,4 @@
+module
+    kind react
+    set module.exports.Token = require('./token.model')
+    set module.exports.User = require('./user.model')

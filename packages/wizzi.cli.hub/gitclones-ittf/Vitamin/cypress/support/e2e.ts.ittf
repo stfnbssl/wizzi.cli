@@ -1,0 +1,4 @@
+module
+    import '@testing-library/cypress/add-commands'
+        #
+            # eslint-disable unicorn/prevent-abbreviations

@@ -1,0 +1,113 @@
+module
+    kind react
+    const httpStatus = require('http-status')
+    const catchAsync = require('../utils/catchAsync')
+    const 
+        { 
+            @ authService
+            @ userService
+            @ tokenService
+            @ emailService
+        = require('../services')
+    const register
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const user
+                    await 
+                        _ userService.createUser(req.body)
+                const tokens
+                    await 
+                        _ tokenService.generateAuthTokens(user)
+                _ res.status(httpStatus.CREATED).send
+                    { 
+                        @ user
+                        @ tokens
+    const login
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const 
+                    { 
+                        @ email
+                        @ password
+                    = req.body
+                const user
+                    await 
+                        _ authService.loginUserWithEmailAndPassword(email, password)
+                const tokens
+                    await 
+                        _ tokenService.generateAuthTokens(user)
+                _ res.send
+                    { 
+                        @ user
+                        @ tokens
+    const logout
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                await 
+                    _ authService.logout(req.body.refreshToken)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    const refreshTokens
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const tokens
+                    await 
+                        _ authService.refreshAuth(req.body.refreshToken)
+                _ res.send
+                    { 
+                        @ ...tokens
+    const forgotPassword
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const resetPasswordToken
+                    await 
+                        _ tokenService.generateResetPasswordToken(req.body.email)
+                await 
+                    _ emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    const resetPassword
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                await 
+                    _ authService.resetPassword(req.query.token, req.body.password)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    const sendVerificationEmail
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                const verifyEmailToken
+                    await 
+                        _ tokenService.generateVerifyEmailToken(req.user)
+                await 
+                    _ emailService.sendVerificationEmail(req.user.email, verifyEmailToken)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    const verifyEmail
+        _ catchAsync
+            async=> 
+                param req
+                param res
+                await 
+                    _ authService.verifyEmail(req.query.token)
+                _ res.status(httpStatus.NO_CONTENT).send()
+    set module.exports =
+        { 
+            @ register
+            @ login
+            @ logout
+            @ refreshTokens
+            @ forgotPassword
+            @ resetPassword
+            @ sendVerificationEmail
+            @ verifyEmail

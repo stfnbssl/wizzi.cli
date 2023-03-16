@@ -1,0 +1,59 @@
+module
+    kind react
+    const morgan = require('morgan')
+    const config = require('./config')
+    const logger = require('./logger')
+    _ morgan.token
+        @ 'message'
+        => 
+            param req
+            param res
+            @expr res.locals.errorMessage || ''
+    const getIpFormat
+        => 
+            ( 
+                iif config.env === 'production'
+                    then ':remote-addr - '
+                    else ''
+    const successResponseFormat
+        `lit 
+            + 
+            _ getIpFormat()
+            + :method :url :status - :response-time ms
+    const errorResponseFormat
+        `lit 
+            + 
+            _ getIpFormat()
+            + :method :url :status - :response-time ms - message: :message
+    const successHandler
+        _ morgan
+            @ successResponseFormat
+            { 
+                @ skip
+                    => 
+                        param req
+                        param res
+                        set res.statusCode >= 400
+                { stream
+                    @ write
+                        => 
+                            param message
+                            _ logger.info(message.trim())
+    const errorHandler
+        _ morgan
+            @ errorResponseFormat
+            { 
+                @ skip
+                    => 
+                        param req
+                        param res
+                        set res.statusCode < 400
+                { stream
+                    @ write
+                        => 
+                            param message
+                            _ logger.error(message.trim())
+    set module.exports =
+        { 
+            @ successHandler
+            @ errorHandler

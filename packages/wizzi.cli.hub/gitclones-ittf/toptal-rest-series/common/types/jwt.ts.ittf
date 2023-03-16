@@ -1,0 +1,10 @@
+module
+    export 
+        :type Jwt
+            :{ 
+                :p refreshKey
+                    :string 
+                :p userId
+                    :string 
+                :p permissionFlags
+                    :string 

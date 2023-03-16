@@ -1,0 +1,48 @@
+module
+    kind react
+    const deleteAtPath
+        => 
+            param obj
+            param path
+            param index
+            if index === path.length - 1
+                delete obj[path[index]]
+                return 
+            _ deleteAtPath(obj[path[index]], path, index + 1)
+        #
+            # eslint-disable no-param-reassign
+        #
+            # *
+            # * A mongoose schema plugin which applies the following in the toJSON transform call:
+            # *  - removes __v, createdAt, updatedAt, and any path that has private: true
+            # *  - replaces _id with id
+            # 
+    const toJSON
+        => 
+            param schema
+            let transform
+            if schema.options.toJSON && schema.options.toJSON.transform
+                set transform = schema.options.toJSON.transform
+            set schema.options.toJSON =
+                _ Object.assign
+                    || 
+                        + schema.options.toJSON
+                        { 
+                    { 
+                        m transform
+                            param doc
+                            param ret
+                            param options
+                            _ Object.keys(schema.paths).forEach
+                                => 
+                                    param path
+                                    if schema.paths[path].options && schema.paths[path].options.private
+                                        _ deleteAtPath(ret, path.split('.'), 0)
+                            set ret.id = ret._id.toString()
+                            delete ret._id
+                            delete ret.__v
+                            delete ret.createdAt
+                            delete ret.updatedAt
+                            if transform
+                                return transform(doc, ret, options)
+    set module.exports = toJSON

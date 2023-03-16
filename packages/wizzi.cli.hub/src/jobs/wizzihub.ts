@@ -1,6 +1,6 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\jobs\wizzihub.ts.ittf
 */
 import path from 'path';
@@ -154,6 +154,8 @@ export function uploadWizzihubTFolder(name, description, action) {
 export function downloadWizzihub(options: any) {
 
     options = options || {};
+    console.log('downloadWizzihub.options.metaFolder', options.metaFolder);
+    console.log('downloadWizzihub.options.filter', options.filter);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -162,34 +164,27 @@ export function downloadWizzihub(options: any) {
         }
         app = startedapp;
         if (options.artifacts) {
-            downloadWizzihubArtifacts({
-                all: false
-             })
+            options.all = false;
+            downloadWizzihubArtifacts(options)
         }
         if (options.packages) {
-            downloadWizzihubPackages({
-                all: false
-             })
+            options.all = false;
+            downloadWizzihubPackages(options)
         }
         if (options.plugins) {
-            downloadWizzihubPlugins({
-                all: false
-             })
+            options.all = false;
+            downloadWizzihubPlugins(options)
         }
         if (options.metas) {
-            downloadWizzihubMetas({
-                all: false
-             })
+            options.all = false;
+            downloadWizzihubMetas(options)
         }
         if (options.tFolders) {
-            downloadWizzihubTFolders({
-                all: false
-             })
+            options.all = false;
+            downloadWizzihubTFolders(options)
         }
         if (options.all) {
-            downloadWizzihubArtifacts({
-                all: true
-             })
+            downloadWizzihubArtifacts(options)
         }
     }
     )
@@ -199,7 +194,9 @@ function downloadWizzihubArtifacts(options: any) {
     options = options || {};
     downloadArtifactList("stfnbssl", {
         destPath: path.join(__dirname, '..', 'downloads', 'artifactList.json'), 
-        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'artifacts')
+        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'artifacts'), 
+        destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'artifacts') : null, 
+        filter: options.filter
      }).then((result) => {
     
         console.log('downloadArtifactList', result.length, __filename);
@@ -222,7 +219,9 @@ function downloadWizzihubPackages(options: any) {
     options = options || {};
     downloadPackageList("stfnbssl", {
         destPath: path.join(__dirname, '..', 'downloads', 'packageList.json'), 
-        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'packages')
+        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'packages'), 
+        destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'packages') : null, 
+        filter: options.filter
      }).then((result) => {
     
         console.log('downloadPackageList', result.length, __filename);
@@ -245,7 +244,9 @@ function downloadWizzihubPlugins(options: any) {
     options = options || {};
     downloadPluginList("stfnbssl", {
         destPath: path.join(__dirname, '..', 'downloads', 'pluginList.json'), 
-        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'plugins')
+        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'plugins'), 
+        destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'plugins') : null, 
+        filter: options.filter
      }).then((result) => {
     
         console.log('downloadPluginList', result.length, __filename);
@@ -268,7 +269,9 @@ function downloadWizzihubMetas(options: any) {
     options = options || {};
     downloadMetaList("stfnbssl", {
         destPath: path.join(__dirname, '..', 'downloads', 'metaList.json'), 
-        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'metas')
+        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'metas'), 
+        destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'metas') : null, 
+        filter: options.filter
      }).then((result) => {
     
         console.log('downloadMetaList', result.length, __filename);
@@ -291,7 +294,9 @@ function downloadWizzihubTFolders(options: any) {
     options = options || {};
     downloadTFolderList("stfnbssl", {
         destPath: path.join(__dirname, '..', 'downloads', 'tfolderList.json'), 
-        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'tfolders')
+        destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'tfolders'), 
+        destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'tfolders') : null, 
+        filter: options.filter
      }).then((result) => {
     
         console.log('downloadTFolderList', result.length, __filename);

@@ -1,0 +1,116 @@
+module
+    import 
+        @ CommonRoutesConfig
+        from '../common/common.routes.config'
+    import UsersController from './controllers/users.controller'
+    import UsersMiddleware from './middleware/users.middleware'
+    import jwtMiddleware from '../auth/middleware/jwt.middleware'
+    import permissionMiddleware from '../common/middleware/common.permission.middleware'
+    import 
+        @ PermissionFlag
+        from '../common/middleware/common.permissionflag.enum'
+    import BodyValidationMiddleware from '../common/middleware/body.validation.middleware'
+    import 
+        @ body
+        from 'express-validator'
+    import express from 'express'
+    export 
+        class UsersRoutes
+            super CommonRoutesConfig
+            ctor 
+                param app
+                    :ref express.Application
+                _ super(app, 'UsersRoutes')
+            m configureRoutes
+                :return
+                    :ref express.Application
+                _ this.app.route
+                    `lit 
+                        + /users
+                    ._ get
+                        @expr jwtMiddleware.validJWTNeeded
+                        _ permissionMiddleware.permissionFlagRequired(PermissionFlag.ADMIN_PERMISSION)
+                        @expr UsersController.listUsers
+                    ._ post
+                        _ body('email').isEmail()
+                        _ body('password').isLength
+                            { 
+                                @ min 5
+                            ._ withMessage
+                                @ 'Must include password (5+ characters)'
+                        @expr BodyValidationMiddleware.verifyBodyFieldsErrors
+                        @expr UsersMiddleware.validateSameEmailDoesntExist
+                        @expr UsersController.createUser
+                _ this.app.param
+                    `lit 
+                        + userId
+                    @expr UsersMiddleware.extractUserId
+                _ this.app.route
+                    `lit 
+                        + /users/:userId
+                    ._ all
+                        @expr UsersMiddleware.validateUserExists
+                        @expr jwtMiddleware.validJWTNeeded
+                        @expr permissionMiddleware.onlySameUserOrAdminCanDoThisAction
+                    ._ get
+                        @expr UsersController.getUserById
+                    ._ delete
+                        @expr UsersController.removeUser
+                _ this.app.put
+                    `lit 
+                        + /users/:userId
+                    [ 
+                        @ body('email').isEmail()
+                        _ body('password').isLength
+                            { 
+                                @ min 5
+                            ._ withMessage
+                                @ 'Must include password (5+ characters)'
+                        @ body('firstName').isString()
+                        @ body('lastName').isString()
+                        @ body('permissionFlags').isInt()
+                        @ BodyValidationMiddleware.verifyBodyFieldsErrors
+                        @ UsersMiddleware.validateSameEmailBelongToSameUser
+                        @ UsersMiddleware.userCantChangePermission
+                        @ permissionMiddleware.permissionFlagRequired(PermissionFlag.PAID_PERMISSION)
+                        @ UsersController.put
+                _ this.app.patch
+                    `lit 
+                        + /users/:userId
+                    [ 
+                        @ body('email').isEmail().optional()
+                        _ body('password').isLength
+                            { 
+                                @ min 5
+                            ._ withMessage
+                                @ 'Password must be 5+ characters'
+                            ._ optional
+                        @ body('firstName').isString().optional()
+                        @ body('lastName').isString().optional()
+                        @ body('permissionFlags').isInt().optional()
+                        @ BodyValidationMiddleware.verifyBodyFieldsErrors
+                        @ UsersMiddleware.validatePatchEmail
+                        @ UsersMiddleware.userCantChangePermission
+                        @ permissionMiddleware.permissionFlagRequired(PermissionFlag.PAID_PERMISSION)
+                        @ UsersController.patch
+                    #
+                        # *
+                        # * This route does not currently require extra permissions.
+                        # *
+                        # * Please update it for admin usage in your own application!
+                        # 
+                _ this.app.put
+                    `lit 
+                        + /users/:userId/permissionFlags/:permissionFlags
+                    [ 
+                        @ jwtMiddleware.validJWTNeeded
+                        @ permissionMiddleware.onlySameUserOrAdminCanDoThisAction
+                        @ permissionMiddleware.permissionFlagRequired(PermissionFlag.FREE_PERMISSION)
+                        @ UsersController.updatePermissionFlags
+                    #
+                        # *
+                        # * This route does not currently require extra permissions.
+                        # *
+                        # * Please update it for admin usage in your own application!
+                        # 
+                return this.app

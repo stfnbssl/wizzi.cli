@@ -1,0 +1,290 @@
+module
+    import app from '../../app'
+    import supertest from 'supertest'
+    import 
+        @ expect
+        from 'chai'
+    import shortid from 'shortid'
+    import mongoose from 'mongoose'
+    let firstUserIdTest = ''
+    const firstUserBody
+        { 
+            @ email
+                `lit 
+                    + marcos.henrique+
+                    _ shortid.generate()
+                    + @toptal.com
+            @ password 'Sup3rSecret!23'
+    let accessToken = ''
+    let refreshToken = ''
+    const newFirstName = 'Jose'
+    const newFirstName2 = 'Paulo'
+    const newLastName2 = 'Faraco'
+    _ describe
+        @ 'users and auth endpoints'
+        function 
+            let request
+                :ref supertest.SuperAgentTest
+            _ before
+                function 
+                    set request = supertest.agent(app)
+            _ after
+                function 
+                    param done
+                    _ app.close
+                        => 
+                            _ mongoose.connection.close(done)
+                        # shut down the Express.js server, close our MongoDB connection, then tell Mocha we're done:
+            _ it
+                @ 'should allow a POST to /users'
+                async-function 
+                    const res
+                        await 
+                            _ request.post('/users').send(firstUserBody)
+                    _ expect(res.status).to.equal(201)
+                    @expr expect(res.body).not.to.be.empty
+                    _ expect(res.body).to.be.an('object')
+                    _ expect(res.body.id).to.be.a('string')
+                    set firstUserIdTest = res.body.id
+            _ it
+                @ 'should allow a POST to /auth'
+                async-function 
+                    const res
+                        await 
+                            _ request.post('/auth').send(firstUserBody)
+                    _ expect(res.status).to.equal(201)
+                    @expr expect(res.body).not.to.be.empty
+                    _ expect(res.body).to.be.an('object')
+                    _ expect(res.body.accessToken).to.be.a('string')
+                    set accessToken = res.body.accessToken
+                    set refreshToken = res.body.refreshToken
+            _ it
+                @ 'should allow a GET from /users/:userId with an access token'
+                async-function 
+                    const res
+                        await 
+                            _ request.get
+                                `lit 
+                                    + /users/
+                                    @ firstUserIdTest
+                                    + 
+                                ._ set
+                                    { 
+                                        @ Authorization
+                                            `lit 
+                                                + Bearer&nbsp;
+                                                @ accessToken
+                                                + 
+                                ._ send
+                    _ expect(res.status).to.equal(200)
+                    @expr expect(res.body).not.to.be.empty
+                    _ expect(res.body).to.be.an('object')
+                    _ expect(res.body._id).to.be.a('string')
+                    _ expect(res.body._id).to.equal(firstUserIdTest)
+                    _ expect(res.body.email).to.equal(firstUserBody.email)
+            _ describe
+                @ 'with a valid access token'
+                function 
+                    _ it
+                        @ 'should disallow a GET to /users'
+                        async-function 
+                            const res
+                                await 
+                                    _ request.get
+                                        `lit 
+                                            + /users
+                                        ._ set
+                                            { 
+                                                @ Authorization
+                                                    `lit 
+                                                        + Bearer&nbsp;
+                                                        @ accessToken
+                                                        + 
+                                        ._ send
+                            _ expect(res.status).to.equal(403)
+                    _ it
+                        @ 'should disallow a PATCH to /users/:userId'
+                        async-function 
+                            const res
+                                await 
+                                    _ request.patch
+                                        `lit 
+                                            + /users/
+                                            @ firstUserIdTest
+                                            + 
+                                        ._ set
+                                            { 
+                                                @ Authorization
+                                                    `lit 
+                                                        + Bearer&nbsp;
+                                                        @ accessToken
+                                                        + 
+                                        ._ send
+                                            { 
+                                                @ firstName newFirstName
+                            _ expect(res.status).to.equal(403)
+                    _ it
+                        @ 'should disallow a PUT to /users/:userId with an nonexistent ID'
+                        async-function 
+                            const res
+                                await 
+                                    _ request.put
+                                        `lit 
+                                            + /users/i-do-not-exist
+                                        ._ set
+                                            { 
+                                                @ Authorization
+                                                    `lit 
+                                                        + Bearer&nbsp;
+                                                        @ accessToken
+                                                        + 
+                                        ._ send
+                                            { 
+                                                @ email firstUserBody.email
+                                                @ password firstUserBody.password
+                                                @ firstName 'Marcos'
+                                                @ lastName 'Silva'
+                                                @ permissionFlags 256
+                            _ expect(res.status).to.equal(404)
+                    _ it
+                        @ 'should disallow a PUT to /users/:userId trying to change the permission flags'
+                        async-function 
+                            const res
+                                await 
+                                    _ request.put
+                                        `lit 
+                                            + /users/
+                                            @ firstUserIdTest
+                                            + 
+                                        ._ set
+                                            { 
+                                                @ Authorization
+                                                    `lit 
+                                                        + Bearer&nbsp;
+                                                        @ accessToken
+                                                        + 
+                                        ._ send
+                                            { 
+                                                @ email firstUserBody.email
+                                                @ password firstUserBody.password
+                                                @ firstName 'Marcos'
+                                                @ lastName 'Silva'
+                                                @ permissionFlags 256
+                            _ expect(res.status).to.equal(400)
+                            _ expect(res.body.errors).to.be.an('array')
+                            _ expect(res.body.errors).to.have.length(1)
+                            _ expect(res.body.errors[0]).to.equal('User cannot change permission flags')
+                    _ it
+                        @ 'should allow a PUT to /users/:userId/permissionFlags/2 for testing'
+                        async-function 
+                            const res
+                                await 
+                                    _ request.put
+                                        `lit 
+                                            + /users/
+                                            @ firstUserIdTest
+                                            + /permissionFlags/2
+                                        ._ set
+                                            { 
+                                                @ Authorization
+                                                    `lit 
+                                                        + Bearer&nbsp;
+                                                        @ accessToken
+                                                        + 
+                                        ._ send
+                                            { 
+                            _ expect(res.status).to.equal(204)
+                    _ describe
+                        @ 'with a new set of permission flags'
+                        function 
+                            _ it
+                                @ 'should allow a POST to /auth/refresh-token'
+                                async-function 
+                                    const res
+                                        await 
+                                            _ request.post('/auth/refresh-token').set
+                                                { 
+                                                    @ Authorization
+                                                        `lit 
+                                                            + Bearer&nbsp;
+                                                            @ accessToken
+                                                            + 
+                                                ._ send
+                                                    { 
+                                                        @ refreshToken
+                                    _ expect(res.status).to.equal(201)
+                                    @expr expect(res.body).not.to.be.empty
+                                    _ expect(res.body).to.be.an('object')
+                                    _ expect(res.body.accessToken).to.be.a('string')
+                                    set accessToken = res.body.accessToken
+                                    set refreshToken = res.body.refreshToken
+                            _ it
+                                @ 'should allow a PUT to /users/:userId to change first and last names'
+                                async-function 
+                                    const res
+                                        await 
+                                            _ request.put
+                                                `lit 
+                                                    + /users/
+                                                    @ firstUserIdTest
+                                                    + 
+                                                ._ set
+                                                    { 
+                                                        @ Authorization
+                                                            `lit 
+                                                                + Bearer&nbsp;
+                                                                @ accessToken
+                                                                + 
+                                                ._ send
+                                                    { 
+                                                        @ email firstUserBody.email
+                                                        @ password firstUserBody.password
+                                                        @ firstName newFirstName2
+                                                        @ lastName newLastName2
+                                                        @ permissionFlags 2
+                                    _ expect(res.status).to.equal(204)
+                            _ it
+                                @ 'should allow a GET from /users/:userId and should have a new full name'
+                                async-function 
+                                    const res
+                                        await 
+                                            _ request.get
+                                                `lit 
+                                                    + /users/
+                                                    @ firstUserIdTest
+                                                    + 
+                                                ._ set
+                                                    { 
+                                                        @ Authorization
+                                                            `lit 
+                                                                + Bearer&nbsp;
+                                                                @ accessToken
+                                                                + 
+                                                ._ send
+                                    _ expect(res.status).to.equal(200)
+                                    @expr expect(res.body).not.to.be.empty
+                                    _ expect(res.body).to.be.an('object')
+                                    _ expect(res.body._id).to.be.a('string')
+                                    _ expect(res.body.firstName).to.equal(newFirstName2)
+                                    _ expect(res.body.lastName).to.equal(newLastName2)
+                                    _ expect(res.body.email).to.equal(firstUserBody.email)
+                                    _ expect(res.body._id).to.equal(firstUserIdTest)
+                            _ it
+                                @ 'should allow a DELETE from /users/:userId'
+                                async-function 
+                                    const res
+                                        await 
+                                            _ request.delete
+                                                `lit 
+                                                    + /users/
+                                                    @ firstUserIdTest
+                                                    + 
+                                                ._ set
+                                                    { 
+                                                        @ Authorization
+                                                            `lit 
+                                                                + Bearer&nbsp;
+                                                                @ accessToken
+                                                                + 
+                                                ._ send
+                                    _ expect(res.status).to.equal(204)

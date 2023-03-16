@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 6,
+  "column": 2,
+  "source": "@font-face {\n\t\tfont-family: Inter;\n\t\tfont-style: normal;\n\t\tfont-weight: 400;\n\t\tfont-display: swap;\n\t\tsrc: url('/fonts/Inter-Regular.woff2') format('woff2');\n\t}\n\t@font-face {\n\t\tfont-family: Inter;\n\t\tfont-style: normal;\n\t\tfont-weight: 500;\n\t\tfont-display: swap;\n\t\tsrc: url('/fonts/Inter-Medium.woff2') format('woff2');\n\t}\n\t@font-face {\n\t\tfont-family: Inter;\n\t\tfont-style: normal;\n\t\tfont-weight: 700;\n\t\tfont-display: swap;\n\t\tsrc: url('/fonts/Inter-Bold.woff2') format('woff2');\n\t}\n}\n"
+}

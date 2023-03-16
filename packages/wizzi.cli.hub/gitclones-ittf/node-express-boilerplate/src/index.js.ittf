@@ -1,0 +1,41 @@
+module
+    kind react
+    const mongoose = require('mongoose')
+    const app = require('./app')
+    const config = require('./config/config')
+    const logger = require('./config/logger')
+    let server
+    _ mongoose.connect(config.mongoose.url, config.mongoose.options).then
+        => 
+            _ logger.info('Connected to MongoDB')
+            set server =
+                _ app.listen
+                    @expr config.port
+                    => 
+                        _ logger.info
+                            `lit 
+                                + Listening to port&nbsp;
+                                @ config.port
+                                + 
+    const exitHandler
+        => 
+            if server
+                _ server.close
+                    => 
+                        _ logger.info('Server closed')
+                        _ process.exit(1)
+            else
+                _ process.exit(1)
+    const unexpectedErrorHandler
+        => 
+            param error
+            _ logger.error(error)
+            _ exitHandler()
+    _ process.on('uncaughtException', unexpectedErrorHandler)
+    _ process.on('unhandledRejection', unexpectedErrorHandler)
+    _ process.on
+        @ 'SIGTERM'
+        => 
+            _ logger.info('SIGTERM received')
+            if server
+                _ server.close()

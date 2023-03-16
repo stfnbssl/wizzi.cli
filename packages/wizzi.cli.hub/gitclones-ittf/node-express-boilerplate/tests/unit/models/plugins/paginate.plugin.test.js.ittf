@@ -1,0 +1,88 @@
+module
+    kind react
+    const mongoose = require('mongoose')
+    const setupTestDB = require('../../../utils/setupTestDB')
+    const paginate = require('../../../../src/models/plugins/paginate.plugin')
+    const projectSchema
+        _ mongoose.Schema
+            { 
+                { name
+                    @ type String
+                    @ required true
+    _ projectSchema.virtual
+        @ 'tasks'
+        { 
+            @ ref 'Task'
+            @ localField '_id'
+            @ foreignField 'project'
+    _ projectSchema.plugin(paginate)
+    const Project = mongoose.model('Project', projectSchema)
+    const taskSchema
+        _ mongoose.Schema
+            { 
+                { name
+                    @ type String
+                    @ required true
+                { project
+                    @ type mongoose.SchemaTypes.ObjectId
+                    @ ref 'Project'
+                    @ required true
+    _ taskSchema.plugin(paginate)
+    const Task = mongoose.model('Task', taskSchema)
+    _ setupTestDB()
+    _ describe
+        @ 'paginate plugin'
+        => 
+            _ describe
+                @ 'populate option'
+                => 
+                    _ test
+                        @ 'should populate the specified data fields'
+                        async=> 
+                            const project
+                                await 
+                                    _ Project.create
+                                        { 
+                                            @ name 'Project One'
+                            const task
+                                await 
+                                    _ Task.create
+                                        { 
+                                            @ name 'Task One'
+                                            @ project project._id
+                            const taskPages
+                                await 
+                                    _ Task.paginate
+                                        { 
+                                            @ _id task._id
+                                        { 
+                                            @ populate 'project'
+                            _ expect(taskPages.results[0].project).toHaveProperty('_id', project._id)
+                    _ test
+                        @ 'should populate nested fields'
+                        async=> 
+                            const project
+                                await 
+                                    _ Project.create
+                                        { 
+                                            @ name 'Project One'
+                            const task
+                                await 
+                                    _ Task.create
+                                        { 
+                                            @ name 'Task One'
+                                            @ project project._id
+                            const projectPages
+                                await 
+                                    _ Project.paginate
+                                        { 
+                                            @ _id project._id
+                                        { 
+                                            @ populate 'tasks.project'
+                            const 
+                                { 
+                                    @ tasks
+                                = projectPages.results[0]
+                            _ expect(tasks).toHaveLength(1)
+                            _ expect(tasks[0]).toHaveProperty('_id', task._id)
+                            _ expect(tasks[0].project).toHaveProperty('_id', project._id)

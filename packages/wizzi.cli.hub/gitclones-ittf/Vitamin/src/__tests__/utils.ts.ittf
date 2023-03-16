@@ -1,0 +1,33 @@
+module
+    import 
+        @ act
+        @ renderHook
+        from '@testing-library/react'
+    import 
+        @ useMediaQuery
+        from 'utils'
+    const BELOW_MIN_WIDTH = 599
+    const MIN_WITDH = 600
+    _ describe
+        @ 'useMediaQuery'
+        => 
+            _ it
+                @ 'renders'
+                => 
+                    _ window.resizeTo(BELOW_MIN_WIDTH, 0)
+                    const 
+                        { 
+                            @ result
+                        =
+                            _ renderHook
+                                => 
+                                    _ useMediaQuery
+                                        `lit 
+                                            + (min-width:&nbsp;
+                                            @ MIN_WITDH
+                                            + px)
+                    _ expect(result.current).toBeFalsy()
+                    _ act
+                        => 
+                            _ window.resizeTo(MIN_WITDH, 0)
+                    _ expect(result.current).toBeTruthy()

@@ -1,0 +1,46 @@
+module
+    kind react
+    const Joi = require('joi')
+    const httpStatus = require('http-status')
+    const pick = require('../utils/pick')
+    const ApiError = require('../utils/ApiError')
+    const validate
+        => 
+            param schema
+            => 
+                param req
+                param res
+                param next
+                const validSchema
+                    _ pick
+                        @ schema
+                        [ 
+                            @ 'params'
+                            @ 'query'
+                            @ 'body'
+                const object = pick(req, Object.keys(validSchema))
+                const 
+                    { 
+                        @ value
+                        @ error
+                    =
+                        _ Joi.compile(validSchema).prefs
+                            { 
+                                { errors
+                                    @ label 'key'
+                                @ abortEarly false
+                            ._ validate
+                                @ object
+                if error
+                    const errorMessage
+                        _ error.details.map
+                            => 
+                                param details
+                                +
+                                    @expr details.message
+                            ._ join
+                                @ ', '
+                    return next(ApiError(httpStatus.BAD_REQUEST, errorMessage))
+                _ Object.assign(req, value)
+                return next()
+    set module.exports = validate

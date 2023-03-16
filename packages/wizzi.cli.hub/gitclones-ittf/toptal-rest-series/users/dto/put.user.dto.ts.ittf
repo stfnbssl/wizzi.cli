@@ -1,0 +1,13 @@
+module
+    export 
+        :interface PutUserDto
+            :p email
+                :string 
+            :p password
+                :string 
+            :p firstName
+                :string 
+            :p lastName
+                :string 
+            :p permissionFlags
+                :number 

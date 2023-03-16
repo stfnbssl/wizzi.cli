@@ -1,0 +1,69 @@
+module
+    import UsersDao from '../daos/users.dao'
+    import 
+        @ CRUD
+        from '../../common/interfaces/crud.interface'
+    import 
+        @ CreateUserDto
+        from '../dto/create.user.dto'
+    import 
+        @ PutUserDto
+        from '../dto/put.user.dto'
+    import 
+        @ PatchUserDto
+        from '../dto/patch.user.dto'
+    class UsersService
+        :implements CRUD
+        m create
+            async
+            param resource
+                :ref CreateUserDto
+            return UsersDao.addUser(resource)
+        m deleteById
+            async
+            param id
+                :string 
+            return UsersDao.removeUserById(id)
+        m list
+            async
+            param limit
+                :number 
+            param page
+                :number 
+            return UsersDao.getUsers(limit, page)
+        m patchById
+            async
+            param id
+                :string 
+            param resource
+                :ref PatchUserDto
+            :return
+                :ref Promise
+                    :param any
+            return UsersDao.updateUserById(id, resource)
+        m putById
+            async
+            param id
+                :string 
+            param resource
+                :ref PutUserDto
+            :return
+                :ref Promise
+                    :param any
+            return UsersDao.updateUserById(id, resource)
+        m readById
+            async
+            param id
+                :string 
+            return UsersDao.getUserById(id)
+        m getUserByEmail
+            async
+            param email
+                :string 
+            return UsersDao.getUserByEmail(email)
+        m getUserByEmailWithPassword
+            async
+            param email
+                :string 
+            return UsersDao.getUserByEmailWithPassword(email)
+    export-default new UsersService()

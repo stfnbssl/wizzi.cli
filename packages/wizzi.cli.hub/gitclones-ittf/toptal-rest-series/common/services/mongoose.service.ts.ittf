@@ -1,0 +1,41 @@
+module
+    import mongoose from 'mongoose'
+    import debug from 'debug'
+    const log
+        :ref debug.IDebugger
+        = debug('app:mongoose-service')
+    class MongooseService
+        p count
+            :private 
+            = 0
+        p mongooseOptions
+            :private 
+            { 
+                @ useNewUrlParser true
+                @ useUnifiedTopology true
+                @ serverSelectionTimeoutMS 5000
+                @ useFindAndModify false
+        ctor 
+            _ this.connectWithRetry()
+        m getMongoose
+            return mongoose
+        p connectWithRetry
+            => 
+                _ log('Attempting MongoDB connection (will retry if needed)')
+                _ mongoose.connect('mongodb://localhost:27017/api-db', this.mongooseOptions).then
+                    => 
+                        _ log('MongoDB is connected')
+                    ._ catch
+                        => 
+                            param err
+                            const retrySeconds = 5
+                            _ log
+                                `lit 
+                                    + MongoDB connection unsuccessful (will retry #
+                                    ++op ++this.count
+                                    + &nbsp;after&nbsp;
+                                    @ retrySeconds
+                                    + &nbsp;seconds):
+                                @ err
+                            _ setTimeout(this.connectWithRetry, retrySeconds * 1000)
+    export-default new MongooseService()

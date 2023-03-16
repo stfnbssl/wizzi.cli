@@ -1,0 +1,6 @@
+module
+    kind react
+    set module.exports.authService = require('./auth.service')
+    set module.exports.emailService = require('./email.service')
+    set module.exports.tokenService = require('./token.service')
+    set module.exports.userService = require('./user.service')

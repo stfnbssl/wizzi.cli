@@ -1,0 +1,81 @@
+module
+    import 
+        @ render
+        @ screen
+        from '@testing-library/react'
+    import userEvent from '@testing-library/user-event'
+    import fruits from 'mocks/data/fruits.json'
+    :import-type ReactRouterDOM from 'react-router-dom'
+    import Fruit from '../Fruit'
+    const mockNavigate = vi.fn()
+    _ vi.mock
+        @ 'react-router-dom'
+        async=> 
+            (
+                { 
+                    ... 
+                        await 
+                            _ vi.importActual
+                                :param 
+                                    :typeof ReactRouterDOM
+                                @ 'react-router-dom'
+                    @ useNavigate
+                        => 
+                            :return
+                                :typeof mockNavigate
+                            + mockNavigate
+    function renderFruit
+        :return
+            :void 
+        _ render
+            < Fruit 
+                @ fruit {fruits[0]}
+                @ index {0}
+    _ describe
+        @ '<Fruit />'
+        => 
+            _ it
+                @ 'renders'
+                => 
+                    _ renderFruit()
+                    _ expect(screen.getByText('Photo by')).toBeInTheDocument()
+                    _ expect
+                        _ screen.getByRole
+                            @ 'link'
+                            { 
+                                @ name 'Matheus Cenali'
+                        ._ toBeInTheDocument
+                    _ expect(screen.getByText('on')).toBeInTheDocument()
+                    _ expect
+                        _ screen.getByRole
+                            @ 'link'
+                            { 
+                                @ name 'Unsplash'
+                        ._ toBeInTheDocument
+                    _ expect(screen.getByText('Apple')).toBeInTheDocument()
+            _ it
+                @ 'redirect to fruit details page on enter'
+                async=> 
+                    _ renderFruit()
+                    _ screen.getByTestId('FruitCard').focus()
+                        # No action should be performed
+                    await 
+                        _ userEvent.keyboard('a')
+                        # No action should be performed
+                    await 
+                        _ userEvent.keyboard('[Enter]')
+                        # eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                    _ expect(mockNavigate).toHaveBeenCalledTimes(1)
+                        # eslint-disable-next-line @typescript-eslint/no-magic-numbers
+                    _ expect(mockNavigate).toHaveBeenCalledWith('apple')
+            _ it
+                @ 'redirect to photographer profile page on image attribute link click'
+                async=> 
+                    _ renderFruit()
+                    await 
+                        _ userEvent.click
+                            _ screen.getByRole
+                                @ 'link'
+                                { 
+                                    @ name 'Matheus Cenali'
+                    _ expect(mockNavigate).toHaveBeenCalledTimes(0)

@@ -1,0 +1,115 @@
+module
+    import '@testing-library/jest-dom'
+    import mediaQuery from 'css-mediaquery'
+    import server from 'mocks/server'
+    import 
+        @ DESKTOP_RESOLUTION_HEIGHT
+        @ DESKTOP_RESOLUTION_WIDTH
+        from 'testUtils'
+    import 'whatwg-fetch'
+    _ beforeAll
+        => 
+            _ server.listen
+                { 
+                    @ onUnhandledRequest 'error'
+            _ Object.defineProperty
+                @ window
+                @ 'IS_REACT_ACT_ENVIRONMENT'
+                { 
+                    @ writable true
+                    @ value true
+            _ Object.defineProperty
+                @ window
+                @ 'matchMedia'
+                { 
+                    @ writable true
+                    @ value
+                        => 
+                            param query
+                                :string 
+                            function matchQuery
+                                :return
+                                    :boolean 
+                                return 
+                                    _ mediaQuery.match
+                                        @ query
+                                        { 
+                                            @ width window.innerWidth
+                                            @ height window.innerHeight
+                            const listeners
+                                :[ 
+                                    :paren 
+                                        :=> 
+                                            :void 
+                                = []
+                            const instance
+                                { 
+                                    @ matches matchQuery()
+                                    @ addEventListener
+                                        => 
+                                            param _
+                                                :literal 'change'
+                                            param listener
+                                                :=> 
+                                                    :void 
+                                            :return
+                                                :void 
+                                            _ listeners.push(listener)
+                                    @ removeEventListener
+                                        => 
+                                            param _
+                                                :literal 'change'
+                                            param listener
+                                                :=> 
+                                                    :void 
+                                            :return
+                                                :void 
+                                            const index = listeners.indexOf(listener)
+                                            if index >= 0
+                                                _ listeners.splice(index, 1)
+                            _ window.addEventListener
+                                @ 'resize'
+                                => 
+                                    const change = matchQuery()
+                                    if change !== instance.matches
+                                        set instance.matches = change
+                                        for 
+                                            left
+                                                const listener
+                                            of listeners
+                                            _ listener()
+                            return instance
+            _ Object.defineProperty
+                @ window
+                @ 'scrollTo'
+                { 
+                    @ writable true
+                    @ value
+                        => 
+            _ Object.defineProperty
+                @ window
+                @ 'resizeTo'
+                { 
+                    @ writable true
+                    @ value
+                        => 
+                            param width
+                                :number 
+                            param height
+                                :number 
+                            _ Object.assign
+                                @ window
+                                { 
+                                    @ innerWidth width
+                                    @ innerHeight height
+                                ._ dispatchEvent
+                                    new Event('resize')
+    _ beforeEach
+        => 
+            _ window.resizeTo(DESKTOP_RESOLUTION_WIDTH, DESKTOP_RESOLUTION_HEIGHT)
+    _ afterEach
+        => 
+            _ server.resetHandlers()
+    _ afterAll
+        => 
+            _ server.close()

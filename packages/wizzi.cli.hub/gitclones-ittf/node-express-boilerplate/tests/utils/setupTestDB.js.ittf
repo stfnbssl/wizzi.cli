@@ -1,0 +1,23 @@
+module
+    kind react
+    const mongoose = require('mongoose')
+    const config = require('../../src/config/config')
+    const setupTestDB
+        => 
+            _ beforeAll
+                async=> 
+                    await 
+                        _ mongoose.connect(config.mongoose.url, config.mongoose.options)
+            _ beforeEach
+                async=> 
+                    await 
+                        _ Promise.all
+                            _ Object.values(mongoose.connection.collections).map
+                                async=> 
+                                    param collection
+                                    _ collection.deleteMany()
+            _ afterAll
+                async=> 
+                    await 
+                        _ mongoose.disconnect()
+    set module.exports = setupTestDB

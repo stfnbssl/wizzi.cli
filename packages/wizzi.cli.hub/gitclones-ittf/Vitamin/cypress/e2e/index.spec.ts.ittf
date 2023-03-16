@@ -1,0 +1,70 @@
+module
+    function get
+        param id
+            :string 
+        :return
+            :ref ReturnType
+                :param 
+                    :typeof cy.get
+        return cy.findByTestId(id)
+    const IMAGE_URL = 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6'
+    const AUTHOR_URL = 'https://unsplash.com/@cenali'
+    _ describe
+        @ 'Basic flow'
+        => 
+            _ beforeEach
+                => 
+                    _ cy.viewport('macbook-13')
+            _ it
+                @ 'Should render the fruit gallery correctly'
+                => 
+                    _ cy.visit('/')
+                    _ cy.findAllByTestId('FruitCard').should('have.length', 6)
+                    _ cy.findAllByTestId('FruitCardImage').first().should('have.attr', 'src').and('contain', IMAGE_URL)
+                    _ cy.findAllByTestId('FruitImageAuthor').first().should('have.text', 'Matheus Cenali').and('have.attr', 'href', AUTHOR_URL).click()
+                    _ cy.findAllByTestId('FruitCardName').first().should('have.text', 'Apple')
+            _ it
+                @ 'Should navigate to the details page on click'
+                => 
+                    _ cy.findAllByTestId('FruitCardName').first().click()
+                    _ cy.location('pathname').should
+                        @ 'eq'
+                        `lit 
+                            + /apple
+            _ it
+                @ 'Should go back to gallery on back button click'
+                => 
+                    _ get('BackLink').click()
+                    _ cy.location('pathname').should('eq', '/')
+            _ it
+                @ 'Should navigate to the details page on enter'
+                => 
+                    _ cy.findAllByTestId('FruitCard').first().focus().type('{enter}')
+                    _ cy.location('pathname').should
+                        @ 'eq'
+                        `lit 
+                            + /apple
+            _ it
+                @ 'Should render the fruit details correctly'
+                => 
+                    _ get('FruitImage').should('have.attr', 'src').and('contain', IMAGE_URL)
+                    _ get('FruitName').should('have.text', 'Apple')
+            _ it
+                @ 'Should render a error message'
+                => 
+                    _ cy.viewport('iphone-xr')
+                    _ cy.intercept
+                        @ '/fruits'
+                        => 
+                            param request
+                            _ request.destroy()
+                        ._ as
+                            @ 'getFruits'
+                    _ cy.reload()
+                    _ cy.wait('@getFruits')
+                    _ get('LoadingOrError').should('not.have.text', 'Loading')
+            _ it
+                @ 'Should redirect to gallery when trying to access a invalid fruit'
+                => 
+                    _ cy.visit('/cypress')
+                    _ cy.location('pathname').should('eq', '/')

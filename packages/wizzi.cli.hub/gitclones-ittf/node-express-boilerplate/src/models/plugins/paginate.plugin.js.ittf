@@ -1,0 +1,93 @@
+module
+    kind react
+    const paginate
+        => 
+            param schema
+            set schema.statics.paginate =
+                async-function 
+                    param filter
+                    param options
+                    let sort = ''
+                    if options.sortBy
+                        const sortingCriteria = []
+                        _ options.sortBy.split(',').forEach
+                            => 
+                                param sortOption
+                                const [key, order] = sortOption.split(':')
+                                _ sortingCriteria.push
+                                    op+ 
+                                        ( 
+                                            iif order === 'desc'
+                                                then '-'
+                                                else ''
+                                        + key
+                        set sort = sortingCriteria.join(' ')
+                    else
+                        set sort = 'createdAt'
+                    const limit
+                        iif options.limit && parseInt(options.limit, 10) > 0
+                            then parseInt(options.limit, 10)
+                            else 10
+                    const page
+                        iif options.page && parseInt(options.page, 10) > 0
+                            then parseInt(options.page, 10)
+                            else 1
+                    const skip = (page - 1) * limit
+                    const countPromise = this.countDocuments(filter).exec()
+                    let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit)
+                    if options.populate
+                        _ options.populate.split(',').forEach
+                            => 
+                                param populateOption
+                                set docsPromise =
+                                    _ docsPromise.populate
+                                        _ populateOption.split('.').reverse().reduce
+                                            => 
+                                                param a
+                                                param b
+                                                (
+                                                    { 
+                                                        @ path b
+                                                        @ populate a
+                    set docsPromise = docsPromise.exec()
+                    return 
+                        _ Promise.all
+                            [ 
+                                @ countPromise
+                                @ docsPromise
+                            ._ then
+                                => 
+                                    param values
+                                    const [totalResults, results] = values
+                                    const totalPages = Math.ceil(totalResults / limit)
+                                    const result
+                                        { 
+                                            @ results
+                                            @ page
+                                            @ limit
+                                            @ totalPages
+                                            @ totalResults
+                                    return Promise.resolve(result)
+                #
+                    # *
+                    # * @typedef {Object} QueryResult
+                    # * @property {Document[]} results - Results found
+                    # * @property {number} page - Current page
+                    # * @property {number} limit - Maximum number of results per page
+                    # * @property {number} totalPages - Total number of pages
+                    # * @property {number} totalResults - Total number of documents
+                    # 
+                #
+                    # *
+                    # * Query for documents with pagination
+                    # * @param {Object} [filter] - Mongo filter
+                    # * @param {Object} [options] - Query options
+                    # * @param {string} [options.sortBy] - Sorting criteria using the format: sortField:(desc|asc). Multiple sorting criteria should be separated by commas (,)
+                    # * @param {string} [options.populate] - Populate data fields. Hierarchy of fields should be separated by (.). Multiple populating criteria should be separated by commas (,)
+                    # * @param {number} [options.limit] - Maximum number of results per page (default = 10)
+                    # * @param {number} [options.page] - Current page (default = 1)
+                    # * @returns {Promise<QueryResult>}
+                    # 
+        #
+            # eslint-disable no-param-reassign
+    set module.exports = paginate

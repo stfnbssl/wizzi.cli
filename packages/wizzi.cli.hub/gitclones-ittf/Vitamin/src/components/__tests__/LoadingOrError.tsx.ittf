@@ -1,0 +1,22 @@
+module
+    import 
+        @ render
+        @ screen
+        from '@testing-library/react'
+    import LoadingOrError from '../LoadingOrError'
+    _ describe
+        @ '<LoadingOrError />'
+        => 
+            _ it
+                @ 'renders'
+                => 
+                    _ render
+                        < LoadingOrError 
+                    _ expect(screen.getByText('Loading...')).toBeInTheDocument()
+            _ it
+                @ 'renders with an error message'
+                => 
+                    _ render
+                        < LoadingOrError 
+                            @ error {new Error('Failed to fetch')}
+                    _ expect(screen.getByText('Failed to fetch')).toBeInTheDocument()

@@ -9,59 +9,58 @@
     const templator = require('./templator')
     var file = vfile()
 
-    var generators
+    var meta_generators
         [
             @ 'ts-node'
             @ 'ts-express'
             @ 'ts-client'
+            @ 'js-vanilla'
             @ 'js-wizzi-plugin'
 	
     set module.exports
 		=>
 			param options
             set options = options || {}
-            if generators.indexOf(options.templator) < 0
-                throw new Error('createEx. Unknown templator: ' + options.templator)
+            if meta_generators.indexOf(options.metaGenerator) < 0
+                throw new Error('createEx. Unknown metaGenerator: ' + options.metaGenerator)
 
             log 'createEx.options', options
 
-            var templatorFolderPath
+            var metaGeneratorFolderPath
                 _ path.join
                     @ __dirname
                     @ '..'
                     @ '..'
-                    @ 'generators'
-                    @ options.templator
+                    @ 'meta-generators'
+                    @ options.metaGenerator
 
-            var templatorContextPath
+            var metaGeneratorContextPath
                 _ path.join
-                    @ templatorFolderPath
+                    @ metaGeneratorFolderPath
                     @ 'contexts'
                     @ options.context + '.json.ittf'
-            log 'templatorContextPath', templatorContextPath
+            log 'metaGeneratorContextPath', metaGeneratorContextPath
 
-            var templatorIndex
+            var metaGeneratorIndex
                 _ path.join
-                    @ templatorFolderPath
+                    @ metaGeneratorFolderPath
                     @ 'index.ittf.ittf'
-            log 'templatorIndex', templatorIndex
+            log 'metaGeneratorIndex', metaGeneratorIndex
 
-            var tempTemplate
+            var metaGenerationContextPath
                 _ path.join
                     @ __dirname
                     @ '..'
                     @ '..'
-                    @ 'resources'
-                    @ 'create'
-                    @ 'templates'
+                    @ 'meta-templates'
                     @ '__temp'
-                    @ options.templator
+                    @ options.metaGenerator
                     @ options.context
-            log 'tempTemplate', tempTemplate
+            log 'metaGenerationContextPath', metaGenerationContextPath
 
             _ wizzi.model
                 _ path.join
-                    @ templatorContextPath
+                    @ metaGeneratorContextPath
                 {
                     { cliCtx
                         @ pkgName options.pkgName
@@ -77,7 +76,7 @@
 
                     $*
                     _ file.deleteFolder
-                        @ tempTemplate
+                        @ metaGenerationContextPath
                         =>
                             param err
                             if err
@@ -86,15 +85,15 @@
                     *$
                     
                     _ templator
-                        @ templatorIndex
-                        @ tempTemplate
+                        @ metaGeneratorIndex
+                        @ metaGenerationContextPath
                         @ cliCtx
                     +
                     log 'createEx.before genFolder.cliCtx', cliCtx
                     +
                     return
                         _ wizzi.genFolder
-                            @ tempTemplate
+                            @ metaGenerationContextPath
                             {
                                 @ cliCtx cliCtx
                             {

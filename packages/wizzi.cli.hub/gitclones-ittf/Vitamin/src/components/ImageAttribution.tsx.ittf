@@ -1,0 +1,53 @@
+module
+    :import-type 
+        @ MouseEvent
+        @ ReactElement
+        from 'react'
+    :import-type 
+        @ IFruit
+        from 'types'
+    :interface Properties
+        :p author
+            :[] 
+                :[] 
+                    :ref IFruit
+                    :literal 'image'
+                :literal 'author'
+    function onClick
+        param event
+            :ref MouseEvent
+        :return
+            :void 
+        _ event.stopPropagation()
+    export-default 
+        function ImageAttribution
+            { 
+                @ author
+                :ref Properties
+            :return
+                :ref ReactElement
+            return 
+                < React.Fragment
+                    div 
+                        @ className 'absolute top-0 h-full w-full bg-gradient-to-b from-transparent via-transparent to-current text-black text-opacity-50'
+                    div 
+                        @ className 'absolute bottom-1 right-1 px-1 text-xs text-white'
+                        span 
+                            + Photo by
+                        a 
+                            @ data-testid 'FruitImageAuthor'
+                            @ href {author.url}
+                            @ target '_blank'
+                            @ rel 'noreferrer noopener'
+                            @ className 'underline'
+                            @ onClick {onClick}
+                            + {author.name}
+                        span 
+                            + on
+                        a 
+                            @ href 'https://unsplash.com'
+                            @ target '_blank'
+                            @ rel 'noreferrer noopener'
+                            @ className 'underline'
+                            @ onClick {onClick}
+                            + Unsplash

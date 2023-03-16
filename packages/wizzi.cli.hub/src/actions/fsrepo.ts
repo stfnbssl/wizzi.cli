@@ -1,12 +1,13 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\fsrepo.ts.ittf
 */
 import path from 'path';
 import {fSystem} from 'wizzi-utils';
 import {PackiFiles} from '../features/packi/types';
 import {wizziProds} from '../features/wizzi';
+import {ittfToMeta} from '../utils/ittf';
 
 export function getFilteredPackiFiles(options: any):  Promise<PackiFiles> {
 
@@ -54,12 +55,15 @@ export function getFileContents(options: any):  Promise<string> {
         );
 }
 
-export function writePackiToDest(packiFiles: PackiFiles, destFolder: string) {
+export function writePackiToDest(packiFiles: PackiFiles, destFolder: string, destMetaFolder?: string) {
 
     var i, i_items=Object.keys(packiFiles), i_len=Object.keys(packiFiles).length, k;
     for (i=0; i<i_len; i++) {
         k = Object.keys(packiFiles)[i];
         fSystem.vfile().write(path.join(destFolder, k), packiFiles[k].contents)
+        if (destMetaFolder) {
+            fSystem.vfile().write(path.join(destMetaFolder, k), ittfToMeta(packiFiles[k].contents))
+        }
     }
 }
 

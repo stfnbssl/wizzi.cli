@@ -1,0 +1,21 @@
+module
+    :import-type 
+        @ IFruit
+        from 'types'
+    export-default 
+        async-function getFruits
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref IFruit
+            const response
+                await 
+                    _ fetch('https://614c99f03c438c00179faa84.mockapi.io/fruits')
+            return 
+                _ response.json()
+                    :as 
+                        :ref Promise
+                            :param 
+                                :[ 
+                                    :ref IFruit

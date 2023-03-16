@@ -1,0 +1,30 @@
+module
+    kind react
+    const createError = require('http-errors')
+    const express = require('express')
+    const cookieParser = require('cookie-parser')
+    const promiseMiddleware = require('./middleware/promise')
+    const app = express()
+    _ app.use(express.json())
+    _ app.use
+        _ express.urlencoded
+            { 
+                @ extended false
+    _ app.use(cookieParser())
+    _ app.use(promiseMiddleware())
+    _ app.use('/users', require('./routes/users'))
+    _ app.use('/img', require('./routes/img'))
+    _ app.use
+        function 
+            param req
+            param res
+            param next
+            _ res.promise(Promise.reject(createError(404)))
+    _ app.use
+        function 
+            param err
+            param req
+            param res
+            param next
+            _ res.promise(Promise.reject(err))
+    set module.exports = app
