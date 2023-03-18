@@ -67,6 +67,11 @@ $group
                             name "wizziFs"
                             hasControllers true
                             useMongoDb false
+                    $if cliCtx.useWizziGist
+                        {
+                            name "wizziGist"
+                            hasControllers true
+                            useMongoDb false
                     $if cliCtx.useWizziProductions
                         {
                             name "production"
@@ -326,6 +331,10 @@ $group
             $if cliCtx.useWizziDocs
                 useWizziDocs true
                 { wizziDocs
+
+            $if cliCtx.useWizziFs
+                useWizziFs true
+                { wizziFs
             
             $if cliCtx.useWizziProductions
                 useWizziProductions true

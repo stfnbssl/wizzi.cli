@@ -38,7 +38,9 @@ $group
         @ createFilesystemFactory
         from './factory'
     import
+        @ GenerationOptions
         @ GeneratedArtifact
+        @ TransformationOptions
         @ TransformedModel
         from './types'
     import

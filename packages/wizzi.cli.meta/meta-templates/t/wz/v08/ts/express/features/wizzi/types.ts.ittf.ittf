@@ -24,6 +24,15 @@ $group
                 :p jsonFs
                     :ref JsonFs
     export
+        :type GenerationOptions
+            :{
+                :p generator
+                    :string
+                :p artifactContext
+                    :any
+                    :optional
+
+    export
         :type GeneratedArtifact
             :{
                 :p artifactContent
@@ -31,6 +40,11 @@ $group
                 :p sourcePath
                     :string
                 :p artifactGenerator
+                    :string
+    export
+        :type TransformationOptions
+            :{
+                :p transformer
                     :string
     export
         :type TransformedModel

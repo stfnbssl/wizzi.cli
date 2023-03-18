@@ -11,9 +11,16 @@ ${'$'}group
        { globalContext
            wzConfigIsDevelopment true
        useRunner false
+   useWizziFs true
+   { wizziFs
+   useWizziProductions true
+   { wizziProductions
+       useCachedProductions false
    useIttfStatic true
    { ittfStatic
    useWizziViewEngine true
    { wizziViewEngine
+   useWizziCdn true
+   { wizziCdn
    useWizziJsonFactory true
    { wizziJsonFactory

@@ -12,7 +12,7 @@ $group
                     :any 
                     :optional 
                 param options
-                    :any 
+                    :ref GenerationOptions 
                     :optional 
                 :return
                     :ref Promise
@@ -77,7 +77,7 @@ $group
                                         @ ittfDocumentUri
                                         { 
                                             @ modelRequestContext generationContext || {}
-                                            @ artifactRequestContext generationContext || {}
+                                            @ artifactRequestContext options.artifactContext || {}
                                         @ generator
                                         => 
                                             param err
@@ -107,7 +107,7 @@ $group
                 :any 
                 :optional 
             param options
-                :any 
+                :ref GenerationOptions 
                 :optional 
             :return
                 :ref Promise

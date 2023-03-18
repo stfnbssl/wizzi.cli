@@ -23,6 +23,8 @@ template ts-express
     $include src/features-user
     $include src/features-wizzi
     $include src/features-wizzi-fs
+    $include src/features-wizzi-gist
+    $include src/features-wizzi-meta
     $include src/middlewares
     $include src/services
     $include src/pages

@@ -33,6 +33,14 @@
                name "wizziFs"
                hasControllers true
                useMongoDb false
+           { 
+               name "production"
+               hasControllers true
+               useMongoDb true
+           { 
+               name "cdn"
+               hasControllers true
+               useMongoDb true
        [ examples
        ${'$'}include config.json
        --- 

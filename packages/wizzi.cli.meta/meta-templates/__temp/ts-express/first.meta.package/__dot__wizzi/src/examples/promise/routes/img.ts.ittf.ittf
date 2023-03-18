@@ -1,0 +1,2 @@
+module 
+   $include wz/v08/ts/express/examples/promise/routes/img.ts

@@ -7,7 +7,11 @@ $group
             'a_cb_throw',
             'a_cb_no_err',
             'a_reject',
+            'a_then',
+            'catch_reject',
             'r_promise',
+            'r_resolve',
+            'r_reject',
             ];
 
     $foreach item in items

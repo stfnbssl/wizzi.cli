@@ -11,7 +11,7 @@ $group
                     :any
                     :optional
                 param options
-                    :any
+                    :ref TransformationOptions 
                     :optional
                 :return
                     :ref Promise
@@ -99,7 +99,7 @@ $group
                 :any
                 :optional
             param options
-                :any
+                :ref TransformationOptions 
                 :optional
             :return
                 :ref Promise

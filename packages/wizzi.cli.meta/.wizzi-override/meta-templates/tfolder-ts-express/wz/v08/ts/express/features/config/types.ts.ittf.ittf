@@ -76,3 +76,6 @@ $group
                         :string 
                     :p metaHtmlTextPath
                         :string 
+                ${'$'}if wzCtx.Build.useWizziFs
+                    :p jobsBasePath
+                        :string 
