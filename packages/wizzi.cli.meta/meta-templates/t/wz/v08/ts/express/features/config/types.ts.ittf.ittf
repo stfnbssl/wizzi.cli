@@ -79,3 +79,10 @@ $group
                 ${'$'}if wzCtx.Build.useWizziFs
                     :p jobsBasePath
                         :string 
+                ${'$'}if wzCtx.Build.config.useUserInfo
+                    :p userUserName
+                        :string 
+                    :p userDisplayName
+                        :string 
+                    :p userAvatarUrl
+                        :string 

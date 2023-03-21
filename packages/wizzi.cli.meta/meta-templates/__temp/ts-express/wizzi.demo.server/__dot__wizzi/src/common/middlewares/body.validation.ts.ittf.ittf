@@ -1,2 +1,0 @@
-module 
-   $include wz/v08/ts/express/common/middlewares/body.validation.ts

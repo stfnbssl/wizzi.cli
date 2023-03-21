@@ -36,10 +36,13 @@ $group
             @ createJsonFsAndFactory
             @ ensurePackiFilePrefix
         @ createFilesystemFactory
+        @ createFilesystemFactoryWithParameters
         from './factory'
     import
         @ GenerationOptions
         @ GeneratedArtifact
+        @ WizziModelTypesRequest
+        @ WizziJobTypesRequest
         @ TransformationOptions
         @ TransformedModel
         from './types'
@@ -54,6 +57,7 @@ $group
     ${'$'}include productions/mTree
     ${'$'}include productions/generateArtifact
     ${'$'}include productions/generateFolderArtifacts
+    ${'$'}include productions/generateWizziModelTypes
     ${'$'}include productions/transformModel
     ${'$'}include productions/metaGenerate
     ${'$'}include productions/executeJob
@@ -91,3 +95,4 @@ $group
                                         @ generated true
                     _ resolve
                         @ packiFiles
+

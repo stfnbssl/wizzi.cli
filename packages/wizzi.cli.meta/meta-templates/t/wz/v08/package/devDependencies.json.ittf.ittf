@@ -63,7 +63,7 @@ $group
             @types/jest "^26.0.15"
         ${'$'}if wzCtx.Build.utils.useJsCookie
             @types/js-cookie "^2.2.0"
-        ${'$'}if wzCtx.Build.isClientServer || wzCtx.Build.isServer
+        ${'$'}if wzCtx.Build.isClientServer || wzCtx.Build.isServer || wzCtx.Build.usePages
             @types/jsesc "latest"
         ${'$'}if wzCtx.Build.utils.useJsonToAst
             @types/json-to-ast "^2.1.1"

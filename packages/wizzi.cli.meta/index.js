@@ -51,6 +51,14 @@ else if (cmd == 'ts-client-webpack-react') {
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/demo.ts.client.webpack.react'
      })
 }
+else if (cmd == 'ts-express-studio') {
+    createEx({
+        metaGenerator: 'ts-express', 
+        context: 'wizzi.studio', 
+        pkgName: 'wizzi.studio', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.apps/packages/wizzi.studio'
+     })
+}
 else if (cmd == 'ts-express-demo-server') {
     createEx({
         metaGenerator: 'ts-express', 

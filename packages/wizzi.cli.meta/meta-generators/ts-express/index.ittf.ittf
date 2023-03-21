@@ -19,12 +19,14 @@ template ts-express
     $include src/features-blog
     $include src/features-github
     $include src/features-packi
+    $include src/features-packi-edit
     $include src/features-project
     $include src/features-user
     $include src/features-wizzi
     $include src/features-wizzi-fs
     $include src/features-wizzi-gist
     $include src/features-wizzi-meta
+    $include src/features-wizzi-package
     $include src/middlewares
     $include src/services
     $include src/pages

@@ -16,6 +16,7 @@ $group
             'param_callback',
             'param_object',
             'r_promise',
+            'r_promise_async',
             'r_cb',
             'r_reject',
             'r_resolve',

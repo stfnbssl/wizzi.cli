@@ -1,5 +1,12 @@
 $group
 
+    elif cmd == 'ts-express-studio'
+        _ createEx
+            {
+                @ metaGenerator 'ts-express'
+                @ context 'wizzi.studio'
+                @ pkgName 'wizzi.studio'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.apps/packages/wizzi.studio'
     elif cmd == 'ts-express-demo-server'
         _ createEx
             {

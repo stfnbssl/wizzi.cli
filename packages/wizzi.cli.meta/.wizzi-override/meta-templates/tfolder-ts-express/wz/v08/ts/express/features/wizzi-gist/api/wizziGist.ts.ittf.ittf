@@ -7,9 +7,8 @@ $group
         @ pretty
         from 'wizzi-utils'
     import
-        @ getIttfFileContentByHash
-        @ putIttfFileContentByHash
-        from './byHash'
+        @ wizziFsApi
+        from '../../wizziFs'
 	var fsfile = fSystem.vfile()
 
     +
@@ -17,7 +16,7 @@ $group
         param hash
             :string
         r_promise${'('})
-            _ getIttfFileContentByHash
+            _ wizziFsApi.getIttfFileContentByHash
                 @ hash
                 ._ then
                     =>
@@ -46,7 +45,7 @@ $group
         param prettify
             :string
         r_promise${'('})
-            _ putIttfFileContentByHash
+            _ wizziFsApi.putIttfFileContentByHash
                 @ hash
                 @ content
                 ._ then

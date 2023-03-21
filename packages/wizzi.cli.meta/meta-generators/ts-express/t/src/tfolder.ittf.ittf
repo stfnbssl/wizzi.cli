@@ -8,14 +8,21 @@ $group
             'a_cb_no_err',
             'a_reject',
             'a_then',
+            'a_then_async',
+            'a_then_async_catch_reject',
+            'a_then_catch_reject',
+            'a_then_async_catch_fail',
+            'a_then_catch_fail',
             'catch_reject',
+            'catch_fail',
             'r_promise',
+            'r_promise_async',
             'r_resolve',
             'r_reject',
             ];
 
     $foreach item in items
-        $file __dot__wizzi/${pkgPath}src/t/${item}.ts.ittf.ittf
+        $file __dot__wizzi/${pkgPath}src/t/${item}.ittf.ittf
             ${"${'$'}"}group
                 ${'$'}include wz/v08/ts/tfolder/${item}.ts
     

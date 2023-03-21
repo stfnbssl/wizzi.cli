@@ -49,6 +49,8 @@
 
     useConfig true
     { config
+        useUserInfo true
+        { userInfo
 
     useExpress true
     { express
@@ -70,12 +72,16 @@
     { features
         useGithub false
         { github
+        usePackiEdit true
+        { packiEdit
         useWizziFs true
         { wizziFs
         useWizziGist true
         { wizziGist
         useWizziMeta true
         { wizziMeta
+        useWizziPackage true
+        { wizziPackage
 
     useFeatureBlog false
     { featureBlog
@@ -89,7 +95,7 @@
     useFeatureGithub false
     { featureGithub
 
-    usePages false
+    usePages true
     { pages    
 
     useWizzi true
@@ -98,7 +104,7 @@
     useWizziDocs false
     { wizziDocs
 
-    useWizziProductions true
+    useWizziProductions false
     { wizziProductions
 
     useStaticFiles true
@@ -111,10 +117,7 @@
     useWizziViewEngine true
     { wizziViewEngine
 
-    useWizziFs true
-    { wizziFs
-
-    useWizziCdn true
+    useWizziCdn false
     { wizziCdn
 
     useWizziJsonFactory true
@@ -132,5 +135,4 @@
     { utils
         useScripts true
         { scripts
-        useDiffMatchPatch true
-        
+        useDiffMatchPatch true       

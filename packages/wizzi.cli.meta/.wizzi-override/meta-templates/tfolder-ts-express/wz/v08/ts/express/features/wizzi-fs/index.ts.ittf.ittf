@@ -6,8 +6,11 @@ $group
         as wizziFsTypes
         from './types'
     import
-        as wizziFsApi
+        as apis
         from './api/wizziFs'
+    import
+        as byHash
+        from './api/byHash'
     import
         @ ApiV1WizziFsController
         from './controllers/apiv1wizzifs'
@@ -19,7 +22,12 @@ $group
             [
                 @ new ApiV1WizziFsController()
     +
+    const wizziFsApi
+        {
+            ... apis
+            ... byHash    
+    +
     export
         @ wizziFsTypes
         @ wizziFsControllers
-        @ wizziFsApi
+        @ wizziFsApi 

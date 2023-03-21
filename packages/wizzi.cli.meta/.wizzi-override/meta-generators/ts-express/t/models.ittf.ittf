@@ -62,14 +62,22 @@ $group
                             name "docs"
                             hasControllers true
                             useMongoDb false
-                    $if cliCtx.useWizziFs
+                    $if cliCtx.features.useWizziFs
                         {
                             name "wizziFs"
+                            fileName "wizzi-fs"
                             hasControllers true
                             useMongoDb false
-                    $if cliCtx.useWizziGist
+                    $if cliCtx.features.useWizziGist
                         {
                             name "wizziGist"
+                            fileName "wizzi-gist"
+                            hasControllers true
+                            useMongoDb false
+                    $if cliCtx.features.useWizziMeta
+                        {
+                            name "wizziMeta"
+                            fileName "wizzi-meta"
                             hasControllers true
                             useMongoDb false
                     $if cliCtx.useWizziProductions
@@ -80,6 +88,11 @@ $group
                     $if cliCtx.usePacki
                         {
                             name "packi"
+                            hasControllers true
+                            useMongoDb false
+                    $if cliCtx.features.usePackiEdit
+                        {
+                            name "packiEdit"
                             hasControllers true
                             useMongoDb false
                     $if cliCtx.useWizziCdn
@@ -200,6 +213,9 @@ $group
             { config
                 useEnvalid true
                 { envalid
+                $if cliCtx.config.useUserInfo
+                    useUserInfo true
+                    { userInfo
         
     $file __dot__wizzi/models/t/express.json.ittf.ittf
         ${"${'$'}"}group
@@ -332,7 +348,7 @@ $group
                 useWizziDocs true
                 { wizziDocs
 
-            $if cliCtx.useWizziFs
+            $if cliCtx.features.useWizziFs
                 useWizziFs true
                 { wizziFs
             
@@ -431,6 +447,8 @@ $group
             ${"${'$'}"}group
                 useReact true
                 { react
+                usePages true
+                { pages
 
     $if cliCtx.useData
         $file __dot__wizzi/models/t/data.json.ittf.ittf

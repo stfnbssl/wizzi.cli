@@ -15,6 +15,7 @@ $group
             'r_cb',
             'r_cb_err',
             'r_promise',
+            'r_promise_async',
         ];
 
     $foreach item in items

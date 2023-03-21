@@ -55,6 +55,42 @@ $group
                 return jsonDocuments
         +
     export
+        async-function createFilesystemFactoryWithParameters
+            param pluginsBaseFolder
+                :string
+            param plugins
+                :[
+                    :string
+            param globalContext
+                :{
+                    :index
+                        :any
+                        param k
+                            :string
+                :optional
+            :return
+                :ref Promise
+                    :param
+                        :ref wizzi.WizziFactory
+            r_promise${'('})
+                _ wizzi.fsFactory
+                    {
+                        { repo
+                            @ storeKind "filesystem"
+                        { plugins
+                            @ items plugins
+                            @ pluginsBaseFolder pluginsBaseFolder
+                        @ globalContext globalContext
+                    function
+                        param err
+                            :any
+                        param wf
+                            :ref wizzi.WizziFactory
+                        if err
+                            return reject(err)
+                        return resolve(wf)
+
+    export
         async-function createFilesystemFactory
             param globalContext
                 :{

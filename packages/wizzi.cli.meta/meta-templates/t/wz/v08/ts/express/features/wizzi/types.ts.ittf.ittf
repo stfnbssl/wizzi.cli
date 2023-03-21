@@ -132,3 +132,52 @@ $group
                 :p contextItems
                     :[
                         :ref MetaContext
+
+    +
+    export
+        :type WizziModelTypesRequest
+            :{
+                :p storeKind
+                    :ref wizzi.StoreKind
+                    :optional
+                :p wfschemaName
+                    :string
+                :p wfschemaIttfDocumentUri
+                    :string
+                :p wfschemaOutputPackageFolder
+                    :string                   
+                :p mTreeBuildupContext
+                    :any
+                    :optional
+                :p globalContext
+                    :any
+                    :optional
+                :p pluginsBaseFolder
+                    :string
+                :p plugins
+                    :[
+                        :string
+
+    +
+    export
+        :type WizziJobTypesRequest
+            :{
+                :p storeKind
+                    :ref wizzi.StoreKind
+                    :optional
+                :p wfjobName
+                    :string
+                    :optional
+                :p wfjobIttfDocumentUri
+                    :string
+                :p globalContext
+                    :any
+                    :optional
+                :p pluginsBaseFolder
+                    :string
+                :p plugins
+                    :[
+                        :string
+                :p productionOptions
+                    :ref wizzi.ProductionOptions
+                    :optional                                            

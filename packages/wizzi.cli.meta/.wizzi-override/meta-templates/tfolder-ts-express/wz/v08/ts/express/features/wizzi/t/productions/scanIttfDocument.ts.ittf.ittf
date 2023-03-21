@@ -82,3 +82,78 @@ $group
                         :ref ittfGraph.IttfDocumentGraph
             throw new Error(myname + '.scanIttfDocumentDb not yet implemented')
 
+    +
+    export
+        async-function folderBrowseToPackiFiles
+            param folderBrowse
+                :ref ittfScanner.FolderBrowseResult
+            :return
+                :ref Promise
+                    :param 
+                        :ref packiTypes.PackiFiles
+            return 
+                new Promise
+                    => 
+                        param resolve
+                        param reject
+                        const packiFiles
+                            :ref packiTypes.PackiFiles
+                            =
+                                { 
+                        _ folderBrowse.fsitems.map
+                            => 
+                                param fsitem
+                                if fsitem.isFolder == false
+                                    set packiFiles[fsitem.uri] =
+                                        { 
+                                            @ type "CODE"
+                                            @ contents fsitem.content
+                        _ resolve(packiFiles)                                    
+    +
+    export
+        async-function folderFsToPackiFiles
+            param folderPath
+                :string
+            :return
+                :ref Promise
+                    :param 
+                        :ref packiTypes.PackiFiles
+            r_promise${'('}
+                const fsfile = fSystem.vfile()
+                const packiFiles
+                    :ref packiTypes.PackiFiles
+                    =
+                        { 
+                try
+                    _  fsfile.getFiles
+                        @ folderPath
+                        {
+                            @ deep true
+                            @ documentContent true
+                        =>
+                            param err
+                                :any
+                            param result
+                                :ref fSystem.FileDef[]
+                            if (err)
+                                error "wizzi.productions.folderFsToPackiFiles", err
+                                r_reject${'('})
+                                    {
+                                        @ message "wizzi.productions.folderFsToPackiFiles"
+                                        @ err
+                            _ result.map
+                                =>
+                                    param fsitem
+                                    set packiFiles[fsitem.relPath]
+                                        {
+                                            @ type "CODE"
+                                            @ contents fsitem.content || ""
+                            log "packiFiles", Object.keys(packiFiles)    
+                            r_resolve${'('} packiFiles )
+                catch ex
+                    r_reject${'('})
+                        {
+                            @ message "wizzi.productions.folderFsToPackiFiles"
+                            @ err ex
+
+

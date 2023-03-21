@@ -138,7 +138,7 @@
     ---
     ${'$'}if wzCtx.Build.utils.useJsCookie
         js-cookie "^2.2.1"
-    ${'$'}if wzCtx.Build.isClientServer || wzCtx.Build.isServer
+    ${'$'}if wzCtx.Build.isClientServer || wzCtx.Build.isServer || wzCtx.Build.usePages
         jsesc "^2.5.2"
     ${'$'}if wzCtx.Build.utils.useStringifySafe
         json-stringify-safe "^5.0.1"

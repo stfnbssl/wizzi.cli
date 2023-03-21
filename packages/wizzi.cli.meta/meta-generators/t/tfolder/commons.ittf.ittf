@@ -10,6 +10,7 @@ $group
             'a_then_catch_reject',
             'catch_reject',
             'r_promise',
+            'r_promise_async',
         ];
 
     $foreach item in items
