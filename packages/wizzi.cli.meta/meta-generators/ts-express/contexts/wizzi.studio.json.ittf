@@ -74,6 +74,8 @@
         { github
         usePackiEdit true
         { packiEdit
+        useWizzi true
+        { wizzi
         useWizziFs true
         { wizziFs
         useWizziGist true

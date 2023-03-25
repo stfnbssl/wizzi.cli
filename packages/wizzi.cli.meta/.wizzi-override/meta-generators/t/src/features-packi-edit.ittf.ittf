@@ -14,6 +14,10 @@ $group
             module
                 ${'$'}include wz/v08/ts/express/features/packi-edit/controllers/localedit.tsx
 
+        $file __dot__wizzi/${pkgPath}src/features/packiEdit/controllers/apiv1local.ts.ittf.ittf
+            module
+                ${'$'}include wz/v08/ts/express/features/packi-edit/controllers/apiv1local.ts
+
         $file __dot__wizzi/${pkgPath}src/features/packiEdit/api/packiEdit.ts.ittf.ittf
             module
                 ${'$'}include wz/v08/ts/express/features/packi-edit/api/packiEdit.ts

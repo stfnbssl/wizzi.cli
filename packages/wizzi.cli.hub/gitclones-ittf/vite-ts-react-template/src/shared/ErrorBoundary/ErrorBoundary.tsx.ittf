@@ -1,0 +1,92 @@
+module
+    import 
+        @ ComponentType
+        @ ReactNode
+        from "react"
+        #
+            # eslint-disable @typescript-eslint/no-explicit-any
+    import 
+        @ ErrorBoundary
+            as Boundary
+        @ ErrorBoundaryPropsWithFallback
+        from "react-error-boundary"
+    import 
+        @ ErrorPageStrategy
+        from "shared/Result"
+    export 
+        :interface FallbackProps
+            :< ErrorType
+            :p error
+                :ref ErrorType
+    export 
+        :type ErrorFallback
+            :< ErrorType
+            :ref ComponentType
+                :param 
+                    :ref FallbackProps
+                        :param 
+                            :ref ErrorType
+    :interface ErrorBoundaryProps
+        :< ErrorType
+        :p onResetKeysChange
+            :optional 
+            :[] 
+                :ref ErrorBoundaryPropsWithFallback
+                :literal "onResetKeysChange"
+        :p onReset
+            :optional 
+            :=> 
+                :void 
+        :p onError
+            :optional 
+            :=> 
+                :void 
+                param error
+                    :ref Error
+                param info
+                    :{ 
+                        :p componentStack
+                            :string 
+        :p fallback
+            :optional 
+            :union 
+                :ref ErrorFallback
+                    :param 
+                        :ref ErrorType
+                :ref React.ReactElement
+                    :param any
+                    :param any
+        :p resetKeys
+            :optional 
+            :ref Array
+                :param any
+    export 
+        :interface IErrorBoundaryProps
+            :< ErrorType
+            :extends ErrorBoundaryProps
+                :param 
+                    :ref ErrorType
+            :p children
+                :ref ReactNode
+    export 
+        function ErrorBoundary
+            :< ErrorType
+                :ref Error
+            { 
+                @ fallback
+                @ children
+                ... props
+                :ref IErrorBoundaryProps
+                    :param 
+                        :ref ErrorType
+            return 
+                < Boundary 
+                    @ FallbackComponent
+                        ?? 
+                            ( 
+                                + fallback
+                                    :as 
+                                        :any 
+                            + ErrorPageStrategy
+                    @ {...props}
+                    + {children}

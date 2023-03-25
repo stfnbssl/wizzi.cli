@@ -1,0 +1,27 @@
+module
+    import 
+        @ HTTPError
+        from "ky"
+    import 
+        @ AjaxError
+        from "../AjaxError"
+    export 
+        class InternalServerException
+            super AjaxError
+            ctor 
+                param response
+                    :ref Response
+                param request
+                    :ref Request
+                param options
+                    :[] 
+                        :ref HTTPError
+                        :literal "options"
+                _ super
+                    @ 500
+                    @ response
+                    @ request
+                    @ options
+                    `lit 
+                        + Unknown internal server error
+                set this.name = "InternalServerException"

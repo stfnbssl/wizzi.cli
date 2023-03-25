@@ -1,0 +1,7 @@
+module
+    export 
+        :interface IRating
+            :p rate
+                :number 
+            :p count
+                :number 

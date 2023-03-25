@@ -26,6 +26,16 @@ $group
                 ${"${'$'}"}group
                     artifacts-includes(&schema)
 
+        $
+            var items = [
+                "utilNode",
+                "lineParser",
+            ];
+
+        $foreach item in items
+            $file __dot__wizzi/${pkgPath}lib/artifacts/utils/${item}.js.ittf.ittf
+                module
+                    ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/utils/${item}.js
 
         $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/extended/trans/main.js.ittf.ittf
             module
@@ -46,6 +56,89 @@ $group
                     ${"${'$'}"}group
                         ${'$'}include wz/v08/wizzi/plugin/lib/artifacts/trans/extended/biblio.js
 
+        $if schema.hasWizzifier
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/wizzifier.js.ittf.ittf
+                    module
+                        ${'${"$"}'}
+                            var schemaName = '${schema.name}';
+                        ${'$'}
+                            var parserImportCode = [
+                                $foreach line in schema.wizzifier.parserImportCode
+                                    "${line}",
+                            ]
+                            var parserInvokeCode = [
+                                $foreach line in schema.wizzifier.parserInvokeCode
+                                    "${line}",
+                            ]
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/wizzifier.js
+
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/cleanAST.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/cleanAST.js
+
+                $
+                    var items = [
+                        "basewizzifier",
+                    ];
+
+                $foreach item in items
+                    $file __dot__wizzi/${pkgPath}lib/wizzifiers/t/${item}.js.ittf.ittf
+                        ${"${'$'}"}group
+                            ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/tfolder/${item}.js
+
+                $
+                    var items = [
+                        "f",
+                        "f_a",
+                        "f_a_in_tag",
+                        "f_a_temp",
+                        "format",
+                        "f_p",
+                        "f_p_tag",
+                        "f_p_temp",
+                        "get_text_from_1_children",
+                        "helper_functions",
+                        "name",
+                        "tag",
+                    ];
+
+                $foreach item in items
+                    $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/t/${item}.js.ittf.ittf
+                        ${"${'$'}"}group
+                            ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/tfolder/schema_specific/${item}.js
+
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/lineparser.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/utils/lineparser.js
+                
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/ittfWriter.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/utils/ittfWriter.js
+
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/stringWriter.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/utils/stringWriter.js
+
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/cloner.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/utils/cloner.js
+
+                $
+                    var items = [
+                        "lineparser/parse",
+                        "lineparser/parseInterpolation",
+                    ];
+
+                $foreach item in items
+                    $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/t/${item}.js.ittf.ittf
+                        ${"${'$'}"}group
+                            ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/utils/tfolder/${item}.js
+
+                $file __dot__wizzi/${pkgPath}lib/wizzifiers/errors.js.ittf.ittf
+                    module
+                        ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/errors.js
+
+
 
     $
         var items = [
@@ -62,8 +155,10 @@ $group
 
     $
         var items = [
+            "_md_gen_items",
             "async-md-gen-items",
             "async-md",
+            "async-md-ctx",
             "function",
             "f_error",
             "gen",
@@ -72,6 +167,9 @@ $group
             "statement",
             "statements-writer",
             "trans",
+            "xml-dump-attr",
+            "xml-dump-el-open",
+            "xml-dump-el-close",
         ];
 
     $foreach item in items

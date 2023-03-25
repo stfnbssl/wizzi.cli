@@ -1,0 +1,42 @@
+module
+    import 
+        @ ReactNode
+        from "react"
+    import 
+        @ Box
+        @ ChakraProps
+        from "@chakra-ui/react"
+    :interface IProps
+        :p children
+            :ref ReactNode
+        :p maxW
+            :optional 
+            :[] 
+                :ref ChakraProps
+                :literal "maxW"
+    const Page
+        => 
+            { 
+                @ children
+                @ maxW
+                    = "1000px"
+                :ref IProps
+            return 
+                < Box 
+                    @ px
+                        { 
+                            @ base 3
+                            @ md 4
+                    @ maxW {maxW}
+                    @ m "0 auto"
+                    @ pt
+                        { 
+                            @ base 20
+                            @ md 24
+                    @ pb
+                        { 
+                            @ base 4
+                            @ md 6
+                    + {children}
+    export 
+        @ Page

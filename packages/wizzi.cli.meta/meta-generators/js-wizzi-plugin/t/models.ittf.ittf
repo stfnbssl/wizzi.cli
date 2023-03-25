@@ -23,6 +23,9 @@ $group
                             useInflection true
                         $if cliCtx.Utils.useParseUrl
                             useParseUrl true
+                $if cliCtx.BuildVars
+                    $foreach bv in cliCtx.BuildVars
+                        ${bv.name} ${bv.value}
             [ Schemas
                 $foreach schema in cliCtx.Schemas
                     {

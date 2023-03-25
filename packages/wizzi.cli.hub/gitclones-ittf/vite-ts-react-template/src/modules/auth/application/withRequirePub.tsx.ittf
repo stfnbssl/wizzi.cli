@@ -1,0 +1,33 @@
+module
+    import 
+        @ Component
+        @ ComponentType
+        from "react"
+    import 
+        @ IRequirePubProps
+        @ RequirePub
+        from "./RequirePub"
+    export 
+        function withRequirePub
+            :< Props
+            param Wrapper
+                :ref ComponentType
+                    :param 
+                        :ref Props
+            param props
+                :ref Omit
+                    :param 
+                        :ref IRequirePubProps
+                    :param 
+                        :literal "children"
+                :optional 
+            return 
+                class 
+                    super Component
+                        :ref Props
+                    m render
+                        return 
+                            < RequirePub 
+                                @ to {props?.to}
+                                < Wrapper 
+                                    @ {...this.props}

@@ -1,0 +1,11 @@
+module
+    import React from "react"
+    import ReactDOM from "react-dom/client"
+    import App from "./app"
+    _ ReactDOM.createRoot
+        _ document.getElementById("root")
+            :as 
+                :ref HTMLElement
+        ._ render
+            < React.StrictMode 
+                < App 

@@ -1,0 +1,155 @@
+module
+    import 
+        @ useState
+        from "react"
+    import 
+        @ Box
+        @ FormControl
+        @ FormLabel
+        @ Input
+        @ Checkbox
+        @ Stack
+        @ Link
+        @ Button
+        @ Heading
+        @ Text
+        @ useColorModeValue
+        @ VStack
+        @ FormErrorMessage
+        from "@chakra-ui/react"
+    import 
+        @ useSecondaryTextColor
+        from "theme"
+    import 
+        @ t
+        from "utils"
+    import 
+        @ useAuthStore
+        from "../application"
+    import 
+        @ useSignInNotifications
+        from "./useSignInNotifications"
+    export 
+        const SignInForm
+            => 
+                const secondaryColor = useSecondaryTextColor()
+                const [username, setUsername] = useState("mor_2314")
+                const [password, setPassword] = useState("83r5^_")
+                const [notifySuccess, notifyFailure] = useSignInNotifications()
+                const login
+                    _ useAuthStore
+                        => 
+                            param store
+                            +
+                                @expr store.login
+                const isUsernameError = username === ""
+                const isPasswordError = password === ""
+                return 
+                    < VStack 
+                        @ align "stretch"
+                        @ spacing {8}
+                        @ w "100%"
+                        @ maxW "lg"
+                        < VStack 
+                            @ textAlign "center"
+                            < Heading 
+                                @ fontSize
+                                    { 
+                                        @ base "2xl"
+                                        @ md "4xl"
+                                + {t("Sign in to your account")}
+                            < Text 
+                                @ fontSize
+                                    { 
+                                        @ base "md"
+                                        @ md "lg"
+                                @ color {secondaryColor}
+                                { 
+                                    _ t
+                                        @ "to enjoy all of our cool {link} ✌️"
+                                        { 
+                                            @ link
+                                                < Link 
+                                                    @ color {"blue.400"}
+                                                    + {t("features")}
+                        < Box 
+                            @ rounded "lg"
+                            @ bg {useColorModeValue("white", "gray.700")}
+                            @ boxShadow "lg"
+                            @ p
+                                { 
+                                    @ base 6
+                                    @ md 8
+                            < VStack 
+                                @ as "form"
+                                @ spacing {4}
+                                @ onSubmit
+                                    => 
+                                        param e
+                                        _ e.preventDefault()
+                                        _ login
+                                            { 
+                                                @ username
+                                                @ password
+                                            ._ then
+                                                => 
+                                                    _ notifySuccess()
+                                            ._ catch
+                                                => 
+                                                    _ notifyFailure()
+                                < FormControl 
+                                    @ id "username"
+                                    @ isRequired
+                                    @ isInvalid {isUsernameError}
+                                    < FormLabel 
+                                        + {t("User login")}
+                                    < Input 
+                                        @ value {username}
+                                        @ onChange
+                                            => 
+                                                param e
+                                                _ setUsername(e.currentTarget.value)
+                                    { 
+                                        && 
+                                            + isUsernameError
+                                            < FormErrorMessage 
+                                                + {t("Login is required.")}
+                                < FormControl 
+                                    @ id "password"
+                                    @ isRequired
+                                    @ isInvalid {isPasswordError}
+                                    < FormLabel 
+                                        + {t("Password")}
+                                    < Input 
+                                        @ type "password"
+                                        @ value {password}
+                                        @ onChange
+                                            => 
+                                                param e
+                                                _ setPassword(e.currentTarget.value)
+                                    { 
+                                        && 
+                                            + isPasswordError
+                                            < FormErrorMessage 
+                                                + {t("Password is required.")}
+                                < VStack 
+                                    @ w "100%"
+                                    @ spacing {10}
+                                    < Stack 
+                                        @ w "100%"
+                                        @ direction
+                                            { 
+                                                @ base "column"
+                                                @ sm "row"
+                                        @ align "start"
+                                        @ justify "space-between"
+                                        < Checkbox 
+                                            + {t("Remember me")}
+                                        < Link 
+                                            @ color "blue.400"
+                                            + {t("Forgot password?")}
+                                    < Button 
+                                        @ type "submit"
+                                        @ colorScheme "blue"
+                                        @ w "100%"
+                                        + {t("Sign in")}

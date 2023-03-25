@@ -1,0 +1,81 @@
+module
+    import 
+        @ ArrowBackIcon
+        from "@chakra-ui/icons"
+    import 
+        @ VStack
+        @ Button
+        from "@chakra-ui/react"
+    import 
+        @ t
+        from "utils"
+    import 
+        @ ResourceNotFoundException
+        from "utils"
+    import 
+        @ Page
+        from "shared/Layout"
+    import 
+        @ InternalErrorResult
+        from "shared/Result"
+    import 
+        @ useNavigate
+        @ useParams
+        @ useRouteError
+        from "shared/Router"
+    import 
+        @ useProductQuery
+        from "modules/products/infrastructure"
+    import 
+        @ ProductDetails
+        from "modules/products/presentation"
+    import 
+        @ ProductNotFoundResult
+        from "modules/products/presentation"
+    const ProductPage
+        => 
+            const params
+                _ useParams
+                    :param 
+                        :{ 
+                            :p productId
+                                :string 
+            const navigate = useNavigate()
+            const 
+                { 
+                    @ data
+                =
+                    _ useProductQuery
+                        @expr params.productId
+                            :as 
+                                :string 
+            return 
+                < Page 
+                    < VStack 
+                        @ display "stretch"
+                        @ spacing {6}
+                        < Button 
+                            @ leftIcon
+                                < ArrowBackIcon 
+                            @ variant "link"
+                            @ onClick
+                                => 
+                                    _ navigate("/products")
+                            + {t("Back to products' list")}
+                        < ProductDetails 
+                            @ product
+                                :! data
+                            @ onBack
+                                => 
+                                    _ navigate("/products")
+    export 
+        const Component = ProductPage
+    export 
+        const ErrorBoundary
+            => 
+                const error = useRouteError()
+                if error instanceof ResourceNotFoundException
+                    return 
+                        < ProductNotFoundResult 
+                return 
+                    < InternalErrorResult 

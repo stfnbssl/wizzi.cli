@@ -1,0 +1,42 @@
+module
+    import React from "react"
+    import 
+        @ SunIcon
+        @ MoonIcon
+        from "@chakra-ui/icons"
+    import 
+        @ IconButton
+        @ useColorMode
+        @ IconButtonProps
+        from "@chakra-ui/react"
+    const ToggleModeButton
+        => 
+            param props
+                :ref Omit
+                    :param 
+                        :ref IconButtonProps
+                    :param 
+                        :union 
+                            :literal "aria-label"
+                            :literal "onClick"
+                            :literal "variant"
+                            :literal "icon"
+            const 
+                { 
+                    @ colorMode
+                    @ toggleColorMode
+                = useColorMode()
+            return 
+                < IconButton 
+                    @ aria-label "Switch mode"
+                    @ onClick {toggleColorMode}
+                    @ variant "ghost"
+                    @ icon
+                        iif colorMode === "light"
+                            then
+                                < MoonIcon 
+                            else
+                                < SunIcon 
+                    @ {...props}
+    export 
+        @ ToggleModeButton

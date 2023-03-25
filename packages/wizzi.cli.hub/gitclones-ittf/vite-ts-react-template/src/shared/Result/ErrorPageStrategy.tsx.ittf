@@ -1,0 +1,55 @@
+module
+    import 
+        @ AjaxError
+        from "utils/http"
+        #
+            # eslint-disable @typescript-eslint/no-explicit-any
+    import 
+        @ useNavigate
+        @ useRouteError
+        from "shared/Router"
+    import 
+        @ useAuthStore
+        from "modules/auth/application"
+    import 
+        @ InternalErrorResult
+        from "./InternalErrorResult"
+    import 
+        @ InternalServerErrorResult
+        from "./InternalServerErrorResult"
+    import 
+        @ NotFoundResult
+        from "./NotFoundResult"
+    :interface IProps
+        :< Response
+            :[] 
+                :ref AjaxError
+                :literal "response"
+        :p error
+            :optional 
+            :ref AjaxError
+                :param 
+                    :ref Response
+    export 
+        function ErrorPageStrategy
+            :< Response
+                :[] 
+                    :ref AjaxError
+                    :literal "response"
+            param props
+                :ref IProps
+                    :param 
+                        :ref Response
+            const navigate = useNavigate()
+            const logout
+                _ useAuthStore
+                    => 
+                        param store
+                        +
+                            @expr store.logout
+            const routeError = useRouteError()
+            const error = props.error ?? routeError
+            if error instanceof AjaxError
+                switch error.status
+            return 
+                < InternalErrorResult 

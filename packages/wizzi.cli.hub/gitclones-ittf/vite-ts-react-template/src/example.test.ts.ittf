@@ -1,0 +1,9 @@
+module
+    import 
+        @ expect
+        @ test
+        from "vitest"
+    _ test
+        @ "should work as expected"
+        => 
+            _ expect(Math.sqrt(4)).toBe(2)

@@ -1,0 +1,23 @@
+module
+    import 
+        @ LoaderFunctionArgs
+        from "shared/Router"
+    import 
+        @ cartProductsLoader
+        from "modules/carts/infrastructure"
+    export 
+        const cartPageLoader
+            => 
+                { 
+                    @ params
+                    :ref LoaderFunctionArgs
+                return 
+                    _ cartProductsLoader
+                        @expr 
+                            ( 
+                                + params
+                                    :as 
+                                        :{ 
+                                            :p cartId
+                                                :string 
+                            . cartId

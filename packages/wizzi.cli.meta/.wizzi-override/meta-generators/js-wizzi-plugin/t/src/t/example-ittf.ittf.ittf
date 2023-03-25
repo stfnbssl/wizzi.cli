@@ -4,4 +4,4 @@
     ${schema.name} first
         
         $if schema.name == 'svg'
-            ${'$'}include wz/v08/wizzi/plugin/examples/svg
+            ${'$'}include wz/v08/wizzi/plugin/examples/ittf/svg

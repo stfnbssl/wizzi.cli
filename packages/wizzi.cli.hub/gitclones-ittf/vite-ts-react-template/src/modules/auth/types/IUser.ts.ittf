@@ -1,0 +1,34 @@
+module
+    export 
+        :interface IUser
+            :p id
+                :number 
+            :p email
+                :string 
+            :p username
+                :string 
+            :p name
+                :{ 
+                    :p firstname
+                        :string 
+                    :p lastname
+                        :string 
+            :p phone
+                :string 
+            :p address
+                :ref IAddress
+    :interface IAddress
+        :p city
+            :string 
+        :p street
+            :string 
+        :p number
+            :number 
+        :p zipcode
+            :string 
+        :p geolocation
+            :{ 
+                :p lat
+                    :string 
+                :p long
+                    :string 

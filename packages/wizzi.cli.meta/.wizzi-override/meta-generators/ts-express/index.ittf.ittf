@@ -37,8 +37,8 @@ template ts-express
     $include src/site-wizzi-docs
     $include src/site-wizzi-productions
     $include src/tfolder
-    $include src/utils
     $include src/index
+    $include tests/utils
     $include public
     $include tests
     $include tfolder/v08/index

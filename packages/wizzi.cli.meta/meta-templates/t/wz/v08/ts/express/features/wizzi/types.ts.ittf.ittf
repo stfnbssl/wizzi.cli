@@ -28,6 +28,7 @@ $group
             :{
                 :p generator
                     :string
+                    :optional
                 :p artifactContext
                     :any
                     :optional

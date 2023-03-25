@@ -1,0 +1,290 @@
+module
+    kind react
+    const INTEGRITY_CHECKSUM = '3d6b9f06410d179a7f7404d4bf4c3c70'
+        #
+            # eslint-disable
+        #
+            # tslint:disable
+        #
+            # *
+            # * Mock Service Worker (1.1.0).
+            # * @see https://github.com/mswjs/msw
+            # * - Please do NOT modify this file.
+            # * - Please do NOT serve this file on production.
+            # 
+    const activeClientIds = new Set()
+    _ self.addEventListener
+        @ 'install'
+        function 
+            _ self.skipWaiting()
+    _ self.addEventListener
+        @ 'activate'
+        function 
+            param event
+            _ event.waitUntil(self.clients.claim())
+    _ self.addEventListener
+        @ 'message'
+        async-function 
+            param event
+            const clientId = event.source.id
+            if !clientId || !self.clients
+                return 
+            const client
+                await 
+                    _ self.clients.get(clientId)
+            if !client
+                return 
+            const allClients
+                await 
+                    _ self.clients.matchAll
+                        { 
+                            @ type 'window'
+            switch event.data
+                case 'KEEPALIVE_REQUEST'
+                    _ sendToClient
+                        @ client
+                        { 
+                            @ type 'KEEPALIVE_RESPONSE'
+                    break 
+                case 'INTEGRITY_CHECK_REQUEST'
+                    _ sendToClient
+                        @ client
+                        { 
+                            @ type 'INTEGRITY_CHECK_RESPONSE'
+                            @ payload INTEGRITY_CHECKSUM
+                    break 
+                case 'MOCK_ACTIVATE'
+                    _ activeClientIds.add(clientId)
+                    _ sendToClient
+                        @ client
+                        { 
+                            @ type 'MOCKING_ENABLED'
+                            @ payload true
+                    break 
+                case 'MOCK_DEACTIVATE'
+                    _ activeClientIds.delete(clientId)
+                    break 
+                case 'CLIENT_CLOSED'
+                    _ activeClientIds.delete(clientId)
+                    const remainingClients
+                        _ allClients.filter
+                            => 
+                                param client
+                                return client.id !== clientId
+                        # Unregister itself when there are no more clients
+                    if remainingClients.length === 0
+                        _ self.registration.unregister()
+                    break 
+    _ self.addEventListener
+        @ 'fetch'
+        function 
+            param event
+            const 
+                { 
+                    @ request
+                = event
+            const accept = request.headers.get('accept') || ''
+                # Bypass server-sent events.
+            if accept.includes('text/event-stream')
+                return 
+            if request.mode === 'navigate'
+                return 
+            if request.cache === 'only-if-cached' && request.mode !== 'same-origin'
+                return 
+            if activeClientIds.size === 0
+                return 
+            const requestId = Math.random().toString(16).slice(2)
+                # Generate unique request ID.
+            _ event.respondWith
+                _ handleRequest(event, requestId).catch
+                    => 
+                        param error
+                        if error.name === 'NetworkError'
+                            _ console.warn('[MSW] Successfully emulated a network error for the "%s %s" request.', request.method, request.url)
+                            return 
+                        _ console.error
+                            `lit 
+                                + \&lf;
+                                + [MSW] Caught an exception from the "%s %s" request (%s). This is probably not a problem with Mock Service Worker. There is likely an additional logging output above.
+                            @expr request.method
+                            @expr request.url
+                            `lit 
+                                + 
+                                @ error.name
+                                + :&nbsp;
+                                @ error.message
+                                + 
+                            # At this point, any exception indicates an issue with the original request/response.
+    async-function handleRequest
+        param event
+        param requestId
+        const client
+            await 
+                _ resolveMainClient(event)
+        const response
+            await 
+                _ getResponse(event, client, requestId)
+            # Send back the response clone for the "response:*" life-cycle events.
+            # Ensure MSW is active and ready to handle the message, otherwise
+            # this message will pend indefinitely.
+        if client && activeClientIds.has(client.id)
+            iife 
+                const clonedResponse = response.clone()
+                _ sendToClient
+                    @ client
+                    { 
+                        @ type 'RESPONSE'
+                        { payload
+                            @ requestId
+                            @ type clonedResponse.type
+                            @ ok clonedResponse.ok
+                            @ status clonedResponse.status
+                            @ statusText clonedResponse.statusText
+                            @ body
+                                iif clonedResponse.body === null
+                                    then null
+                                    else
+                                        await 
+                                            _ clonedResponse.text()
+                            @ headers Object.fromEntries(clonedResponse.headers.entries())
+                            @ redirected clonedResponse.redirected
+        return response
+        # Resolve the main client for the given event.
+        # Client that issues a request doesn't necessarily equal the client
+        # that registered the worker. It's with the latter the worker should
+        # communicate with during the response resolving phase.
+    async-function resolveMainClient
+        param event
+        const client
+            await 
+                _ self.clients.get(event.clientId)
+        if client?.frameType === 'top-level'
+            return client
+        const allClients
+            await 
+                _ self.clients.matchAll
+                    { 
+                        @ type 'window'
+        return 
+            _ allClients.filter
+                => 
+                    param client
+                    return client.visibilityState === 'visible'
+                        # Get only those clients that are currently visible.
+                ._ find
+                    => 
+                        param client
+                        return activeClientIds.has(client.id)
+                            # Find the client ID that's recorded in the
+                            # set of clients that have registered the worker.
+        # Resolve the main client for the given event.
+        # Client that issues a request doesn't necessarily equal the client
+        # that registered the worker. It's with the latter the worker should
+        # communicate with during the response resolving phase.
+    async-function getResponse
+        param event
+        param client
+        param requestId
+        const 
+            { 
+                @ request
+            = event
+        const clonedRequest = request.clone()
+        function passthrough
+            const headers = Object.fromEntries(clonedRequest.headers.entries())
+                # Clone the request because it might've been already used
+                # (i.e. its body has been read and sent to the client).
+                # Remove MSW-specific request headers so the bypassed requests
+                # comply with the server's CORS preflight check.
+                # Operate with the headers as an object because request "Headers"
+                # are immutable.
+            delete headers['x-msw-bypass']
+                # Remove MSW-specific request headers so the bypassed requests
+                # comply with the server's CORS preflight check.
+                # Operate with the headers as an object because request "Headers"
+                # are immutable.
+            return 
+                _ fetch
+                    @ clonedRequest
+                    { 
+                        @ headers
+            # Bypass mocking when the client is not active.
+        if !client
+            return passthrough()
+        if !activeClientIds.has(client.id)
+            return passthrough()
+        if request.headers.get('x-msw-bypass') === 'true'
+            return passthrough()
+        const clientMessage
+            await 
+                _ sendToClient
+                    @ client
+                    { 
+                        @ type 'REQUEST'
+                        { payload
+                            @ id requestId
+                            @ url request.url
+                            @ method request.method
+                            @ headers Object.fromEntries(request.headers.entries())
+                            @ cache request.cache
+                            @ mode request.mode
+                            @ credentials request.credentials
+                            @ destination request.destination
+                            @ integrity request.integrity
+                            @ redirect request.redirect
+                            @ referrer request.referrer
+                            @ referrerPolicy request.referrerPolicy
+                            @ body
+                                await 
+                                    _ request.text()
+                            @ bodyUsed request.bodyUsed
+                            @ keepalive request.keepalive
+            # Notify the client that a request has been intercepted.
+        switch clientMessage.type
+            case 'MOCK_RESPONSE'
+                return respondWithMock(clientMessage.data)
+            case 'MOCK_NOT_FOUND'
+                return passthrough()
+            case 'NETWORK_ERROR'
+                const 
+                    { 
+                        @ name
+                        @ message
+                    = clientMessage.data
+                const networkError = new Error(message)
+                set networkError.name = name
+                    # Rejecting a "respondWith" promise emulates a network error.
+                throw networkError
+                    # Rejecting a "respondWith" promise emulates a network error.
+        return passthrough()
+    function sendToClient
+        param client
+        param message
+        return 
+            new Promise
+                => 
+                    param resolve
+                    param reject
+                    const channel = new MessageChannel()
+                    set channel.port1.onmessage =
+                        => 
+                            param event
+                            if event.data && event.data.error
+                                return reject(event.data.error)
+                            _ resolve(event.data)
+                    _ client.postMessage
+                        @ message
+                        [ 
+                            @ channel.port2
+    function sleep
+        param timeMs
+        return 
+            new Promise
+                => 
+                    param resolve
+                    _ setTimeout(resolve, timeMs)
+    async-function respondWithMock
+        param response
+        await 
+            _ sleep(response.delay)
+        return new Response(response.body, response)

@@ -1,0 +1,74 @@
+module
+    import 
+        @ getLocale
+        @ locale
+        from "./locale"
+    import 
+        @ t
+        from "./message"
+    export 
+        class NumberVO
+            m format
+                static
+                param value
+                    :union 
+                        :number 
+                        :string 
+                param options
+                    :ref Pick
+                        :param 
+                            :ref Intl.NumberFormatOptions
+                        :param 
+                            :literal "minimumFractionDigits"
+                    = 
+                        { 
+                :return
+                    :string 
+                const numberValue
+                    iif typeof value === "string"
+                        then parseFloat(value)
+                        else value
+                if isNaN(numberValue)
+                    return "---"
+                return new Intl.NumberFormat(locale, options).format(numberValue)
+            m formatCurrency
+                static
+                param value
+                    :union 
+                        :number 
+                        :string 
+                param currency = getLocale().defaultCurrency
+                :return
+                    :string 
+                const numberValue
+                    iif typeof value === "string"
+                        then parseFloat(value)
+                        else value
+                if isNaN(numberValue)
+                    return "---"
+                try 
+                    return 
+                        new Intl.NumberFormat
+                            @ locale
+                            { 
+                                @ style "currency"
+                                @ currency
+                                @ minimumFractionDigits 2
+                                @ currencyDisplay "symbol"
+                            ._ format
+                                @ numberValue
+                catch e
+                    if e instanceof Error && e.message.includes("Invalid currency code")
+                        return 
+                            `lit 
+                                + 
+                                new Intl.NumberFormat
+                                    @ locale
+                                    { 
+                                        @ minimumFractionDigits 2
+                                    ._ format
+                                        @ numberValue
+                                + &nbsp;
+                                _ t("(unknown currency)")
+                                + 
+                    return "---"

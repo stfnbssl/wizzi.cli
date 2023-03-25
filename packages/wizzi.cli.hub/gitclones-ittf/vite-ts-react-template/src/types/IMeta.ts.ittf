@@ -1,0 +1,10 @@
+module
+    export 
+        :interface IMeta
+            :p total
+                :number 
+            :p limit
+                :number 
+            :p sort
+                :optional 
+                :string 

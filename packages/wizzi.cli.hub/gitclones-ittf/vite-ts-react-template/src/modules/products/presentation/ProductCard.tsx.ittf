@@ -1,0 +1,116 @@
+module
+    import 
+        @ Box
+        @ Text
+        @ VStack
+        @ HStack
+        @ Button
+        from "@chakra-ui/react"
+    import 
+        @ useSecondaryTextColor
+        from "theme"
+    import 
+        @ t
+        from "utils"
+    import 
+        @ useNavigate
+        from "shared/Router"
+    import 
+        @ useNotImplementedYetToast
+        from "shared/Toast"
+    import 
+        @ Category
+        from "../types"
+    import 
+        @ useCategoryLabel
+        from "./useCategoryLabel"
+    :interface IProps
+        :p id
+            :number 
+        :p title
+            :string 
+        :p category
+            :ref Category
+        :p price
+            :number 
+        :p imageUrl
+            :string 
+    const ProductCard
+        => 
+            { 
+                @ title
+                @ category
+                @ price
+                @ imageUrl
+                @ id
+                :ref IProps
+            const navigate = useNavigate()
+            const categoryLabel = useCategoryLabel(category)
+            const categoryColor = useSecondaryTextColor()
+            const notImplemented = useNotImplementedYetToast()
+            return 
+                < VStack 
+                    @ spacing {3}
+                    @ overflow "hidden"
+                    @ rounded "lg"
+                    < Box 
+                        @ onClick
+                            => 
+                                _ navigate
+                                    `lit 
+                                        + /products/
+                                        @ id
+                                        + 
+                        @ cursor "pointer"
+                        @ h {64}
+                        @ w "lg"
+                        @ bgSize "cover"
+                        @ bgPos "center"
+                        @ style
+                            { 
+                                @ backgroundImage
+                                    `lit 
+                                        + url(
+                                        @ imageUrl
+                                        + )
+                    < VStack 
+                        @ w "100%"
+                        @ spacing {0}
+                        @ align "flex-start"
+                        < HStack 
+                            @ w "100%"
+                            @ justify "space-between"
+                            @ fontSize
+                                { 
+                                    @ base "md"
+                                    @ md "lg"
+                            @ fontWeight "semibold"
+                            @ spacing {6}
+                            < Text 
+                                @ isTruncated
+                                @ onClick
+                                    => 
+                                        _ navigate
+                                            `lit 
+                                                + /products/
+                                                @ id
+                                                + 
+                                @ cursor "pointer"
+                                + {title}
+                            < Text 
+                                + $
+                                + {price}
+                        < Text 
+                            @ fontStyle "italic"
+                            @ fontSize
+                                { 
+                                    @ base "sm"
+                                    @ md "md"
+                            @ color {categoryColor}
+                            + {categoryLabel}
+                    < Button 
+                        @ w "100%"
+                        @ onClick {notImplemented}
+                        + {t("Add to cart")}
+    export 
+        @ ProductCard

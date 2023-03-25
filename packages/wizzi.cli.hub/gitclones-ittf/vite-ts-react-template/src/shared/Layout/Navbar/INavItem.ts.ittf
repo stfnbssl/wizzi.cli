@@ -1,0 +1,16 @@
+module
+    export 
+        :interface INavItem
+            :p label
+                :string 
+            :p subLabel
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref Array
+                    :param 
+                        :ref INavItem
+            :p href
+                :optional 
+                :string 

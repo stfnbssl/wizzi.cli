@@ -1,0 +1,126 @@
+module
+    import 
+        @ merge
+        from "lodash-es"
+    export 
+        :type DeepPartial
+            :< T
+            :mapped 
+                :optional 
+                :< P
+                    :keyof 
+                        :ref T
+                :ref DeepPartial
+                    :param 
+                        :[] 
+                            :ref T
+                            :ref P
+    :type ExtendStructureFn
+        :< T
+        :=> 
+            :ref DeepPartial
+                :param 
+                    :ref T
+            param structure
+                :ref T
+    :type CreateStructure
+        :< T
+        :=> 
+            :ref T
+            param extend
+                :union 
+                    :ref DeepPartial
+                        :param 
+                            :ref T
+                    :ref ExtendStructureFn
+                        :param 
+                            :ref T
+                :optional 
+    export 
+        function createStructureFactory
+            :< T
+            param structure
+                :ref T
+            :return
+                :ref CreateStructure
+                    :param 
+                        :ref T
+            return 
+                => 
+                    param extend
+                        =
+                            { 
+                    if typeof extend === "function"
+                        return 
+                            _ merge
+                                { 
+                                @ structure
+                                _ extend(structure)
+                    return 
+                        _ merge
+                            { 
+                            @ structure
+                            @ extend
+    :type ExtendCollectionFn
+        :< T
+        :=> 
+            :[ 
+                :ref DeepPartial
+                    :param 
+                        :ref T
+            param structure
+                :ref T
+    :type CreateCollection
+        :< T
+        :=> 
+            :[ 
+                :ref T
+            param extend
+                :union 
+                    :[ 
+                        :ref DeepPartial
+                            :param 
+                                :ref T
+                    :ref ExtendCollectionFn
+                        :param 
+                            :ref T
+    export 
+        function createCollectionFactory
+            :< T
+            param structure
+                :ref T
+            :return
+                :ref CreateCollection
+                    :param 
+                        :ref T
+            return 
+                => 
+                    param extend
+                    if typeof extend === "function"
+                        return 
+                            _ extend(structure).map
+                                => 
+                                    param r
+                                    _ merge
+                                        { 
+                                        @ structure
+                                        @ r
+                    return 
+                        _ extend.map
+                            => 
+                                param element
+                                _ merge
+                                    { 
+                                    @ structure
+                                    @ element
+    export 
+        function createFixture
+            :< T
+            param structure
+                :ref T
+            return 
+                { 
+                    m toStructure
+                        return structure
+                    @ createPermutation createStructureFactory(structure)
+                    @ createCollection createCollectionFactory(structure)

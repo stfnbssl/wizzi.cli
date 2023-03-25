@@ -14,12 +14,13 @@ $group
     var async = require('async')
 	var verify = require('wizzi-utils').verify
 	var lineparser = verify.lineParser
+    var errors = require('../../../../../errors')
 	${'$'}hook imports
     +
 	var md
         set module.exports =
             { 
-    var myname = '${'$'}{md.plugin}.${'$'}{md.schema}.${'$'}{md.Name}.trans.main'
+    var myname = '${'$'}{md.plugin}.${'$'}{md.schema}.${'$'}{md.name}.trans.main'
     +
 	md-trans-main${call}
 		${'$'}if md.checkSchema

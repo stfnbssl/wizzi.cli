@@ -115,12 +115,36 @@ else if (cmd == 'js-vanilla-data-entry') {
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/js.vanilla.data-entry'
      })
 }
+else if (cmd == 'wizzi-plugin-wzjob') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.wzjob', 
+        pkgName: 'wizzi.plugin.wzjob', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.wzjob'
+     })
+}
+else if (cmd == 'wizzi-plugin-wzschema') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.wzschema', 
+        pkgName: 'wizzi.plugin.wzschema', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.wzschema'
+     })
+}
 else if (cmd == 'wizzi-plugin-svg') {
     createEx({
         metaGenerator: 'js-wizzi-plugin', 
         context: 'wizzi.plugin.svg', 
         pkgName: 'wizzi.plugin.svg', 
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.svg'
+     })
+}
+else if (cmd == 'wizzi-plugin-graphql') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.graphql', 
+        pkgName: 'wizzi.plugin.graphql', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.graphql'
      })
 }
 else if (cmd == 'wizzi-plugin-org') {

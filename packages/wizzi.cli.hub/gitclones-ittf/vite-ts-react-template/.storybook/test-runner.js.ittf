@@ -1,0 +1,36 @@
+module
+    kind react
+    const 
+        { 
+            @ getStoryContext
+        = require("@storybook/test-runner")
+    const 
+        { 
+            @ injectAxe
+            @ checkA11y
+        = require("axe-playwright")
+    set module.exports =
+        { 
+            m preRender
+                async
+                param page
+                param context
+                await 
+                    _ injectAxe(page)
+            m postRender
+                async
+                param page
+                param context
+                const storyContext
+                    await 
+                        _ getStoryContext(page, context)
+                if !storyContext.parameters?.a11y?.disable
+                    await 
+                        _ checkA11y
+                            @ page
+                            @ "#storybook-root"
+                            { 
+                                @ detailedReport true
+                                { detailedReportOptions
+                                    @ html true
+                                @ axeOptions storyContext.parameters?.a11y?.options

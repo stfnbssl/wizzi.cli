@@ -1,0 +1,114 @@
+module
+    import 
+        @ ComponentProps
+        @ Fragment
+        from "react"
+    import 
+        @ ArrowForwardIcon
+        from "@chakra-ui/icons"
+    import 
+        @ VStack
+        @ HStack
+        @ Button
+        @ Text
+        @ Divider
+        from "@chakra-ui/react"
+    import 
+        @ useSecondaryTextColor
+        from "theme"
+    import 
+        @ t
+        from "utils"
+    import 
+        @ useNavigate
+        from "shared/Router"
+    import 
+        @ useNotImplementedYetToast
+        from "shared/Toast"
+    import 
+        @ CartItem
+        from "./CartItem"
+    :interface IProps
+        :p cartProducts
+            :[ 
+                :ref ComponentProps
+                    :param 
+                        :typeof CartItem
+    const CartsList
+        => 
+            { 
+                @ cartProducts
+                :ref IProps
+            const navigate = useNavigate()
+            const notImplemented = useNotImplementedYetToast()
+            const secondaryColor = useSecondaryTextColor()
+            const subtotal
+                _ cartProducts.map
+                    => 
+                        param cart
+                        +
+                            @expr cart.price
+                    ._ reduce
+                        => 
+                            param a
+                            param b
+                            set a + b
+                        @ 0
+            return 
+                < VStack 
+                    @ w "100%"
+                    @ spacing {8}
+                    { 
+                        _ cartProducts.map
+                            => 
+                                param cart
+                                < Fragment 
+                                    @ key {cart.id}
+                                    < CartItem 
+                                        @ {...cart}
+                                    < Divider 
+                    < VStack 
+                        @ w "100%"
+                        @ align "start"
+                        @ spacing {1}
+                        < HStack 
+                            @ w "100%"
+                            @ align "flex-start"
+                            @ justify "space-between"
+                            @ fontSize
+                                { 
+                                    @ base "md"
+                                    @ md "lg"
+                            @ fontWeight "semibold"
+                            < Text 
+                                + {t("Subtotal")}
+                            < Text 
+                                + $
+                                + {subtotal}
+                        < Text 
+                            @ fontSize "sm"
+                            @ color {secondaryColor}
+                            + {t("Shipping and taxes will be calculated at checkout.")}
+                    < VStack 
+                        @ w "100%"
+                        < Button 
+                            @ w "100%"
+                            @ colorScheme "orange"
+                            @ onClick {notImplemented}
+                            + {t("Checkout")}
+                        < HStack 
+                            < Text 
+                                @ fontSize "sm"
+                                + {t("or")}
+                            < Button 
+                                @ size "sm"
+                                @ variant "link"
+                                @ colorScheme "orange"
+                                @ rightIcon
+                                    < ArrowForwardIcon 
+                                @ onClick
+                                    => 
+                                        _ navigate("/products")
+                                + {t("Continue shopping")}
+    export 
+        @ CartsList

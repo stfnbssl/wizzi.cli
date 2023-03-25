@@ -1,0 +1,50 @@
+module
+    import 
+        @ HTTPError
+        from "ky"
+    :interface IAjaxError
+        :extends Error
+        :p message
+            :string 
+        :p status
+            :number 
+        # eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export 
+        class AjaxError
+            :< Response
+                :[] 
+                    :ref HTTPError
+                    :literal "response"
+            :< Request
+                :[] 
+                    :ref HTTPError
+                    :literal "request"
+            super HTTPError
+            :implements IAjaxError
+            p message
+                :string 
+            p status
+                :number 
+            p name
+                :string 
+            ctor 
+                param status
+                    :number 
+                param response
+                    :ref Response
+                param request
+                    :ref Request
+                param options
+                    :[] 
+                        :ref HTTPError
+                        :literal "options"
+                param message
+                    :string 
+                    :optional 
+                _ super(response, request, options)
+                set this.status = status
+                    # @ts-ignore
+                set this.message = message ?? response?.body?.message ?? "Ajax error message"
+                    # @ts-ignore
+                set this.name = "AjaxError"
+        # eslint-disable-next-line @typescript-eslint/no-explicit-any

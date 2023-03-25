@@ -5,7 +5,7 @@ $group
         var publicPath = cliCtx.useAzure ? 'Build/public' : 'public';
         var preDeployPath = cliCtx.useAzure ? 'Build/predeploy' : 'predeploy';
         var rootPath = cliCtx.useAzure ? 'Build' : '';
-        var testsPath = cliCtx.useAzure ? 'Tests' : '';
+        var testsPath = cliCtx.useAzure ? 'Tests' : 'tests';
         var armTemplatesPath = cliCtx.useAzure ? 'armTemplates' : '';
         var githubPath = cliCtx.useAzure ? '.github' : '';
 
@@ -19,8 +19,7 @@ $group
                     ittf_src_t_images: path.join(__dirname, 'src', 't', 'images'),
                     ittf_src_t_models: path.join(__dirname, 'src', 't', 'models'),
         		    ittf_root_folder: path.join(__dirname, 'root'),
-                    $if cliCtx.useAzure
-                        ittf_tests_folder: path.join(__dirname, 'Tests'),
+                    ittf_tests_folder: path.join(__dirname, 'Tests'),
                     ittf_public_folder: path.join(__dirname, 'public'),
                     ittf_ittf_folder: path.join(__dirname, 'ittf'),
                     $if cliCtx.useAzure || cliCtx.useHeroku
@@ -92,26 +91,26 @@ $group
         		dest-folder ${"${'$'}"}{jobCtx.dest_folder}/${srcPath}/t/models
                 wfjobs${'$'}{'('}any_plain, &jobCtx, ittf)
 
-        	$if cliCtx.useAzure
-                ---
-                line ittf-tests
-                    cwd-folder ${"${'$'}"}{jobCtx.ittf_tests_folder}
-                    dest-folder ${"${'$'}"}{jobCtx.dest_folder}/${testsPath}
-            
-                    wfjobs${'$'}{'('}any_js, &jobCtx)
-                    wfjobs${'$'}{'('}any_ts, &jobCtx)
-                    wfjobs${'$'}{'('}any_tsx, &jobCtx)
-                    wfjobs${'$'}{'('}any_css, &jobCtx)
-                    wfjobs${'$'}{'('}any_json, &jobCtx)
-                    wfjobs${'$'}{'('}any_md, &jobCtx)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, js)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, d.ts)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, html)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, html.ittf)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, css)
-                    wfjobs${'$'}{'('}any_plain, &jobCtx, css.ittf)
-                    wfjobs${'$'}{'('}any_plain_image, &jobCtx)
-        	---
+            ---
+            line ittf-tests
+                cwd-folder ${"${'$'}"}{jobCtx.ittf_tests_folder}
+                dest-folder ${"${'$'}"}{jobCtx.dest_folder}/${testsPath}
+        
+                wfjobs${'$'}{'('}any_js, &jobCtx)
+                wfjobs${'$'}{'('}any_ts, &jobCtx)
+                wfjobs${'$'}{'('}any_tsx, &jobCtx)
+                wfjobs${'$'}{'('}any_css, &jobCtx)
+                wfjobs${'$'}{'('}any_json, &jobCtx)
+                wfjobs${'$'}{'('}any_md, &jobCtx)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, js)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, d.ts)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, html)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, html.ittf)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, css)
+                wfjobs${'$'}{'('}any_plain, &jobCtx, css.ittf)
+                wfjobs${'$'}{'('}any_plain_image, &jobCtx)
+        	
+            ---
             line ittf-public
                 cwd-folder ${"${'$'}"}{jobCtx.ittf_public_folder}
                 dest-folder ${"${'$'}"}{jobCtx.dest_folder}/${publicPath}
@@ -171,8 +170,8 @@ $group
                     $if cliCtx.useWizziDocs
                         line-ref ittf-src-models
                 line-ref ittf-ittf
+                line-ref ittf-tests
                 $if cliCtx.useAzure
-                    line-ref ittf-tests
                     line-ref ittf-armTemplates
                     line-ref ittf-github
                 $if cliCtx.useAzure || cliCtx.useHeroku

@@ -1,0 +1,27 @@
+module
+    import 
+        @ QueryClient
+        @ QueryClientProvider
+        from "@tanstack/react-query"
+        #
+            # eslint-disable @typescript-eslint/no-explicit-any
+        # https://github.com/TkDodo/testing-react-query/tree/main/src/tests
+    const createTestQueryClient
+        => 
+            new QueryClient
+                { 
+                    { defaultOptions
+                        { queries
+                            @ retry false
+        # https://github.com/TkDodo/testing-react-query/tree/main/src/tests
+    export 
+        const withReactQuery
+            => 
+                => 
+                    param story
+                        :any 
+                    const queryClient = createTestQueryClient()
+                    return 
+                        < QueryClientProvider 
+                            @ client {queryClient}
+                            + {story()}

@@ -1,0 +1,59 @@
+module
+    import React from "react"
+    import 
+        @ StarIcon
+        from "@chakra-ui/icons"
+    import 
+        @ HStack
+        @ Tooltip
+        @ useColorModeValue
+        from "@chakra-ui/react"
+    import 
+        @ t
+        from "utils"
+    :interface IProps
+        :p rating
+            :number 
+    const StarRating
+        => 
+            { 
+                @ rating
+                :ref IProps
+            const idleStar = useColorModeValue("gray.400", "gray.600")
+            const activeStar = useColorModeValue("gray.700", "gray.300")
+            const countColor
+                => 
+                    param index
+                        :number 
+                    return 
+                        iif Math.round(rating) >= index
+                            then activeStar
+                            else idleStar
+            return 
+                < Tooltip 
+                    @ label
+                        _ t
+                            @ "Average customer rating: {rating}"
+                            { 
+                                @ rating
+                    < HStack 
+                        @ spacing {1}
+                        @ display "flex"
+                        @ alignItems "center"
+                        @ mt {2}
+                        { 
+                            _ Array.from
+                                [ 
+                                    @ 1
+                                    @ 2
+                                    @ 3
+                                    @ 4
+                                    @ 5
+                                ._ map
+                                    => 
+                                        param number
+                                        < StarIcon 
+                                            @ key {number}
+                                            @ color {countColor(number)}
+    export 
+        @ StarRating

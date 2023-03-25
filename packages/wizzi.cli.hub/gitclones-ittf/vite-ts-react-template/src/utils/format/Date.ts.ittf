@@ -1,0 +1,70 @@
+module
+    import 
+        @ Dayjs
+        from "dayjs"
+        #
+            # eslint-disable no-restricted-imports
+    import 
+        @ dayjs
+        from "./dayjs"
+    import 
+        @ getLocale
+        from "./locale"
+    :type DateType
+        :union 
+            :string 
+            :ref Date
+            :ref Dayjs
+    export 
+        class DateVO
+            m formatDate
+                static
+                param date
+                    :ref DateType
+                param format = getLocale().dateFormat
+                :return
+                    :string 
+                if !date
+                    return "---"
+                return dayjs(date).format(format)
+            m formatDateTime
+                static
+                param date
+                    :ref DateType
+                param format = getLocale().dateTimeFormat
+                :return
+                    :string 
+                if !date
+                    return "---"
+                return dayjs(date).format(format)
+            m formatRelativeTime
+                static
+                param date
+                    :ref DateType
+                param format = getLocale().dateTimeFormat
+                :return
+                    :string 
+                if !date
+                    return "---"
+                return dayjs().to(date)
+            m generateDate
+                static
+                param date
+                    :ref DateType
+                    = 
+                        new Date
+                param format
+                    :string 
+                    :optional 
+                :return
+                    :string 
+                return dayjs(date).format(format)
+            m buildDate
+                static
+                param date
+                    :ref DateType
+                    = 
+                        new Date
+                :return
+                    :ref Dayjs
+                return dayjs(date)

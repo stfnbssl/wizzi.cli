@@ -1,0 +1,10 @@
+module
+    export 
+        @ Category
+        from "./Category"
+    export 
+        @ IProduct
+        from "./IProduct"
+    export 
+        @ IRating
+        from "./IRating"

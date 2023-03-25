@@ -1,0 +1,15 @@
+module
+    import day from "dayjs"
+        #
+            # eslint-disable no-restricted-imports
+    import "dayjs/locale/en"
+    import "dayjs/locale/pl"
+    import relativeTime from "dayjs/plugin/relativeTime"
+    import 
+        @ locale
+        from "./locale"
+    _ day.locale(locale)
+    _ day.extend(relativeTime)
+    export 
+        @ day
+            as dayjs

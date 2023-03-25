@@ -1,0 +1,90 @@
+module
+    import 
+        @ UseQueryOptions
+        from "@tanstack/react-query"
+    import 
+        @ IQueryParams
+        @ IMeta
+        from "types"
+    import 
+        @ buildUrl
+        @ createLoader
+        @ httpService
+        @ useQuery
+        from "utils"
+    import 
+        @ IProduct
+        from "../types"
+    import 
+        @ IProductDto
+        from "./types"
+    const defaultParams
+        { 
+            @ limit 10
+            @ sort "asc"
+    :interface ICollection
+        :p products
+            :[ 
+                :ref IProduct
+        :p meta
+            :ref IMeta
+    export 
+        const getProductsQueryKey
+            => 
+                param params
+                    :ref 
+                    = defaultParams
+                [ 
+                    @ "products"
+                    @ params
+    const getProductsQuery
+        => 
+            param params
+                :ref 
+                = defaultParams
+            (
+                { 
+                    @ queryKey getProductsQueryKey(params)
+                    @ queryFn
+                        => 
+                            :return
+                                :ref Promise
+                                    :param 
+                                        :ref ICollection
+                            _ httpService.get
+                                :param 
+                                    :[ 
+                                        :ref IProductDto
+                                _ buildUrl("products", params)
+                                ._ then
+                                    => 
+                                        param res
+                                        (
+                                            { 
+                                                @ products res
+                                                { meta
+                                                    @ ...params
+                                                    @ total 20
+    export 
+        const useProductsQuery
+            => 
+                param params
+                    :ref 
+                    = defaultParams
+                param options
+                    :ref UseQueryOptions
+                        :param 
+                            :ref ICollection
+                    :optional 
+                return 
+                    _ useQuery
+                        { 
+                            @ ...getProductsQuery(params)
+                            @ ...options
+    export 
+        const productsLoader
+            async=> 
+                param params
+                    :ref 
+                    = defaultParams
+                _ createLoader(getProductsQuery(params))

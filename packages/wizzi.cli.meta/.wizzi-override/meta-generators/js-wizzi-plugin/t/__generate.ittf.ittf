@@ -47,6 +47,7 @@ $group
                 wfjobs${'$'}{'('}any_html, &jobCtx)
                 wfjobs${'$'}{'('}any_css, &jobCtx)
                 wfjobs${'$'}{'('}any_ittf, &jobCtx)
+                wfjobs${'$'}{'('}any_text, &jobCtx)
                 wfjobs${'$'}{'('}any_plain, &jobCtx, html)
                 wfjobs${'$'}{'('}any_plain, &jobCtx, css)
                 wfjobs${'$'}{'('}any_plain, &jobCtx, js)

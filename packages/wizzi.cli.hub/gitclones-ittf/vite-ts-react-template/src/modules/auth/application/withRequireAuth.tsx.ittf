@@ -1,0 +1,33 @@
+module
+    import 
+        @ Component
+        @ ComponentType
+        from "react"
+    import 
+        @ IRequireAuthProps
+        @ RequireAuth
+        from "./RequireAuth"
+    export 
+        function withRequireAuth
+            :< Props
+            param Wrapper
+                :ref ComponentType
+                    :param 
+                        :ref Props
+            param props
+                :ref Omit
+                    :param 
+                        :ref IRequireAuthProps
+                    :param 
+                        :literal "children"
+                :optional 
+            return 
+                class 
+                    super Component
+                        :ref Props
+                    m render
+                        return 
+                            < RequireAuth 
+                                @ to {props?.to}
+                                < Wrapper 
+                                    @ {...this.props}

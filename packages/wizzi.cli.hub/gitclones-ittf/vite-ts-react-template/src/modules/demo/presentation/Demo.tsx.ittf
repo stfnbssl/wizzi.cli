@@ -1,0 +1,76 @@
+module
+    import 
+        @ useState
+        from "react"
+    import 
+        @ VStack
+        @ Text
+        @ Heading
+        @ Center
+        @ Button
+        from "@chakra-ui/react"
+    import 
+        @ DateVO
+        @ NumberVO
+        @ t
+        from "utils"
+    const Demo
+        => 
+            const [count, setCount] = useState(0)
+            return 
+                < Center 
+                    < VStack 
+                        < Heading 
+                            @ fontWeight "900"
+                            + {t("Vite + React")}
+                        < VStack 
+                            < Button 
+                                @ onClick
+                                    => 
+                                        _ setCount
+                                            => 
+                                                param count
+                                                set count + 1
+                                { 
+                                    _ t
+                                        `lit 
+                                            + count is {count}
+                                        { 
+                                            @ count
+                            < Text 
+                                @ fontWeight "700"
+                                { 
+                                    _ t
+                                        `lit 
+                                            + Edit {path} and save to test HMR
+                                        { 
+                                            @ path
+                                                code 
+                                                    + src/App.tsx
+                        < Text 
+                            @ fontWeight "400"
+                            { 
+                                _ t
+                                    @ "Vite had {number} weekly downloads on NPM in {date}"
+                                    { 
+                                        @ number NumberVO.format("2696684.12")
+                                        @ date DateVO.formatDate(window.Date(2023, 1, 17, 10, 44, 0))
+                        < Text 
+                            @ fontWeight "400"
+                            { 
+                                _ t
+                                    @ "{bitcoinNumber} bitcoins were worth {currencyNumber} on {date}"
+                                    { 
+                                        @ bitcoinNumber NumberVO.format(1000)
+                                        @ currencyNumber NumberVO.formatCurrency(23753382.63, "USD")
+                                        @ date DateVO.formatDateTime(Date(2023, 1, 17, 12, 44, 0))
+                        + {" "}
+                        < Text 
+                            @ fontWeight "400"
+                            { 
+                                _ t
+                                    @ "Storybook conference: {date}"
+                                    { 
+                                        @ date DateVO.formatRelativeTime(DateVO.generateDate(DateVO.buildDate("2023-02-17").set("hour", 12).set("minute", 44)))
+    export 
+        @ Demo

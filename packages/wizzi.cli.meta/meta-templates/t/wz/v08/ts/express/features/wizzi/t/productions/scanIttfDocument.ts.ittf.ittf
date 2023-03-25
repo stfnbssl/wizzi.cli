@@ -156,4 +156,30 @@ $group
                             @ message "wizzi.productions.folderFsToPackiFiles"
                             @ err ex
 
-
+    +
+    export
+        async-function packiFilesToFolderFs
+            param folderPath
+                :string
+            param files
+                :ref packiTypes.PackiFiles
+            :return
+                :ref Promise
+                    :param 
+                        :any
+            r_promise_try_catch${'('} wizzi.productions.packiFilesTofolderFs )
+                const fsfile = fSystem.vfile()
+                _ fsfile.deleteFolder
+                    @ folderPath
+                    a_cb_promise${'('} result, :any, , wizzi.productions.packiFilesTofolderFs.fsfile.deleteFolder )
+                        for var k in files
+                            var contents = files[k].contents
+                            _  fsfile.write
+                                _ path.join
+                                    @ folderPath
+                                    @ k
+                                @ contents
+                                $$ NO a_cb_promise${'('} result, :any, , wizzi.productions.packiFilesTofolderFs.fsfile.write )
+                        r_resolve${'('} )
+                            {
+                                @ message "Folder replaced"

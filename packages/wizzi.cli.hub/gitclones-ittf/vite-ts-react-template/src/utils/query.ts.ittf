@@ -1,0 +1,87 @@
+module
+    import 
+        @ DefinedQueryObserverResult
+        @ QueryClient
+        @ QueryKey
+        @ useQuery
+            as useReactQuery
+        @ UseQueryOptions
+        from "@tanstack/react-query"
+    export 
+        const queryClient = new QueryClient()
+        # todo: type
+    :type QueryFactory
+        :< R
+        :{ 
+            :p queryKey
+                :ref Array
+                    :param 
+                        :union 
+                            :string 
+                            :ref Record
+                                :param string
+                                :param unknown
+                            :any 
+                # eslint-disable-next-line @typescript-eslint/no-explicit-any
+            :m queryFn
+                :ref Promise
+                    :param 
+                        :ref R
+                param args
+                    :[ 
+                        :any 
+        # todo: type
+    export 
+        async-function createLoader
+            :< R
+            param query
+                :ref QueryFactory
+                    :param 
+                        :ref R
+            return 
+                (
+                    ?? 
+                        :! 
+                            _ queryClient.getQueryData
+                                :param 
+                                    :ref R
+                                @expr query.queryKey
+                        await 
+                            _ queryClient.fetchQuery(query)
+    export 
+        function useQuery
+            :< TQueryFnData
+            :< TError
+            :< TData
+            :< TQueryKey
+                :ref QueryKey
+            param options
+                :ref UseQueryOptions
+                    :param 
+                        :ref TQueryFnData
+                    :param 
+                        :ref TError
+                    :param 
+                        :ref TData
+                    :param 
+                        :ref TQueryKey
+            return 
+                @expr
+                    _ useReactQuery
+                        :param 
+                            :ref TQueryFnData
+                        :param 
+                            :ref TError
+                        :param 
+                            :ref TData
+                        :param 
+                            :ref TQueryKey
+                        { 
+                            @ staleTime 2000
+                            @ ...options
+                    :as 
+                        :ref DefinedQueryObserverResult
+                            :param 
+                                :ref TData
+                            :param 
+                                :ref TError

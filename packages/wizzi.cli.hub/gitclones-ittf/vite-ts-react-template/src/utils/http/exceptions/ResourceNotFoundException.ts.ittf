@@ -1,0 +1,35 @@
+module
+    import 
+        @ HTTPError
+        from "ky"
+    import 
+        @ AjaxError
+        from "../AjaxError"
+    export 
+        class ResourceNotFoundException
+            super AjaxError
+            ctor 
+                param response
+                    :ref Response
+                param request
+                    :ref Request
+                param options
+                    :[] 
+                        :ref HTTPError
+                        :literal "options"
+                param resourceId
+                    :string 
+                    :optional 
+                _ super
+                    @ 404
+                    @ response
+                    @ request
+                    @ options
+                    iif resourceId
+                        then
+                            `lit 
+                                + Resource with&nbsp;
+                                @ resourceId
+                                + &nbsp;id not found
+                        else "Resource not found"
+                set this.name = "ResourceNotFoundException"

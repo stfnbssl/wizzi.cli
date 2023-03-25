@@ -1,5 +1,19 @@
 $group
 
+    elif cmd == 'wizzi-plugin-wzjob'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.wzjob'
+                @ pkgName 'wizzi.plugin.wzjob'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.wzjob'
+    elif cmd == 'wizzi-plugin-wzschema'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.wzschema'
+                @ pkgName 'wizzi.plugin.wzschema'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.wzschema'
     elif cmd == 'wizzi-plugin-svg'
         _ createEx
             {
@@ -7,6 +21,13 @@ $group
                 @ context 'wizzi.plugin.svg'
                 @ pkgName 'wizzi.plugin.svg'
                 @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.svg'
+    elif cmd == 'wizzi-plugin-graphql'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.graphql'
+                @ pkgName 'wizzi.plugin.graphql'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.graphql'
     elif cmd == 'wizzi-plugin-org'
         _ createEx
             {

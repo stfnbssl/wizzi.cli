@@ -1,0 +1,9 @@
+module
+    import 
+        @ IUser
+        from "modules/auth/types"
+    export 
+        :interface IUserDto
+            :extends IUser
+            :p password
+                :string 

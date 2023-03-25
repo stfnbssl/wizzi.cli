@@ -1,0 +1,21 @@
+module
+    export 
+        :type Options
+            :{ 
+                :p host
+                    :optional 
+                    :string 
+                :p headers
+                    :optional 
+                    :ref HeadersInit
+                :p responseType
+                    :optional 
+                    :union 
+                        :literal "json"
+                        :literal "text"
+                        :literal "arrayBuffer"
+                        :literal "blob"
+                        :literal "formData"
+                :p signal
+                    :optional 
+                    :ref AbortSignal

@@ -1,0 +1,17 @@
+{
+    $include commons
+
+    { App
+        name "Wizzi job plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "wzjob"
+            plugin_type "syntax_structure"
+            [ includes
+        {
+            name "wfjob"
+            plugin_type "syntax_structure"
+            [ includes
+

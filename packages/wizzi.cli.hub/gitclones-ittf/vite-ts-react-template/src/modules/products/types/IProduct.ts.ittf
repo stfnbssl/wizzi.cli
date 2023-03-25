@@ -1,0 +1,23 @@
+module
+    import 
+        @ Category
+        from "./Category"
+    import 
+        @ IRating
+        from "./IRating"
+    export 
+        :interface IProduct
+            :p id
+                :number 
+            :p title
+                :string 
+            :p description
+                :string 
+            :p category
+                :ref Category
+            :p image
+                :string 
+            :p price
+                :number 
+            :p rating
+                :ref IRating

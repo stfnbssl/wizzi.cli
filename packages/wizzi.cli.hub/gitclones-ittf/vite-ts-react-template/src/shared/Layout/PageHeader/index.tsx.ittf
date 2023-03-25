@@ -1,0 +1,75 @@
+module
+    import 
+        @ ReactNode
+        from "react"
+    import 
+        @ Stack
+        @ VStack
+        @ Heading
+        @ Text
+        @ ButtonGroup
+        @ HeadingProps
+        from "@chakra-ui/react"
+    import 
+        @ useSecondaryTextColor
+        from "theme"
+    :interface IProps
+        :p title
+            :union 
+                :string 
+                :ref ReactNode
+        :p description
+            :optional 
+            :union 
+                :string 
+                :ref ReactNode
+        :p size
+            :optional 
+            :[] 
+                :ref HeadingProps
+                :literal "size"
+        :p children
+            :optional 
+            :ref ReactNode
+    const PageHeader
+        => 
+            { 
+                @ title
+                @ description
+                @ size
+                    =
+                        { 
+                            @ base "md"
+                            @ md "lg"
+                @ children
+                :ref IProps
+            const descriptionColor = useSecondaryTextColor()
+            return 
+                < Stack 
+                    @ direction
+                        { 
+                            @ base "column"
+                            @ lg "row"
+                    @ w "100%"
+                    @ spacing {3}
+                    @ justify "space-between"
+                    @ align
+                        { 
+                            @ base "start"
+                            @ lg "center"
+                    < VStack 
+                        @ align "start"
+                        @ spacing {1}
+                        < Heading 
+                            @ size {size}
+                            + {title}
+                        { 
+                            && 
+                                + description
+                                < Text 
+                                    @ color {descriptionColor}
+                                    + {description}
+                    < ButtonGroup 
+                        + {children}
+    export 
+        @ PageHeader

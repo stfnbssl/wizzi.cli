@@ -1,0 +1,82 @@
+module
+    import 
+        @ VStack
+        from "@chakra-ui/react"
+    import 
+        @ DateVO
+        @ t
+        from "utils"
+    import 
+        @ Page
+        @ PageHeader
+        from "shared/Layout"
+    import 
+        @ ErrorPageStrategy
+        from "shared/Result"
+    import 
+        @ useParams
+        from "shared/Router"
+    import 
+        @ withRequireAuth
+        from "modules/auth/application"
+    import 
+        @ useCartProductsQuery
+        from "modules/carts/infrastructure"
+    import 
+        @ CartsList
+        @ ClearCartButton
+        from "modules/carts/presentation"
+    const CartPage
+        => 
+            const params
+                _ useParams
+                    :param 
+                        :{ 
+                            :p cartId
+                                :string 
+            const 
+                { 
+                    @ data
+                =
+                    _ useCartProductsQuery
+                        @expr params.cartId
+                            :as 
+                                :string 
+            return 
+                < Page 
+                    < VStack 
+                        @ display "stretch"
+                        @ spacing {10}
+                        < PageHeader 
+                            @ title {t("List of selected products")}
+                            @ description
+                                _ t
+                                    @ "These are all products that you yet chose (updated {time})."
+                                    { 
+                                        @ time DateVO.formatRelativeTime(data.date)
+                            < ClearCartButton 
+                                @ cartId
+                                    @expr params.cartId
+                                        :as 
+                                            :string 
+                        < CartsList 
+                            @ cartProducts
+                                _ data.products.map
+                                    => 
+                                        param product
+                                        (
+                                            { 
+                                                @ id product.id
+                                                @ title product.title
+                                                @ price product.price
+                                                @ imageUrl product.image
+                                                @ category product.category
+                                                @ quantity product.quantity
+    export 
+        const Component
+            _ withRequireAuth
+                @ CartPage
+                { 
+                    @ to "/sign-in"
+    export 
+        const ErrorBoundary = ErrorPageStrategy

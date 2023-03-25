@@ -1,0 +1,16 @@
+module
+    import 
+        @ useRouteError
+            as useReactRouterError
+        from "react-router-dom"
+        # eslint-disable-next-line no-restricted-imports
+    import 
+        @ AjaxError
+        from "utils/http"
+    export 
+        const useRouteError
+            => 
+                return 
+                    _ useReactRouterError()
+                        :as 
+                            :ref AjaxError

@@ -1,0 +1,65 @@
+module
+    import 
+        @ UseQueryOptions
+        from "@tanstack/react-query"
+    import 
+        @ createLoader
+        @ httpService
+        @ useQuery
+        from "utils"
+    import 
+        @ IProduct
+        from "../types"
+    import 
+        @ IProductDto
+        from "./types"
+    export 
+        const getProductQueryKey
+            => 
+                param productId
+                    :string 
+                [ 
+                    @ "product"
+                    @ productId
+    export 
+        const getProductQuery
+            => 
+                param productId
+                    :string 
+                (
+                    { 
+                        @ queryKey getProductQueryKey(productId)
+                        @ queryFn
+                            => 
+                                :return
+                                    :ref Promise
+                                        :param 
+                                            :ref IProduct
+                                _ httpService.get
+                                    :param 
+                                        :ref IProductDto
+                                    `lit 
+                                        + products/
+                                        @ productId
+                                        + 
+    export 
+        const useProductQuery
+            => 
+                param productId
+                    :string 
+                param options
+                    :ref UseQueryOptions
+                        :param 
+                            :ref IProduct
+                    :optional 
+                return 
+                    _ useQuery
+                        { 
+                            @ ...getProductQuery(productId)
+                            @ ...options
+    export 
+        const productLoader
+            async=> 
+                param productId
+                    :string 
+                _ createLoader(getProductQuery(productId))

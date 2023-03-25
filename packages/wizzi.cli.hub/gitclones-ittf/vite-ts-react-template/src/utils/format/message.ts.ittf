@@ -1,0 +1,44 @@
+module
+    import IntlMessageFormat
+        @ PrimitiveType
+        @ FormatXMLElementFn
+        from "intl-messageformat"
+    import 
+        @ locale
+        from "./locale"
+    :type Format
+        :< T
+        :union 
+            :ref Record
+                :param string
+                :param 
+                    :union 
+                        :ref PrimitiveType
+                        :ref T
+                        :ref FormatXMLElementFn
+                            :param 
+                                :ref T
+                            :param 
+                                :union 
+                                    :string 
+                                    :ref T
+                                    :[ 
+                                        :paren 
+                                            :union 
+                                                :string 
+                                                :ref T
+            :undefined 
+    export 
+        function t
+            :< T
+            param message
+                :string 
+            param values
+                :ref Format
+                    :param 
+                        :ref T
+                :optional 
+            return 
+                _ new IntlMessageFormat(message, locale).format(values)
+                    :as 
+                        :string 

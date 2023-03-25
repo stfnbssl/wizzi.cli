@@ -1,0 +1,28 @@
+module
+    import 
+        @ omit
+        from "lodash-es"
+    import 
+        @ httpService
+        from "utils"
+    import 
+        @ IUser
+        from "../types"
+    import 
+        @ IUserDto
+        from "./types/IUserDto"
+    export 
+        const getUser
+            => 
+                return 
+                    _ httpService.get
+                        :param 
+                            :ref IUserDto
+                        @ "users/1"
+                        ._ then
+                            => 
+                                param res
+                                _ omit(res, "password")
+                                    :as 
+                                        :ref IUser
+                    # mocking current user by passing id=1

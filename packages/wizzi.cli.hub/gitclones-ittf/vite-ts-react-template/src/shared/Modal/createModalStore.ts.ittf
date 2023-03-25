@@ -1,0 +1,52 @@
+module
+    import create from "zustand"
+    :type IModalStore
+        :< Item
+        :{ 
+            :p selectedItem
+                :union 
+                    :ref Item
+                    :null 
+            :p isOpen
+                :boolean 
+            :m onOpen
+                :void 
+                param item
+                    :ref Item
+                    :optional 
+            :m onClose
+                :void 
+    export 
+        function createModalStore
+            :< Item
+            param store
+                :ref Partial
+                    :param 
+                        :ref IModalStore
+                            :param 
+                                :ref Item
+                :optional 
+            return 
+                _ create
+                    :param 
+                        :ref IModalStore
+                            :param 
+                                :ref Item
+                    => 
+                        param set
+                        return 
+                            { 
+                                @ selectedItem null
+                                @ isOpen false
+                                m onOpen
+                                    param item
+                                    _ set
+                                        { 
+                                            @ selectedItem item ?? null
+                                            @ isOpen true
+                                m onClose
+                                    _ set
+                                        { 
+                                            @ isOpen false
+                                            @ selectedItem null
+                                @ ...store

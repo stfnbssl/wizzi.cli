@@ -1,0 +1,8 @@
+module
+    export 
+        :interface IQueryParams
+            :p limit
+                :number 
+            :p sort
+                :optional 
+                :string 

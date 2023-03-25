@@ -5,29 +5,30 @@ $group
             :[
                 :ref MetaContext
         const promises: Promise<any>[] = []
-        _ contextItems.map
-            =>
-                param contextItem
-                _ promises.push
-                    new Promise
-                        =>
-                            param resolve
-                            param reject
-                            _ resolveContext
-                                @ contextItem
-                                ._ then
-                                    =>
-                                        param context
-                                        $$ loog myname + 'resolveContext.resolved', contextItem.name, context
-                                        _ resolve
-                                            {
-                                                @ name contextItem.name
-                                                @ value context
-                                ._ catch
-                                    =>
-                                        param err
-                                        _ reject
-                                            @ err
+        if contextItems && contextItems.length > 0
+            _ contextItems.map
+                =>
+                    param contextItem
+                    _ promises.push
+                        new Promise
+                            =>
+                                param resolve
+                                param reject
+                                _ resolveContext
+                                    @ contextItem
+                                    ._ then
+                                        =>
+                                            param context
+                                            $$ loog myname + 'resolveContext.resolved', contextItem.name, context
+                                            _ resolve
+                                                {
+                                                    @ name contextItem.name
+                                                    @ value context
+                                    ._ catch
+                                        =>
+                                            param err
+                                            _ reject
+                                                @ err
         $$ loog myname + '.resolveContexts.promises', promises.length
         return 
             new Promise

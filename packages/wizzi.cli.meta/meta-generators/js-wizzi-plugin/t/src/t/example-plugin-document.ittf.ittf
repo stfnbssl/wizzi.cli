@@ -58,7 +58,7 @@ $group
                         _ path.join
                             @ __dirname
                             @ 'results'
-                            @ module + '.${schema.name}.html'
+                            @ module + '.${schema.name}.document.html'
                     
                     _ loadModelAndGenerateArtifact
                         @ ittfDocumentUri

@@ -1,0 +1,62 @@
+{
+    $include commons
+
+    { App
+        name "Wizzi schema plugin"
+        kind "WizziPlugin"
+
+    [ Schemas
+        {
+            name "wzschema"
+            plugin_type "syntax_structure"
+            [ includes
+                {
+                    Name "Js"
+                    name "js"
+                    artifactName "js/module"
+                    [ options
+                    [ items
+                        {
+                            name "js"
+                            parent "node"
+                            tag "::script"
+                            root "module"
+        {
+            name "wfschema"
+            plugin_type "syntax_structure"
+            [ includes
+                {
+                    Name "Js"
+                    name "js"
+                    artifactName "js/module"
+                    [ options
+                    [ items
+                        {
+                            name "js"
+                            parent "node"
+                            tag "::script"
+                            root "module"
+            [ transformers
+                {
+                    name "json_docs"
+                    outmime "json"
+                {
+                    name "schemaboot"
+                    outmime "json"
+            [ artifacts
+                {
+                    name "model"
+                    outmime "js"
+                {
+                    name "html_docs"
+                    outmime "html"
+                {
+                    name "factory"
+                    outmime "js"
+                {
+                    name "text"
+                    outmime "js"
+                {
+                    name "json_schemaboot"
+                    outmime "json"
+

@@ -62,6 +62,12 @@ $group
                             name "docs"
                             hasControllers true
                             useMongoDb false
+                    $if cliCtx.features.useWizzi
+                        {
+                            name "wizzi"
+                            fileName "wizzi"
+                            hasControllers true
+                            useMongoDb false
                     $if cliCtx.features.useWizziFs
                         {
                             name "wizziFs"

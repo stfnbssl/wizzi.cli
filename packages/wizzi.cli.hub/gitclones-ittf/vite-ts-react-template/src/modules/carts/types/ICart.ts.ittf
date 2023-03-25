@@ -1,0 +1,18 @@
+module
+    :interface IProduct
+        :p productId
+            :number 
+        :p quantity
+            :number 
+    export 
+        :interface ICart
+            :p id
+                :number 
+            :p userId
+                :number 
+            :p date
+                :string 
+            :p products
+                :ref Array
+                    :param 
+                        :ref IProduct

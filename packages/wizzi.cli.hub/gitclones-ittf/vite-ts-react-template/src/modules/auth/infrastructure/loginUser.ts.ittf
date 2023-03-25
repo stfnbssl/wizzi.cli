@@ -1,0 +1,20 @@
+module
+    import 
+        @ httpService
+        from "utils"
+    export 
+        :interface ICredentials
+            :p username
+                :string 
+            :p password
+                :string 
+    export 
+        const loginUser
+            => 
+                param body
+                    :ref ICredentials
+                return 
+                    _ httpService.post
+                        :param string
+                        @ "auth/login"
+                        @ body

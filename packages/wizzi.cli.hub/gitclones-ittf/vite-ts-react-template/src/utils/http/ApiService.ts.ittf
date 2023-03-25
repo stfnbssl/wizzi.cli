@@ -1,0 +1,151 @@
+module
+    import ky from "ky"
+    import 
+        @ AjaxError
+        from "./AjaxError"
+    import 
+        @ Options
+        from "./Options"
+    import 
+        @ InternalServerException
+        @ ResourceNotFoundException
+        from "./exceptions"
+    export 
+        class ApiService
+            p api
+                :private 
+                :ref ReturnType
+                    :param 
+                        :[] 
+                            :typeof ky
+                            :literal "create"
+            ctor 
+                param options
+                    :readonly 
+                    :private 
+                    :ref Options
+                set this.options = options
+                set this.api =
+                    _ ky.create
+                        { 
+                            @ prefixUrl options.host
+                            @ ...options
+                            { hooks
+                                [ beforeError
+                                    => 
+                                        param error
+                                        const 
+                                            { 
+                                                @ response
+                                                @ request
+                                                @ options
+                                            = error
+                                        if request?.method === "GET"
+                                            return new ResourceNotFoundException(response, request, options)
+                                        if response?.body && response?.status
+                                            return 
+                                                new AjaxError
+                                                    @expr response.status
+                                                    @ response
+                                                    @ request
+                                                    @ options
+                                                    `lit 
+                                                        + Ajax error occurred (
+                                                        @ response.status
+                                                        + )
+                                        return new InternalServerException(response, request, options)
+            m get
+                :public 
+                param url
+                    :string 
+                param options
+                    :ref Options
+                    :optional 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref R
+                return this.api.get(url, Object.assign(this.options, options)).json()
+            m delete
+                :public 
+                param url
+                    :string 
+                param body
+                    :ref B
+                    :optional 
+                param options
+                    :ref Options
+                    :optional 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref R
+                return 
+                    _ this.api.delete
+                        @ url
+                        { 
+                            @ json body
+                            @ ...options
+                        ._ json
+            m post
+                :public 
+                param url
+                    :string 
+                param body
+                    :ref B
+                param options
+                    :ref Options
+                    :optional 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref R
+                return 
+                    _ this.api.post
+                        @ url
+                        { 
+                            @ json body
+                            @ ...options
+                        ._ json
+            m put
+                :public 
+                param url
+                    :string 
+                param body
+                    :ref B
+                    :optional 
+                param options
+                    :ref Options
+                    :optional 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref R
+                return 
+                    _ this.api.put
+                        @ url
+                        { 
+                            @ json body
+                            @ ...options
+                        ._ json
+            m patch
+                :public 
+                param url
+                    :string 
+                param body
+                    :ref B
+                    :optional 
+                param options
+                    :ref Options
+                    :optional 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref R
+                return 
+                    _ this.api.patch
+                        @ url
+                        { 
+                            @ json body
+                            @ ...options
+                        ._ json

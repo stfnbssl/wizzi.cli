@@ -1,0 +1,123 @@
+module
+    import 
+        @ create
+        from "zustand"
+    import 
+        @ getUser
+        @ loginUser
+        from "../infrastructure"
+    import 
+        @ ICredentials
+        from "../infrastructure/loginUser"
+    import 
+        @ IUser
+        from "../types"
+    const AUTH_KEY = "fake_store_is_authenticated"
+        # could be also https://www.npmjs.com/package/zustand-persist lib for advanced use cases
+    const isLoggedIn
+        => 
+            set localStorage.getItem(AUTH_KEY) === "true"
+        # could be also https://www.npmjs.com/package/zustand-persist lib for advanced use cases
+    :interface IStore
+        :p isAuthenticated
+            :boolean 
+        :p isError
+            :boolean 
+        :p state
+            :union 
+                :literal "idle"
+                :literal "loading"
+                :literal "finished"
+        :p user
+            :ref IUser
+        :p login
+            :=> 
+                :ref Promise
+                    :param void
+                param credentials
+                    :ref ICredentials
+        :p logout
+            :=> 
+                :ref Promise
+                    :param void
+    export 
+        const useAuthStore
+            _ create
+                :param 
+                    :ref IStore
+                => 
+                    param set
+                    if isLoggedIn()
+                        _ set
+                            { 
+                                @ state "loading"
+                        _ getUser().then
+                            => 
+                                param user
+                                _ set
+                                    { 
+                                        @ user
+                                        @ isAuthenticated true
+                                        @ state "finished"
+                            ._ catch
+                                => 
+                                    _ set
+                                        { 
+                                            @ isError true
+                                            @ state "finished"
+                    else
+                        _ set
+                            { 
+                                @ state "finished"
+                    return 
+                        { 
+                            @ isAuthenticated false
+                            @ isError false
+                            @ state
+                                iif isLoggedIn()
+                                    then "idle"
+                                    else "finished"
+                            @ user
+                                @expr
+                                    + null
+                                        :as 
+                                            :unknown 
+                                    :as 
+                                        :ref IUser
+                            @ login
+                                async=> 
+                                    param credentials
+                                        :ref ICredentials
+                                    _ set
+                                        { 
+                                            @ state "loading"
+                                    return 
+                                        _ loginUser(credentials).then
+                                            => 
+                                                _ localStorage.setItem(AUTH_KEY, "true")
+                                                _ set
+                                                    { 
+                                                        @ isAuthenticated true
+                                                        @ state "finished"
+                                            ._ catch
+                                                => 
+                                                    param e
+                                                    _ localStorage.setItem(AUTH_KEY, "false")
+                                                    _ set
+                                                        { 
+                                                            @ isAuthenticated false
+                                                            @ state "finished"
+                                                    throw e
+                            @ logout
+                                async=> 
+                                    _ set
+                                        { 
+                                            @ state "loading"
+                                    return 
+                                        _ Promise.resolve().then
+                                            => 
+                                                _ localStorage.setItem(AUTH_KEY, "false")
+                                                _ set
+                                                    { 
+                                                        @ isAuthenticated false
+                                                        @ state "finished"

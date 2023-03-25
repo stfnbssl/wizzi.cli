@@ -1,0 +1,102 @@
+module
+    import 
+        @ UseQueryOptions
+        from "@tanstack/react-query"
+    import 
+        @ createLoader
+        @ useQuery
+        @ httpService
+        from "utils"
+    import 
+        @ getProductQuery
+        from "modules/products/infrastructure"
+    import 
+        @ ICartProduct
+        from "../types"
+    import 
+        @ ICartDto
+        from "./types"
+    :interface IResponse
+        :p date
+            :string 
+        :p products
+            :[ 
+                :ref ICartProduct
+    export 
+        const getCartProductsQueryKey
+            => 
+                param cartId
+                    :string 
+                [ 
+                    @ "carts"
+                    @ "products"
+                    @ cartId
+    const getCartProductsQuery
+        => 
+            param cartId
+                :string 
+            (
+                { 
+                    @ queryKey getCartProductsQueryKey(cartId)
+                    @ queryFn
+                        async=> 
+                            :return
+                                :ref Promise
+                                    :param 
+                                        :ref IResponse
+                            const cart
+                                await 
+                                    _ httpService.get
+                                        :param 
+                                            :ref ICartDto
+                                        `lit 
+                                            + carts/
+                                            @ cartId
+                                            + 
+                            const productPromises
+                                _ cart.products.map
+                                    => 
+                                        param product
+                                        _ getProductQuery(product.productId.toString()).queryFn()
+                            const products
+                                await 
+                                    _ Promise.all(productPromises)
+                            return 
+                                { 
+                                    @ date cart.date
+                                    @ products
+                                        _ products.map
+                                            => 
+                                                param product
+                                                (
+                                                    { 
+                                                        @ ...product
+                                                        @ quantity
+                                                            ?? 
+                                                                _ cart.products.find?
+                                                                    => 
+                                                                        param cartProduct
+                                                                        set cartProduct.productId === product.id
+                                                                    . quantity
+                                                                + 0
+    export 
+        const useCartProductsQuery
+            => 
+                param cartId
+                    :string 
+                param options
+                    :ref UseQueryOptions
+                        :param 
+                            :ref IResponse
+                    :optional 
+                return 
+                    _ useQuery
+                        { 
+                            @ ...getCartProductsQuery(cartId)
+                            @ ...options
+    export 
+        const cartProductsLoader
+            async=> 
+                param cartId
+                    :string 
+                _ createLoader(getCartProductsQuery(cartId))

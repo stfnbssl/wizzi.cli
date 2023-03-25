@@ -1,0 +1,70 @@
+module
+    import 
+        @ createBrowserRouter
+        @ ScrollRestoration
+        from "react-router-dom"
+        # eslint-disable-next-line no-restricted-imports
+    import 
+        @ Layout
+        from "shared/Layout"
+    import 
+        @ cartPageLoader
+        from "./Cart/loader"
+    import 
+        @ homePageLoader
+        from "./Home/loader"
+    import 
+        @ productPageLoader
+        from "./Product/loader"
+    import 
+        @ productsPageLoader
+        from "./Products/loader"
+    export 
+        const router
+            _ createBrowserRouter
+                [ 
+                    { 
+                        @ element
+                            < React.Fragment
+                                < ScrollRestoration 
+                                    @ getKey
+                                        => 
+                                            param location
+                                            +
+                                                @expr location.pathname
+                                < Layout 
+                        [ children
+                            { 
+                                @ path "/"
+                                @ loader homePageLoader
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./Home"
+                            { 
+                                @ path "/sign-in"
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./SignIn"
+                            { 
+                                @ path "/products"
+                                @ loader productsPageLoader
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./Products"
+                            { 
+                                @ path "/products/:productId"
+                                @ loader productPageLoader
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./Product"
+                            { 
+                                @ path "/cart/:cartId"
+                                @ loader cartPageLoader
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./Cart"
