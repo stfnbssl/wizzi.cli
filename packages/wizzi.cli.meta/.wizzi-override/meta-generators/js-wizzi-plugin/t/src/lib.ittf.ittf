@@ -2,14 +2,15 @@ $group
 
     $foreach schema in cliCtx.Schemas
 
-        $file __dot__wizzi/${pkgPath}lib/wizzi/schemas/${schema.name}.wfschema.ittf.ittf
-            wfschema ${schema.name}
-                wfschema(&schema)
+        $if !schema.hasBuiltinWizziModel
+            $file __dot__wizzi/${pkgPath}lib/wizzi/schemas/${schema.name}.wfschema.ittf.ittf
+                wfschema ${schema.name}
+                    wfschema(&schema)
 
-        $file __dot__wizzi/${pkgPath}lib/wizzi/models/${schema.name}-mtree-preprocessor.g.js.ittf.ittf
-            module
-                kind es6
-                mtree-preprocessor.js(&schema)
+            $file __dot__wizzi/${pkgPath}lib/wizzi/models/${schema.name}-mtree-preprocessor.g.js.ittf.ittf
+                module
+                    kind es6
+                    mtree-preprocessor.js(&schema)
 
         $file __dot__wizzi/${pkgPath}lib/artifacts/${schema.name}/document/gen/main.js.ittf.ittf
             module
@@ -70,6 +71,9 @@ $group
                                 $foreach line in schema.wizzifier.parserInvokeCode
                                     "${line}",
                             ]
+                            // schema.wizzifier.useFormatAstMethods ${schema.wizzifier.useFormatAstMethods}
+                            var useFormatAstMethods = ${schema.wizzifier.useFormatAstMethods ? 'true' : 'false'}
+                            var invokeCodeHasCallback = ${schema.wizzifier.invokeCodeHasCallback ? 'true' : 'false'}
                         ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/wizzifier.js
 
                 $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/cleanAST.js.ittf.ittf
@@ -86,26 +90,27 @@ $group
                         ${"${'$'}"}group
                             ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/tfolder/${item}.js
 
-                $
-                    var items = [
-                        "f",
-                        "f_a",
-                        "f_a_in_tag",
-                        "f_a_temp",
-                        "format",
-                        "f_p",
-                        "f_p_tag",
-                        "f_p_temp",
-                        "get_text_from_1_children",
-                        "helper_functions",
-                        "name",
-                        "tag",
-                    ];
+                $if schema.wizzifier.useFormatAstMethods
+                    $
+                        var items = [
+                            "f",
+                            "f_a",
+                            "f_a_in_tag",
+                            "f_a_temp",
+                            "format",
+                            "f_p",
+                            "f_p_tag",
+                            "f_p_temp",
+                            "get_text_from_1_children",
+                            "helper_functions",
+                            "name",
+                            "tag",
+                        ];
 
-                $foreach item in items
-                    $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/t/${item}.js.ittf.ittf
-                        ${"${'$'}"}group
-                            ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/tfolder/schema_specific/${item}.js
+                    $foreach item in items
+                        $file __dot__wizzi/${pkgPath}lib/wizzifiers/${schema.name}/t/${item}.js.ittf.ittf
+                            ${"${'$'}"}group
+                                ${'$'}include wz/v08/wizzi/plugin/lib/wizzifiers/tfolder/schema_specific/${item}.js
 
                 $file __dot__wizzi/${pkgPath}lib/wizzifiers/utils/lineparser.js.ittf.ittf
                     module

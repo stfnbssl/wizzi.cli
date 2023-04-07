@@ -12,10 +12,17 @@ $group
                     @ destPath __dirname
                     ${'$'}if development
                         [ plugins
-                            @ './wizzi-core/index.js' 
-                            @ './wizzi-js/index.js' 
-                            @ './wizzi-web/index.js' 
-                        @ pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi/packages"
+                            $if cliCtx.useWizziV08
+                                $foreach item in cliCtx.wizziV08.plugins
+                                    @ "./wizzi.plugin.${item}/index.js" 
+                            $else
+                                @ './wizzi-core/index.js' 
+                                @ './wizzi-js/index.js' 
+                                @ './wizzi-web/index.js' 
+                        $if cliCtx.useWizziV08
+                            @ pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
+                        $else
+                            @ pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.v07/packages"
                     ${'$'}else
                         [ plugins
                             @ 'wizzi-core'
@@ -23,6 +30,9 @@ $group
                             @ 'wizzi-web'
                     [ schemas
                         $foreach schema in cliCtx.Schemas
-                            @ '${schema.name}'
+                            $if !schema.hasBuiltinWizziModel
+                                @ '${schema.name}'
                     { globalContext
                         @ wzConfigIsDevelopment true 
+                        @ wzConfigIsPackageDeploy false
+                        @ wzConfigIsDocumentation true 

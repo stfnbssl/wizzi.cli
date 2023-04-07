@@ -1,5 +1,5 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.v07\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.meta\.wizzi-override\src\cmds\templator.js.ittf
 */
@@ -17,10 +17,9 @@ module.exports = (sourcePath, destPath, ctx) =>
      }, (err, templateModel) => {
     
         if (err) {
-            console.log('err', err, __filename);
             return ;
         }
-        // log 'templateModel', templateModel
+        //
         var i, i_items=templateModel.children, i_len=templateModel.children.length, child;
         for (i=0; i<i_len; i++) {
             child = templateModel.children[i];
@@ -42,7 +41,6 @@ function processFile(node, destPath) {
     file.write(outputPath, sb.join('\n'))
 }
 function processContent(sb, node, indent) {
-    // log new Array(indent).join(' ') + node.name + ' ' + node.value
     sb.push(new Array(indent).join(' ') + decode(node.name) + ' ' + decode(node.value))
     var i, i_items=node.children, i_len=node.children.length, child;
     for (i=0; i<i_len; i++) {

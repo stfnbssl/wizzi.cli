@@ -20,7 +20,7 @@ $group
         ${'$'}append handlers
             v08/ts/handler${'('}getCheatsheet)
 
-                log 'getCheatsheet.request.params', request.params
+                $$ loog 'getCheatsheet.request.params', request.params
                 _ getCheatsheet
                     @ request.params.name
                     ._ then

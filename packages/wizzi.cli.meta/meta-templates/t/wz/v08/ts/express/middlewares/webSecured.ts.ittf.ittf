@@ -21,7 +21,7 @@ $group
                     :ref Response
                 param next
                     :ref Function
-                log 'webSecured called', (request as any).session && (request as any).session.user
+                $$ loog 'webSecured called', (request as any).session && (request as any).session.user
                 if (request as any).session && (request as any).session.user
                     return next()
                 set (request as any).session.returnTo = request.originalUrl

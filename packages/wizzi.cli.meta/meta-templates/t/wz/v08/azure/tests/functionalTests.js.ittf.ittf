@@ -20,24 +20,24 @@ $group
                         @ '--no-sandbox'
             _ before
                 async=> 
-                    log 'functionalTest.before.new webdriver'
+                    $$ loog 'functionalTest.before.new webdriver'
                     set driver = new webdriver.Builder().forBrowser('chrome').withCapabilities(capabilities).build()
                     await 
                         _ driver.manage().setTimeouts
                             { 
                                 @ pageLoad 300000
-                    log 'functionalTest.before.webdriver managed'
+                    $$ loog 'functionalTest.before.webdriver managed'
             _ after
                 => 
                     param done
-                    log 'functionalTest.after.quitting driver'
+                    $$ loog 'functionalTest.after.quitting driver'
                     _ driver.quit().then
                         => 
-                            log 'functionalTest.after.driver quitted.done'
+                            $$ loog 'functionalTest.after.driver quitted.done'
                             _ done()
                         ._ catch
                             => 
-                                log 'functionalTest.after.error quitting driver.done'
+                                $$ loog 'functionalTest.after.error quitting driver.done'
                                 _ done()
             _ it
                 @ 'Assert page title'
@@ -45,21 +45,21 @@ $group
                     param done
                     var startTimestamp = Date.now()
                     var endTimestamp = startTimestamp + 60 * 2 * 1000
-                    log 'functionalTest.Assert page title.enter'
+                    $$ loog 'functionalTest.Assert page title.enter'
                     while true
                         try 
-                            log 'functionalTest.Assert page title.wait driver.get'
+                            $$ loog 'functionalTest.Assert page title.wait driver.get'
                             await 
                                 _ driver.get(process.env['webAppUrl'])
-                            log 'functionalTest.Assert page source', driver.page_source
-                            log 'functionalTest.Assert page title.wait driver.until.titleIs'
+                            $$ loog 'functionalTest.Assert page source', driver.page_source
+                            $$ loog 'functionalTest.Assert page title.wait driver.until.titleIs'
                             await 
                                 _ driver.wait(until.titleIs('${'$'}{wzCtx.Build.azure.testTitle}'), 2000)
-                            log 'functionalTest.Assert page title.Ok break'
+                            $$ loog 'functionalTest.Assert page title.Ok break'
                             break 
                         catch err
                             var currentTimestamp = Date.now()
-                            log 'Date.now() - currentTimestamp', Date.now() - currentTimestamp
+                            $$ loog 'Date.now() - currentTimestamp', Date.now() - currentTimestamp
                             if currentTimestamp > endTimestamp
                                 _ console.log("##vso[task.logissue type=error;]Failed with error " + err)
                                 _ done
@@ -68,6 +68,6 @@ $group
                                 new Promise
                                     => 
                                         param resolve
-                                        log 'functionalTest.Assert page title.repeating.setTimeout'
+                                        $$ loog 'functionalTest.Assert page title.repeating.setTimeout'
                                         _ setTimeout(resolve, 5000)
-                    log 'functionalTest.Assert page title.Ok exiting. done'
+                    $$ loog 'functionalTest.Assert page title.Ok exiting. done'

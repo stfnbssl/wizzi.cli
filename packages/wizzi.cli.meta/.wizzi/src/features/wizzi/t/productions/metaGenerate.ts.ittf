@@ -23,8 +23,8 @@ $group
                                             @ action 'wizzi.productions.metaGenerate'
                                             @ message 'files parameter must be an object of type PackiFiles'
                                             @ files
-                            log myname, 'metaGenerate.files', Object.keys(files)
-                            log myname, 'metaGenerate.context', Object.keys(context)
+                            $$ loogmyname, 'metaGenerate.files', Object.keys(files)
+                            $$ loogmyname, 'metaGenerate.context', Object.keys(context)
                             let jsonwf
                                 :any
                                 =

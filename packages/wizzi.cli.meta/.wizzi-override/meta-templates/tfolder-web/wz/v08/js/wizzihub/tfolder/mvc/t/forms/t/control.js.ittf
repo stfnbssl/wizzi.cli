@@ -210,7 +210,7 @@ $group
                       var el = $('#' + item.__form.id + '-' + item.id)
                       set el.innerHTML = context.originalValues[item.id]
                   catch err
-                      log err
+                      error err
               elif item.type == 'text'
                   try 
                       var el = $('input[name="' + item.id + '"]')
@@ -222,12 +222,12 @@ $group
                               @ 'change'
                               =>
                                   param event
-                                  log "value changed", el
+                                  $$ loog "value changed", el
                                   _  context.onChange
                                       @ item.id
                                       @ el.value
                   catch err
-                      log err
+                      error err
               elif item.type == 'select'
                   try 
                       var selectBox = $('select[name="' + item.id + '"]')
@@ -244,12 +244,12 @@ $group
                               @ 'change'
                               =>
                                   param event
-                                  log "value changed", el
+                                  $$ loog "value changed", el
                                   _  context.onChange
                                       @ item.id
                                       @ el.value
                   catch err
-                      log err
+                      error err
               elif item.type == 'checkbox'
                   try 
                       var el = $('input[name="' + item.id + '"]')
@@ -265,7 +265,7 @@ $group
                                       @ item.id
                                       @ el.checked
                   catch err
-                    log err
+                    error err
               elif item.type == 'radio'
                   try 
                       # original value set in build
@@ -285,7 +285,7 @@ $group
                                         @ item.id
                                         @ el.value
                   catch err
-                      log err
+                      error err
               elif item.type == 'date'
                   try 
                       var el = $('input[name="' + item.id + '"]')
@@ -307,7 +307,7 @@ $group
                                 param ev
                                 param picker
                                 _ $(this).val(picker.startDate.format('DD/MM/YYYY'))
-                        log 'datepicker', item.id, 'activated'
+                        $$ loog 'datepicker', item.id, 'activated'
                         *$
                         _ $on
                             @ el
@@ -320,7 +320,7 @@ $group
                         var dateControl
                             new controls.CodepenDatePicker(".date-input")
                   catch err
-                      log err
+                      error err
 
               elif item.type == 'slider'
                   try 
@@ -345,7 +345,7 @@ $group
                                           @ thousand ','
                                           @ prefix '$ '
                   catch err
-                      log err
+                      error err
 
               elif item.type == 'range-slider'
                   # original value set in build
@@ -367,7 +367,7 @@ $group
                                           @ item.id
                                           @ min + ';' + max
                       catch err
-                          log err
+                          error err
                   # call reset if needed
                   # newRangeSlider.reset();
               elif item.type == 'code'
@@ -387,7 +387,7 @@ $group
                                       @ "Ctrl-Space" "autocomplete"
                                   @ value "<!doctype html>\n<html>\n  " + $('#' + item.id)[0].innerHTML + "\n</html>"
                   catch err
-                      log err
+                      error err
               elif item.type == 'ittf-editor'
                   try 
                       _ editors.MonacoEditor.setup
@@ -407,7 +407,7 @@ $group
                                         =>
                                             param data
                                             if context.onChange
-                                              log 'monacoEditor.updateFiles.data', data()
+                                              $$ loog 'monacoEditor.updateFiles.data', data()
                                               _ context.onChange
                                                   @ item.id
                                                   @ data()['file.ittf'].contents
@@ -417,7 +417,7 @@ $group
                                   @ monacoEditor
                               _ monacoEditor.render
                   catch err
-                      log err
+                      error err
 
       set ${myName}.start_validation
           function
@@ -466,7 +466,7 @@ $group
                           @ invalids
                   return
               var rules = formRules[item.id]
-              log item.id, 'rules', rules
+              $$ loog item.id, 'rules', rules
               if rules && rules.length > 0
                 const value = context.currentValues[item.id]
                 foreach rule in rules

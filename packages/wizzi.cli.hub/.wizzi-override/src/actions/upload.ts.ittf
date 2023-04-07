@@ -36,7 +36,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadArtifact.options', options
+                $$ loog 'uploadArtifact.options', options
                 _ getFilteredPackiFiles
                     @ options
                     a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadArtifact.getFilteredPackiFiles )
@@ -65,7 +65,7 @@ module
                                 @ owner
                                 @ name
                                 a_then_catch_reject( ap, :any, , upload.uploadArtifact.artifactApi.getArtifactProduction )
-                                    log 'upload.uploadArtifact.artifactApi.getArtifactProduction', Object.keys(ap.item._doc)
+                                    $$ loog 'upload.uploadArtifact.artifactApi.getArtifactProduction', Object.keys(ap.item._doc)
                                     _ artifactApi.updateArtifactProduction
                                         @ ap.item._doc._id
                                         @ owner
@@ -92,7 +92,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadPackage.sourceFolder', options.sourceFolder
+                $$ loog 'uploadPackage.sourceFolder', options.sourceFolder
                 _ getFilteredPackiFiles
                     @ options
                     a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadPackage.getFilteredPackiFiles )
@@ -119,7 +119,7 @@ module
                                 @ owner
                                 @ name
                                 a_then_catch_reject( ap, :any, , upload.uploadPackage.packageApi.getPackageProduction )
-                                    log 'upload.uploadPackage.packageApi.getPackageProduction', Object.keys(ap.item._doc)
+                                    $$ loog 'upload.uploadPackage.packageApi.getPackageProduction', Object.keys(ap.item._doc)
                                     _ packageApi.updatePackageProduction
                                         @ ap.item._doc._id
                                         @ owner
@@ -145,7 +145,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadPlugin.sourceFolder', options.sourceFolder
+                $$ loog 'uploadPlugin.sourceFolder', options.sourceFolder
                 _ getFilteredPackiFiles
                     @ options
                     a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadPlugin.getFilteredPackiFiles )
@@ -172,7 +172,7 @@ module
                                 @ owner
                                 @ name
                                 a_then_catch_reject( ap, :any, , upload.uploadPlugin.pluginApi.getPluginProduction )
-                                    log 'upload.uploadPlugin.pluginApi.getPluginProduction', Object.keys(ap.item._doc)
+                                    $$ loog 'upload.uploadPlugin.pluginApi.getPluginProduction', Object.keys(ap.item._doc)
                                     _ pluginApi.updatePluginProduction
                                         @ ap.item._doc._id
                                         @ owner
@@ -197,7 +197,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadTFolder.sourceFolder', options.sourceFolder
+                $$ loog 'uploadTFolder.sourceFolder', options.sourceFolder
                 _ getFilteredPackiFiles
                     @ options
                     a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadTFolder.getFilteredPackiFiles )
@@ -224,7 +224,7 @@ module
                                 @ owner
                                 @ name
                                 a_then_catch_reject( ap, :any, , upload.uploadTFolder.tFolderApi.getTFolder )
-                                    log 'upload.uploadTFolder.tFolderApi.getTFolder', Object.keys(ap.item._doc)
+                                    $$ loog 'upload.uploadTFolder.tFolderApi.getTFolder', Object.keys(ap.item._doc)
                                     _ tFolderApi.updateTFolder
                                         @ ap.item._doc._id
                                         @ owner
@@ -250,7 +250,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadMeta.sourceFolder', options.sourceFolder
+                $$ loog 'uploadMeta.sourceFolder', options.sourceFolder
                 _ getFilteredPackiFiles
                     @ options
                     a_then_catch_reject( packiFiles, :ref, PackiFiles, upload.uploadMeta.getFilteredPackiFiles )
@@ -277,7 +277,7 @@ module
                                 @ owner
                                 @ name
                                 a_then_catch_reject( ap, :any, , upload.uploadMeta.metaApi.getMetaProduction )
-                                    log 'upload.uploadMeta.metaApi.getMetaProduction', Object.keys(ap.item._doc)
+                                    $$ loog 'upload.uploadMeta.metaApi.getMetaProduction', Object.keys(ap.item._doc)
                                     _ metaApi.updateMetaProduction
                                         @ ap.item._doc._id
                                         @ owner
@@ -299,7 +299,7 @@ module
                 :ref Promise
                     :param any
             r_promise()
-                log 'uploadCdnResource.sourceFile.sourceFolder', options.sourceFile, options.sourceFolder
+                $$ loog 'uploadCdnResource.sourceFile.sourceFolder', options.sourceFile, options.sourceFolder
                 if options.sourceFile && options.sourceFile.length > 0
                     _ getFileContents
                         @ options
@@ -328,6 +328,6 @@ module
                                     @ paths[count]
                                     @ packiFiles[paths[count]].contents
                                     a_then_catch_reject( result, :any, , upload.uploadCdnResource.resourceApi.createCdnResource )
-                                        log 'uploadCdnResource', paths[count], "uploaded"
+                                        $$ loog 'uploadCdnResource', paths[count], "uploaded"
                                         _ execUpload
                             _ execUpload

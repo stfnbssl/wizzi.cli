@@ -32,7 +32,7 @@ module
                             @ destFolder destFolder
                         ._ then
                             =>
-                                log 'done'
+                                $$ loog 'done'
                                 _ app.services.mongodbClose
 
         else
@@ -45,7 +45,7 @@ module
                             @ destFolder destFolder
                         ._ then
                             =>
-                                log 'done'
+                                $$ loog 'done'
                                 _ app.services.mongodbClose
 
 
@@ -69,7 +69,7 @@ module
                         @ sourceFolder sourceFolder
                     ._ then
                         =>
-                            log 'done'
+                            $$ loog 'done'
                             _ app.services.mongodbClose
     +
     async-function start

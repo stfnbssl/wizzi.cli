@@ -1,16 +1,18 @@
 $group
     $params &schema
 
-    ${"${'$'}"}
+    $
         var md = {
         };
 
-    v08/lib/wizzi/models/mtree-preprocessor${"${'('}"} &md )
+    wz/v08/wizzi/plugin/lib/wizzi/models/mtree-preprocessor.js${'('} md )
 
         function preprocessNode
             param node
             param state
-
+            ---
+            # write here your prepocessing code
+            ---
             if node.n === 'ittf-panel'
                 set node.wzMTreeData
                     {

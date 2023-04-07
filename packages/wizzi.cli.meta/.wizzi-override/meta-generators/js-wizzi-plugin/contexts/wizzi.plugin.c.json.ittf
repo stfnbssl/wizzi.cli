@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "c";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "C language plugin"
@@ -7,8 +13,15 @@
 
     [ Schemas
         {
-            name "c"
+            name "${pluginBasename}"
+            rootElement "xmodule"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "module"
+                    outmime "${pluginBasename}"
+

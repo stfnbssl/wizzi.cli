@@ -23,7 +23,7 @@ module
                 :string
             param options
                 :any
-            log 'generateMetaFolder.options', options
+            $$ loog 'generateMetaFolder.options', options
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp

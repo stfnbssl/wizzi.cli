@@ -1,5 +1,13 @@
 $group
 
+    elif cmd == 'ts-node-demo-wizzi-v08'
+        _ createEx
+            {
+                @ metaGenerator 'ts-node'
+                @ context 'demo.wizzi.v08'
+                @ pkgName 'demo.ts.node.wizzi.v08'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.demo/packages/demo.ts.node.wizzi.v08'
+                            
     elif cmd == 'ts-node-wizzi-cli-hub'
         _ createEx
             {
@@ -21,4 +29,6 @@ $group
                 @ context 'demo'
                 @ pkgName 'demo.ts.node'
                 @ destPath 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/demo.ts.node'
+
+
 

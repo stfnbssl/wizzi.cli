@@ -81,7 +81,7 @@ ${'$'}group
                           param id
                           param value
                           set currentValues[id] = value
-                          log 'Changed currentValues', currentValues
+                          $$ loog 'Changed currentValues', currentValues
                           if handlers.onChange
                             _ handlers.onChange
                               @ id
@@ -93,7 +93,7 @@ ${'$'}group
                           param value
                           if id
                             set currentValues[id] = value
-                          log 'Submit currentValues', currentValues
+                          $$ loog 'Submit currentValues', currentValues
                           if handlers.onSubmit
                             _ handlers.onSubmit
                               @ currentValues
@@ -182,10 +182,10 @@ ${'$'}group
                             @ context
                             @ invalids
                         if invalids.length == 0
-                          log "model submitted", model.id
+                          $$ loog"model submitted", model.id
                           _  context.onSubmit
                         else
-                          log 'invalid forms', invalids
+                          $$ loog 'invalid forms', invalids
 
       set ${'$'}{myName}.start_validation
         function

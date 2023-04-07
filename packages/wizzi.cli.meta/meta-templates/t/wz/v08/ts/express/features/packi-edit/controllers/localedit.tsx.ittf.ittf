@@ -66,7 +66,7 @@ $group
                 const pathName = decodeURIComponent(parsedUrl.pathname)
                 const parts = pathName.split('/')
                 const folderPath = path.join(config.ittfPath, parts.slice(2).join('/'))
-                log myname, 'getFolderEditor', 'pathName', pathName, 'folderPath', 'folderPath'
+                $$ loogmyname, 'getFolderEditor', 'pathName', pathName, 'folderPath', 'folderPath'
                 const queryParams
                     { 
                 _ wizziProds.folderFsToPackiFiles

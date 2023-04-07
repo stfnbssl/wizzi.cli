@@ -17,7 +17,7 @@ module
     
     +
     const args = minimist(process.argv.slice(2))
-	log 'args', args
+	$$ loog 'args', args
     
     function main
         if args.help

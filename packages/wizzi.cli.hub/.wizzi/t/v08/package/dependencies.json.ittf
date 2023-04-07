@@ -126,13 +126,12 @@ $group
     $if wzCtx.Build.useReact
         $if wzCtx.Build.react.useFormik
             formik "^1.5.7"
-    
     $group
         $if wzCtx.Build.useGatsby
             gatsby "^2.32.3"
     $if wzCtx.Build.utils.useGitUrlParse
         git-url-parse "^11.4.4"
-    $if wzCtx.Build.useGraphql
+    $if wzCtx.Build.useGraphqlParser
         graphql "^15.5.0"
         graphql-request "^3.4.0"
     

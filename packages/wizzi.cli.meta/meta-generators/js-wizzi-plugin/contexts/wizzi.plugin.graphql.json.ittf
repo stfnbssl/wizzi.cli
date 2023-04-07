@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "graphql";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Graphql language plugin"
@@ -7,8 +13,11 @@
 
     [ BuildVars
         {
-            name "useGraphql"
+            name "useGraphqlParser"
             value "true"
+
+    [ usePackages
+        "Build.useCssParser"
     
     [ Schemas
         {
@@ -22,5 +31,12 @@
                     "var graphql_parser = require('graphql/language/parser')"
                 [ parserInvokeCode
                     " _ graphql_parser.parse(tobeWizzified)"
+                useFormatAstMethods true
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "document"
+                    outmime "graphql"
+
             

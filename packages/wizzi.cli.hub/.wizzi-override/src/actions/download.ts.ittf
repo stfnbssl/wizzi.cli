@@ -407,7 +407,7 @@ module
                 :ref PackiFiles
                 {
             foreach k in Object.keys(packiFiles)
-                log 'filterPackiFiles', options.name + '/' + k , options.filter(k, packiFiles[k].type, packiFiles[k].contents)
+                $$ loog 'filterPackiFiles', options.name + '/' + k , options.filter(k, packiFiles[k].type, packiFiles[k].contents)
                 if options.filter(options.name + '/' + k, packiFiles[k].type, packiFiles[k].contents)
                     set result[k] = packiFiles[k]
             return result

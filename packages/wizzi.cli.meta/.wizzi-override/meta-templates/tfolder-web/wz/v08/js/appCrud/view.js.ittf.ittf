@@ -35,7 +35,7 @@ $group
             function 
                 param viewCmd
                 param parameter
-                log '${'$'}{myName}.prototype.render', viewCmd, parameter
+                $$ loog '${'$'}{myName}.prototype.render', viewCmd, parameter
                 var self = this
                 var viewCommands
                     { 
@@ -50,12 +50,12 @@ $group
                                 set self.${'$'}${cliCtx.jsAppCrud.name}ViewSelectCategoria.innerHTML = self.template.show${cliCtx.jsAppCrud.Name}SelectCategoria(parameter.categories)
                         @ show${cliCtx.jsAppCrud.Name}View
                             function 
-                                log '${'$'}{myName}.render.show${cliCtx.jsAppCrud.Name}View'
+                                $$ loog '${'$'}{myName}.render.show${cliCtx.jsAppCrud.Name}View'
                                 set self.${'$'}${cliCtx.jsAppCrud.name}View.style.display = 'block'
                                 ${'$'}${'$'} set self.$otherView.style.display = 'none'
                         @ showOtherView
                             function 
-                                log '${'$'}{myName}.render.showOtherView'
+                                $$ loog '${'$'}{myName}.render.showOtherView'
                                 set self.${'$'}${cliCtx.jsAppCrud.name}View.style.display = 'none'
                                 ${'$'}${'$'} set self.$otherView.style.display = 'block'
                         @ show${cliCtx.jsAppCrud.Name}List
@@ -66,11 +66,11 @@ $group
                                 set self.${'$'}${cliCtx.jsAppCrud.name}Item.innerHTML = self.template.show${cliCtx.jsAppCrud.Name}Item(parameter)
                         @ setFilter
                             function 
-                              log '${'$'}{myName}.render.setFilter', parameter
+                              $$ loog '${'$'}{myName}.render.setFilter', parameter
                               set qs('.filters .selected').className = ''
                               if qs('.filters [href="#/' + parameter + '"]')
                                 set qs('.filters [href="#/' + parameter + '"]').className = 'selected'
-                                log '${'$'}{myName}.render.setFilter 2', parameter
+                                $$ loog '${'$'}{myName}.render.setFilter 2', parameter
                         @ create${cliCtx.jsAppCrud.Name}Item
                             function
                                 _ self._create${cliCtx.jsAppCrud.Name}Item
@@ -96,19 +96,19 @@ $group
                 var self = this
                 if event === '${cliCtx.jsAppCrud.name}ViewSearchChange'
 
-                    log '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}ViewSearch
+                    $$ loog '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}ViewSearch
                     _ $on
                         @ self.${'$'}${cliCtx.jsAppCrud.name}ViewSearch
                         @ 'input'
                         function 
-                            log '${'$'}{myName}.bind', '${cliCtx.jsAppCrud.name}ViewSearchChange', this.value
+                            $$ loog '${'$'}{myName}.bind', '${cliCtx.jsAppCrud.name}ViewSearchChange', this.value
                             _ handler
                                 { 
                                     @ value this.value
 
                 elif event === '${cliCtx.jsAppCrud.name}SelectCategoriaChange'
                     set this.${'$'}${cliCtx.jsAppCrud.name}SelectCategoria = qs('.${cliCtx.jsAppCrud.name}-select-categoria')
-                    log '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}SelectCategoria
+                    $$ loog '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}SelectCategoria
                     _ $on
                         @ self.${'$'}${cliCtx.jsAppCrud.name}SelectCategoria
                         @ 'change'
@@ -119,7 +119,7 @@ $group
                                     @ value event.target.value
 
                 elif event === '${cliCtx.jsAppCrud.name}AddItemClick'
-                    log '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}AddItemClick
+                    $$ loog '${'$'}{myName}.bind', self.${'$'}${cliCtx.jsAppCrud.name}AddItemClick
                     _ $on
                         @ self.${'$'}${cliCtx.jsAppCrud.name}AddButton
                         @ 'click'
@@ -163,7 +163,7 @@ $group
         set ${'$'}{myName}.prototype._create${cliCtx.jsAppCrud.Name}Item
             function 
                 param parameters
-                log '${'$'}{myName}.prototype._create${cliCtx.jsAppCrud.Name}Item', parameters
+                $$ loog '${'$'}{myName}.prototype._create${cliCtx.jsAppCrud.Name}Item', parameters
                 const formData
                     _ this.template.create${cliCtx.jsAppCrud.Name}ItemForm
                 const originalValues
@@ -177,7 +177,7 @@ $group
                         @ onSubmit
                             =>
                                 param formValues
-                                log 'onSubmit formValues', formValues
+                                $$ loog 'onSubmit formValues', formValues
                                 _ this.create${cliCtx.jsAppCrud.Name}Handler
                                     @ originalValues
                                     @ formValues
@@ -189,7 +189,7 @@ $group
         set ${'$'}{myName}.prototype._update${cliCtx.jsAppCrud.Name}Item
             function 
                 param parameters
-                log '${'$'}{myName}.prototype._update${cliCtx.jsAppCrud.Name}Item', parameters
+                $$ loog '${'$'}{myName}.prototype._update${cliCtx.jsAppCrud.Name}Item', parameters
                 const formData
                     _ this.template.update${cliCtx.jsAppCrud.Name}ItemForm
                 const originalValues = parameters.originalValues
@@ -202,7 +202,7 @@ $group
                         @ onSubmit
                             =>
                                 param formValues
-                                log 'onSubmit formValues', formValues
+                                $$ loog 'onSubmit formValues', formValues
                                 _ this.update${cliCtx.jsAppCrud.Name}Handler
                                     @ originalValues
                                     @ formValues
@@ -214,7 +214,7 @@ $group
         set ${'$'}{myName}.prototype._delete${cliCtx.jsAppCrud.Name}Item
             function 
                 param parameters
-                log '${'$'}{myName}.prototype._delete${cliCtx.jsAppCrud.Name}Item', parameters, "originalValues", parameters.originalValues
+                $$ loog '${'$'}{myName}.prototype._delete${cliCtx.jsAppCrud.Name}Item', parameters, "originalValues", parameters.originalValues
                 const formData
                     _ this.template.delete${cliCtx.jsAppCrud.Name}ItemForm
                 const originalValues = parameters.originalValues
@@ -227,7 +227,7 @@ $group
                         @ onSubmit
                             =>
                                 param formValues
-                                log '${'$'}{myName}.prototype._delete${cliCtx.jsAppCrud.Name}.onSubmit.formValues', formValues
+                                $$ loog '${'$'}{myName}.prototype._delete${cliCtx.jsAppCrud.Name}.onSubmit.formValues', formValues
                                 _ this.delete${cliCtx.jsAppCrud.Name}Handler
                                     @ originalValues
                                     @ formValues

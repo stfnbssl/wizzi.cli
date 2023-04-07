@@ -6,6 +6,7 @@ $group
             plugin: '${cliCtx.name}',
             name: 'document',
             schema: '${schema.name}',
+            rootElement: '${schema.rootElement}',
             checkSchema: true,
             isAsync: true,
         };
@@ -59,6 +60,22 @@ $group
             ${"${'$'}"}include v08/wizzi/plugin/artifacts/types/syntax_structure/artifact-gen-main.js
         *$
 
+        
+        $if cliCtx.usePackageVersion && schema.writeGenInfo
+            function main_init
+                param model
+                param ctx
+                
+                # loog myname, 'ctx.values', ctx.values
+                if (!!ctx.values.noGeneratorComments) == false
+                    _ ctx.w('${schema.multiLineCommentBegin}')
+                    _ ctx.w('    artifact generator: ' + __filename)
+                    _ ctx.w('    package: ${cliCtx.Package.name}@${'${"$"}'}{versions['${cliCtx.Package.name}@next']}')
+                    _ ctx.w('    primary source IttfDocument: ' + model.wzSourceFilepath('f1'))
+                    ${'${"$"}'}if wzConfigIsPackageDeploy == false
+                        _ ctx.w('    utc time: ' + new Date().toUTCString())
+                    _ ctx.w('${schema.multiLineCommentEnd}')
+        
         $if schema.plugin_type == 'syntax_structure'
 
             var noattrs
@@ -102,6 +119,3 @@ $group
                             _ retval.push({ name: p.name() })
                 
                 return retval
-
-
-

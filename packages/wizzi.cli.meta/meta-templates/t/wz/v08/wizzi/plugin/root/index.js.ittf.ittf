@@ -18,6 +18,11 @@ $group
     var window_transformers
         {
             @ '${cliCtx.Schemas[0].name}/extended' require('./lib/artifacts/${cliCtx.Schemas[0].name}/extended/trans/main')
+    var window_wizzifiers
+        {
+            ${'$'}if wzCtx.Schemas && wzCtx.Schemas.length > 0
+                ${'$'}if wzCtx.Schemas[0].hasWizzifier
+                    @ '${'$'}{wzCtx.Schemas[0].name}/wizzifier' require('./lib/wizzifiers/${'$'}{wzCtx.Schemas[0].name}/wizzifier')
     var window_schemaDefinitions
         {
 	+
@@ -32,6 +37,7 @@ $group
 			set this.modelFactories = {}
 			set this.modelTransformers = {}
 			set this.artifactGenerators = {}
+            set this.wizzifiers = {}
 			set this.schemaDefinitions = {}
 		+
         m initialize
@@ -58,6 +64,8 @@ $group
         ${'$'}include model-transformation
 		+
         ${'$'}include artifact-generation
+		+
+        ${'$'}include wizzification
 		+
         ${'$'}include schema-definition
 	+
@@ -94,6 +102,11 @@ $group
                             ${'$'}foreach schema in wzCtx.Schemas
                                 ${'$'}foreach artifact in schema.artifactGenerators
                                     @ '${'$'}{schema.name}/${'$'}{artifact.name}'
+                    @ wizzifiers
+                        [
+                            ${'$'}foreach schema in wzCtx.Schemas
+                                ${'$'}if schema.hasWizzifier
+                                    @ '${'$'}{schema.name}'
 			@ createFactoryPlugin
 				function
 					param wizziPackage

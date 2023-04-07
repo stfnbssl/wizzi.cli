@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "regexp";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Regular expressions plugin"
@@ -12,3 +18,7 @@
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ artifacts
+                {
+                    name "document"
+                    outmime "regexp"

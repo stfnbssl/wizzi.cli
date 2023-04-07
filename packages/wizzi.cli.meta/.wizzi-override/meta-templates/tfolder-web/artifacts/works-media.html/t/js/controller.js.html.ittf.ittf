@@ -73,7 +73,7 @@ $group
                 param locationHash
                 var route = locationHash.split('/')[1]
                 var page = route || ''
-                log '${'$'}{myName}.setView', 'route', route, 'page', page
+                $$ loog '${'$'}{myName}.setView', 'route', route, 'page', page
                 _ this._updateRouteFilterState(page)
 
         set ${'$'}{myName}.prototype._updateRouteFilterState =
@@ -102,7 +102,7 @@ $group
         set ${'$'}{myName}.prototype.changeMediaSearchTerm
             function 
                 param value
-                log '${'$'}{myName}.changeMediaSearchTerm', value
+                $$ loog '${'$'}{myName}.changeMediaSearchTerm', value
                 set this.mediaSearchTerm = value
                 _ this.model.setMediaValue
                   @ 'searchTerm'
@@ -112,7 +112,7 @@ $group
         set ${'$'}{myName}.prototype.changeMediaCategoria
             function 
                 param value
-                log '${'$'}{myName}.changeMediaCategoria', value
+                $$ loog '${'$'}{myName}.changeMediaCategoria', value
                 set this.mediaCategoria = value
                 _ this.model.setMediaValue
                   @ 'categoria'
@@ -121,12 +121,12 @@ $group
 
         set ${'$'}{myName}.prototype._filterMedia =
             function 
-                log '${'$'}{myName}._filterMedia'
+                $$ loog '${'$'}{myName}._filterMedia'
                 _ this.showMediaList
 
         set ${'$'}{myName}.prototype.showMediaList
             function 
-                log '${'$'}{myName}.showMediaList'
+                $$ loog '${'$'}{myName}.showMediaList'
                 _ this.model.getMedia
                     @ this.mediaSearchTerm
                     @ this.mediaCategoria
@@ -138,7 +138,7 @@ $group
         set ${'$'}{myName}.prototype.showMediaItem
             function
                 param id 
-                log '${'$'}{myName}.showMediaItem'
+                $$ loog '${'$'}{myName}.showMediaItem'
                 _ this.model.getMediaItem
                     @ id
                     =>

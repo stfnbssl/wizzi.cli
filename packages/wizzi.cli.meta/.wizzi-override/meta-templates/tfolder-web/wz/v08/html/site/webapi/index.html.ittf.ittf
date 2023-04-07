@@ -164,7 +164,7 @@ $group
                                             set url = url.replaceAll(':${'$'}{p.name}', encodeURIComponent(param_${'$'}{p.name}))
                                         ${'$'}else
                                             ${'$'}if p.type == 'object'
-                                                log 'JSON.parse(param_${'$'}{p.name})', param_${'$'}{p.name}
+                                                $$ loog 'JSON.parse(param_${'$'}{p.name})', param_${'$'}{p.name}
                                                 set payload['${'$'}{p.name}'] = JSON.parse(param_${'$'}{p.name})
                                             ${'$'}else
                                                 set payload['${'$'}{p.name}'] = param_${'$'}{p.name}
@@ -183,7 +183,7 @@ $group
                     function exec_get
                         param url
                         param payload
-                        log 'url', url
+                        $$ loog 'url', url
                         var output = document.querySelector("#output")
                         _ fetch
                             @ url
@@ -198,7 +198,7 @@ $group
                                     param json
                                     set output.className = 'container'
                                     set output.innerHTML = wz.escapeHtml(JSON.stringify(json, null, 2))
-                                    log 'exec_.response.json', json
+                                    $$ loog 'exec_.response.json', json
                                     $*
                                     if getApiId === "/api/studio/document" || getApiId === "/api/studio/fragment"
                                         set document.getElementById('content').value = json.data.data
@@ -206,7 +206,7 @@ $group
                             ._ catch
                                 function 
                                     param err
-                                    log 'exec_.response.err', err
+                                    $$ loog 'exec_.response.err', err
                                     set output.className = 'container text-danger'
                                     set output.innerHTML = err && err.constructor && err.constructor.name === "Object" ? JSON.stringify(err, null, 2) : err
 
@@ -214,8 +214,8 @@ $group
                         param method
                         param url
                         param payload 
-                        log 'url', url
-                        log 'payload ', payload 
+                        $$ loog 'url', url
+                        $$ loog 'payload ', payload 
                         var output = document.querySelector("#output")
                         _ fetch
                             @ url
@@ -232,7 +232,7 @@ $group
                             ._ then
                                 =>
                                     param json
-                                    log 'exec_with_payload.response.json', json
+                                    $$ loog 'exec_with_payload.response.json', json
                                     set output.className = 'container'
                                     set output.innerHTML = wz.escapeHtml(JSON.stringify(json, null, 2))
                             ._ catch

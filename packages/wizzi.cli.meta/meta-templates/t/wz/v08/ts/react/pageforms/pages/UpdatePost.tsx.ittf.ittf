@@ -56,7 +56,7 @@ $group
                 _ this.formRef.dispatchEvent(new Event('submit'))
         
         m componentDidMount
-            log 'UpdatePost.componentDidMount.props', this.props
+            $$ loog 'UpdatePost.componentDidMount.props', this.props
             const
                 {
                     @ _id

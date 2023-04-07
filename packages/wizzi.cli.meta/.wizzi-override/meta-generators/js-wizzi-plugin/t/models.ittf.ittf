@@ -2,8 +2,15 @@ $group
 
     $file __dot__wizzi/models/wzctx.json.ittf.ittf
         {
+            $if cliCtx.usePackageVersion 
+                ${'${"$"}'}include versions
             name "${cliCtx.name}"
-            version "0.0.1"
+            npnName "${cliCtx.npnName}"
+            pluginBasename "${cliCtx.pluginBasename}"
+            $if cliCtx.usePackageVersion 
+                version '${'${"$"}'}{versions['${cliCtx.npnName}@next']}'
+            $else
+                version "0.0.1"
             description "${cliCtx.description}"
             { author
                 name "${cliCtx.author.name}"
@@ -15,6 +22,9 @@ $group
                 copy "${cliCtx.license.copy}"
             { Build
                 isWizziPlugin true
+                $if cliCtx.useWizziV08
+                    useWizziV08 true
+                    { wizziV08
                 { utils
                     useStringifySafe true
                     useObjectInspect true
@@ -31,13 +41,22 @@ $group
                     {
                         name "${schema.name}"
                         title "${schema.name} wizzi schema"
-                        builtin false
+                        $if schema.hasBuiltinWizziModel
+                            builtin true
+                        $else
+                            builtin false
+                        $if schema.hasWizzifier
+                            hasWizzifier true
                         [ modelTransformers
                             {
                                 name "extended"
                         [ artifactGenerators
                             {
                                 name "document"
+                        [ wizzifiers
+                            $if schema.hasWizzifier
+                                {
+                                    name "${schema.name}"
                         [ includes
                             $if schema.includes
                                 $foreach include in schema.includes

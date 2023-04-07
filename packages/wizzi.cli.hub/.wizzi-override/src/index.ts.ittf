@@ -183,7 +183,7 @@ module
                     @ undefined $$ description
                     @ 'update'
         else
-            log 'nothing to do', cmd, p1, p2, p3, p4
+            $$ loog 'nothing to do', cmd, p1, p2, p3, p4
     elif cmd == 'gen'
         if p_meta
             _ generateMetaFolder
@@ -234,11 +234,11 @@ module
             ._ then
                 =>
                     param result
-                    $$ log 'downloadGitRepo', result
+                    $$ loog 'downloadGitRepo', result
             ._ catch
                 =>
                     param err
-                    log 'downloadGitRepo.error', err
+                    $$ loog 'downloadGitRepo.error', err
 
     else
         if false
@@ -246,7 +246,7 @@ module
                 ._ then
                     =>
                         param result
-                        log 'listRepos', result
+                        $$ loog 'listRepos', result
         +
         if false
             _ viewRepo
@@ -255,7 +255,7 @@ module
                 ._ then
                     =>
                         param result
-                        log 'viewRepo', result.repo._contents
+                        $$ loog 'viewRepo', result.repo._contents
         +
         if false
             _ cloneRepo
@@ -265,7 +265,7 @@ module
                 ._ then
                     =>
                         param result
-                        log 'cloneRepo', result.cloned
+                        $$ loog 'cloneRepo', result.cloned
         if false
             _ start
                 a_cb_throw(app)
@@ -317,12 +317,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadArtifact', result
+                                $$ loog 'downloadArtifact', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadArtifact.error', err
+                                $$ loog 'downloadArtifact.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -344,12 +344,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadArtifact', result
+                                $$ loog 'uploadArtifact', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadArtifact.error', err
+                                $$ loog 'uploadArtifact.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -369,12 +369,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadPackage', result
+                                $$ loog 'uploadPackage', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadPackage.error', err
+                                $$ loog 'uploadPackage.error', err
                                 _ app.services.mongodbClose
         +
         if false
@@ -408,12 +408,12 @@ module
                         ._ then
                             =>
                                 param result
-                                $$ log 'downloadGitRepo', result
+                                $$ loog 'downloadGitRepo', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadGitRepo.error', err
+                                $$ loog 'downloadGitRepo.error', err
                                 _ app.services.mongodbClose
         if false
             # Merge a local folder into a wizzihub package
@@ -435,12 +435,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'mergePackage', result
+                                $$ loog 'mergePackage', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'mergePackage.error', err
+                                $$ loog 'mergePackage.error', err
                                 _ app.services.mongodbClose
         if false
             # Merge a local folder into a wizzihub artifact
@@ -465,12 +465,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'mergeArtifact', result
+                                $$ loog 'mergeArtifact', result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'mergeArtifact.error', err
+                                $$ loog 'mergeArtifact.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -491,12 +491,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadArtifactList', result.length
+                                $$ loog 'downloadArtifactList', result.length
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadArtifact.error', err
+                                $$ loog 'downloadArtifact.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -517,12 +517,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadPackageList', result.length
+                                $$ loog 'downloadPackageList', result.length
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadPackageList.error', err
+                                $$ loog 'downloadPackageList.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -543,12 +543,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadPluginList', result.length
+                                $$ loog 'downloadPluginList', result.length
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadPluginList.error', err
+                                $$ loog 'downloadPluginList.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -569,12 +569,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadMetaList', result.length
+                                $$ loog 'downloadMetaList', result.length
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadMetaList.error', err
+                                $$ loog 'downloadMetaList.error', err
                                 _ app.services.mongodbClose
         if false
             _ start
@@ -595,12 +595,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'downloadTFolderList', result.length
+                                $$ loog 'downloadTFolderList', result.length
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'downloadTFolderList.error', err
+                                $$ loog 'downloadTFolderList.error', err
                                 _ app.services.mongodbClose
 
         if false

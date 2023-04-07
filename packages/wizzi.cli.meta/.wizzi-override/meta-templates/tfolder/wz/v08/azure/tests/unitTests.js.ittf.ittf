@@ -7,14 +7,14 @@ $group
         function 
             _ before
                 function 
-                    log 'uniTests before'
+                    $$ loog 'uniTests before'
             _ after
                 =>
                     param done
-                    log 'uniTests after. Before closing'
+                    $$ loog 'uniTests after. Before closing'
                     _ index.close
                         =>
-                            log 'uniTests after. After closing'
+                            $$ loog 'uniTests after. After closing'
                             _ done
             _ it
                 @ 'Should return 200'
@@ -24,7 +24,7 @@ $group
                         @ '${'$'}{wzCtx.App.baseUrl}'
                         function 
                             param res
-                            log 'uniTests. Should return 200, is:', res.statusCode
+                            $$ loog 'uniTests. Should return 200, is:', res.statusCode
                             _ assert.equal(200, res.statusCode, 'Result code should be 200.')
                             _ done()
             $if true
@@ -36,7 +36,7 @@ $group
                             @ '${'$'}{wzCtx.App.baseUrl}'
                             function 
                                 param res
-                                log 'uniTests. Assert title. Should return 200, is:', res.statusCode
+                                $$ loog 'uniTests. Assert title. Should return 200, is:', res.statusCode
                                 _ assert.equal(200, res.statusCode, 'Result code should be 200.')
                                 var data = ''
                                 _ res.on
@@ -47,6 +47,6 @@ $group
                                 _ res.on
                                     @ 'end'
                                     function 
-                                        log 'uniTests. Assert title. end. data:', data
+                                        $$ loog 'uniTests. Assert title. end. data:', data
                                         _ assert.equal(true, data.includes('<title>${'$'}{wzCtx.Build.azure.testTitle}</title>'), 'Title should be ${'$'}{wzCtx.Build.azure.testTitle}.')
                                         _ done()

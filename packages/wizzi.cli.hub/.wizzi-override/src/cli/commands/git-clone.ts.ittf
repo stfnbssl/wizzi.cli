@@ -25,7 +25,7 @@ module
             if args.owner && args.owner.length > 0 &&
                 \b args.package && args.package.length > 0 &&
                 \b args.branch && args.branch.length > 0
-                log '...executing git clone', args.owner, args.package, args.branch, args.dest, args.ittf
+                $$ loog '...executing git clone', args.owner, args.package, args.branch, args.dest, args.ittf
                 const options
                     :any
                     = {}
@@ -41,7 +41,7 @@ module
                     ._ then
                         =>
                             param filteredRepoFiles
-                            log 'filteredRepoFiles', Object.keys(filteredRepoFiles)
+                            $$ loog 'filteredRepoFiles', Object.keys(filteredRepoFiles)
                 return 
                     {
                         @ done true

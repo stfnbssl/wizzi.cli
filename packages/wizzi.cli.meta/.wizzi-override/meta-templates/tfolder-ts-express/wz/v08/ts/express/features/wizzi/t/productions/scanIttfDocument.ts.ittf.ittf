@@ -148,7 +148,7 @@ $group
                                         {
                                             @ type "CODE"
                                             @ contents fsitem.content || ""
-                            log "packiFiles", Object.keys(packiFiles)    
+                            $$ loog"packiFiles", Object.keys(packiFiles)    
                             r_resolve${'('} packiFiles )
                 catch ex
                     r_reject${'('})

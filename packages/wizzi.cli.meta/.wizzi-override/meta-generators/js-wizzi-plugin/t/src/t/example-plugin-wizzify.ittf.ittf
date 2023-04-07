@@ -19,6 +19,7 @@ $group
 	var ${schema.name}wizzifier = require('../lib/wizzifiers/${schema.name}/wizzifier')
 	var file = require('wizzi-utils').file
 	+
+    let arg = process.argv[2]
     const moduleName = arg && arg.length > 0 ? arg : 'first'        
     _ async.map
 		[
@@ -47,7 +48,7 @@ $group
 						@ __dirname
 						@ 'data'
 						@ 'output'
-						@ name + '.${schema.name}.sinthax'
+						@ name + '.${schema.name}.syntax'
 			a_cb_no_throw${'$'}{'('} ittf )
 				if err
 					error 'error wizzifying: ' + source

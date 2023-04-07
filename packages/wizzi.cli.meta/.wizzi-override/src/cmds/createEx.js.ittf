@@ -24,7 +24,20 @@
             if meta_generators.indexOf(options.metaGenerator) < 0
                 throw new Error('createEx. Unknown metaGenerator: ' + options.metaGenerator)
 
-            log 'createEx.options', options
+            $$ loog 'createEx.options', options
+            var dataWizziPlugins = []
+            try
+                set dataWizziPlugins
+                    _ JSON.parse
+                        _ file.read
+                            _ path.join
+                                @ __dirname
+                                @ 'data/wizzi.plugins.data.json'
+                        . wizziPackages
+            catch ex
+                $$ loog 'reading ./data/wizzi.plugins.data.json', ex
+
+            $$ loog 'dataWizziPlugins.length', dataWizziPlugins.length
 
             var metaGeneratorFolderPath
                 _ path.join
@@ -39,13 +52,13 @@
                     @ metaGeneratorFolderPath
                     @ 'contexts'
                     @ options.context + '.json.ittf'
-            log 'metaGeneratorContextPath', metaGeneratorContextPath
+            $$ loog 'metaGeneratorContextPath', metaGeneratorContextPath
 
             var metaGeneratorIndex
                 _ path.join
                     @ metaGeneratorFolderPath
                     @ 'index.ittf.ittf'
-            log 'metaGeneratorIndex', metaGeneratorIndex
+            $$ loog 'metaGeneratorIndex', metaGeneratorIndex
 
             var metaGenerationContextPath
                 _ path.join
@@ -56,7 +69,7 @@
                     @ '__temp'
                     @ options.metaGenerator
                     @ options.context
-            log 'metaGenerationContextPath', metaGenerationContextPath
+            $$ loog 'metaGenerationContextPath', metaGenerationContextPath
 
             _ wizzi.model
                 _ path.join
@@ -72,7 +85,8 @@
                         error 'createEx.load context.error:', err
                         return
                     
-                    log 'createEx.cliCtx', cliCtx
+                    $$ loog 'createEx.cliCtx', cliCtx
+                    set cliCtx.wizziPlugins = dataWizziPlugins
 
                     $*
                     _ file.deleteFolder
@@ -89,7 +103,7 @@
                         @ metaGenerationContextPath
                         @ cliCtx
                     +
-                    log 'createEx.before genFolder.cliCtx', cliCtx
+                    $$ loog 'createEx.before genFolder.cliCtx', cliCtx
                     +
                     return
                         _ wizzi.genFolder
@@ -108,5 +122,5 @@
                                 @ copyInclude ['*']
                                 @ copyExclude []
                             a_cb_test(genFolderResult)
-                                log 'genFolderResult', genFolderResult
+                                $$ loog 'genFolderResult', genFolderResult
                                 return

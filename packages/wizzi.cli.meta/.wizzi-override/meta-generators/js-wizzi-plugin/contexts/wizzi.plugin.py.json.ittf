@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "py";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Python language plugin"
@@ -8,7 +14,13 @@
     [ Schemas
         {
             name "py"
+            rootElement "xmodule"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "module"
+                    outmime "py"

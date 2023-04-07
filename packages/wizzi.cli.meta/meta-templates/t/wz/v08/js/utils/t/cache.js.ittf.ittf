@@ -33,9 +33,9 @@ $group
                             _ self.set
                               @ key
                               _ fn.apply(this, arguments)
-                            log 'key ', key, 'retrieved by function and set in cache', self.name
+                            $$ loog 'key ', key, 'retrieved by function and set in cache', self.name
                         else
-                            log 'key ', key, 'returned from cache', self.name
+                            $$ loog 'key ', key, 'returned from cache', self.name
                         return
                             _ self.get(key)
         set ${'$'}{myName}.prototype.memoizePromise
@@ -61,7 +61,7 @@ $group
                                           _ self.set
                                               @ key
                                               @ result
-                                          log 'key ', key, 'retrieved by function and set in cache', self.name
+                                          $$ loog 'key ', key, 'retrieved by function and set in cache', self.name
                                           return
                                               _ resolve
                                                   @ result
@@ -72,7 +72,7 @@ $group
                                               _ reject
                                                   @ err
                           else
-                              log 'key ', key, 'returned from cache', self.name
+                              $$ loog 'key ', key, 'returned from cache', self.name
                               return
                                   _ resolve
                                       _ self.get(key)

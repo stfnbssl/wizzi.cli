@@ -25,7 +25,7 @@ $group
                     :ref Response
                 param next
                     :ref Function
-                $$ log 'apiSecured called', (request as any).session && (request as any).session.user
+                $$ loog 'apiSecured called', (request as any).session && (request as any).session.user
                 +
                 if (request as any).session && (request as any).session.user
                     return next()

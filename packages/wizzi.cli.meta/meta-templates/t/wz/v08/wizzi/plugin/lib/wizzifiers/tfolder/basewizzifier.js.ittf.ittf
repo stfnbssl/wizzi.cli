@@ -2,6 +2,7 @@ $group
    
 	var util = require('util')
 	var async = require('async')
+    var stringify = require('json-stringify-safe')
     
     var verify = require('wizzi-utils').verify
 	var lineparser = require('../utils/lineparser')
@@ -30,15 +31,17 @@ $group
 
 	set md.getCodeAST
         function 
-            param input
+            param tobeWizzified            
 			param options
             param callback
 			if typeof callback === 'undefined'
 				set callback = options
 				set options = {}
 			set options = options || {}
-			_ parseInternal
-                @ input
+            set options.input = tobeWizzified
+            set options.stack = []
+    		_ parseInternal
+                @ tobeWizzified            
 				@ options
                 @ callback
     
@@ -63,7 +66,7 @@ $group
 							a_cb${'('} syntax )
 								_ file.write
 									@ options.syntaxOutFile
-									_ JSON.stringify
+									_ stringify
 										@ syntax
 										@ null
 										@ 2

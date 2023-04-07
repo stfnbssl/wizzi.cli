@@ -161,14 +161,14 @@ $group
                     => 
                         param e
                         let scrollPos = window.scrollY
-                        log 'pre sticki', stickyPos, scrollPos, scrollPos > stickyPos
+                        $$ loog 'pre sticki', stickyPos, scrollPos, scrollPos > stickyPos
                         if scrollPos > stickyPos
                             _ stickyBar.classList.add('sticky')
                             _ header.classList.add('${'$'}{opt.stickyNav}OffsetMargin')
                             ${'$'}if opt.stickyNavLogo
                                 _ stickyLogo.classList.add('visible')
                                 _ stickyLogo.classList.remove('hidden')
-                            log 'sticki', scrollPos
+                            $$ loog 'sticki', scrollPos
                         else
                             _ stickyBar.classList.remove('sticky')
                             _ header.classList.remove('${'$'}{opt.stickyNav}OffsetMargin')

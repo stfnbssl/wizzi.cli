@@ -334,7 +334,12 @@ $group
             useWizzi true
             { wizzi
                 isDev true
-                $if cliCtx.useAzure || cliCtx.useHeroku
+                $if cliCtx.useWizzi && cliCtx.wizzi.useVersionV08
+                    [ plugins
+                        $foreach item in cliCtx.wizziPlugins
+                            "./${item.name}/index.js"
+                    pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
+                $elif cliCtx.useAzure || cliCtx.useHeroku
                     [ plugins
                         "wizzi-core"
                         "wizzi-js" 
@@ -348,6 +353,7 @@ $group
                     pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi/packages"
                 { globalContext
                     wzConfigIsDevelopment true
+                    wzConfigIsPackageDeploy false
                 useRunner false
 
             $if cliCtx.useWizziDocs

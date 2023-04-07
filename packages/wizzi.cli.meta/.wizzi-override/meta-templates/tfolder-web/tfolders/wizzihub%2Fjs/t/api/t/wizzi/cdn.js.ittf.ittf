@@ -7,7 +7,7 @@ $group
               param owner
               param name
               param contents
-              log '${'$'}{md.ApiName}.createCdnResource', 'owner', owner, 'name', name, 'contents', contents
+              $$ loog '${'$'}{md.ApiName}.createCdnResource', 'owner', owner, 'name', name, 'contents', contents
               r_promise${'('})
                   _ api.Fetch.post
                       { 
@@ -34,7 +34,7 @@ $group
           function
               param name
               param type
-              log '${'$'}{md.ApiName}.updateCdnResource', 'owner', owner, 'name', name 
+              $$ loog '${'$'}{md.ApiName}.updateCdnResource', 'owner', owner, 'name', name 
               r_promise${'('})
                   _ api.Fetch.put
                       { 
@@ -61,7 +61,7 @@ $group
           function
               param name
               param type
-              log '${'$'}{md.ApiName}.deleteCdnResource', 'owner', owner, 'name', name 
+              $$ loog '${'$'}{md.ApiName}.deleteCdnResource', 'owner', owner, 'name', name 
               r_promise${'('})
                   _ api.Fetch.delete
                       { 

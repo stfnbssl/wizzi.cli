@@ -16,7 +16,7 @@ $group
         ${'$'}${'$'} temp
         set app.${cliCtx.jsAppCrud.name} = ${cliCtx.jsAppCrud.name}
         function setView
-            log 'App ${'$'}{myName}.setView'
+            $$ loog 'App ${'$'}{myName}.setView'
             _ ${cliCtx.jsAppCrud.name}.controller.initialize
               @ document.location.hash
         _ $on(window, 'load', setView)

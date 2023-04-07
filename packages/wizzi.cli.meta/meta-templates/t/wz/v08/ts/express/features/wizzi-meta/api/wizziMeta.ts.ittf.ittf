@@ -41,7 +41,7 @@ $group
                 r_reject${'('})
                     @ 'wizziMeta.createWizziPackage. Missing outputPackageName: ' + options.outputPackageName
 
-            log 'wizziMeta.createWizziPackage.options', options
+            $$ loog 'wizziMeta.createWizziPackage.options', options
 
             var metaGeneratorFolderPath
                 _ path.join
@@ -53,7 +53,7 @@ $group
                 _ path.join
                     @ metaGeneratorFolderPath
                     @ 'index.ittf.ittf'
-            log 'metaGeneratorFileTemplatesIndex', metaGeneratorFileTemplatesIndex
+            $$ loog 'metaGeneratorFileTemplatesIndex', metaGeneratorFileTemplatesIndex
 
             var destinationIttfTempFolder
                 _ path.join
@@ -62,12 +62,12 @@ $group
                     @ '__temp'
                     @ options.metaGenerator
                     @ options.outputPackageName
-            log 'destinationIttfTempFolder', destinationIttfTempFolder
+            $$ loog 'destinationIttfTempFolder', destinationIttfTempFolder
 
             _ createCliCtx
                 @ options
                 a_then${'('} cliCtx )
-                    log 'wizziMeta.createWizziPackage.cliCtx', cliCtx
+                    $$ loog 'wizziMeta.createWizziPackage.cliCtx', cliCtx
                     _ metaTemplator
                         @ metaGeneratorFileTemplatesIndex
                         @ destinationIttfTempFolder
@@ -105,7 +105,7 @@ $group
                     @ options.metaGenerator
                     @ 'contexts'
                     @ _cliCtxName
-            log 'metaGeneratorCliCtxFilePath', metaGeneratorCliCtxFilePath
+            $$ loog 'metaGeneratorCliCtxFilePath', metaGeneratorCliCtxFilePath
             _ wizzi.model
                 _ path.join
                     @ metaGeneratorCliCtxFilePath
@@ -140,7 +140,7 @@ $group
                     @ 'wizziMeta.generatePackageFiles. Missing outputPackagePath: ' + options.outputPackagePath
             # TODO check parent folder of outputPackagePath exists
             
-            log "wizziMeta.generatePackageFiles.generating to folder", path.join(options.outputPackagePath, options.outputPackageName)
+            $$ loog "wizziMeta.generatePackageFiles.generating to folder", path.join(options.outputPackagePath, options.outputPackageName)
             _ wizziProds.generateFolderArtifactsFs
                 @ destinationIttfTempFolder
                 ${'$'}*

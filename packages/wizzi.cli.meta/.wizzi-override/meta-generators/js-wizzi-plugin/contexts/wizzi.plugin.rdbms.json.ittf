@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "rdbms";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Relational DB plugin"
@@ -12,6 +18,10 @@
             hasNamespaces true
             hasTextContents true
             [ includes
+            [ artifacts
+                {
+                    name "document"
+                    outmime "rdbms"
 
     { Utils
         useInflection true

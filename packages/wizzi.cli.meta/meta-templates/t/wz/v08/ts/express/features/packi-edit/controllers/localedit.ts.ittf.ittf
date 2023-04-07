@@ -65,7 +65,7 @@ $group
                 const parsedUrl = parseUrl(request)
                 const pathName = decodeURIComponent(parsedUrl.pathname)
                 const rootPath = path.join(config.ittfPath, pathName)
-                log myname, 'getFolderEditor', 'pathName', pathName, 'rootPath', rootPath
+                $$ loogmyname, 'getFolderEditor', 'pathName', pathName, 'rootPath', rootPath
                 
                 const queryParams
                     { 

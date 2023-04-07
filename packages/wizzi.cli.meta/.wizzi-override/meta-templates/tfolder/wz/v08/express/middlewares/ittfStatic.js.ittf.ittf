@@ -33,6 +33,7 @@ $group
             @ '.jpg' 'image/jpg'
             @ '.js' 'text/javascript'
             @ '.json' 'application/json'
+            @ '.md' 'text/html'
             @ '.png' 'image/png'
             @ '.scss' 'text/scss'
             @ '.svg' 'image/svg+xml'

@@ -68,7 +68,7 @@ $group
         param videoId
         param time
         const seconds = timeToSeconds(time)
-        log 'youTubePlayerChangeVideoId', time, seconds
+        $$ loog 'youTubePlayerChangeVideoId', time, seconds
         _ youTubePlayer.loadVideoById
             { 
                 @ suggestedQuality 'tiny'
@@ -87,7 +87,7 @@ $group
         param currentTime
         # param currentTime: 0 <= number <= 100
         set youTubePlayer.personalPlayer.currentTimeSliding = false
-        log 'youTubePlayerCurrentTimeChange', youTubePlayerActive(), currentTime, youTubePlayer.getDuration()
+        $$ loog 'youTubePlayerCurrentTimeChange', youTubePlayerActive(), currentTime, youTubePlayer.getDuration()
         if youTubePlayerActive()
             _ youTubePlayer.seekTo(currentTime * youTubePlayer.getDuration() / 100, true)
         
@@ -146,7 +146,7 @@ $group
             _ youTubePlayer.pauseVideo()
     
     function youTubePlayerPlay
-        log 'youTubePlayerPlay', youTubePlayerActive()
+        $$ loog 'youTubePlayerPlay', youTubePlayerActive()
         if youTubePlayerActive()
             _ youTubePlayer.playVideo()
     
@@ -186,7 +186,7 @@ $group
           const parts = time.split(':')
           for var i=0; i<parts.length; i++
             set parts[i] = parseInt(parts[i])
-          log 'timeToSeconds', parts
+          $$ loog 'timeToSeconds', parts
           if parts.length == 1
             return parts[0]
           elif parts.length == 2

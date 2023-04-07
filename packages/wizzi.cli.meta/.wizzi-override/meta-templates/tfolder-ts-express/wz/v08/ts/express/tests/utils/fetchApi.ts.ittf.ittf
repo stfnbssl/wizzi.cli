@@ -80,7 +80,7 @@ $group
             ._ then
                 => 
                     param updatedData
-                    log 'Dati aggiornati:', updatedData
+                    $$ loog 'Dati aggiornati:', updatedData
             ._ catch
                 => 
                     param error

@@ -39,6 +39,10 @@ $group
                 module
                     example-plugin-wizzify(&schema)
             
+            $file __dot__wizzi/${pkgPath}examples/${schema.name}_getCodeAST.js.ittf.ittf
+                module
+                    example-plugin-getCodeAST(&schema)
+
             $file __dot__wizzi/${pkgPath}examples/data/first.${schema.name}.text.ittf.ittf
                 text
                     example-data(&schema)

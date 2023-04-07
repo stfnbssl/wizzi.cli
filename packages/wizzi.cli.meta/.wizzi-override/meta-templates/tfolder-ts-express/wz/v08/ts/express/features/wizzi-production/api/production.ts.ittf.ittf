@@ -276,7 +276,7 @@ $group
                 # Called by features.production.api.meta.generateMetaProduction
                 # Called by features.production.api.meta.getTemplatePackiFiles
                 # Called by handlers of features.production.controllers.apiv1generations
-            log myname + 'prepareProduction entered', owner, productionName
+            $$ loogmyname + 'prepareProduction entered', owner, productionName
             return
                 new Promise
                     =>
@@ -290,7 +290,7 @@ $group
                                 =>
                                     param defaultContext
                                         :any
-                                    log myname + 'prepareProduction.getDefaultContext_withCache completed', Object.keys(defaultContext)
+                                    $$ loogmyname + 'prepareProduction.getDefaultContext_withCache completed', Object.keys(defaultContext)
                                     _ getProductionObject
                                         @ packiProduction
                                         @ owner
@@ -299,9 +299,9 @@ $group
                                             =>
                                                 param productionObject
                                                     :any
-                                                log 'prepareProduction.productionObject got', Object.keys(productionObject)
+                                                $$ loog 'prepareProduction.productionObject got', Object.keys(productionObject)
                                                 if productionObject.packiConfig
-                                                    log 'prepareProduction.productionObject packiConfig', productionObject.packiConfig
+                                                    $$ loog 'prepareProduction.productionObject packiConfig', productionObject.packiConfig
                                                     _ getProductionSetFromProductionObject
                                                         @ owner
                                                         @ productionName

@@ -70,7 +70,7 @@ $group
             return
                 < FormContainer
                     < FormTitle
-                        @ title 'Create a new blog post'
+                        @ title 'Create a new b$$ loog post'
                         @ subtitle 'An blog post contains the ittf documents 
                             \b for a single software artifact.'
                     < HR

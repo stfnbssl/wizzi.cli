@@ -36,7 +36,7 @@ $group
               param packiFiles
               param options
               ${'$'}${'$'} updateArtifactProduction${'('}request.params.id, request.body.owner, request.body.name, request.body.description, request.body.mainIttf, request.body.wizziSchema, JSON.stringify(request.body.packiFiles))
-              log '${'$'}{md.ApiName}.put${'$'}{md.Prod}', 'id', id, 'packiFiles', Object.keys(packiFiles), 'options', options
+              $$ loog '${'$'}{md.ApiName}.put${'$'}{md.Prod}', 'id', id, 'packiFiles', Object.keys(packiFiles), 'options', options
               r_promise${'('})
                   _ api.Fetch.put
                       { 
@@ -65,7 +65,7 @@ $group
               param packiDiffs
               param options
               ${'$'}${'$'} updateArtifactProduction${'('}request.params.id, request.body.owner, request.body.name, request.body.description, request.body.mainIttf, request.body.wizziSchema, JSON.stringify(request.body.packiFiles))
-              log '${'$'}{md.ApiName}.put${'$'}{md.Prod}PackiDiffs', 'id', id, 'packiDiffs', Object.keys(packiDiffs), 'options', options
+              $$ loog '${'$'}{md.ApiName}.put${'$'}{md.Prod}PackiDiffs', 'id', id, 'packiDiffs', Object.keys(packiDiffs), 'options', options
               r_promise${'('})
                   _ api.Fetch.put
                       { 
@@ -96,7 +96,7 @@ $group
               param options
               set options = options || {}
               ${'$'}${'$'} updateArtifactProduction${'('}request.params.id, request.body.owner, request.body.name, request.body.description, request.body.mainIttf, request.body.wizziSchema, JSON.stringify(request.body.packiFiles))
-              log '${'$'}{md.ApiName}.create${'$'}{md.Prod}', 'owner', owner, 'name', name, 'packiFiles', Object.keys(packiFiles), 'options', options
+              $$ loog '${'$'}{md.ApiName}.create${'$'}{md.Prod}', 'owner', owner, 'name', name, 'packiFiles', Object.keys(packiFiles), 'options', options
               const
                 {
                   @ description

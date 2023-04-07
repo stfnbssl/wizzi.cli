@@ -72,9 +72,9 @@ $group
                                 =>
                                     param res
                                         :any
-                                    log myname + '. res', typeof res, Object.keys(res)
-                                    log myname + '. res.headers', res.headers
-                                    log myname + '. res.data.length', res.data.length
+                                    $$ loogmyname + '. res', typeof res, Object.keys(res)
+                                    $$ loogmyname + '. res.headers', res.headers
+                                    $$ loogmyname + '. res.data.length', res.data.length
                                     _ response.status(200)
                                     _ response.set('Content-Type', res.headers['content-type'])
                                     _ response.set('Content-Length', res.data.length)
@@ -86,7 +86,7 @@ $group
                                 =>
                                     param err
                                         :any
-                                    log myname + '.packiItem.err', err
+                                    $$ loogmyname + '.packiItem.err', err
                                     _ sendError
                                         @ response
                                         @ err

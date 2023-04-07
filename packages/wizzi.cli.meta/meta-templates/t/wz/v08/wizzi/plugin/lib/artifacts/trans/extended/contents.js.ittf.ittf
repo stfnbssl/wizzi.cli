@@ -15,7 +15,7 @@ $group
         param currentObj
         param resultObj
         if !currentObj.contents
-            log 'fillContents.currentObj.contents is null, kind, id', currentObj.kind, currentObj.id
+            $$ loog 'fillContents.currentObj.contents is null, kind, id', currentObj.kind, currentObj.id
             return
         if node.wzElement == "text"
             _ currentObj.contents.push

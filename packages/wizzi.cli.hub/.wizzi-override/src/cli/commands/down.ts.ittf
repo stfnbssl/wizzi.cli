@@ -36,7 +36,7 @@ module
                 return
                     _ bad_parameters
 
-            log '...executing down', args.owner, args.name, args.list, args.files, args.artifact, args.package, args.plugin, args.meta, args.tfolder, args.dest
+            $$ loog '...executing down', args.owner, args.name, args.list, args.files, args.artifact, args.package, args.plugin, args.meta, args.tfolder, args.dest
             const options
                 :any
                 = {}

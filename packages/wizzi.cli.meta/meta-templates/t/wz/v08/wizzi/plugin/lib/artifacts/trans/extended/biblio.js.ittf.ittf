@@ -170,7 +170,7 @@ $group
             param field
             param parentObj
             if !parentObj || !parentObj.aliases
-                log 'wrong alias position', field.wzName
+                $$ loog 'wrong alias position', field.wzName
                 return
             var aliasObj
                 {

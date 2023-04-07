@@ -1,6 +1,97 @@
 $group
 
-    elif cmd == 'wizzi-plugin-wzjob'
+    elif cmd == 'wizzi-plugin-first'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.first'
+                @ pkgName 'wizzi.plugin.first'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.first'
+    elif cmd == 'wizzi-plugin-yaml'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.yaml'
+                @ pkgName 'wizzi.plugin.yaml'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.yaml'
+    elif cmd == 'wizzi-plugin-ittf'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.ittf'
+                @ pkgName 'wizzi.plugin.ittf'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.ittf'
+    elif cmd == 'wizzi-plugin-json'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.json'
+                @ pkgName 'wizzi.plugin.json'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.json'
+    elif cmd == 'wizzi-plugin-xml'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.xml'
+                @ pkgName 'wizzi.plugin.xml'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.xml'
+    elif cmd == 'wizzi-plugin-text'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.text'
+                @ pkgName 'wizzi.plugin.text'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.text'
+    elif cmd == 'wizzi-plugin-js'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.js'
+                @ pkgName 'wizzi.plugin.js'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.js'
+    elif cmd == 'wizzi-plugin-ts'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.ts'
+                @ pkgName 'wizzi.plugin.ts'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.ts'
+    elif cmd == 'wizzi-plugin-md'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.md'
+                @ pkgName 'wizzi.plugin.md'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.md'
+    elif cmd == 'wizzi-plugin-css'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.css'
+                @ pkgName 'wizzi.plugin.css'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.css'
+    elif cmd == 'wizzi-plugin-html'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.html'
+                @ pkgName 'wizzi.plugin.html'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.html'
+    elif cmd == 'wizzi-plugin-vtt'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.vtt'
+                @ pkgName 'wizzi.plugin.vtt'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vtt'
+    elif cmd == 'wizzi-plugin-vue'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-plugin'
+                @ context 'wizzi.plugin.vue'
+                @ pkgName 'wizzi.plugin.vue'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vue'
+    elif cmd == 'wizzi-plugin-vue'
         _ createEx
             {
                 @ metaGenerator 'js-wizzi-plugin'

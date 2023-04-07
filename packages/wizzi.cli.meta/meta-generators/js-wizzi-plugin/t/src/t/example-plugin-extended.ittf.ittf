@@ -11,14 +11,17 @@ $group
         ${"${'$'}"}append plugins
             [ items
                 @ './index.js'
-                $foreach include in schema.includes
-                    $if include.name == "js"
-                        @ 'wizzi-js'
-                    $elif include.name == "json"
-                        @ 'wizzi-core'
-                    $elif include.name == "css"
-                        @ 'wizzi-web'
-
+                $if cliCtx.useWizziV08
+                    $foreach include in schema.includes
+                        @ '@wizzi/plugin.${include.name}'
+                $else
+                    $foreach include in schema.includes
+                        $if include.name == "js"
+                            @ 'wizzi-js'
+                        $elif include.name == "json"
+                            @ 'wizzi-core'
+                        $elif include.name == "css"
+                            @ 'wizzi-web'
             @ pluginsBaseFolder
                 _ path.resolve
                     @ __dirname
@@ -46,7 +49,7 @@ $group
                     param module
                     param callback
 
-                    log '${schema.name}.example.executeGenerateModules.module: ' + module
+                    $$ loog '${schema.name}.example.executeGenerateModules.module: ' + module
             
                     var ittfDocumentUri
                         _ path.join
@@ -70,19 +73,20 @@ $group
                         @ ittfDocumentUri
                         {
                         a_cb${"${'('}"} model )
-                            log '${schema.name}.example.executeGenerateModules.outputLoadedPath: ' + outputLoadedPath
-                            _ file.write
-                                @ outputLoadedPath
-                                _ stringify
-                                    @ model.toJson()
-                                    @ null
-                                    @ 4
+                            $$ loog '${schema.name}.example.executeGenerateModules.outputLoadedPath: ' + outputLoadedPath
+                            if model.toJson && verify.isFunction(model.toJson)
+                                _ file.write
+                                    @ outputLoadedPath
+                                    _ stringify
+                                        @ model.toJson()
+                                        @ null
+                                        @ 4
                             _ loadModelAndTransform
                                 @ ittfDocumentUri
                                 {
                                 @ "${schema.name}/extended"
                                 a_cb${"${'('}"} model )
-                                    log '${schema.name}.example.executeGenerateModules.outputExtendedPath: ' + outputExtendedPath
+                                    $$ loog '${schema.name}.example.executeGenerateModules.outputExtendedPath: ' + outputExtendedPath
                                     _ file.write
                                         @ outputExtendedPath
                                         _ stringify

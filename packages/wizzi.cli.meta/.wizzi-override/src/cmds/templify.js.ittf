@@ -11,15 +11,15 @@ module
 		=>
             param sourceFolder
             param outputPath
-            log 'sourceFolder', sourceFolder
-            log 'outputPath', outputPath
+            $$ loog 'sourceFolder', sourceFolder
+            $$ loog 'outputPath', outputPath
             _ file.getFiles
                 @ sourceFolder
                 { 
                     @ deep true
                     @ documentContent true
                 a_cb_test( files )
-                    # log 'files', files
+                    # $$ loog 'files', files
                     var sb
                         [
                             @ 'template ' + path.basename(sourceFolder)

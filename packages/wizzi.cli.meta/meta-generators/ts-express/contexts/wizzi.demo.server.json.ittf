@@ -41,6 +41,7 @@
     baseUrlLocal "${http}://localhost:${port}"
     apiVersion "v1"
     
+
     useAzure false
     { azure
 
@@ -100,6 +101,7 @@
 
     useWizzi true
     { wizzi
+        useVersionV08 true
 
     useWizziDocs false
     { wizziDocs

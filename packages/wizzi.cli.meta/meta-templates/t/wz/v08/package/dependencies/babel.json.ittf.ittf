@@ -14,7 +14,6 @@ ${'$'}group
 		${'$'}if app.usePrismjs
 			babel-plugin-prismjs "latest"
 
-
 		${'$'}* STOP/VIA
 		babel-eslint "^8.2.2"
 		babel-plugin-istanbul "^4.1.5"

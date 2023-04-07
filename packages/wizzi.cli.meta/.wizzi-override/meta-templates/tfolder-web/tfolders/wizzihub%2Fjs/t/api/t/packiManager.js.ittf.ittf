@@ -98,7 +98,7 @@ $group
                 _ this.dmp.patch_make
                   @ textToPatch
                   @ packiDiffs[key].diffs
-              log 'applyPatch.key.patches', key, patches
+              $$ loog 'applyPatch.key.patches', key, patches
               const [patchedText, results]
                 _ this.dmp.patch_apply(patches, textToPatch)
               set patchedFiles[key]

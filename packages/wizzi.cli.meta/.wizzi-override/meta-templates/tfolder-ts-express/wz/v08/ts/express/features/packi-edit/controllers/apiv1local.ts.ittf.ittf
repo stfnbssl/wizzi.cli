@@ -32,7 +32,7 @@ $group
         ${'$'}append handlers
 
             v08/ts/handler${'('}putFolderFs)
-                log myname, "putFolderFs", 'folderpath', request.params.folderpath, 'packiFiles', request.body.packiFiles
+                $$ loogmyname, "putFolderFs", 'folderpath', request.params.folderpath, 'packiFiles', request.body.packiFiles
                 if !request.body.packiFiles 
                     return
                         _ sendFailure

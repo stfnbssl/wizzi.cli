@@ -1,8 +1,9 @@
-${'$'}group
-    ${'$'}params &md
+$group
+    $params &md
 
-    ${'$'}hook imports
-
+    var verify = require('wizzi-utils').verify
+    $hook imports
+    ---
     set module.exports
 		function
 			param mTree
@@ -16,22 +17,20 @@ ${'$'}group
 				_ traverse(item, state)
 
 			return mTree
-
+    ---
 	function traverse
 		param node
 		param state
-
 		if preprocessNode(node, state)
 			return
-
 		var saveParent = state.parent
 		foreach item in node.children
 			_ traverse(item, state)
 		set state.parent = saveParent 
-
-	${'$'}hook
-
-	function childNameIsOneOf
+	---
+    $hook
+	---
+    function childNameIsOneOf
 		param node
 		param names
 		foreach child in node.children
@@ -39,8 +38,8 @@ ${'$'}group
 				if child.n === name
 					return true
 		return false
-
-	function descendentNameIsOneOf
+	---
+    function descendentNameIsOneOf
 		param node
 		param names
 		var found
@@ -56,7 +55,8 @@ ${'$'}group
 				return true
 		return false
 
-	function extractRemove
+	---
+    function extractRemove
 		param node
 		param n
 		var ret
@@ -68,13 +68,12 @@ ${'$'}group
 				_ node.children.push
 					@ item
 
-	function wrapChilds
+	---
+    function wrapChilds
 		param node
 		param newN
 		
-		$$ loog 'wrapChild', node.children
-
-		_ copyNodeAttrsDeep
+    	_ copyNodeAttrsDeep
 			@ node
 			@ newN
 		
@@ -85,6 +84,7 @@ ${'$'}group
 			_ newN.children.push
 				@ item
 
+    ---
 	function copyNodeAttrsDeep
 		param nfrom
 		param nto
@@ -97,8 +97,8 @@ ${'$'}group
 			_ copyNodeAttrsDeep
 				@ nfrom
 				@ item
-
-	function copyNodeAttrs
+	---
+    function copyNodeAttrs
 		param nfrom
 		param nto
 		set nto.r = nfrom.r

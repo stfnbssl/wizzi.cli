@@ -14,10 +14,10 @@ $group
                 param ctx
                 param element
                 param callback
-                # log myname, 'enter writeInclude${include.Name}'
+                # loog myname, 'enter writeInclude${include.Name}'
                 _ element.get_${include.name}
                     a_cb${"${'('}"} ${include.name}Model )
-                        # log myname, '${include.name}Model', ${include.name}Model
+                        $$ loog myname, '${include.name}Model', ${include.name}Model
                         _ ctx.wizziFactory.generateArtifact
                             @ ${include.name}Model
                             @ 'generated from ${schema.name} model'
@@ -29,7 +29,7 @@ $group
                                     $else
                                         @ ${option.name} ${option.value}
                             a_cb${"${'('}"} artifactText )
-                                # log myname, '${include.name} module artifactText', artifactText
+                                $$ loog myname, '${include.name} module artifactText', artifactText
                                 _ ctx.indent
                                 _ ctx.writeAligned(artifactText)
                                 _ ctx.deindent

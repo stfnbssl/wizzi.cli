@@ -4,4 +4,5 @@
         ${'$'}if tag != null
             tag ${'$'}{tag}
         ${'$'}if xsuper != null
-            super ${'$'}{xsuper}    
+            super ${'$'}{xsuper}  
+        ${'$'}hook  

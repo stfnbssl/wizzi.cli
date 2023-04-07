@@ -1,5 +1,5 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.v07\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.meta\.wizzi-override\root\index.js.ittf
 */
@@ -10,6 +10,14 @@ const args = minimist(process.argv.slice(2));
 let cmd = args._[0];
 console.log('args', args, 'cmd', cmd);
 if (false) {
+}
+else if (cmd == 'ts-node-demo-wizzi-v08') {
+    createEx({
+        metaGenerator: 'ts-node', 
+        context: 'demo.wizzi.v08', 
+        pkgName: 'demo.ts.node.wizzi.v08', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.demo/packages/demo.ts.node.wizzi.v08'
+     })
 }
 else if (cmd == 'ts-node-wizzi-cli-hub') {
     createEx({
@@ -115,7 +123,111 @@ else if (cmd == 'js-vanilla-data-entry') {
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.labs/wizzi.meta.demos/packages/js.vanilla.data-entry'
      })
 }
-else if (cmd == 'wizzi-plugin-wzjob') {
+else if (cmd == 'wizzi-plugin-first') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.first', 
+        pkgName: 'wizzi.plugin.first', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.first'
+     })
+}
+else if (cmd == 'wizzi-plugin-yaml') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.yaml', 
+        pkgName: 'wizzi.plugin.yaml', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.yaml'
+     })
+}
+else if (cmd == 'wizzi-plugin-ittf') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.ittf', 
+        pkgName: 'wizzi.plugin.ittf', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.ittf'
+     })
+}
+else if (cmd == 'wizzi-plugin-json') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.json', 
+        pkgName: 'wizzi.plugin.json', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.json'
+     })
+}
+else if (cmd == 'wizzi-plugin-xml') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.xml', 
+        pkgName: 'wizzi.plugin.xml', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.xml'
+     })
+}
+else if (cmd == 'wizzi-plugin-text') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.text', 
+        pkgName: 'wizzi.plugin.text', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.text'
+     })
+}
+else if (cmd == 'wizzi-plugin-js') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.js', 
+        pkgName: 'wizzi.plugin.js', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.js'
+     })
+}
+else if (cmd == 'wizzi-plugin-ts') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.ts', 
+        pkgName: 'wizzi.plugin.ts', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.ts'
+     })
+}
+else if (cmd == 'wizzi-plugin-md') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.md', 
+        pkgName: 'wizzi.plugin.md', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.md'
+     })
+}
+else if (cmd == 'wizzi-plugin-css') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.css', 
+        pkgName: 'wizzi.plugin.css', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.css'
+     })
+}
+else if (cmd == 'wizzi-plugin-html') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.html', 
+        pkgName: 'wizzi.plugin.html', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.html'
+     })
+}
+else if (cmd == 'wizzi-plugin-vtt') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.vtt', 
+        pkgName: 'wizzi.plugin.vtt', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vtt'
+     })
+}
+else if (cmd == 'wizzi-plugin-vue') {
+    createEx({
+        metaGenerator: 'js-wizzi-plugin', 
+        context: 'wizzi.plugin.vue', 
+        pkgName: 'wizzi.plugin.vue', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vue'
+     })
+}
+else if (cmd == 'wizzi-plugin-vue') {
     createEx({
         metaGenerator: 'js-wizzi-plugin', 
         context: 'wizzi.plugin.wzjob', 

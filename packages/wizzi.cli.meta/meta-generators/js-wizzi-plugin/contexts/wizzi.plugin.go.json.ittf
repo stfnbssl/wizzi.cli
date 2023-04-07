@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "go";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Go language plugin"
@@ -8,7 +14,13 @@
     [ Schemas
         {
             name "go"
+            rootElement "xmodule"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "module"
+                    outmime "go"

@@ -1,0 +1,27 @@
+{
+    $
+        var pluginBasename = "ittf";
+
+    $include commons
+    $include v08
+
+    usePackageVersion true
+
+    { App
+        name "Ittf document plugin"
+        kind "WizziPlugin"
+
+    [ BuildVars
+
+    [ Schemas
+        {
+            name "ittf"
+            plugin_type "data"
+            multiLineCommentBegin "${'$'}*"
+            multiLineCommentEnd "*${'$'}"
+            hasBuiltinWizziModel true
+            [ includes
+            [ artifacts
+                {
+                    name "document"
+                    outmime "ittf"

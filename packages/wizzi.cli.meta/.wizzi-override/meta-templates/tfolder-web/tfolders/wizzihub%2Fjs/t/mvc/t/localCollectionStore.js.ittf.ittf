@@ -65,12 +65,12 @@ $group
                 param_callback${'('})
                 var items = JSON.parse(localStorage.getItem(this._dbName) || '[]')
                 if id
-                    log '${'$'}{myName}.prototype.save', id
+                    $$ loog '${'$'}{myName}.prototype.save', id
                     var matched = false
                     for var i = 0; i < items.length; i++
                         if items[i].id === id
                             set matched = true
-                            log '${'$'}{myName}.prototype.save', 'matched', id
+                            $$ loog 'og '${'$'}{myName}.prototype.save', 'matched', id
                             for var key in updateData
                                 set items[i][key] = updateData[key]
                             break 

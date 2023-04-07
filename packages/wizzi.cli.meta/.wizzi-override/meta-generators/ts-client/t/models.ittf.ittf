@@ -311,6 +311,7 @@ $group
                         pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi/packages"
                     { globalContext
                         wzConfigIsDevelopment true
+                        wzConfigIsPackageDeploy false
                     useRunner false
 
                 $if cliCtx.useWizziDocs

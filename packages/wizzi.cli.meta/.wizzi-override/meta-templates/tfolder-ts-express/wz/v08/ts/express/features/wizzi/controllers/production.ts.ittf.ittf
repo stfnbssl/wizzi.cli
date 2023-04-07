@@ -61,14 +61,14 @@ $group
                 const artifactRequest
                     :ref ArtifactRequest
                     = request.body
-                log myname + '.handler.artifact.received request (keys)', Object.keys(artifactRequest)
+                $$ loogmyname + '.handler.artifact.received request (keys)', Object.keys(artifactRequest)
                 _ resolveContexts
                     @ artifactRequest.contextItems
                     ._ then
                         =>
                             param context
                                 :any
-                            log myname, 'handler.artifact.resolvedContext', Object.keys(context)
+                            $$ loogmyname, 'handler.artifact.resolvedContext', Object.keys(context)
                             if artifactRequest.ittfDocument.source == 'fs'
                                 _ wizziProds.generateArtifactFs
                                     _ path.join

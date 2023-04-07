@@ -33,7 +33,7 @@ $group
                                 @ message moduleName + ' config file "wizzi.config.' + (name ? name + '.' : '') + 'js" not found'
                         return
                     const configInstance = await import(configPath)
-                    log moduleName + '.configInstance', configInstance
+                    $$ loog moduleName + '.configInstance', configInstance
                     const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
                     if !configInstance.pluginsBaseFolder
                         error moduleName + ' - pluginsBaseFolder not set'
@@ -158,7 +158,7 @@ $group
             :string
             :optional
         r_promise${'('})
-            log 'wizziPackage.packageGenerator.generateSchema', schemaName
+            $$ loog 'wizziPackage.packageGenerator.generateSchema', schemaName
             var options = {}
             if plugins
                 set options
@@ -175,7 +175,7 @@ $group
                     @ plugins plugins
                     @ pluginsBaseFolder pluginsBaseFolder
                 a_then${'('} result )
-                    log 'wizziPackage.packageGenerator.generateSchema.result', result
+                    $$ loog 'wizziPackage.packageGenerator.generateSchema.result', result
                     r_resolve${'('} result )
                 catch_reject${'('} wizziPackage.packageGenerator.generateSchema.wizziProds.generateWizziModelTypes )
     +

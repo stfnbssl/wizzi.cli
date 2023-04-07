@@ -4,3 +4,4 @@
         tag ${'$'}{tag}
         ${'$'}if defaultValue
             default ${'$'}{defaultValue}
+        ${'$'}hook

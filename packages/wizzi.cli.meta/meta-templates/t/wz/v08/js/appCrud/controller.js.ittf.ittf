@@ -35,7 +35,7 @@ $group
                 function 
                     param command
                     param data
-                    log '${'$'}{myName}.onView${cliCtx.jsAppCrud.Name}Item, command', command, "data", data
+                    $$ loog '${'$'}{myName}.onView${cliCtx.jsAppCrud.Name}Item, command', command, "data", data
                     if command == "update"
                         _ self.showUpdate${cliCtx.jsAppCrud.Name}
                             @ data
@@ -65,7 +65,7 @@ $group
                 _ this.model.getTabelle
                   =>
                     param tabelle
-                    log "${'$'}{myName}.prototype.initialize", tabelle
+                    $$ loog "${'$'}{myName}.prototype.initialize", tabelle
                     _ this.view.render
                       @ 'set${cliCtx.jsAppCrud.Name}Selects'
                       @ tabelle
@@ -89,7 +89,7 @@ $group
                 param locationHash
                 var route = locationHash.split('/')[1]
                 var page = route || ''
-                log '${'$'}{myName}.setView', 'route', route, 'page', page
+                $$ loog '${'$'}{myName}.setView', 'route', route, 'page', page
                 _ this._updateRouteFilterState(page)
 
         set ${'$'}{myName}.prototype._updateRouteFilterState =
@@ -119,7 +119,7 @@ $group
         set ${'$'}{myName}.prototype.change${cliCtx.jsAppCrud.Name}SearchTerm
             function 
                 param value
-                log '${'$'}{myName}.change${cliCtx.jsAppCrud.Name}SearchTerm', value
+                $$ loog '${'$'}{myName}.change${cliCtx.jsAppCrud.Name}SearchTerm', value
                 set this.${cliCtx.jsAppCrud.name}SearchTerm = value
                 _ this.model.set${cliCtx.jsAppCrud.Name}Value
                   @ 'searchTerm'
@@ -129,7 +129,7 @@ $group
         set ${'$'}{myName}.prototype.change${cliCtx.jsAppCrud.Name}Categoria
             function 
                 param value
-                log '${'$'}{myName}.change${cliCtx.jsAppCrud.Name}Categoria', value
+                $$ loog '${'$'}{myName}.change${cliCtx.jsAppCrud.Name}Categoria', value
                 set this.${cliCtx.jsAppCrud.name}Categoria = value
                 _ this.model.set${cliCtx.jsAppCrud.Name}Value
                   @ 'categoria'
@@ -138,25 +138,25 @@ $group
 
         set ${'$'}{myName}.prototype._filter${cliCtx.jsAppCrud.Name} =
             function 
-                log '${'$'}{myName}._filter${cliCtx.jsAppCrud.Name}'
+                $$ loog '${'$'}{myName}._filter${cliCtx.jsAppCrud.Name}'
                 _ this.show${cliCtx.jsAppCrud.Name}List
 
         set ${'$'}{myName}.prototype.show${cliCtx.jsAppCrud.Name}List
             function 
-                log '${'$'}{myName}.show${cliCtx.jsAppCrud.Name}List'
+                $$ loog '${'$'}{myName}.show${cliCtx.jsAppCrud.Name}List'
                 _ this.model.get${cliCtx.jsAppCrud.Name}
                     @ this.${cliCtx.jsAppCrud.name}SearchTerm
                     @ this.${cliCtx.jsAppCrud.name}Categoria
                     =>
                         param items
-                        log "${'$'}{myName}.show${cliCtx.jsAppCrud.Name}List, items", items
+                        $$ loog "${'$'}{myName}.show${cliCtx.jsAppCrud.Name}List, items", items
                         set this.active${cliCtx.jsAppCrud.Name}Items = items
                         _ this.view.render('show${cliCtx.jsAppCrud.Name}List', items)
 
         set ${'$'}{myName}.prototype.show${cliCtx.jsAppCrud.Name}Item
             function
                 param id 
-                log '${'$'}{myName}.show${cliCtx.jsAppCrud.Name}Item'
+                $$ loog '${'$'}{myName}.show${cliCtx.jsAppCrud.Name}Item'
                 _ this.model.get${cliCtx.jsAppCrud.Name}Item
                     @ id
                     =>

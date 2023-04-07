@@ -133,10 +133,17 @@ $group
     $file __dot__wizzi/models/t/wizzi.json.ittf.ittf
         ${"${'$'}"}group
                 
-            $if cliCtx.useWizzi
+            $if cliCtx.useWizzi || (cliCtx.useFeatures && cliCtx.features.useWizzi)
                 useWizzi true
                 { wizzi
                     isDev true
+                    $if cliCtx.useWizziV08
+                        useV08 true
+                        { v08
+                            [ plugins
+                                $foreach item in cliCtx.wizziV08.plugins
+                                    "${item}"
+
                     $if cliCtx.useAzure || cliCtx.useHeroku
                         [ plugins
                             "wizzi-core"
@@ -144,13 +151,34 @@ $group
                             "wizzi-web" 
                     $else
                         [ plugins
-                            "./wizzi-core/index.js"
-                            "./wizzi-js/index.js" 
-                            "./wizzi-web/index.js" 
-                            "./wizzi-meta/index.js"
-                        pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi/packages"
+                            $if cliCtx.useWizziV08
+                                $foreach item in cliCtx.wizziV08.plugins
+                                    "./wizzi.plugin.${item}/index.js" 
+                                $*
+                                "./wizzi.plugin.ts/index.js" 
+                                "./wizzi.plugin.json/index.js" 
+                                "./wizzi.plugin.yaml/index.js" 
+                                "./wizzi.plugin.ittf/index.js" 
+                                "./wizzi.plugin.xml/index.js" 
+                                "./wizzi.plugin.text/index.js" 
+                                "./wizzi.plugin.md/index.js" 
+                                "./wizzi.plugin.html/index.js" 
+                                "./wizzi.plugin.css/index.js" 
+                                "./wizzi.plugin.svg/index.js" 
+                                "./wizzi.plugin.wzjob/index.js" 
+                                *$
+                            $else
+                                "./wizzi-core/index.js" 
+                                "./wizzi-js/index.js" 
+                                "./wizzi-web/index.js" 
+                                "./wizzi-meta/index.js" 
+                        $if cliCtx.useWizziV08
+                            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
+                        $else
+                            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.v07/packages"
                     { globalContext
                         wzConfigIsDevelopment true
+                        wzConfigIsPackageDeploy false
                     useRunner false
 
             $if cliCtx.useWizziDocs

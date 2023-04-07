@@ -1,5 +1,5 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.v07\packages\wizzi-js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@0.7.14
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.meta\.wizzi-override\src\cmds\templify.js.ittf
 */
@@ -9,10 +9,8 @@ const wizziUtils = require('wizzi-utils');
 const vfile = wizziUtils.vfile;
 const verify = wizziUtils.verify;
 var file = vfile();
-module.exports = (sourceFolder, outputPath) => {
+module.exports = (sourceFolder, outputPath) => 
 
-    console.log('sourceFolder', sourceFolder, __filename);
-    console.log('outputPath', outputPath, __filename);
     file.getFiles(sourceFolder, {
         deep: true, 
         documentContent: true
@@ -22,7 +20,7 @@ module.exports = (sourceFolder, outputPath) => {
             console.log("[31m%s[0m", 'err', err);
             throw new Error(err.message);
         }
-        // log 'files', files
+        //
         var sb = [
             'template ' + path.basename(sourceFolder)
         ];
@@ -40,5 +38,4 @@ module.exports = (sourceFolder, outputPath) => {
         file.write(outputPath, sb.join('\n'))
     }
     )
-}
 ;

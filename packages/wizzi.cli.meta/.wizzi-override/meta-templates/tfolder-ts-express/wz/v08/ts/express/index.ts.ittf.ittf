@@ -20,7 +20,7 @@ $group
         try 
             _ start
         catch ex
-            log ex
+            error ex
 
     ${'$'}if wzCtx.Build.useNetlify
         set module.exports = app.instance

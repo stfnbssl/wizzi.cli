@@ -21,7 +21,7 @@ $group
         
         ${'$'}append handlers
             v08/ts/handler${'('}getIttfDocument)
-                log 'getIttfDocument.request.params', request.params
+                $$ loog 'getIttfDocument.request.params', request.params
                 check-params${'('} )
                     not-empty${'('} query , hash )
 
@@ -37,8 +37,8 @@ $group
                     v08/ts/catch_fail${'('} ApiV1WizziGist.getIttfDocument )
 
             v08/ts/handler${'('}putIttfDocument)
-                log 'request.body', request.body
-                log 'request.query', request.query
+                $$ loog 'request.body', request.body
+                $$ loog 'request.query', request.query
                 check-params${'('} )
                     not-empty${'('} body , hash )
                     not-empty${'('} body , content )

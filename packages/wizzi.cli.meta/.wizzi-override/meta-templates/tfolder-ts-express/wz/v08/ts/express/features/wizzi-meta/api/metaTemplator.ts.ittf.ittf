@@ -52,7 +52,7 @@ $group
             :any
         param destinationIttfTempFolder
             :string
-        log 'wizziMeta.metaTemplator.writing', node.value, 'to', destinationIttfTempFolder
+        $$ loog 'wizziMeta.metaTemplator.writing', node.value, 'to', destinationIttfTempFolder
         var outputPath
             _ path.join
                 @ destinationIttfTempFolder
@@ -75,7 +75,7 @@ $group
             :any
         param indent
             :number
-        # log new Array(indent).join(' ') + node.name + ' ' + node.value
+        $$ loog new Array(indent).join(' ') + node.name + ' ' + node.value
         _ sb.push
             @ new Array(indent).join(' ') + decode(node.name) + ' ' + decode(node.value)
         foreach child in node.children

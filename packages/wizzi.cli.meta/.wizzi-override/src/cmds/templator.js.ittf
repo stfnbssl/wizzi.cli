@@ -22,9 +22,9 @@ module
                     param err
                     param templateModel
                     if err
-                        log 'err', err
+                        $$ loog 'err', err
                         return
-                    # log 'templateModel', templateModel
+                    # $$ loog 'templateModel', templateModel
                     foreach child in templateModel.children
                         if child.name == '$file'
                             _ processFile
@@ -54,7 +54,7 @@ module
         param sb
         param node
         param indent
-        # log new Array(indent).join(' ') + node.name + ' ' + node.value
+        $$ loog new Array(indent).join(' ') + node.name + ' ' + node.value
         _ sb.push
             @ new Array(indent).join(' ') + decode(node.name) + ' ' + decode(node.value)
         foreach child in node.children

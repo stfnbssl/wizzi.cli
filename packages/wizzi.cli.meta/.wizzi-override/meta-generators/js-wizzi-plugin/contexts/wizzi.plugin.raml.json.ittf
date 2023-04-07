@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "raml";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "RAML plugin"
@@ -12,7 +18,12 @@
             hasNamespaces true
             hasTextContents true
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "document"
+                    outmime "raml"
 
     { Utils
         useInflection true            
-        useParseUrl true            
+        useParseUrl true   

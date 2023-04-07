@@ -30,7 +30,7 @@ $group
                 var databaseName = "mydatabase"
                 var tableName = "mytable"
                 set db = new db.LocalStorageDb(databaseName, localStorage)
-                log 'StartDb db', db
+                $$ loog 'StartDb db', db
                 _ $("#tblContent > tbody").html("")
                 if db.tableExists(tableName)
                     var result = db.queryAll("mytable")

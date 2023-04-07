@@ -55,6 +55,10 @@ $group
         ${"${'$'}"}group
             ${'$'}include wz/v08/wizzi/plugin/root/t/artifact-generation.js
     
+    $file __dot__wizzi/${pkgPath}root/t/wizzification.js.ittf.ittf
+        ${"${'$'}"}group
+            ${'$'}include wz/v08/wizzi/plugin/root/t/wizzification.js            
+
     $file __dot__wizzi/${pkgPath}root/t/schema-definition.js.ittf.ittf
         ${"${'$'}"}group
             ${'$'}include wz/v08/wizzi/plugin/root/t/schema-definition.js

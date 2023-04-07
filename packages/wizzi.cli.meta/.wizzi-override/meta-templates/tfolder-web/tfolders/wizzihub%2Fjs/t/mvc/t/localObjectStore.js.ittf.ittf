@@ -42,15 +42,15 @@ $group
                 param name
                 param defaultValue
                 var itemObj = JSON.parse(localStorage.getItem(this._dbName) || '{}')
-                log '${'$'}{myName}.getValue', name, defaultValue, name in itemObj, itemObj
+                $$ loog '${'$'}{myName}.getValue', name, defaultValue, name in itemObj, itemObj
                 if name in itemObj
-                  log '${'$'}{myName}.getValue.return', itemObj[name]
+                  $$ loog '${'$'}{myName}.getValue.return', itemObj[name]
                   return itemObj[name]
                 elif typeof(defaultValue) != 'undefined'
-                  log '${'$'}{myName}.getValue.return', defaultValue
+                  $$ loog '${'$'}{myName}.getValue.return', defaultValue
                   return defaultValue
                 else
-                  log '${'$'}{myName}.getValue.return', null
+                  $$ loog '${'$'}{myName}.getValue.return', null
                   return null
             #
                 # 
@@ -98,7 +98,7 @@ $group
                 param updateData
                 param id
                 param_callback${'('})
-                log '${'$'}{myName}.prototype.save', id, updateData
+                $$ loog 'og 'og '${'$'}{myName}.prototype.save', id, updateData
                 _ this.itemColl.save
                   @ updateData
                   @ id

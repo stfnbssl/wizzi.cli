@@ -19,7 +19,7 @@ $group
         
         ${'$'}append handlers
             v08/ts/handler${'('}createPackage)
-                log 'getIttfDocument.request.params', request.params
+                $$ loog 'getIttfDocument.request.params', request.params
                 check-params${'('} )
                     not-empty${'('} query , hash )
 

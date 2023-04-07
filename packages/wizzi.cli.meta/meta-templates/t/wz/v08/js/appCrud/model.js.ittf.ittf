@@ -38,7 +38,7 @@ $group
                             _ items.filter
                                 =>
                                     param item
-                                    ${'$'}${'$'} log '${'$'}{myName}.getProduction.item', item.__selected, viewKind
+                                    ${'$'}${'$'} $$ loog '${'$'}{myName}.getProduction.item', item.__selected, viewKind
                                     var okCatTit = true
                                     if activeCategoria != '0'
                                         set okCatTit = okCatTit && item.categoria == activeCategoria

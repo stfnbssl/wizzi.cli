@@ -24,6 +24,7 @@
                     @ __dirname
                     @ '..'
 
+        let arg = process.argv[2]
         const moduleName = arg && arg.length > 0 ? arg : 'first'        
         _ executeGenerateModules
             [
@@ -47,7 +48,7 @@
                     param module
                     param callback
 
-                    log '${schema.name}.example.executeGenerateModules.module: ' + module
+                    $$ loog '${schema.name}.example.executeGenerateModules.module: ' + module
             
                     var ittfDocumentUri
                         _ path.join
@@ -71,7 +72,7 @@
                         @ ittfDocumentUri
                         {
                         a_cb${"${'('}"} model )
-                            log '${schema.name}.example.executeGenerateModules.outputLoadedPath: ' + outputLoadedPath
+                            $$ loog '${schema.name}.example.executeGenerateModules.outputLoadedPath: ' + outputLoadedPath
                             _ file.write
                                 @ outputLoadedPath
                                 _ stringify
@@ -83,7 +84,7 @@
                                 {
                                 @ "${schema.name}/${schema.transformer}"
                                 a_cb${"${'('}"} model )
-                                    log '${schema.name}.example.executeGenerateModules.outputExtendedPath: ' + outputExtendedPath
+                                    $$ loog '${schema.name}.example.executeGenerateModules.outputExtendedPath: ' + outputExtendedPath
                                     _ file.write
                                         @ outputExtendedPath
                                         _ stringify

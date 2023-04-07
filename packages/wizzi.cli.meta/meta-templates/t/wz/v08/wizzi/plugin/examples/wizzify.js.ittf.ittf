@@ -38,7 +38,7 @@ $group
 						@ __dirname
 						@ 'data'
 						@ 'output'
-						@ name + '.${schema}.sinthax'
+						@ name + '.${schema}.syntax'
 			f_cb_no_err( ittf )
 				if err
 					error 'error wizzifying: ' + source

@@ -10,8 +10,8 @@ $group
             param styleData
             if styleData && styleData.colors && styleData.shadows
                 return styleData
-            log '${'$'}{myName}.styles.Colors', styles.Colors
-            log '${'$'}{myName}.styles.Shadows', styles.Shadows
+            $$ loog '${'$'}{myName}.styles.Colors', styles.Colors
+            $$ loog '${'$'}{myName}.styles.Shadows', styles.Shadows
             return
               {
                   @ Colors styles.Colors

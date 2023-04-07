@@ -1,5 +1,11 @@
 {
+    $
+        var pluginBasename = "org";
+
     $include commons
+    $include v08
+
+    usePackageVersion true
 
     { App
         name "Organization plugin"
@@ -12,3 +18,8 @@
             hasNamespaces true
             hasTextContents true
             [ includes
+            [ transformers
+            [ artifacts
+                {
+                    name "document"
+                    outmime "org"

@@ -38,7 +38,7 @@ module
             param mainIttf
             param wizziSchema
             param action
-            log 'uploadWizzihubArtifact.action', action
+            $$ loog 'uploadWizzihubArtifact.action', action
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
@@ -60,12 +60,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadArtifact', name, result
+                                $$ loog 'uploadArtifact', name, result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadArtifact.error', err
+                                $$ loog 'uploadArtifact.error', err
                                 _ app.services.mongodbClose
 
     export
@@ -73,7 +73,7 @@ module
             param name
             param description
             param action
-            log 'uploadWizzihubPackage.action', action
+            $$ loog 'uploadWizzihubPackage.action', action
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
@@ -93,12 +93,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadPackage', name, result
+                                $$ loog 'uploadPackage', name, result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadPackage.error', err
+                                $$ loog 'uploadPackage.error', err
                                 _ app.services.mongodbClose
 
     export
@@ -106,7 +106,7 @@ module
             param name
             param description
             param action
-            log 'uploadWizzihubPlugin.action', action
+            $$ loog 'uploadWizzihubPlugin.action', action
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
@@ -126,12 +126,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadPlugin', name, result
+                                $$ loog 'uploadPlugin', name, result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadPlugin.error', err
+                                $$ loog 'uploadPlugin.error', err
                                 _ app.services.mongodbClose
 
 
@@ -140,7 +140,7 @@ module
             param name
             param description
             param action
-            log 'uploadWizzihubMeta.action', action
+            $$ loog 'uploadWizzihubMeta.action', action
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
@@ -160,12 +160,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadMeta', name, result
+                                $$ loog 'uploadMeta', name, result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadMeta.error', err
+                                $$ loog 'uploadMeta.error', err
                                 _ app.services.mongodbClose
 
 
@@ -174,7 +174,7 @@ module
             param name
             param description
             param action
-            log 'uploadWizzihubTFolder.action', action
+            $$ loog 'uploadWizzihubTFolder.action', action
             _ start
                 a_cb_throw(startedapp)
                     set app = startedapp
@@ -194,12 +194,12 @@ module
                         ._ then
                             =>
                                 param result
-                                log 'uploadTFolder', name, result
+                                $$ loog 'uploadTFolder', name, result
                                 _ app.services.mongodbClose
                         ._ catch
                             =>
                                 param err
-                                log 'uploadTFolder.error', err
+                                $$ loog 'uploadTFolder.error', err
                                 _ app.services.mongodbClose
 
     export
@@ -259,7 +259,7 @@ module
             ._ then
                 =>
                     param result
-                    log 'downloadArtifactList', result.length
+                    $$ loog 'downloadArtifactList', result.length
                     if options.all
                         _ downloadWizzihubPackages
                             @ options
@@ -268,7 +268,7 @@ module
             ._ catch
                 =>
                     param err
-                    log 'downloadArtifact.error', err
+                    $$ loog 'downloadArtifact.error', err
                     _ app.services.mongodbClose
     
     function downloadWizzihubPackages
@@ -294,7 +294,7 @@ module
             ._ then
                 =>
                     param result
-                    log 'downloadPackageList', result.length
+                    $$ loog 'downloadPackageList', result.length
                     if options.all
                         _ downloadWizzihubPlugins
                             @ options
@@ -303,7 +303,7 @@ module
             ._ catch
                 =>
                     param err
-                    log 'downloadPackageList.error', err
+                    $$ loog 'downloadPackageList.error', err
                     _ app.services.mongodbClose
     
     function downloadWizzihubPlugins
@@ -329,7 +329,7 @@ module
             ._ then
                 =>
                     param result
-                    log 'downloadPluginList', result.length
+                    $$ loog 'downloadPluginList', result.length
                     if options.all                    
                         _ downloadWizzihubMetas
                             @ options
@@ -338,7 +338,7 @@ module
             ._ catch
                 =>
                     param err
-                    log 'downloadPluginList.error', err
+                    $$ loog 'downloadPluginList.error', err
                     _ app.services.mongodbClose
     
     function downloadWizzihubMetas
@@ -364,7 +364,7 @@ module
             ._ then
                 =>
                     param result
-                    log 'downloadMetaList', result.length
+                    $$ loog 'downloadMetaList', result.length
                     if options.all                    
                         _ downloadWizzihubTFolders
                             @ options
@@ -373,7 +373,7 @@ module
             ._ catch
                 =>
                     param err
-                    log 'downloadMetaList.error', err
+                    $$ loog 'downloadMetaList.error', err
                     _ app.services.mongodbClose
     
     function downloadWizzihubTFolders
@@ -399,12 +399,12 @@ module
             ._ then
                 =>
                     param result
-                    log 'downloadTFolderList', result.length
+                    $$ loog 'downloadTFolderList', result.length
                     _ app.services.mongodbClose
             ._ catch
                 =>
                     param err
-                    log 'downloadTFolderList.error', err
+                    $$ loog 'downloadTFolderList.error', err
                     _ app.services.mongodbClose
 
     +
