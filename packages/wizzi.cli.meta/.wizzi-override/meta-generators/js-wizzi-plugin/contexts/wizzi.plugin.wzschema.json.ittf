@@ -1,4 +1,4 @@
-{
+node index{
     $include commons
 
     { App
@@ -47,16 +47,25 @@
                 {
                     name "model"
                     outmime "js"
+                    isDefault true
+                    contentType "text/javascript"
                 {
                     name "html_docs"
                     outmime "html"
+                    contentType "text/html"
                 {
                     name "factory"
                     outmime "js"
+                    contentType "text/javascript"
                 {
                     name "text"
                     outmime "js"
+                    contentType "text/javascript"
                 {
                     name "json_schemaboot"
                     outmime "json"
+                    contentType "application/json"
+            [ fileExtensions
+                "wfschema"                    
+            
 

@@ -51,3 +51,7 @@
                 {
                     name "document"
                     outmime "${pluginBasename}"
+                    contentType "text/css"
+                    isDefault true
+            [ fileExtensions
+                "css"

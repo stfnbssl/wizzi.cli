@@ -82,7 +82,7 @@ $group
                     < EditorShell 
                         @ theme {theme}
                         h1 Editor
-                        < ModalDialog 
+                        < ModalDia$$ loog
                             @ autoSize {false}
                             @ visible {true}
                             $$ @ onDismiss {this._handleHideModal}

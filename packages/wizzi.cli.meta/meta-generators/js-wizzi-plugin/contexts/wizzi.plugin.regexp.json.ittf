@@ -18,7 +18,13 @@
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "regexp"
+                    contentType "text/regexp"
+                    isDefault true
+            [ fileExtensions
+                "regexp"                   
+

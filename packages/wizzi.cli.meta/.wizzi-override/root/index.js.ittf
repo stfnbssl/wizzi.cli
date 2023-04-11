@@ -15,5 +15,6 @@ module
     $include metas/ts-express
     $include metas/js-vanilla
     $include metas/wizzi-plugin
+    $include metas/wizzi-meta
     else
         throw new Error("Command unknown: " + cmd)

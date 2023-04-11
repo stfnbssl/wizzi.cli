@@ -1,0 +1,39 @@
+{
+    $include versions
+    name "wizzi.meta.package"
+    npnName "@wizzi/meta.package"
+    pluginBasename ""
+    version '${versions['@wizzi/meta.package@next']}'
+    description "wizzi.meta.package"
+    { author
+        name "Stefano Bassoli"
+        email "stfn.bssl@gmail.com"
+    { github
+        userid "stfnbssl"
+    { license
+        name "MIT"
+        copy "copy 2023"
+    { Build
+        useConfig true
+        { config
+        isWizziMeta true
+        { wizziMeta
+            [ plugins
+                "./wizzi.plugin.ittf/index.js"
+            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
+            { globalContext
+                wzConfigIsDevelopment true
+                wzConfigIsPackageDeploy false
+        useWizziJsonFactory true
+        { utils
+            useStringifySafe true
+    [ Productions
+        {
+            name "package"
+            title "package wizzi meta production"
+        {
+            name "lint"
+            title "lint wizzi meta production"
+        {
+            name "pretty"
+            title "pretty wizzi meta production"

@@ -23,6 +23,10 @@
                 {
                     name "document"
                     outmime "raml"
+                    contentType "text/plain"
+                    isDefault true
+            [ fileExtensions
+                "raml"
 
     { Utils
         useInflection true            

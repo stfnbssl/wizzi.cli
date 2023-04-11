@@ -16,6 +16,7 @@
             @ 'ts-client'
             @ 'js-vanilla'
             @ 'js-wizzi-plugin'
+            @ 'js-wizzi-meta'
 	
     set module.exports
 		=>
@@ -52,13 +53,13 @@
                     @ metaGeneratorFolderPath
                     @ 'contexts'
                     @ options.context + '.json.ittf'
-            $$ loog 'metaGeneratorContextPath', metaGeneratorContextPath
+            info 'metaGeneratorContextPath', metaGeneratorContextPath
 
             var metaGeneratorIndex
                 _ path.join
                     @ metaGeneratorFolderPath
                     @ 'index.ittf.ittf'
-            $$ loog 'metaGeneratorIndex', metaGeneratorIndex
+            info 'metaGeneratorIndex', metaGeneratorIndex
 
             var metaGenerationContextPath
                 _ path.join
@@ -69,7 +70,7 @@
                     @ '__temp'
                     @ options.metaGenerator
                     @ options.context
-            $$ loog 'metaGenerationContextPath', metaGenerationContextPath
+            log 'metaGenerationContextPath', metaGenerationContextPath
 
             _ wizzi.model
                 _ path.join
@@ -103,7 +104,7 @@
                         @ metaGenerationContextPath
                         @ cliCtx
                     +
-                    $$ loog 'createEx.before genFolder.cliCtx', cliCtx
+                    log 'createEx.before genFolder.cliCtx', cliCtx
                     +
                     return
                         _ wizzi.genFolder
@@ -122,5 +123,5 @@
                                 @ copyInclude ['*']
                                 @ copyExclude []
                             a_cb_test(genFolderResult)
-                                $$ loog 'genFolderResult', genFolderResult
+                                log 'genFolderResult', genFolderResult
                                 return

@@ -17,6 +17,7 @@ module.exports = (sourcePath, destPath, ctx) =>
      }, (err, templateModel) => {
     
         if (err) {
+            console.log("[31m%s[0m", 'err', err);
             return ;
         }
         //

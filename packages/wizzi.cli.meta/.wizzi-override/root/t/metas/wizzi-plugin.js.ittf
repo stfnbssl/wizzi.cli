@@ -91,7 +91,7 @@ $group
                 @ context 'wizzi.plugin.vue'
                 @ pkgName 'wizzi.plugin.vue'
                 @ destPath 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vue'
-    elif cmd == 'wizzi-plugin-vue'
+    elif cmd == 'wizzi-plugin-wzjob'
         _ createEx
             {
                 @ metaGenerator 'js-wizzi-plugin'

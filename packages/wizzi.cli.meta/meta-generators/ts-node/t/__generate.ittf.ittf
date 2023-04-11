@@ -36,7 +36,7 @@ $group
                 wfjobs${'$'}{'('}any_json, &jobCtx)
                 wfjobs${'$'}{'('}any_xml, &jobCtx)
                 wfjobs${'$'}{'('}any_md, &jobCtx)
-                $if cliCtx.useEnvCmd
+                $if cliCtx.useFeatures && cliCtx.features.useConfig
                     wfjobs${'$'}{'('}.env, &jobCtx)
                 wfjobs${'$'}{'('}.gitignore, &jobCtx)
                 $if cliCtx.useLint

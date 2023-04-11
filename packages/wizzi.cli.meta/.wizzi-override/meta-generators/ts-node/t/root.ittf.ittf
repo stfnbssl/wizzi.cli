@@ -17,7 +17,7 @@ $group
             {
                 ${'$'}include wz/v08/ts/config/tsconfig_server.json
     
-    $if cliCtx.useEnvCmd
+    $if cliCtx.useFeatures && cliCtx.features.useConfig
         $file __dot__wizzi/${pkgPath}root/__dot__env.text.ittf.ittf
             text
                 ${'$'}include cli/v08/env.text

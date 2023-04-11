@@ -49,8 +49,9 @@ $group
                         { wizziProduction
                             useCachedProductions false
                     ---
-                ${"${'$'}"}include config.json
-                ---
+                $if cliCtx.useFeatures && cliCtx.features.useConfig
+                    ${"${'$'}"}include config.json
+                    ---
                 ${"${'$'}"}include code.json
                 ---
                 ${"${'$'}"}include test.json
@@ -90,12 +91,12 @@ $group
                 useLint true
                 { lint
     
-    $file __dot__wizzi/models/t/config.json.ittf.ittf
-        ${"${'$'}"}group
-                
-            useConfig true
-            { config
-                $if cliCtx.useEnvalid
+    $if cliCtx.useFeatures && cliCtx.features.useConfig
+        $file __dot__wizzi/models/t/config.json.ittf.ittf
+            ${"${'$'}"}group
+                useConfig true
+                { config
+                    $$ $if cliCtx.useEnvalid
                     useEnvalid true
                     { envalid
         
@@ -144,13 +145,12 @@ $group
                                 $foreach item in cliCtx.wizziV08.plugins
                                     "${item}"
 
-                    $if cliCtx.useAzure || cliCtx.useHeroku
-                        [ plugins
+                    [ plugins
+                        $if cliCtx.useAzure || cliCtx.useHeroku
                             "wizzi-core"
                             "wizzi-js" 
                             "wizzi-web" 
-                    $else
-                        [ plugins
+                        $else
                             $if cliCtx.useWizziV08
                                 $foreach item in cliCtx.wizziV08.plugins
                                     "./wizzi.plugin.${item}/index.js" 
@@ -172,10 +172,10 @@ $group
                                 "./wizzi-js/index.js" 
                                 "./wizzi-web/index.js" 
                                 "./wizzi-meta/index.js" 
-                        $if cliCtx.useWizziV08
-                            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
-                        $else
-                            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.v07/packages"
+                    $if cliCtx.useWizziV08
+                        pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
+                    $else
+                        pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.v07/packages"
                     { globalContext
                         wzConfigIsDevelopment true
                         wzConfigIsPackageDeploy false

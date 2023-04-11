@@ -18,10 +18,15 @@
             hasNamespaces true
             hasTextContents true
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "rdbms"
+                    contentType "text/rdbms"
+                    isDefault true
+            [ fileExtensions
+                "rdbms"                   
 
     { Utils
         useInflection true

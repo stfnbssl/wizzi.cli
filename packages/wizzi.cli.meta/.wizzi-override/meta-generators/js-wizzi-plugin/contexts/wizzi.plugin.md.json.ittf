@@ -65,5 +65,15 @@
                 {
                     name "document"
                     outmime "md"
-
-
+                    contentType "text/html"
+                    isDefault true
+                {
+                    name "tocss"
+                    contentType "text/css"
+                    outmime "css"
+                {
+                    name "tohtml"
+                    contentType "text/html"
+                    outmime "html"
+            [ fileExtensions
+                "md"

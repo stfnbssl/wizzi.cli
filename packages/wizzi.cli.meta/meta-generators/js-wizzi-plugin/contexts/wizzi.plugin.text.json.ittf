@@ -29,7 +29,15 @@
                     "\t@ tobeWizzified"
                 useFormatAstMethods false
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "txt"
+                    contentType "text/plain"
+                    isDefault true
+            [ fileExtensions
+                "text"
+                "txt"
+
+

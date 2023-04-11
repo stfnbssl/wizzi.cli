@@ -1,15 +1,24 @@
 $group
 
     import path from 'path'
-    import wizzi from 'wizzi'
+    $if cliCtx.useWizziV08
+        import wizzi from '@wizzi/factory'
+    $else
+        import wizzi from 'wizzi'
     import 
         @ fSystem
-        from 'wizzi-utils'    
+        $if cliCtx.useWizziV08
+            from '@wizzi/utils'
+        $else
+            from 'wizzi-utils'    
     import
         @ JsonComponents
         @ JsonDocumentDto
         @ JsonFs
-        from 'wizzi-repo'
+        $if cliCtx.useWizziV08
+            from '@wizzi/repo'
+        $else
+            from 'wizzi-repo'
     ${'$'}if wzCtx.Build.useWizziJsonFactory
         import
             @ packiFilePrefix

@@ -43,9 +43,15 @@
                             parent "element"
                             tag "::script"
                             root "module"
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "svg"
+                    isDefault true
+                    contentType "image/svg+xml"
+            [ fileExtensions
+                "svg"                   
+
 
 

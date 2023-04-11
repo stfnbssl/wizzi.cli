@@ -53,10 +53,16 @@
                             parent "node"
                             tag "::html"
                             root "html"
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "vue"
+                    isDefault true
+                    contentType "text/plain"
+            [ fileExtensions
+                "vue"                    
+
 
 
 

@@ -25,5 +25,10 @@
                 {
                     name "document"
                     outmime "wzjob"
+                    isDefault true
+                    contentType "text/plain"             
+            [ fileExtensions
+                "wzjob"       
+            
 
 

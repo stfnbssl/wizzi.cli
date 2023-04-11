@@ -2,10 +2,16 @@ $group
 
     import
         as wizzi
-        from 'wizzi'
+        $if cliCtx.useWizziV08
+            from '@wizzi/factory'
+        $else
+            from 'wizzi'
     import
         @ JsonFs
-        from 'wizzi-repo'
+        $if cliCtx.useWizziV08
+            from '@wizzi/repo'
+        $else
+            from 'wizzi-repo'
     ${'$'}if wzCtx.Build.useWizziJsonFactory
         import
             @ packiTypes

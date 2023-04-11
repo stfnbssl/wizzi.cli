@@ -85,3 +85,7 @@
                 {
                     name "document"
                     outmime "${pluginBasename}"
+                    contentType "text/html"
+                    isDefault true
+            [ fileExtensions
+                "html"

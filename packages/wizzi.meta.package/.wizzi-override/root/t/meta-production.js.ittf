@@ -1,0 +1,18 @@
+$group
+    #
+        # Retrieve the WizziMetaProductions of this package
+    m getMetaProductions
+        param folderTemplates
+        param ittfDocumentTemplates
+        param callback
+        _ get_all_MetaProductions
+            @ folderTemplates
+            @ ittfDocumentTemplates
+            ._ then
+                =>
+                    param result
+                    r_cb(result)
+            ._ catch
+                =>
+                    param err
+                    r_cb_err(err)

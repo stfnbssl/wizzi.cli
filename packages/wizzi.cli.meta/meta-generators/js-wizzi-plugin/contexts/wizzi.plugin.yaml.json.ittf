@@ -32,7 +32,14 @@
                     "\t@ tobeWizzified"
                 useFormatAstMethods true
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "yaml"
+                    isDefault true
+                    contentType "text/yaml"
+            [ fileExtensions
+                "yaml"
+                "yml"         
+

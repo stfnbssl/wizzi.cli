@@ -8,7 +8,10 @@ $group
     import path from 'path'
     import
         @ file
-        from 'wizzi'
+        $if cliCtx.useWizziV08
+            from '@wizzi/factory'
+        $else
+            from 'wizzi'
     import
         @ config
         from '../../config'

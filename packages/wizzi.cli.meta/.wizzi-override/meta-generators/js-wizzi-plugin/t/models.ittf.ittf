@@ -41,6 +41,10 @@ $group
                     {
                         name "${schema.name}"
                         title "${schema.name} wizzi schema"
+                        $if schema.rootElement
+                            rootElement "${schema.rootElement}"
+                        $if schema.rootTag
+                            rootTag "${schema.rootTag}"
                         $if schema.hasBuiltinWizziModel
                             builtin true
                         $else
@@ -48,15 +52,27 @@ $group
                         $if schema.hasWizzifier
                             hasWizzifier true
                         [ modelTransformers
-                            {
-                                name "extended"
+                            $foreach trans in schema.transformers
+                                {
+                                    name "${trans.name}"
+
                         [ artifactGenerators
-                            {
-                                name "document"
+                            $foreach art in schema.artifacts
+                                {
+                                    name "${art.name}"
+                                    outmime "${art.outmime}"
+                                    contentType "${art.contentType}"
+                                    isDefault ${art.isDefault ? "true" : "false"}
+                        $foreach art in schema.artifacts
+                            $if art.isDefault
+                                defaultArtifact "${art.name}"
                         [ wizzifiers
                             $if schema.hasWizzifier
                                 {
                                     name "${schema.name}"
+                        [ fileExtensions
+                            $foreach ext in schema.fileExtensions
+                                "${ext}"
                         [ includes
                             $if schema.includes
                                 $foreach include in schema.includes

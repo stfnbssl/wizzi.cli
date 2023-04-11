@@ -36,7 +36,7 @@ $group
                                 @ message moduleName + ' config file "wizzi.config.' + (configName ? configName + '.' : '') + 'js" not found'
                         return
                     const configInstance = await import(configPath)
-                    $$ loog moduleName + '.configInstance', configInstance
+                    $$ loogmoduleName + '.configInstance', configInstance
                     const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
                     if !configInstance.pluginsBaseFolder
                         error moduleName + ' - pluginsBaseFolder not set'

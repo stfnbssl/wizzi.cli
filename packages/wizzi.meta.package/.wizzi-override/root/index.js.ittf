@@ -1,0 +1,98 @@
+module
+    kind es6
+    +
+    var util = require('util')
+    var path = require('path')
+    var stringify = require('json-stringify-safe')
+    var wizziUtils = require('@wizzi/utils')
+    var fSystem = wizziUtils.fSystem
+    var errors = require('./errors')
+    +
+    var md = module.exports = {}
+    set md.name = '${wzCtx.name}.index'
+    +
+    #
+        # FactoryMeta class
+    class FactoryMeta
+        ctor
+            param wizziPackage
+            param provides
+            set this.file = wizziPackage.file
+            set this.provides = provides
+            set this.metaProductions = {}
+        +
+        m initialize
+            param options
+            param callback
+            # TODO
+            return
+                _ callback(null)
+        +
+        m getName
+            return '${wzCtx.name}'
+        +
+        m getFilename
+            return __filename
+        +
+        m getProvides
+            return this.provides
+        +
+        $include meta-production
+        +
+    +
+    async-function get_all_MetaProductions
+        param folderTemplates
+        param ittfDocumentTemplates
+        $foreach production in wzCtx.Productions
+            await 
+                _ getFolderTemplates
+                    @ '${production.name}'
+                    @ folderTemplates
+            await 
+                _ getIttfDocumentTemplates
+                    @ '${production.name}'
+                    @ ittfDocumentTemplates
+        return
+            {
+                @ folderTemplates
+                @ ittfDocumentTemplates
+    $include get-folderTemplates
+    $include get-ittfDocumentTemplates
+    $include folderFsToPackiFiles
+    function error
+        param errorName
+        param method
+        param message
+        param innerError
+        return
+            new errors.WizziMetaError
+                @ message
+                @ null
+                {
+                    @ errorName errorName
+                    @ method md.name + '.' + method
+                    @ sourcePath __filename
+                    @ inner innerError
+    +
+    set md.provides
+        {
+            @ metaProductions
+                [
+                    $foreach production in wzCtx.Productions
+                        @ '${production.name}'
+    set md.createFactoryMeta
+        function
+            param wizziPackage
+            param options
+            param callback
+            var meta
+                new FactoryMeta
+                    @ wizziPackage
+                    @ md.provides
+            _ meta.initialize
+                @ options
+                a_cb( notUsed )
+                    return
+                        _ callback
+                            @ null
+                            @ meta

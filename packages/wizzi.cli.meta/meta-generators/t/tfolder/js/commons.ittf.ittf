@@ -9,6 +9,9 @@ $group
             'a_then',
             'a_then_catch_reject',
             'catch_reject',
+            'checked_call',
+            'checked_call_return',
+            'checked_call_return_set',
             'error',
             'repeater',
             'repeater_increment',
@@ -16,6 +19,8 @@ $group
             'r_cb_err',
             'r_promise',
             'r_promise_async',
+            'r_reject',
+            'r_resolve',
         ];
 
     $foreach item in items

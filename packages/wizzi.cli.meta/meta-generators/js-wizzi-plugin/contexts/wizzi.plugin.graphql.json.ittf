@@ -38,5 +38,7 @@
                 {
                     name "document"
                     outmime "graphql"
-
-            
+                    contentType "text/graphql"
+                    isDefault true
+            [ fileExtensions
+                "graphql"          

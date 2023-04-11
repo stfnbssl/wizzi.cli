@@ -22,7 +22,7 @@ module
                     param err
                     param templateModel
                     if err
-                        $$ loog 'err', err
+                        error 'err', err
                         return
                     # $$ loog 'templateModel', templateModel
                     foreach child in templateModel.children

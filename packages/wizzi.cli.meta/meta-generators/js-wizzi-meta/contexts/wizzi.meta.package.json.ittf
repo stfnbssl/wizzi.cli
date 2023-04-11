@@ -1,0 +1,26 @@
+{
+
+    $
+        var metaBasename = "package";
+
+    $include commons
+
+    usePackageVersion true
+
+    useWizziV08 true
+    { wizziV08
+        [ plugins
+            "ittf"
+    
+    { App
+        name "Package meta production"
+        kind "MetaProduction"
+
+    [ Productions
+        {
+            name "package"
+        {
+            name "lint"
+        {
+            name "pretty"
+

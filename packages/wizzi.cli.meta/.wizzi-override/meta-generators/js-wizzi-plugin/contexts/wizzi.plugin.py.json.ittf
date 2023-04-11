@@ -15,6 +15,7 @@
         {
             name "py"
             rootElement "xmodule"
+            rootTag "module"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
@@ -24,3 +25,8 @@
                 {
                     name "module"
                     outmime "py"
+                    contentType "text/python"
+                    isDefault true
+            [ fileExtensions
+                "py"                   
+

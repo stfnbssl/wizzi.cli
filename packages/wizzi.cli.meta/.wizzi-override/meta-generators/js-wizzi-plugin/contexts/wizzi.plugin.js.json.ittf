@@ -23,6 +23,7 @@
         {
             name "js"
             rootElement "xmodule"
+            rootTag "module"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
@@ -59,3 +60,9 @@
                 {
                     name "module"
                     outmime "js"
+                    contentType "text/javascript"
+                    isDefault true
+            [ fileExtensions
+                "js"
+                "jsx"
+

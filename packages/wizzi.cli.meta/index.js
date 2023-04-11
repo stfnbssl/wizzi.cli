@@ -227,7 +227,7 @@ else if (cmd == 'wizzi-plugin-vue') {
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.vue'
      })
 }
-else if (cmd == 'wizzi-plugin-vue') {
+else if (cmd == 'wizzi-plugin-wzjob') {
     createEx({
         metaGenerator: 'js-wizzi-plugin', 
         context: 'wizzi.plugin.wzjob', 
@@ -321,6 +321,14 @@ else if (cmd == 'wizzi-plugin-java') {
         context: 'wizzi.plugin.java', 
         pkgName: 'wizzi.plugin.java', 
         destPath: 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages/wizzi.plugin.java'
+     })
+}
+else if (cmd == 'wizzi-meta-package') {
+    createEx({
+        metaGenerator: 'js-wizzi-meta', 
+        context: 'wizzi.meta.package', 
+        pkgName: 'wizzi.meta.package', 
+        destPath: 'C:/My/wizzi/stfnbssl/wizzi.cli/packages/wizzi.meta.package'
      })
 }
 else {

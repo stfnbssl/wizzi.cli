@@ -140,7 +140,7 @@ $group
                     @ 'wizziMeta.generatePackageFiles. Missing outputPackagePath: ' + options.outputPackagePath
             # TODO check parent folder of outputPackagePath exists
             
-            $$ loog "wizziMeta.generatePackageFiles.generating to folder", path.join(options.outputPackagePath, options.outputPackageName)
+            $$ loog"wizziMeta.generatePackageFiles.generating to folder", path.join(options.outputPackagePath, options.outputPackageName)
             _ wizziProds.generateFolderArtifactsFs
                 @ destinationIttfTempFolder
                 ${'$'}*

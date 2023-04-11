@@ -38,7 +38,7 @@ $group
 
             v08/ts/handler${'('}putIttfDocument)
                 $$ loog 'request.body', request.body
-                $$ loog 'request.query', request.query
+                $$ loog 'og 'request.query', request.query
                 check-params${'('} )
                     not-empty${'('} body , hash )
                     not-empty${'('} body , content )

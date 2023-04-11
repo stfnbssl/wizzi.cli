@@ -1,0 +1,6 @@
+$group
+
+    $file __dot__wizzi/${pkgPath}examples/first.json.ittf.ittf
+        {
+            useXxx true
+            { xxx

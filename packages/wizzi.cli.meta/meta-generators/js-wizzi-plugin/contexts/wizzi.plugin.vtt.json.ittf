@@ -25,7 +25,13 @@
             hasNamespaces false
             hasTextContents false
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "vtt"
+                    contentType "text/vtt"
+                    isDefault true
+            [ fileExtensions
+                "vtt"                    
+

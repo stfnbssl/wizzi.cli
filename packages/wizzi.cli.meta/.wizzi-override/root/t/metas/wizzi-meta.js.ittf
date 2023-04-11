@@ -1,0 +1,9 @@
+$group
+
+    elif cmd == 'wizzi-meta-package'
+        _ createEx
+            {
+                @ metaGenerator 'js-wizzi-meta'
+                @ context 'wizzi.meta.package'
+                @ pkgName 'wizzi.meta.package'
+                @ destPath 'C:/My/wizzi/stfnbssl/wizzi.cli/packages/wizzi.meta.package'

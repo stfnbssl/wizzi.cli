@@ -33,7 +33,13 @@
                     "\t@ tobeWizzified"
                 useFormatAstMethods false
             [ includes
+            [ transformers
             [ artifacts
                 {
                     name "document"
                     outmime "xml"
+                    contentType "text/xml"
+                    isDefault true
+            [ fileExtensions
+                "xml"
+            

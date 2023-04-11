@@ -276,7 +276,7 @@ $group
                 # Called by features.production.api.meta.generateMetaProduction
                 # Called by features.production.api.meta.getTemplatePackiFiles
                 # Called by handlers of features.production.controllers.apiv1generations
-            $$ loog myname + 'prepareProduction entered', owner, productionName
+            $$ loogmyname + 'prepareProduction entered', owner, productionName
             return
                 new Promise
                     =>
@@ -290,7 +290,7 @@ $group
                                 =>
                                     param defaultContext
                                         :any
-                                    $$ loog myname + 'prepareProduction.getDefaultContext_withCache completed', Object.keys(defaultContext)
+                                    $$ loogmyname + 'prepareProduction.getDefaultContext_withCache completed', Object.keys(defaultContext)
                                     _ getProductionObject
                                         @ packiProduction
                                         @ owner

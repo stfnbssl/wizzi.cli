@@ -23,3 +23,7 @@
                 {
                     name "document"
                     outmime "org"
+                    contentType "text/plain"
+                    isDefault true
+            [ fileExtensions
+                "org"                   

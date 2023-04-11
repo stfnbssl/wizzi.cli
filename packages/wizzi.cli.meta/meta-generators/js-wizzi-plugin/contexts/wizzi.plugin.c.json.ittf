@@ -15,6 +15,7 @@
         {
             name "${pluginBasename}"
             rootElement "xmodule"
+            rootTag "module"
             plugin_type "syntax_structure"
             hasNamespaces false
             hasTextContents false
@@ -24,4 +25,8 @@
                 {
                     name "module"
                     outmime "${pluginBasename}"
+                    contentType "text/c"
+                    isDefault true
+            [ fileExtensions
+                "c"
 
