@@ -1,0 +1,28 @@
+{
+    $include v08/env/vars
+    
+    name "meta.documents"
+    version "0.0.1"
+    description "meta.documents"
+    { author
+        name "Stefano Bassoli"
+        email "stfn.bssl@gmail.com"
+    
+    { App
+        name "DocumentsApp"
+        title "Documents  App"
+    
+    { Styles
+    
+    { Build
+        [ features
+        { package
+            [ scripts
+                {
+                    name "ppt"
+                    value "node ./documents/ppt/presentazione.ppt.js"
+                {
+                    name "get:images"
+                    value "node ./src/utils/getJsonImages.js"
+    { Data
+        $include ppt/presentation

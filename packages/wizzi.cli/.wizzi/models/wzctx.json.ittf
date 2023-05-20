@@ -1,0 +1,17 @@
+{
+    $include v08/env/vars
+    
+    name "wizzi.cli"
+    version "0.0.1"
+    description "wizzi.cli"
+    { author
+        name "Stefano Bassoli"
+        email "stfn.bssl@gmail.com"
+    
+    { App
+        name "Wizzi CLI"
+        kind "NodeCLI"
+    
+    { Build
+        isCLI true
+        [ features

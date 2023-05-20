@@ -1,5 +1,0 @@
-# Wizzi CLI meta
-
-
-
-

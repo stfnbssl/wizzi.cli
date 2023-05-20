@@ -1,0 +1,223 @@
+module
+	kind es6
+
+    const path = require('path')
+	const wizziUtils = require('@wizzi/utils')
+	const vfile = wizziUtils.vfile
+    const verify = wizziUtils.verify
+    var file = vfile()
+
+    set module.exports
+        {
+            @ simple
+                =>
+                    param sourceFolder
+                    param outputPath
+                    log 'metify.simple.sourceFolder', sourceFolder
+                    log 'metify.simple.outputPath', outputPath
+                    _ file.getFiles
+                        @ sourceFolder
+                        { 
+                            @ deep true
+                            @ documentContent true
+                        a_cb_throw( files )
+                            # log 'files', files
+                            var sb
+                                [
+                                    @ 'template ' + path.basename(sourceFolder)
+                            foreach item in files
+                                _ sb.push
+                                    @ '    $file ' + item.relPath
+                                var lines = item.content.split('\n')
+                                foreach line in lines
+                                    _ sb.push
+                                        @ '        ' + verify.replaceAll(line, '$', '${'$'}')
+                            _ file.write
+                                @ outputPath
+                                _ sb.join
+                                    @ '\n'
+            @ complex
+                =>
+                    param sourceFolder
+                    param outputPath
+                    log 'metify.complex.sourceFolder', sourceFolder
+                    log 'metify.complex.outputPath', outputPath
+                    var sb1 = []
+                    _ file.getFiles
+                        @ sourceFolder
+                        { 
+                            @ deep true
+                            @ documentContent true
+                        a_cb_throw( files )
+                            var afs 
+                                _ analizeFiles
+                                    @ files
+                            $$ loog 'afs', afs
+                            for var k in afs.folders
+                                $$ loog 'k', k
+                                var folder = afs.folders[k]
+                                for var ke in folder
+                                    _ sb1.push
+                                        @ '\t$' + '$' + ' folder ' + k + ' ext ' + ke
+                                    _ sb1.push('\t$')
+                                    _ sb1.push('\t\tvar items = [')
+                                    foreach af in folder[ke]
+                                        _ sb1.push('\t\t\t\'' + af.basenameNoExt + '\',')
+                                        _ file.write
+                                            _ path.join
+                                                @ outputPath
+                                                @ 'ittfDocumentTemplates'
+                                                @ tfolder(k)
+                                                @ af.basenameNoExt + '.' + ke + '.ittf.ittf'
+                                            @ af.content
+                                    _ sb1.push('\t\t];')
+                                    _ sb1.push('')
+                                    _ sb1.push('\t$foreach item in items')
+                                    _ sb1.push('\t\t$file __dot__wizzi/<folder>/' + k + '/$' + '{item}' + '.' + ke + '.ittf.ittf')
+                                    if af.firstWord
+                                        _ sb1.push('\t\t\t' + af.firstWord) 
+                                    else
+                                        _ sb1.push('\t\t\t$' + "{'$'}{'$'}group") 
+                                    _ sb1.push('\t\t\t\t$' + "{'$'}" + 'include <productionFolder>/' + tfolder(k) + '/$' + '{item}' + '.' + ke)
+                            $$ loog 'sb1', sb1.join('\n')
+                            _ file.write
+                                _ path.join
+                                    @ outputPath
+                                    @ 'folderTemplates'
+                                    @ 'index.ittf.ittf'
+                                _ sb1.join('\n')
+
+
+    function tfolder
+        param name
+        if name == 't' 
+            return 'tfolder' 
+        if name.endsWith('/t')
+            return name.substring(0, name.length-1) + 'tfolder' 
+        return name
+    
+    function analizeFiles
+        param files
+        var ret
+            {
+                { folders
+        foreach file in files
+            var af = analizeFile(file)
+            if af
+                var folderName = af.relFolder.length == 0 ? '__root' : af.relFolder
+                var folder = ret.folders[folderName]
+                if !folder
+                    set ret.folders[folderName] = folder = {}
+                var folderExt = folder[af.ext]
+                if !folderExt
+                    set folder[af.ext] = folderExt = []
+                _ folderExt.push(af)
+        return ret
+
+    function analizeFile
+        param file
+        var ss = normalize(file.relPath).split('/')
+        var basename = ss[ss.length-1]
+        _ ss.pop()
+        var relFolder = ss.join('/')
+        var ssname = basename.split('.')
+        if ssname[ssname.length-1] == 'ittf'
+            var ext = ssname[ssname.length-2]
+            _ ssname.pop()
+            _ ssname.pop()
+            var ac = analizeContent(file.content)
+            return
+                {
+                    @ basename
+                    @ relFolder
+                    @ basenameNoExt ssname.join('.')
+                    @ ext
+                    @ content ac.newContent
+                    @ firstWord ac.firstWord
+
+    function analizeContent
+        param content
+        var ch, chNext, chPrev, i, len = content.length
+        var seenAnyChar = false
+        var seenLineChar = false
+        var seenLineWord = false
+        var seenFirstWord = false
+        var firstWord = null
+        var waitCloseInterpolate = false
+        var multiLineCommentOn = false
+        var sb = []
+        var temp = []
+        for i=0; i<len; i++
+            set ch = content[i]
+            set chNext = content[i+1]
+            set chPrev = content[i-1]
+            if ch == '\n'
+                if waitCloseInterpolate
+                    _ sb.push('$' + temp.join(''))
+                    set temp.length = 0
+                    set waitCloseInterpolate = false
+                set seenLineChar = false
+                set seenLineWord = false
+                _ sb.push(ch)
+            elif ch == '}' && waitCloseInterpolate
+                _ sb.push('$' + "{'$'}")
+                _ sb.push(temp.join(''))
+                _ sb.push(ch)
+                set temp.length = 0
+                set waitCloseInterpolate = false
+            elif ch == '$' && chNext == '{' && !waitCloseInterpolate
+                set waitCloseInterpolate = true
+            elif ch == '$' && !seenLineChar
+                if seenAnyChar
+                    _ sb.push(ch)
+                    _ sb.push("{'$'}")
+                    if chNext == '*'
+                        set multiLineCommentOn = true
+                else
+                    _ sb.push(ch)
+                    set seenFirstWord = true
+                set seenLineChar = true
+            elif ch == '$' && chNext == '*'
+                _ sb.push(ch)
+                _ sb.push("{'$'}")
+                set seenLineChar = true
+                set multiLineCommentOn = true
+            elif ch == '$' && chPrev == '*'
+                log '*$', 'multiLineCommentOn', multiLineCommentOn
+                if multiLineCommentOn
+                    _ sb.push(ch)
+                    _ sb.push("{'$'}")
+                    set multiLineCommentOn = false
+                else
+                    _ sb.push(ch)
+                set seenLineChar = true
+            elif ch == '(' && !seenLineWord
+                _ sb.push('$')
+                _ sb.push("{'('}")
+                set seenLineWord = true
+            else
+                if waitCloseInterpolate
+                    _ temp.push(ch)
+                else
+                    _ sb.push(ch)
+                if ch == ' ' || ch == '\t'
+                    if seenLineChar
+                        set seenLineWord = true
+                        if !seenFirstWord
+                            set firstWord = sb.join('')
+                            set seenFirstWord = true
+                else
+                    set seenLineChar = true
+                set seenAnyChar = true
+
+        if waitCloseInterpolate
+            _ sb.push('$' + temp.join(''))
+
+        return
+            {
+                @ newContent sb.join('')
+                @ firstWord
+   
+    function normalize
+        param filePath
+        return verify.replaceAll(filePath, '\\', '/')

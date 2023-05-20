@@ -1,0 +1,6 @@
+$group
+    $params y, x, h, w
+    y ${y}
+    x ${x}
+    w ${w}
+    h ${h}

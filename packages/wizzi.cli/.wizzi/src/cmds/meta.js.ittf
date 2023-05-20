@@ -1,0 +1,130 @@
+﻿module
+	kind es6
+    +
+	const path = require('path')
+	const util = require('util')
+	const async = require('async')
+    const chalk = require('chalk')
+	const wizzi = require('@wizzi/factory')
+	const wizziUtils = require('wizzi-utils')
+	const file = wizziUtils.file
+    const verify = wizziUtils.verify
+    const config = require('../utils/config')
+    const help = require('./help')
+    const factory = require('../factory')
+    +
+    var pluginsBaseFolderV08 = 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages'
+    var metaPluginsBaseFolder = 'C:/My/wizzi/stfnbssl/wizzi.metas/packages'
+    +
+	set module.exports
+		=>
+			param name
+
+			let configPath = config.getPath(name, true)
+			if !configPath
+				_ console.error(`meta config file "wizzi.meta.config.${(name ? name + '.' : '')}js" not found`)
+				return
+
+			const configInstance = require(configPath)
+			log 'wizzi.cli.generate.metaConfigInstance', configInstance
+            const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
+            if !configInstance.pluginsBaseFolder
+                _ console.log
+                    _ chalk.red
+                        @ 'wizzi-cli.meta - pluginsBaseFolder not set'
+                _ console.log
+                    _ chalk.red
+                        @ 'meta generation failed'
+
+            var x_pluginsItems = []
+            if configInstance.plugins && configInstance.plugins.length > 0
+                set x_pluginsItems = configInstance.plugins
+            else
+                _ chalk.red
+                    @ 'wizzi.cli.meta - plugins not found in wizzi.meta.config'
+                _ chalk.red
+                    @ 'meta generation failed'
+
+            if !file.exists(configInstance.metaCtxPath)
+                error 'Invalid options for `meta` command.'
+                error 'Meta context path not found', configInstance.metaCtxPath
+                _ help({_:['help', 'meta']})
+                return     
+
+            _ generateMeta
+                @ configInstance.metaCtxPath
+                @ configInstance.destPath
+                {
+                    @ items configInstance.plugins
+                    @ pluginsBaseFolder configInstance.pluginsBaseFolder
+                {
+                    @ items configInstance.metaPlugins
+                    @ metaPluginsBaseFolder configInstance.metaPluginsBaseFolder
+                =>
+                    param err
+                    param result
+                    if err
+                        error err
+
+    
+    function generateMeta
+        param metaCtxPath
+        param destPath
+        param plugins
+        param metaPlugins
+        param callback
+        _ loadMetaContext
+            @ metaCtxPath
+            @ plugins
+            a_cb(metaCtx)
+                _ factory.createJsonWizziFactoryAndJsonFs
+                    {
+                    @ plugins
+                    @ metaPlugins
+                    a_cb(wf_and_jsonFs)
+                        _ wf_and_jsonFs.wf.executeMetaProduction
+                            {
+                                @ metaCtx metaCtx
+                                { paths
+                                    @ metaProductionTempFolder '___template'
+                                    @ metaProductionWizziFolder '.wizzi'
+                                { globalContext
+                            =>
+                                param err
+                                param wizziPackiFiles
+                                if err
+                                    error err
+                                    return
+                                log 'wizziPackiFiles', Object.keys(wizziPackiFiles)
+                                _ writePackifiles
+                                    @ destPath
+                                    @ wizziPackiFiles
+
+    function loadMetaContext
+        param metaCtxPath
+        param plugins
+        param callback
+        _ factory.createWizziFactory
+            {
+            @ plugins
+            a_cb(wf)
+                _ wf.loadModel
+                    @ 'json'
+                    @ metaCtxPath
+                    {
+                        { mTreeBuildupContext
+                            { metaCtx
+                    a_cb(wizziModel)
+                        r_cb( wizziModel )
+
+    function writePackifiles
+        param folderPath
+        param packiFiles
+        for var k in packiFiles
+            _ file.write
+                _ path.join
+                    @ folderPath
+                    @ k
+                @ packiFiles[k].contents
+
+

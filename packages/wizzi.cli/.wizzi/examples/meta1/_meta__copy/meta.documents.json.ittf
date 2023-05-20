@@ -1,0 +1,41 @@
+{
+    name "meta.documents"
+    npnName "meta.documents"
+    description "meta.documents"
+    version "0.0.1"
+    { author
+        name "Stefano Bassoli"
+        email "stfn.bssl@gmail.com"
+    { license
+        type "MIT"
+        copy "copy 2023"
+        url "TODO"
+    { github
+        userid "stfnbssl"
+    
+    useWizziV08 true
+    { wizziV08
+        [ plugins
+            "css"
+            "graphql"
+            "html"
+            "ittf"
+            "js"
+            "ts"
+            "json"
+            "md"
+            "text"
+            "svg"
+            "wzjob"
+            "wzschema"
+            "xml"
+            "yaml"
+
+    params/use( commonsGit
+    params/use( commonsPackage
+    params/use( commonsWizzi
+        useJsCommons false
+    params/use( documentsApp
+    params/use( documentsJson
+    params/use( documentsPpt
+    params/use( wizziFactory

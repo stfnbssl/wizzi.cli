@@ -1,8 +1,0 @@
-$group
-
-  . production-view-filter
-
-  . production-view-kind
-    display flex
-    justify-content center
-    font-size 0.9em

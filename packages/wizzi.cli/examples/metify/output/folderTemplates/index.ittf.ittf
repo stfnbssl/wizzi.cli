@@ -1,0 +1,33 @@
+	$$ folder __root ext json
+	$
+		var item = [
+			'presentazione',
+		];
+
+	$foreach item in items
+		$file __dot__wizzi/<folder>/__root/${item}.json.ittf.ittf
+			${'$'}{'$'}group
+				$include ittfDocumentTemplates/__root/${item}.json
+	$$ folder t ext json
+	$
+		var item = [
+			'div',
+			'div-rect',
+			'image-rect',
+			'image',
+			'list-rect',
+			'list',
+			'slide',
+			'section',
+			'text-rect',
+			'textblock',
+			'word-biblioref',
+			'word-br',
+			'word-red',
+			'word',
+		];
+
+	$foreach item in items
+		$file __dot__wizzi/<folder>/t/${item}.json.ittf.ittf
+			${'$'}{'$'}group
+				$include ittfDocumentTemplates/tfolder/${item}.json
