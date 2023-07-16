@@ -1,0 +1,13 @@
+module
+    kind es6
+    const path = require("path")
+    const spawn = require("child_process").spawn
+    const fs = require("fs")
+    var vfile = require('@wizzi/utils').vfile
+    +
+    const md = module.exports = {}
+    +
+    $include pandoc/executePandoc
+    $include pandoc/toNativeJson
+    $include pandoc/toNativeJsonFolder
+    $include pandoc/ejs

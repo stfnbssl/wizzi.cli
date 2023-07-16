@@ -1,0 +1,62 @@
+module
+    kind es6
+    const path = require('path')
+    const minimist = require('minimist')
+    $if wzCtx.Build.useCliCommandFileConfig
+        const config = require('./src/utils/config')
+    const error = require('./src/utils/error')
+    +
+    const args = minimist(process.argv.slice(2))
+    log 'args', args
+    let cmd = args._[0] || 'generate'
+    if args.version || args.v
+        set cmd = 'version'
+    if args.help || args.h || args['?']
+        set cmd = 'help'
+    log 'cmd', cmd
+    switch cmd
+        case 'pandoc'
+            _ checked
+                @ require('./src/commands/pandoc')
+                @ args
+            break
+        case 'babel'
+            _ checked
+                @ require('./src/commands/babel')
+                @ args
+            break
+        case 'help'
+            _ require('./src/commands/help')(args)
+            break
+        case 'version'
+            info 'Version 0.1'
+            break
+        default
+            $if wzCtx.Build.useCliCommandFileConfig
+                var configPath = config.getPath(cmd)
+                if configPath
+                    _ require('./src/commands/generate')(cmd)
+                    return
+            _ error(`"${cmd}" is not a valid command!`)
+            _ error(`try wizzi help`, true)
+            break
+
+    function checked            
+        param action
+        param args
+        _ action
+            @ args
+            ._ then
+                =>
+                    param result
+                    if result.success
+                        success "Action executed. Message: " + result.message
+                    else
+                        warn "Action failed. Error: " + result.error
+            ._ catch
+                =>
+                    param err
+                    if err
+                        error err
+                    else
+                        error "Failed"

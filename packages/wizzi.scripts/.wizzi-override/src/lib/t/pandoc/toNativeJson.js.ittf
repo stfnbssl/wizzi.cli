@@ -1,0 +1,102 @@
+$group
+
+    set md.toNativeJson
+        async-function 
+            param source
+            log 'Enter toNativeJson', 'source:', source
+            r_promise()
+                const sourcePath
+                    iif path.isAbsolute(source)
+                        then source
+                        else
+                            _ path.resolve
+                                @ process.cwd()
+                                @ source
+                const sourceFolder = path.dirname(sourcePath)
+                const tempNative
+                    _ path.join
+                        @ sourceFolder
+                        @ '..'
+                        @ path.basename(sourceFolder) + '_temp'
+                        @ path.basename(sourcePath) + '.native'
+                _ md.executePandoc
+                    @ source
+                    @ tempNative $$ dest
+                    @ 'native' $$ format
+                    [
+                        @ '-f'
+                        _ getSourceFormat
+                            @ source
+                    a_then(result)
+                        if !result.success
+                            error result
+                            return
+                                _ reject
+                                    @ result
+                        log "Executed temp native", tempNative, result
+                        const tempJson
+                            _ path.join
+                                @ sourceFolder
+                                @ '..'
+                                @ path.basename(sourceFolder) + '_temp'
+                                @ path.basename(sourcePath) + '.json'
+                        _ md.executePandoc
+                            @ tempNative $$ source
+                            @ tempJson  $$ dest
+                            @ 'json' $$ format
+                            [
+                                @ '-f'
+                                @ 'native'
+                            a_then(result)
+                                if !result.success
+                                    error result
+                                    return
+                                        _ reject
+                                            @ result
+                                _ fs.readFile
+                                    @ tempJson
+                                    @ "utf-8"
+                                    a_cb_throw( data )
+                                        var jsonData = JSON.parse(data)
+                                        const tempFmtJson
+                                            _ path.join
+                                                @ sourceFolder
+                                                @ '..'
+                                                @ path.basename(sourceFolder) + '_temp'
+                                                @ path.basename(sourcePath) + '.fmt.json'
+                                        _ vfile().write
+                                            @ tempFmtJson
+                                            _ JSON.stringify(jsonData, null, 4)
+                                            a_cb_throw( data )
+                                                const tempAstJson
+                                                    _ path.join
+                                                        @ sourceFolder
+                                                        @ '..'
+                                                        @ path.basename(sourceFolder) + '_temp'
+                                                        @ path.basename(sourcePath) + '.ast.schema.json'
+                                                _ vfile().write
+                                                    @ tempAstJson
+                                                    _ JSON.stringify(ejs(jsonData), null, 4)
+                                                    a_cb_throw( data )
+                                                        _ resolve
+                                                            {
+                                                                @ success true
+                                                                @ message 'Written: ' + tempFmtJson
+                            catch()
+                                _ resolve
+                                    {
+                                        @ success false
+                                        @ error err
+                    catch()
+                        _ resolve
+                            {
+                                @ success false
+                                @ error err
+
+    function getSourceFormat            
+        param source
+        var ss = source.split('.')
+        var ext = ss[ss.length-1]
+        if ext == 'md'
+            return 'markdown'
+        return ext

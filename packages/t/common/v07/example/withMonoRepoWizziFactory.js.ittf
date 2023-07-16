@@ -41,7 +41,7 @@ module
         param callback
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadMTree
                     @ ittfDocumentUri
                     @ context
@@ -54,7 +54,7 @@ module
         var fi = fileInfoByPath(ittfDocumentUri)
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadModel
                     @ fi.schema
                     @ ittfDocumentUri
@@ -71,7 +71,7 @@ module
         var fi = fileInfoByPath(ittfDocumentUri)
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadModelAndGenerateArtifact
                     @ ittfDocumentUri
                     {
@@ -87,7 +87,7 @@ module
 
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.executeJob
                     {
                         @ name path.basename(ittfDocumentUri)
@@ -111,7 +111,7 @@ module
 
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.generateModelDoms
                     @ wfschemaIttfDocumentUri
                     @ outputPackagePath
@@ -147,7 +147,7 @@ module
                     @ ittfDocumentUri
                     {
                     @ artifact
-                    f_cb( artifactText )
+                    a_cb( artifactText )
                         _ file.write
                             @ outputPath
                             @ artifactText

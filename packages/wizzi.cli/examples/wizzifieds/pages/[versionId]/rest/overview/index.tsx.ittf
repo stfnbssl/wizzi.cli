@@ -1,0 +1,6 @@
+module
+    kind react
+    export 
+        @ default
+        @ getServerSideProps
+        from '../../[productId]/index'

@@ -15,3 +15,25 @@
     { Build
         isCLI true
         [ features
+        useWizziFactory true
+        { wizziFactory
+            [ plugins
+                "css"
+                "docx"
+                "graphql"
+                "html"
+                "ittf"
+                "js"
+                "json"
+                "md"
+                "pandoc"
+                "pdf"
+                "ppt"
+                "text"
+                "ts"
+                "svg"
+                "wzjob"
+                "wzschema"
+                "xml"
+                "yaml"
+            pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"

@@ -37,6 +37,7 @@
                     @ 'wizzi.cli.generate - plugins not found in wizzi.config'
                 _ chalk.red
                     @ 'generation failed'
+                return
 
             _ wizzi.executeWizziJob
 				{ 

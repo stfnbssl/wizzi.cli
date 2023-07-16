@@ -1,0 +1,12 @@
+module
+    kind react
+    _ CreateIndex
+        { 
+            @ name 'user_by_email'
+            @ source Collection('users')
+            @ unique true
+            [ terms
+                { 
+                    [ field
+                        @ 'data'
+                        @ 'email'

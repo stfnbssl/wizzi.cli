@@ -63,3 +63,13 @@ module
                                         {
                                             @ wf wf
                                             @ jsonFs jsonFs
+
+            @ getDefaultPlugins
+                function
+                    return
+                        [
+                            $foreach item in wzCtx.Build.wizziFactory.plugins
+                                @ "./wizzi.plugin.${item}/index.js"
+            @ getDefaultPluginsBaseFolder
+                function
+                    return "${wzCtx.Build.wizziFactory.pluginsBaseFolder}"

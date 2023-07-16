@@ -1,0 +1,56 @@
+$group
+
+    set md.toNativeJsonFolder
+        async-function 
+            param source
+            param dest
+            log 'Enter toNativeJsonFolder', 'source:', source, 'dest:', dest
+            r_promise()
+                const sourcePath
+                    _ path.resolve
+                        @ process.cwd()
+                        @ source
+                var destPath
+                if !dest
+                    set destPath
+                        _ path.join
+                            @ sourcePath
+                            @ 'output'
+                else
+                    set destPath
+                        _ path.resolve
+                            @ process.cwd()
+                            @ dest
+                const fsFile = vfile()
+                _ fsFile.getFiles
+                    @ sourcePath
+                    {
+                        @ deep false
+                        @ documentContent false
+                    =>
+                        param err
+                        param files
+                        if err
+                            return
+                                _ resolve
+                                    {
+                                        @ success false
+                                        @ error err
+                        async-function exec 
+                            param i
+                            if !files[i]
+                                return
+                                    _ resolve
+                                        {
+                                            @ success true
+                                            @ message "Pandoc json files written to " + destPath
+                            else
+                                try
+                                    await 
+                                        _ md.toNativeJson
+                                            @ files[i].fullPath
+                                catch ex
+                                    error ex
+                                _ exec(i+1)
+                        _ exec(0)
+

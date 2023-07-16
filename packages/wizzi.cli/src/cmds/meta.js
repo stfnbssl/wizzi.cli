@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\meta.js.ittf
-    utc time: Fri, 19 May 2023 18:19:06 GMT
+    utc time: Wed, 12 Jul 2023 13:04:21 GMT
 */
 'use strict';
 
@@ -18,11 +18,9 @@ const config = require('../utils/config');
 const help = require('./help');
 const factory = require('../factory');
 
-var pluginsBaseFolderV08 = 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages';
-var metaPluginsBaseFolder = 'C:/My/wizzi/stfnbssl/wizzi.metas/packages';
+module.exports = (args) => {
 
-module.exports = (name) => {
-
+    const name = args._[1];
     let configPath = config.getPath(name, true);
     if (!configPath) {
         console.error(`meta config file "wizzi.meta.config.${(name ? name + '.' : '')}js" not found`);
@@ -42,6 +40,7 @@ module.exports = (name) => {
     else {
         chalk.red('wizzi.cli.meta - plugins not found in wizzi.meta.config')
         chalk.red('meta generation failed')
+        return ;
     }
     if (!file.exists(configInstance.metaCtxPath)) {
         console.log("[31m%s[0m", 'Invalid options for `meta` command.');
@@ -55,7 +54,7 @@ module.exports = (name) => {
      }, {
         items: configInstance.metaPlugins, 
         metaPluginsBaseFolder: configInstance.metaPluginsBaseFolder
-     }, (err, result) => {
+     }, configInstance.globalContext, (err, result) => {
     
         if (err) {
             console.log("[31m%s[0m", err);
@@ -64,7 +63,7 @@ module.exports = (name) => {
     )
 }
 ;
-function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, callback) {
+function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, globalContext, callback) {
     loadMetaContext(metaCtxPath, plugins, (err, metaCtx) => {
     
         if (err) {
@@ -81,9 +80,7 @@ function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, callback) {
                     metaProductionTempFolder: '___template', 
                     metaProductionWizziFolder: '.wizzi'
                  }, 
-                globalContext: {
-                    
-                 }
+                globalContext: globalContext
              }, (err, wizziPackiFiles) => {
             
                 if (err) {

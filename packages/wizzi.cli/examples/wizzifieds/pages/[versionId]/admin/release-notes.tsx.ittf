@@ -1,0 +1,142 @@
+module
+    kind react
+    import 
+        @ GetServerSideProps
+        from 'next'
+    import 
+        @ Liquid
+        from 'liquidjs'
+    import pick from 'lodash/pick'
+    import 
+        @ MainContextT
+        @ MainContext
+        @ getMainContext
+        from 'components/context/MainContext'
+    import 
+        @ DefaultLayout
+        from 'components/DefaultLayout'
+    import 
+        @ GHAEReleaseNotes
+        from 'components/release-notes/GHAEReleaseNotes'
+    import 
+        @ GHESReleaseNotes
+        from 'components/release-notes/GHESReleaseNotes'
+    import 
+        @ GHAEReleaseNotesContextT
+        @ GHESReleaseNotesContextT
+        from 'components/release-notes/types'
+    const liquid = new Liquid()
+    :type Props
+        :{ 
+            :p mainContext
+                :ref MainContextT
+            :p ghaeContext
+                :union 
+                    :ref GHAEReleaseNotesContextT
+                    :null 
+            :p ghesContext
+                :union 
+                    :ref GHESReleaseNotesContextT
+                    :null 
+    export-default 
+        function ReleaseNotes
+            { 
+                @ mainContext
+                @ ghesContext
+                @ ghaeContext
+                :ref Props
+            return 
+                < MainContext.Provider 
+                    @ value {mainContext}
+                    < DefaultLayout 
+                        { 
+                            && 
+                                + ghesContext
+                                < GHESReleaseNotes 
+                                    @ context {ghesContext}
+                        { 
+                            && 
+                                + ghaeContext
+                                < GHAEReleaseNotes 
+                                    @ context {ghaeContext}
+    export 
+        const getServerSideProps
+            :ref GetServerSideProps
+                :param 
+                    :ref Props
+            =
+                async=> 
+                    param context
+                    const req
+                        @expr context.req
+                            :as 
+                                :any 
+                    const res
+                        @expr context.res
+                            :as 
+                                :any 
+                        # The `req.context.allVersion[X]` entries contains more keys (and values)
+                        # than we need so only pick out the keys that are actually needed
+                        # explicitly in the components served from these props.
+                    const currentVersion
+                        _ pick
+                            @expr req.context.allVersions[req.context.currentVersion]
+                            [ 
+                                @ 'plan'
+                                @ 'planTitle'
+                                @ 'versionTitle'
+                                @ 'currentRelease'
+                                @ 'releases'
+                        # The `req.context.allVersion[X]` entries contains more keys (and values)
+                        # than we need so only pick out the keys that are actually needed
+                        # explicitly in the components served from these props.
+                    const 
+                        { 
+                            @ latestPatch
+                                = ''
+                            @ latestRelease
+                                = ''
+                        = req.context
+                    return 
+                        { 
+                            { props
+                                @ mainContext
+                                    await 
+                                        _ getMainContext(req, res)
+                                @ ghesContext
+                                    iif currentVersion.plan === 'enterprise-server'
+                                        then
+                                            { 
+                                                @ currentVersion
+                                                @ latestPatch
+                                                @ latestRelease
+                                                @ releaseNotes req.context.ghesReleaseNotes
+                                                @ releases req.context.ghesReleases
+                                                { message
+                                                    @ ghes_release_notes_upgrade_patch_only
+                                                        _ liquid.parseAndRenderSync
+                                                            @expr req.context.site.data.ui.header.notices.ghes_release_notes_upgrade_patch_only
+                                                            { 
+                                                                @ latestPatch
+                                                                @ latestRelease
+                                                    @ ghes_release_notes_upgrade_release_only
+                                                        _ liquid.parseAndRenderSync
+                                                            @expr req.context.site.data.ui.header.notices.ghes_release_notes_upgrade_release_only
+                                                            { 
+                                                                @ latestPatch
+                                                                @ latestRelease
+                                                    @ ghes_release_notes_upgrade_patch_and_release
+                                                        _ liquid.parseAndRenderSync
+                                                            @expr req.context.site.data.ui.header.notices.ghes_release_notes_upgrade_patch_and_release
+                                                            { 
+                                                                @ latestPatch
+                                                                @ latestRelease
+                                        else null
+                                @ ghaeContext
+                                    iif currentVersion.plan === 'github-ae'
+                                        then
+                                            { 
+                                                @ currentVersion
+                                                @ releaseNotes req.context.ghaeReleaseNotes
+                                                @ releases req.context.ghaeReleases
+                                        else null

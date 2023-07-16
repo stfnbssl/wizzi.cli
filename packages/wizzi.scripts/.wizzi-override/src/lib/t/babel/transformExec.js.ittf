@@ -1,0 +1,71 @@
+$group
+
+	set md.transformExec
+        function
+            param options
+            param callback
+
+            _ md.transformRequire
+                @ options
+
+            var code = options.code
+            var codePath = options.codePath
+
+            var cfg
+                _ md.getTransformConfig
+                    @ options
+
+            if codePath
+                log 'wizzi.scripts.transformExec.codePath', codePath
+                _ babelCore.transformFile
+                    @ codePath
+                    @ cfg
+                    @ callback
+            else
+                log 'wizzi.scripts.transformExec.code-length', code.length
+                _ babelCore.transform
+                    @ code
+                    @ cfg
+                    @ callback
+
+	set md.transformExecToEventStream
+        function
+            param options
+            param res
+            param callback
+
+            _ md.transformExec
+                @ options
+                a_cb_no_throw(result)
+                    # loog 'wizzi-scripts.transformExecToEventStream.err.result', err, result
+                    _ res.writeHead
+                        @ 200
+                        { 
+                            @ "Content-Type" "text/event-stream"
+                            @ "Cache-control" "no-cache"
+
+                    var payload
+                    if err
+                        set payload = util.inspect(err) 
+                    else
+                        # TODO calculate payload from options
+                        var payload = result.code
+                    # loog 'payload', payload
+                    
+                    var str
+                    var lines = payload.split("\n")
+                    for var i in lines
+                        if i == lines.length - 1
+                            set str = lines[i]
+                        else
+                            # Note: The double-newline is *required*
+                            _ res.write('data: ' + lines[i] + "\n\n")
+                    if str.length > 0
+                        _ res.write('data: ' + str + "\n\n")
+                    _ res.end('data: ***___CLOSE___***\n\n')
+                    
+                    if callback
+                        return
+                            _ callback
+                                @ null
+                                @ payload

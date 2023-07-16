@@ -1,0 +1,32 @@
+module
+    kind es6
+    +
+    const path = require('path')
+    const pandoc = require('../lib/pandoc')
+    const
+        {
+            @ executePandoc
+            @ toNativeJsonFolder
+            @ toNativeJson
+        = pandoc
+    +
+    set module.exports
+        =>
+            param args
+            r_promise()
+                if args.s || args.scan
+                    if args.f || args.folder
+                        _ resolve
+                            _ toNativeJsonFolder
+                                @ args._[1]
+                                @ args.o || args.output
+                    else
+                        _ resolve
+                            _ toNativeJson
+                                @ args._[1]
+                else
+                    _ resolve
+                        { 
+                            @ success false
+                            @ error "No valid pandoc command"
+

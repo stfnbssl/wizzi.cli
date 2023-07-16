@@ -17,6 +17,7 @@
     { wizziV08
         [ plugins
             "css"
+            "docx"
             "graphql"
             "html"
             "ittf"
@@ -24,6 +25,8 @@
             "ts"
             "json"
             "md"
+            "pdf"
+            "ppt"
             "text"
             "svg"
             "wzjob"
@@ -39,3 +42,15 @@
     params/use( documentsJson
     params/use( documentsPpt
     params/use( wizziFactory
+        [ plugins
+
+    [ globals
+        {
+            name "bebaImageFolder"
+            value "C:/Users/Stefano Bassoli/Pictures/beba"
+        {
+            name "dot"
+            value "."
+        {
+            name "comma"
+            value ","

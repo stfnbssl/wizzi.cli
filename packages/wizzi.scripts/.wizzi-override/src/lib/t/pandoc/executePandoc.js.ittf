@@ -1,0 +1,65 @@
+$group
+
+    set md.executePandoc
+        async-function 
+            param src
+            param dest
+            param format
+            param args
+            return 
+                new Promise
+                    => 
+                        param resolve
+                        let 
+                            decl stdOut = ""
+                            decl stdErr = ""
+                        const onStdOutData
+                            function 
+                                param data
+                                set stdOut += data.toString()
+                        const onStdErrData
+                            function 
+                                param data
+                                set stdErr += data.toString()
+                        const onStatCheck
+                            function 
+                                param err
+                                param stats
+                                if err || !stats.isFile()
+                                    error "onStatCheck", err.message
+                                    _ resolve
+                                        { 
+                                            @ success false
+                                            @ error err.message
+                                    return 
+                                _ args.unshift(src)
+                                    # set special parameters for PDF output
+                                if format === "pdf"
+                                    _ args.push("-V", "documentclass=ltjarticle", "-V", "classoption=a4j", "-V", "geometry:margin=1in", "--pdf-engine=lualatex")
+                                else
+                                    _ args.push("-t", format)
+                                _ args.push("-o", dest)
+                                _ args.push("--standalone")
+                                const pdSpawn = spawn("pandoc", args)
+                                _ pdSpawn.stdout.on("data", onStdOutData)
+                                _ pdSpawn.stderr.on("data", onStdErrData)
+                                _ pdSpawn.on
+                                    @ "exit"
+                                    => 
+                                        param code
+                                        const success = code === 0
+                                        _ resolve
+                                            { 
+                                                @ success
+                                                @ result stdOut
+                                                @ error stdErr
+                                _ pdSpawn.on
+                                    @ "error"
+                                    => 
+                                        param err
+                                        error "pdSpawn.on error", err.message
+                                        _ resolve
+                                            { 
+                                                @ success false
+                                                @ error err.message
+                        _ fs.stat(src, onStatCheck)

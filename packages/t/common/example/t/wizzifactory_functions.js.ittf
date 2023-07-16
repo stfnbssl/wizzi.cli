@@ -23,7 +23,7 @@
         param callback
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadMTree
                     @ ittfDocumentUri
                     @ context
@@ -36,7 +36,7 @@
         var fi = fileInfoByPath(ittfDocumentUri)
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadModel
                     @ fi.schema
                     @ ittfDocumentUri
@@ -53,14 +53,14 @@
         var fi = fileInfoByPath(ittfDocumentUri)
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadModelAndGenerateArtifact
                     @ ittfDocumentUri
                     {
                         @ modelRequestContext context
                         @ artifactRequestContext {}
                     @ artifactName
-                    f_cb( artifact )
+                    a_cb( artifact )
                         _ callback(null, artifact)
 
     function loadAndTransformModel
@@ -71,14 +71,14 @@
         var fi = fileInfoByPath(ittfDocumentUri)
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.loadModel
                     @ fi.schema
                     @ ittfDocumentUri
                     {
                         @ mTreeBuildupContext context
                         @ globalContext {}
-                    f_cb( wizziModel )
+                    a_cb( wizziModel )
                         _ wf.transformModel
                             @ wizziModel
                             @ transformerName
@@ -92,7 +92,7 @@
 
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.executeJob
                     {
                         @ name path.basename(ittfDocumentUri)
@@ -116,7 +116,7 @@
 
         _ createWizziFactory
             {
-            f_cb( wf )
+            a_cb( wf )
                 _ wf.generateModelDoms
                     @ wfschemaIttfDocumentUri
                     @ outputPackagePath

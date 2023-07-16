@@ -12,41 +12,57 @@
 
 	set module.exports
 		=>
-			const args = minimist(process.argv.slice(2))
-			
-			log 'args', args
 
-			let cmd = args._[0] || 'generate'
+    const args = minimist(process.argv.slice(2))
+    
+    log 'args', args
 
-			if args.version || args.v
-				set cmd = 'version'
-			
-			if args.help || args.h || args['?']
-				set cmd = 'help'
+    let cmd = args._[0] || 'generate'
 
-			# loog 'cmd', cmd
+    if args.version || args.v
+        set cmd = 'version'
+    
+    if args.help || args.h || args['?']
+        set cmd = 'help'
 
-			switch cmd
-				case 'generate'
-					_ require('./src/cmds/generate')()
-					break
-				case 'fy'
-					_ require('./src/cmds/fy')(args)
-					break
-				case 'meta'
-					_ require('./src/cmds/meta')(args)
-					break
-				case 'metify'
-					_ require('./src/cmds/metify')(args)
-					break
-				case 'help'
-					_ require('./src/cmds/help')(args)
-					break
-				default
-                    var configPath = config.getPath(cmd)
-                    if configPath
-                        _ require('./src/cmds/generate')(cmd)
-                    else
-                        _ error(`"${cmd}" is not a valid command!`)
-                        _ error(`try wizzi help`, true)
-					break
+    # loog 'cmd', cmd
+
+    switch cmd
+        case 'generate'
+            _ require('./src/cmds/generate')()
+            break
+        case 'fy'
+            log 'fy.args.git', args.git
+            if args.git
+                var configPath = config.getPath('env')
+                const configInstance = configPath && require(configPath)
+                log 'configInstance', configInstance
+                if configInstance && configInstance.accessToken
+                    _ require('./src/cmds/fy')(args, configInstance.accessToken)
+                else
+                    _ error(`To wizzify a github repo you need to export an accessToken property from a "wizzi.config.env.js" file.`)
+                    _ error(`The "wizzi.config.env.js" file is searched in the current folder and upward in parent folders.`)
+                    return
+            else
+                _ require('./src/cmds/fy')(args)
+            break
+        case 'meta'
+            _ require('./src/cmds/meta')(args)
+            break
+        case 'metify'
+            _ require('./src/cmds/metify')(args)
+            break
+        case 'job'
+            _ require('./src/cmds/job')(args)
+            break
+        case 'help'
+            _ require('./src/cmds/help')(args)
+            break
+        default
+            var configPath = config.getPath(cmd)
+            if configPath
+                _ require('./src/cmds/generate')(cmd)
+            else
+                _ error(`"${cmd}" is not a valid command!`)
+                _ error(`try wizzi help`, true)
+            break

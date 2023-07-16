@@ -70,7 +70,7 @@ $group
         _ createStoreFactory
             {
                 @ kind 'filesystem'
-            f_cb( storeFactory )
+            a_cb( storeFactory )
                 return
                     _ storeFactory
                         @ callback

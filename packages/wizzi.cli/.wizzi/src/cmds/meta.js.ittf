@@ -13,12 +13,11 @@
     const help = require('./help')
     const factory = require('../factory')
     +
-    var pluginsBaseFolderV08 = 'C:/My/wizzi/stfnbssl/wizzi.plugins/packages'
-    var metaPluginsBaseFolder = 'C:/My/wizzi/stfnbssl/wizzi.metas/packages'
-    +
 	set module.exports
 		=>
-			param name
+			param args
+
+            const name = args._[1]
 
 			let configPath = config.getPath(name, true)
 			if !configPath
@@ -44,6 +43,7 @@
                     @ 'wizzi.cli.meta - plugins not found in wizzi.meta.config'
                 _ chalk.red
                     @ 'meta generation failed'
+                return
 
             if !file.exists(configInstance.metaCtxPath)
                 error 'Invalid options for `meta` command.'
@@ -60,6 +60,7 @@
                 {
                     @ items configInstance.metaPlugins
                     @ metaPluginsBaseFolder configInstance.metaPluginsBaseFolder
+                @ configInstance.globalContext
                 =>
                     param err
                     param result
@@ -72,6 +73,7 @@
         param destPath
         param plugins
         param metaPlugins
+        param globalContext
         param callback
         _ loadMetaContext
             @ metaCtxPath
@@ -88,7 +90,7 @@
                                 { paths
                                     @ metaProductionTempFolder '___template'
                                     @ metaProductionWizziFolder '.wizzi'
-                                { globalContext
+                                @ globalContext globalContext
                             =>
                                 param err
                                 param wizziPackiFiles

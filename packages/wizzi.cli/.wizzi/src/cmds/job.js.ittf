@@ -1,0 +1,75 @@
+﻿module
+	kind es6
+
+	const path = require('path')
+	const util = require('util')
+	const fs = require('fs')
+	const async = require('async')
+    const chalk = require('chalk')
+	const wizzi = require('@wizzi/factory')
+    const config = require('../utils/config')
+
+	set module.exports
+		=>
+			param args
+
+            const name = args._[1]
+            const configRelPath = args.c || args.config
+
+			let currentDir = process.cwd()
+            let configPath
+                _ path.join
+                    @ currentDir
+                    @ configRelPath + '.config.js'
+			const configInstance = require(configPath)
+			log 'wizzi-cli.job.configInstance', configInstance
+            const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
+            if !configInstance.pluginsBaseFolder
+                _ console.log
+                    _ chalk.red
+                        @ 'wizzi-cli.job - pluginsBaseFolder not set'
+                _ console.log
+                    _ chalk.red
+                        @ 'wizzi-cli.job - pluginsBaseFolder defaulted to ' + x_pluginsBaseFolder
+
+            var x_pluginsItems = []
+            if configInstance.plugins && configInstance.plugins.length > 0
+                set x_pluginsItems = configInstance.plugins
+            else
+                _ chalk.red
+                    @ 'wizzi.cli.job - plugins not found in wizzi.config'
+                _ chalk.red
+                    @ 'generation failed'
+                return
+
+            let wfjobPath
+                _ path.join
+                    @ currentDir
+                    @ name + '.wfjob.ittf'
+
+            _ wizzi.executeWizziJob
+				{ 
+					@ storeKind 'filesystem'
+					{ config
+						@ wfBaseFolder __dirname
+						@ plugins x_pluginsItems
+                        @ pluginsBaseFolder x_pluginsBaseFolder
+					{ job
+						@ name name
+						@ ittfDocumentUri wfjobPath
+						@ productionOptions
+							_ wizzi.productionOptions
+								{ 
+									@ indentSpaces 4
+									@ basedir __dirname
+									@ verbose 2
+									{ dumps
+										@ dumpsBaseFolder path.join(__dirname, '_dumps')
+										{ mTreeBuildupJsWizziScript
+											@ dump false
+						@ globalContext configInstance.globalContext
+				function 
+					param err
+					if err
+						return
+							_ wizzi.printWizziJobError(configInstance.wfjobName, err)

@@ -1,0 +1,34 @@
+module
+    kind react
+    import faunadb from 'faunadb'
+    import 
+        @ env
+        from '@/constants/env'
+    export 
+        function getFaunaClient
+            :return
+                :ref faunadb.Client
+            const useFaunaDocker = env.USE_FAUNA_DOCKER === 'true'
+            return 
+                new faunadb.Client
+                    { 
+                        @ secret
+                            iif useFaunaDocker
+                                then 'secret'
+                                else env.FAUNADB_SECRET
+                        @ scheme
+                            iif useFaunaDocker
+                                then 'http'
+                                else 'https'
+                        @ domain
+                            iif useFaunaDocker
+                                then 'localhost'
+                                else 'db.fauna.com'
+                        ... 
+                            ( 
+                                iif useFaunaDocker
+                                    then
+                                        { 
+                                            @ port 8443
+                                    else
+                                        { 

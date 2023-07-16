@@ -1,0 +1,5 @@
+module
+    kind react
+    _ CreateCollection
+        { 
+            @ name "accounts"

@@ -1,0 +1,278 @@
+md
+    h1 
+        + nextjs-starter
+    p 
+        + A Next.js starter kit template with React 17 + Typescript + Tailwind CSS 2 + React Query 3 + NextAuth.js (with GitHub Auth + Passwordless Auth) + Fauna DB
+    br 
+    p 
+        a 
+            href https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs
+            title 
+            img 
+                href https://img.shields.io/apm/l/atomic-design-ui.svg?
+                title 
+    br 
+    p 
+        a 
+            href https://github.com/prettier/prettier
+            title 
+            img 
+                href https://img.shields.io/badge/styled_with-prettier-ff69b4.svg
+                title 
+    br 
+    h2 
+        + Demo
+    ul 
+        li 
+            a 
+                href https://next-starter.bhanuteja.dev
+                title 
+                + Website
+        li 
+            a 
+                href https://blog.bhanuteja.dev/nextjs-starter-with-authentication-react-17-typescript-tailwind-css-2-eslint?guid=36ac22f4-9641-432a-8837-5ac2f435667a&deviceId=c9650ad1-b0e8-451d-90f0-0df5bab42027
+                title 
+                + Blog Post
+            + (old)
+            ul 
+                li 
+                    + Will be replaced with new blog post soon.
+    br 
+    h2 
+        + Run Locally
+    ul 
+        loose 
+        li 
+            + Clone the project
+            br 
+            code 
+                lang bash
+                + git clone https://github.com/pbteja1998/nextjs-starter.git
+        li 
+            + Go to the project directory
+            br 
+            code 
+                lang bash
+                + cd nextjs-starter
+        li 
+            + Install dependencies
+            br 
+            code 
+                lang bash
+                + yarn
+        li 
+            + Create .env.local and change env variables as per the
+            a 
+                href #environment-variables
+                title 
+                + instructions
+            + .
+            br 
+            code 
+                lang bash
+                + cp .env.example .env.local
+        li 
+            + Setup the database by running the following command and pasting the Fauna Secret key when prompted. More details at
+            a 
+                href https://github.com/fauna-brecht/fauna-schema-migrate
+                title 
+                + fauna-schema-migrate
+            + .
+            br 
+            code 
+                lang bash
+                + yarn setup-db
+        li 
+            + Start the server
+            br 
+            code 
+                lang bash
+                + yarn dev
+    br 
+    h2 
+        + Environment Variables
+    p 
+        + To run this project, you will need to add the following environment variables to your
+        code .env.local
+        + file
+    br 
+    ul 
+        li 
+            code NEXTAUTH_URL
+            ul 
+                li 
+                    + This is the your application URL. Locally, you can set this to
+                    code http://localhost:3000
+        li 
+            code SECRET
+            ul 
+                li 
+                    + Set this to any randomly generated string
+        li 
+            code EMAIL_SERVER
+            ul 
+                li 
+                    + This is the email server string. It&#39;s in the format of
+                    code smtp://username:password@smtp.example.com:587
+                    + . Replace
+                    code username
+                    + ,
+                    code password
+                    + and
+                    code smtp.example.com
+                    + with your own credentials.
+        li 
+            code EMAIL_FROM
+            ul 
+                li 
+                    + Your email address from which you are sending emails.
+        li 
+            code GITHUB_ID
+        li 
+            code GITHUB_SECRET
+            ul 
+                li 
+                    + You need to create a GitHub OAuth App, and get the GITHUB_ID AND GITHUB_SECRET from that app.
+                li 
+                    + You can follow
+                    a 
+                        href https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/
+                        title 
+                        + these instructions
+                    + .
+                li 
+                    + When creating an oauth app for local development, you can set the
+                    code Homepage URL
+                    + to
+                    code http://localhost:3000
+                    + and
+                    code Authorization Callback URL
+                    + to
+                    code http://localhost:3000/api/auth/callback/github
+        li 
+            code LINKEDIN_ID
+        li 
+            code LINKEDIN_SECRET
+            ul 
+                li 
+                    + You need to create an oauth app for LINKEDIN. You can set the callback URL to
+                    code http://localhost:3000/api/auth/callback/linkedin
+        li 
+            code FAUNADB_SECRET
+            ul 
+                li 
+                    + Create a new fauna server key and set this variable to that key
+    br 
+    h2 
+        + FAQ
+    h3 
+        + How to run Fauna locally?
+    p 
+        b 
+            + Please note that this is completely optional. You can directly create your database in Fauna cloud and directly use the secret you generate there.
+    br 
+    p 
+        + We are using
+        a 
+            href https://docs.fauna.com/fauna/current/integrations/dev
+            title 
+            + Fauna Dev
+        + docker container to run Fauna instance locally.
+    br 
+    p 
+        + These are the instructions to setup Fauna container locally.
+    br 
+    code 
+        lang bash
+        + # Pull the latest Docker container:
+        + docker pull fauna/faunadb:latest
+        + 
+        + # Verify that the container executes correctly:
+        + docker run fauna/faunadb --help
+    br 
+    p 
+        + After you installed this, you can start the container using the following command
+    br 
+    code 
+        lang bash
+        + docker run --rm --name faunadb -p 8443:8443 -p 8084:8084 fauna/faunadb
+    br 
+    p 
+        + Please note that this will create a new instance of Fauna everytime you run it, and all the data will be cleared when you stop this container. For other config options and approaches, go through the
+        a 
+            href https://docs.fauna.com/fauna/current/integrations/dev
+            title 
+            + documentation
+        + .
+    br 
+    p 
+        b 
+            + Changes you need to do in the template:
+    br 
+    ul 
+        li 
+            + You have to set
+            code USE_FAUNA_DOCKER=true
+            + in your
+            code .env.local
+            + file
+        li 
+            + Everytime you start the docker container, you need to first apply the migrations. You can do it by running
+            code yarn setup-docker-db
+            + .
+        li 
+            + More details at
+            a 
+                href https://github.com/fauna-brecht/fauna-schema-migrate
+                title 
+                + fauna-schema-migrate
+            + and
+            a 
+                href https://docs.fauna.com/fauna/current/integrations/dev
+                title 
+                + Fauna Dev
+            + .
+    br 
+    h2 
+        + Feedback &amp; Support
+    p 
+        + For feedback and support, please
+        a 
+            href https://github.com/pbteja1998/nextjs-starter/issues/new
+            title 
+            + open an issue
+        + in this repo.
+    br 
+    h2 
+        + License
+    p 
+        a 
+            href https://choosealicense.com/licenses/mit/
+            title 
+            + MIT
+    br 
+    h2 
+        + Roadmap
+    p 
+        b 
+            + TBD
+    br 
+    h2 
+        + Contributing
+    p 
+        b 
+            + TBD
+    br 
+    h2 
+        + Deploying
+    h3 
+        + Vercel
+    p 
+        b 
+            + TBD
+    br 
+    h3 
+        + Netlify
+    p 
+        b 
+            + TBD

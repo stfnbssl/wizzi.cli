@@ -3,90 +3,125 @@ module
 
     const path = require('path')
 	const wizziUtils = require('@wizzi/utils')
-	const vfile = wizziUtils.vfile
+    const vfile = wizziUtils.vfile
     const verify = wizziUtils.verify
     var file = vfile()
 
-    set module.exports
-        {
-            @ simple
-                =>
-                    param sourceFolder
-                    param outputPath
-                    log 'metify.simple.sourceFolder', sourceFolder
-                    log 'metify.simple.outputPath', outputPath
-                    _ file.getFiles
-                        @ sourceFolder
-                        { 
-                            @ deep true
-                            @ documentContent true
-                        a_cb_throw( files )
-                            # log 'files', files
-                            var sb
-                                [
-                                    @ 'template ' + path.basename(sourceFolder)
-                            foreach item in files
-                                _ sb.push
-                                    @ '    $file ' + item.relPath
-                                var lines = item.content.split('\n')
-                                foreach line in lines
-                                    _ sb.push
-                                        @ '        ' + verify.replaceAll(line, '$', '${'$'}')
-                            _ file.write
-                                @ outputPath
-                                _ sb.join
-                                    @ '\n'
-            @ complex
-                =>
-                    param sourceFolder
-                    param outputPath
-                    log 'metify.complex.sourceFolder', sourceFolder
-                    log 'metify.complex.outputPath', outputPath
-                    var sb1 = []
-                    _ file.getFiles
-                        @ sourceFolder
-                        { 
-                            @ deep true
-                            @ documentContent true
-                        a_cb_throw( files )
-                            var afs 
-                                _ analizeFiles
-                                    @ files
-                            $$ loog 'afs', afs
-                            for var k in afs.folders
-                                $$ loog 'k', k
-                                var folder = afs.folders[k]
-                                for var ke in folder
-                                    _ sb1.push
-                                        @ '\t$' + '$' + ' folder ' + k + ' ext ' + ke
-                                    _ sb1.push('\t$')
-                                    _ sb1.push('\t\tvar items = [')
-                                    foreach af in folder[ke]
-                                        _ sb1.push('\t\t\t\'' + af.basenameNoExt + '\',')
-                                        _ file.write
-                                            _ path.join
-                                                @ outputPath
-                                                @ 'ittfDocumentTemplates'
-                                                @ tfolder(k)
-                                                @ af.basenameNoExt + '.' + ke + '.ittf.ittf'
-                                            @ af.content
-                                    _ sb1.push('\t\t];')
-                                    _ sb1.push('')
-                                    _ sb1.push('\t$foreach item in items')
-                                    _ sb1.push('\t\t$file __dot__wizzi/<folder>/' + k + '/$' + '{item}' + '.' + ke + '.ittf.ittf')
-                                    if af.firstWord
-                                        _ sb1.push('\t\t\t' + af.firstWord) 
-                                    else
-                                        _ sb1.push('\t\t\t$' + "{'$'}{'$'}group") 
-                                    _ sb1.push('\t\t\t\t$' + "{'$'}" + 'include <productionFolder>/' + tfolder(k) + '/$' + '{item}' + '.' + ke)
-                            $$ loog 'sb1', sb1.join('\n')
+	set module.exports
+		=>
+			param args
+            const sourceFolder = args.s || args.source
+            const destFolder = args.d || args.dest || args.o || args.output
+            const complex = args.c || args.complex
+            const production = args.p || args.production || "<production>"
+            if complex
+                _ metifyComplex
+                    @ sourceFolder
+                    @ destFolder
+                    @ production
+            else
+                _ metifySimple
+                    @ sourceFolder
+                    @ destFolder
+
+    function metifySimple
+        param sourceFolder
+        param destFolder
+        log 'metify.simple.sourceFolder', sourceFolder
+        log 'metify.simple.destFolder', destFolder
+        +
+        _ file.getFiles
+            @ sourceFolder
+            { 
+                @ deep true
+                @ documentContent true
+            a_cb_throw( files )
+                # log 'files', files
+                var sb
+                    [
+                        @ 'template ' + path.basename(sourceFolder)
+                foreach item in files
+                    _ sb.push
+                        @ '    $file ' + item.relPath
+                    var lines = item.content.split('\n')
+                    foreach line in lines
+                        _ sb.push
+                            @ '        ' + verify.replaceAll(line, '$', '${'$'}')
+                _ file.write
+                    @ destFolder
+                    _ sb.join
+                        @ '\n'
+    
+    function metifyComplex
+        param sourceFolder
+        param destFolder
+        param production
+        log 'metify.complex.sourceFolder', sourceFolder
+        log 'metify.complex.destFolder', destFolder
+        log 'metify.complex.production', production
+        +
+        var sb1
+            [
+                @ "$group"
+        var sb2
+            [
+                @ "$group"
+                @ "\t$if metaCtx.use" + verify.capitalize(production)
+        _ file.getFiles
+            @ sourceFolder
+            { 
+                @ deep true
+                @ documentContent true
+            a_cb_throw( files )
+                var afs 
+                    _ analizeFiles
+                        @ files
+                $$ loog 'afs', afs
+                for var k in afs.folders
+                    $$ loog 'k', k
+                    var folder = afs.folders[k]
+                    for var ke in folder
+                        _ sb1.push
+                            @ '\t$' + '$' + ' folder ' + k + ' ext ' + ke
+                        _ sb1.push('\t$')
+                        _ sb1.push('\t\tvar items = [')
+                        foreach af in folder[ke]
+                            _ sb1.push('\t\t\t\'' + af.basenameNoExt + '\',')
                             _ file.write
                                 _ path.join
-                                    @ outputPath
-                                    @ 'folderTemplates'
-                                    @ 'index.ittf.ittf'
-                                _ sb1.join('\n')
-
+                                    @ destFolder
+                                    @ 'ittfDocumentTemplates'
+                                    @ tfolder(k)
+                                    @ af.basenameNoExt + '.' + ke + '.ittf.ittf'
+                                @ af.content
+                        _ sb1.push('\t\t];')
+                        _ sb1.push('')
+                        _ sb1.push('\t$foreach item in items')
+                        _ sb1.push('\t\t$file __dot__wizzi/' + k + '/$' + '{item}' + '.' + ke + '.ittf.ittf')
+                        if af.firstWord
+                            _ sb1.push('\t\t\t' + af.firstWord) 
+                        else
+                            _ sb1.push('\t\t\t$' + "{'$'}{'$'}group") 
+                        _ sb1.push('\t\t\t\t$' + "{'$'}" + 'include ' + production + '/' + tfolder(k) + '/$' + '{item}' + '.' + ke)
+                    _ file.write
+                        _ path.join
+                            @ destFolder
+                            @ 'folderTemplates'
+                            @ 't'
+                            @ k + ".ittf.ittf"
+                        _ sb1.join('\n')
+                    set sb1
+                        [
+                            @ "$group"
+                    _ sb2.push
+                        @ '\t\t$include ' + k
+                $$ loog 'sb1', sb1.join('\n')
+                _ file.write
+                    _ path.join
+                        @ destFolder
+                        @ 'folderTemplates'
+                        @ 'index.ittf.ittf'
+                    _ sb2.join('\n')
 
     function tfolder
         param name
@@ -152,6 +187,10 @@ module
             set chNext = content[i+1]
             set chPrev = content[i-1]
             if ch == '\n'
+                if !seenFirstWord
+                    set firstWord = sb.join('')
+                    set sb = ['$group']
+                    set seenFirstWord = true
                 if waitCloseInterpolate
                     _ sb.push('$' + temp.join(''))
                     set temp.length = 0
@@ -205,6 +244,7 @@ module
                         set seenLineWord = true
                         if !seenFirstWord
                             set firstWord = sb.join('')
+                            set sb = ['$group']
                             set seenFirstWord = true
                 else
                     set seenLineChar = true

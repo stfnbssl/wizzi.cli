@@ -1,0 +1,113 @@
+module
+    kind react
+    :import-type 
+        @ NextPageContext
+        from 'next'
+    import 
+        @ GenericError
+        from 'components/GenericError'
+    function Error
+        return 
+            < GenericError 
+    set Error.getInitialProps =
+        async=> 
+            param ctx
+                :ref NextPageContext
+            const 
+                { 
+                    @ err
+                    @ req
+                    @ res
+                = ctx
+                # If this getInitialProps() is called in client-side rendering,
+                # you won't have a `.res` object. It's only present when it's
+                # rendered Node (SSR). That's our clue to know that, we should
+                # send this error to Failbot.
+                # In client-side, it's undefined. In server, it's a ServerResponse object.
+            let statusCode = 500
+            if res?.statusCode
+                set statusCode = res.statusCode
+            if err && res && req
+                const expressRequest
+                    + req
+                        :as 
+                            :any 
+                    # This is a (necessary) hack!
+                    # You can't import `../lib/failbot.js` here in this
+                    # file because it gets imported by webpack to be used in the
+                    # client-side JS bundle. It *could* be solved by overriding
+                    # the webpack configuration in our `next.config.js` but this is prone
+                    # to be fragile since ignoring code can be hard to get right
+                    # and the more we override there, the harder it will become to
+                    # upgrade NextJS in the future because of moving parts.
+                    # So the solution is to essentially do what the contextualizers
+                    # do which mutate the Express request object by attaching
+                    # callables to it. This way it's only ever present in SSR executed
+                    # code and doesn't need any custom webpack configuration.
+                const FailBot = expressRequest.FailBot
+                if FailBot
+                    try 
+                        const OK_HEADER_KEYS
+                            [ 
+                                @ 'user-agent'
+                                @ 'referer'
+                                @ 'accept-encoding'
+                                @ 'accept-language'
+                            # An inclusion-list of headers we're OK with sending because
+                            # they don't contain an PII.
+                        const reported
+                            _ FailBot.report
+                                @ err
+                                { 
+                                    @ path req.url
+                                    @ request
+                                        _ JSON.stringify
+                                            { 
+                                                @ method expressRequest.method
+                                                @ query expressRequest.query
+                                                @ language expressRequest.language
+                                            @ undefined
+                                            @ 2
+                                    @ headers
+                                        _ JSON.stringify
+                                            _ Object.fromEntries
+                                                _ Object.entries(req.headers).filter
+                                                    => 
+                                                        param [k]
+                                                        _ OK_HEADER_KEYS.includes(k)
+                                            @ undefined
+                                            @ 2
+                            # Within FailBot.report() (which is our wrapper for Failbot in
+                            # the `@github/failbot` package), it might exit only because
+                            # it has no configured backends to send to. I.e. it returns undefined.
+                            # Otherwise, it should return `Array<Promise<Response | void>>`.
+                        if !reported
+                            _ console.warn('The FailBot.report() returned undefined which means the error was NOT sent to Failbot.')
+                        else
+                            if 
+                                test
+                                    && 
+                                        + Array.isArray(reported) && reported.length
+                                        _ reported.every
+                                            => 
+                                                param thing
+                                                set thing instanceof Promise
+                                try 
+                                    await 
+                                        _ Promise.all(reported)
+                                catch error
+                                    _ console.warn('Unable to await reported FailBot errors', error)
+                    catch error
+                        _ console.warn('Failed to send error to FailBot.', error)
+                            # This does not necessarily mean FailBot failed to send. It's
+                            # most likely that we failed to *send to* FailBot before it
+                            # even has a chance to use the network. This is because
+                            # `FailBot.report` returns an array of Promises which themselves
+                            # could go wrong, but that's a story for another try/catch.
+                            # Basically, this catch it just to avoid other errors that
+                            # might prevent the pretty error page to render at all.
+            return 
+                { 
+                    @ statusCode
+                    @ message err?.message
+    export-default Error

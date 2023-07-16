@@ -1,0 +1,108 @@
+﻿$group
+
+	m babelParseRequire
+		param options
+		if !babelParser
+			set babelParser = require("@babel/parser")
+
+	m babelParseExec
+		param options
+		param callback
+
+		_ this.babelParseRequire
+			@ options
+
+		var code = options.code
+		var codePath = options.codePath
+
+		# loog 'wizzi-scripts.babelParseExec codePath, code', codePath, code
+
+		var cfg
+			_ this.getBabelParseConfig
+				@ options
+
+		if codePath
+			# loog 'babelParseExec.cfg', cfg
+			var ast
+				_ this.cleanBabelAst
+					@ options
+					_ babelParser.parse
+						_ file.read
+							@ codePath
+						@ cfg
+			r_cb(ast)
+		else
+			# loog 'babelParseExec.cfg', cfg
+			var ast
+				_ this.cleanBabelAst
+					@ options
+					_ babelParser.parse
+						@ code
+						@ cfg
+			# loog 'babelParseExec.ast', ast
+			r_cb(ast)
+			#
+				_ babelParser.parse
+					@ code
+					@ cfg
+					a_cb(result)
+						var ast
+							_ this.cleanBabelAst
+								@ options
+								@ result
+						r_cb(ast)
+
+	m babelParseExecToEventStream
+		param options
+		param res
+		param callback
+
+		_ this.babelParseExec
+			@ options
+			a_cb_no_throw(result)
+				_ res.writeHead
+					@ 200
+					{ 
+						@ "Content-Type" "text/event-stream"
+						@ "Cache-control" "no-cache"
+
+				if err
+					# _ res.write('stderr: ' + JSON.stringify(err, null, 2))
+					_ res.write('data: ' + JSON.stringify(err, null, 2))
+					_ res.end('data: ***___CLOSE___***\n\n')
+				else
+					# loog 'wizzi-scripts.babelParseExecToEventStream'
+					var resultString = JSON.stringify(result, null, 2)
+					var str
+					var lines = resultString.split("\n")
+					for var i in lines
+						if i == lines.length - 1
+							set str = lines[i]
+						else
+							# Note: The double-newline is *required*
+							_ res.write('data: ' + lines[i] + "\n\n")
+					if str.length > 0
+						_ res.write('data: ' + str + "\n\n")
+					_ res.end('data: ***___CLOSE___***\n\n')
+				
+				if callback
+					return
+						_ callback
+							@ null
+							@ result
+
+	m cleanBabelAst
+		param options
+		param ast
+		var removeLocation = options.removeLocation
+		if removeLocation
+			delete ast.loc
+			delete ast.start
+			delete ast.end
+			foreach k in Object.keys(ast)
+				if verify.isArray(ast[k])
+					foreach node in ast[k]
+						_ this.cleanBabelAst(options, node)
+				if verify.isObject(ast[k])
+					_ this.cleanBabelAst(options, ast[k])
+		return ast

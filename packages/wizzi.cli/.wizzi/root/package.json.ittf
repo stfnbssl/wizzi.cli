@@ -2,7 +2,7 @@
     $include versions
 
 	name "@wizzi/cli"
-    version '0.8.1'
+    version '0.8.3'
 	author
 		{
 			name "Stefano Bassoli"
@@ -18,14 +18,16 @@
 		node ">=8"
 	preferGlobal true
     { scripts
-        example:metify "node ./examples/metify/index.js"
 	{ bin
-		wizzi "bin/wz.js"
+		wz "bin/wz.js"
 	{ dependencies
         @babel/core "^7.0.0"
         chalk "^2.4.1"
         commander "^7.0.0"
         inquirer "^7.3.3"
+        isomorphic-git "latest"
 		minimist "^1.2.0"
+        memfs "latest"
+        node-fetch "^2.0.0"
         @wizzi/factory "latest"
         @wizzi/utils "latest"

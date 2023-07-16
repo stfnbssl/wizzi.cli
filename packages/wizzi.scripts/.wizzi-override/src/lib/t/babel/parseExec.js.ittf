@@ -1,0 +1,96 @@
+$group
+
+    set md.parseExec
+        function
+            param options
+            param callback
+
+            _ md.parseRequire
+                @ options
+
+            var code = options.code
+            var codePath = options.codePath
+
+            log 'wizzi.scripts.parseExec codePath, code', codePath, code
+
+            var cfg
+                _ md.getParseConfig
+                    @ options
+
+            var ast
+            if codePath
+                try
+                    set ast
+                        _ md.cleanAst
+                            @ options
+                            _ babelParser.parse
+                                _ file.read
+                                    @ codePath
+                                @ cfg
+                catch ex
+                    if ex.pos
+                        error "pos", ex.pos
+                    if ex.loc
+                        error "loc", ex.loc
+                    error ex
+                    _ callback
+                        @ ex
+                r_cb(ast)
+            else
+                try
+                    set ast
+                        _ md.cleanAst
+                            @ options
+                            _ babelParser.parse
+                                @ code
+                                @ cfg
+                catch ex
+                    if ex.pos
+                        error "pos", ex.pos
+                    if ex.loc
+                        error "loc", ex.loc
+                    error ex
+                    _ callback
+                        @ ex
+                r_cb(ast)
+
+	
+    set md.parseExecToEventStream
+        function
+            param options
+            param res
+            param callback
+
+            _ md.parseExec
+                @ options
+                a_cb_no_throw(result)
+                    _ res.writeHead
+                        @ 200
+                        { 
+                            @ "Content-Type" "text/event-stream"
+                            @ "Cache-control" "no-cache"
+
+                    if err
+                        # _ res.write('stderr: ' + JSON.stringify(err, null, 2))
+                        _ res.write('data: ' + JSON.stringify(err, null, 2))
+                        _ res.end('data: ***___CLOSE___***\n\n')
+                    else
+                        # loog 'wizzi-scripts.parseExecToEventStream'
+                        var resultString = JSON.stringify(result, null, 2)
+                        var str
+                        var lines = resultString.split("\n")
+                        for var i in lines
+                            if i == lines.length - 1
+                                set str = lines[i]
+                            else
+                                # Note: The double-newline is *required*
+                                _ res.write('data: ' + lines[i] + "\n\n")
+                        if str.length > 0
+                            _ res.write('data: ' + str + "\n\n")
+                        _ res.end('data: ***___CLOSE___***\n\n')
+                    
+                    if callback
+                        return
+                            _ callback
+                                @ null
+                                @ result

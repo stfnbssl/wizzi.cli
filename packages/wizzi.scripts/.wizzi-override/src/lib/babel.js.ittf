@@ -1,0 +1,46 @@
+module
+    kind es6
+    const path = require("path")
+    const spawn = require("child_process").spawn
+    const fs = require("fs")
+    var file = require('@wizzi/utils').file
+    var vfile = require('@wizzi/utils').vfile
+    +
+    var babelParser = null
+    var babelCore = null
+    +
+    const md = module.exports = {}
+    +
+    $include babel/parseConfig
+    $include babel/parseExec
+    $include babel/transformConfig
+    $include babel/transformExec
+	+
+    set md.parseRequire
+        function
+            param options
+            if !babelParser
+                set babelParser = require("@babel/parser")
+
+	set md.transformRequire
+        function
+            param options
+            if !babelCore
+                set babelCore = require("@babel/core")
+	
+    set md.cleanAst
+        function
+            param options
+            param ast
+            var removeLocation = options.removeLocation
+            if removeLocation
+                delete ast.loc
+                delete ast.start
+                delete ast.end
+                foreach k in Object.keys(ast)
+                    if verify.isArray(ast[k])
+                        foreach node in ast[k]
+                            _ md.cleanBabelAst(options, node)
+                    if verify.isObject(ast[k])
+                        _ md.cleanBabelAst(options, ast[k])
+            return ast

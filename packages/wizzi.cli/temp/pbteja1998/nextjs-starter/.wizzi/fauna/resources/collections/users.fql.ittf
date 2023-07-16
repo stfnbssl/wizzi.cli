@@ -1,0 +1,16 @@
+module
+    kind react
+    _ CreateCollection
+        { 
+            @ name 'users'
+        #
+            # *
+            # # data: {
+            # #   "name": String,
+            # #   "email": String,
+            # #   "image": URLString,
+            # #   "username": String,
+            # #   "createdAt": Time,
+            # #   "updatedAt": Time,
+            # # }
+            # *

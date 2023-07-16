@@ -1,0 +1,57 @@
+module
+    kind es6
+    +
+    const path = require('path')
+    var file = require('@wizzi/utils').file    
+    const babel = require('../lib/babel')
+    const
+        {
+            @ parseExec
+            @ transformExec
+        = babel
+    +
+    set module.exports
+        =>
+            param args
+            r_promise()
+                if args.parse
+                    if args._[1]
+                        var source = args._[1]
+                        const sourcePath
+                            iif path.isAbsolute(source)
+                                then source
+                                else
+                                    _ path.resolve
+                                        @ process.cwd()
+                                        @ source
+                        _ parseExec
+                            {
+                                @ codePath sourcePath
+                            a_cb_no_throw(result)
+                                if result && args.o
+                                    const destPath
+                                        _ path.resolve
+                                            @ process.cwd()
+                                            @ args.o
+                                    _ file.write
+                                        @ destPath
+                                        _ JSON.stringify
+                                            @ result
+                                            @ null
+                                            @ 2
+                                _ resolve
+                                    {
+                                        @ success true
+                                        @ message "source parsed"
+
+                    else
+                        _ resolve
+                            { 
+                                @ success false
+                                @ error "Missing s (source) parameter"
+                else
+                    _ resolve
+                        { 
+                            @ success false
+                            @ error "No valid babel command"
+
