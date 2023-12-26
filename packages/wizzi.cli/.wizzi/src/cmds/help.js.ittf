@@ -16,13 +16,14 @@
 					@ "version ............. show package version"
 					@ "help ................ show help menu for a command"
 					._ join('\n')
-			@ create
+			
+            @ create
 				[
                     @ ""
                     @ ""
-					@ "wizzi create <options>"
+					@ "wz create <options>"
 					@ ""
-					@ "--kind | -k <kindname> ... the project kind <kindname>"
+					@ "[--kind | -k] <kindname> ... the project kind <kindname>"
                     @ ""
                     @ "valid kindnames:"
                     @ "  webpack"
@@ -30,14 +31,45 @@
                     @ "  plugin"
 					._ join('\n')
 
+			@ job
+				[
+                    @ ""
+                    @ ""
+					@ "wz job <jobname> <options>"
+					@ ""
+					@ "jobname .... the name of the job definition file: <jobname>.wfjob.ittf"
+                    @ "[--config | -c] <configname> ...... the name of the job configuration file: <configname>.config.js"
+					._ join('\n')
+
 			@ fy
 				[
                     @ ""
                     @ ""
-					@ "wizzi fy <options>"
+					@ "wz fy <options>"
 					@ ""
 					@ "[--source | -s] <file | folder> .... the source file or folder"
 					@ "[--dest | -d] <file | folder> ...... the destination file or folder"
+					._ join('\n')
+
+			@ meta
+				[
+                    @ ""
+                    @ ""
+					@ "wz meta <metaname>"
+					@ ""
+					@ "metaname .... the name of the meta definition file: wizzi.meta.config.<metaname>.js"
+					._ join('\n')
+
+			@ metify
+				[
+                    @ ""
+                    @ ""
+					@ "wz metify <options>"
+					@ ""
+					@ "[--source | -s] <file | folder> .... the source file or folder"
+					@ "[--dest | -d] <file | folder> ...... the destination file or folder"
+                    @ "[--complex | -c] ...... "
+                    @ "[--production | -p] ...... "
 					._ join('\n')
 
 	set module.exports
