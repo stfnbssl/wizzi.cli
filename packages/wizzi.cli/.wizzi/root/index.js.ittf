@@ -58,6 +58,9 @@
         case 'help'
             _ require('./src/cmds/help')(args)
             break
+        case 'version'
+            _ require('./src/cmds/version')(args)
+            break
         default
             var configPath = config.getPath(cmd)
             if configPath

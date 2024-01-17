@@ -1,0 +1,10 @@
+module 
+   kind es6
+   ${'$'} 
+       var md = null;
+       for (var tIndex = 0; tIndex < wzCtx.Build.mongoDb.featureTables.length; tIndex++ ) {
+           if (wzCtx.Build.mongoDb.featureTables[tIndex].name == "table1") {
+               md = wzCtx.Build.mongoDb.featureTables[tIndex];
+           } 
+       } 
+   $include jsDbMongoDb/features/crud/index.js

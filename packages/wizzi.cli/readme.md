@@ -1,6 +1,6 @@
 # wizzi.cli
 
-wizzi.cli
+Wizzi Command Line Interface
 
 
 

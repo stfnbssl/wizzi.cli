@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\meta.js.ittf
-    utc time: Wed, 12 Jul 2023 13:04:21 GMT
+    utc time: Wed, 17 Jan 2024 05:09:03 GMT
 */
 'use strict';
 
@@ -27,10 +27,10 @@ module.exports = (args) => {
         return ;
     }
     const configInstance = require(configPath);
-    console.log('wizzi.cli.generate.metaConfigInstance', configInstance, __filename);
+    console.log('wizzi.cli.meta.metaConfigInstance', configInstance, __filename);
     const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname;
     if (!configInstance.pluginsBaseFolder) {
-        console.log(chalk.red('wizzi-cli.meta - pluginsBaseFolder not set'))
+        console.log(chalk.red('wizzi.cli.meta - pluginsBaseFolder not set'))
         console.log(chalk.red('meta generation failed'))
     }
     var x_pluginsItems = [];
@@ -42,6 +42,20 @@ module.exports = (args) => {
         chalk.red('meta generation failed')
         return ;
     }
+    const x_metaPluginsBaseFolder = configInstance.metaPluginsBaseFolder || __dirname;
+    if (!configInstance.metaPluginsBaseFolder) {
+        console.log(chalk.red('wizzi.cli.meta - metaPluginsBaseFolder not set'))
+        console.log(chalk.red('meta generation failed'))
+    }
+    var x_metaPluginsItems = [];
+    if (configInstance.plugins && configInstance.metaPlugins.length > 0) {
+        x_metaPluginsItems = configInstance.metaPlugins;
+    }
+    else {
+        chalk.red('wizzi.cli.meta - meta plugins not found in wizzi.meta.config')
+        chalk.red('meta generation failed')
+        return ;
+    }
     if (!file.exists(configInstance.metaCtxPath)) {
         console.log("[31m%s[0m", 'Invalid options for `meta` command.');
         console.log("[31m%s[0m", 'Meta context path not found', configInstance.metaCtxPath);
@@ -49,31 +63,33 @@ module.exports = (args) => {
         return ;
     }
     generateMeta(configInstance.metaCtxPath, configInstance.destPath, {
-        items: configInstance.plugins, 
-        pluginsBaseFolder: configInstance.pluginsBaseFolder
+        items: x_pluginsItems, 
+        pluginsBaseFolder: x_pluginsBaseFolder
      }, {
-        items: configInstance.metaPlugins, 
-        metaPluginsBaseFolder: configInstance.metaPluginsBaseFolder
+        items: x_metaPluginsItems, 
+        metaPluginsBaseFolder: x_metaPluginsBaseFolder
      }, configInstance.globalContext, (err, result) => {
     
         if (err) {
+            throw err;
             console.log("[31m%s[0m", err);
         }
     }
     )
 }
 ;
-function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, globalContext, callback) {
-    loadMetaContext(metaCtxPath, plugins, (err, metaCtx) => {
+function generateMeta(metaCtxPath, destPath, pluginsInfo, metaPluginsInfo, globalContext, callback) {
+    loadMetaContext(metaCtxPath, pluginsInfo, (err, metaCtx) => {
     
         if (err) {
             return callback(err);
         }
-        factory.createJsonWizziFactoryAndJsonFs({}, plugins, metaPlugins, (err, wf_and_jsonFs) => {
+        factory.createJsonWizziFactoryAndJsonFs({}, pluginsInfo, metaPluginsInfo, (err, wf_and_jsonFs) => {
         
             if (err) {
                 return callback(err);
             }
+            metaCtx.__wz_fsc = new wizzi.FactoryServiceContext();
             wf_and_jsonFs.wf.executeMetaProduction({
                 metaCtx: metaCtx, 
                 paths: {
@@ -84,10 +100,15 @@ function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, globalContext
              }, (err, wizziPackiFiles) => {
             
                 if (err) {
+                    throw err;
                     console.log("[31m%s[0m", err);
                     return ;
                 }
-                console.log('wizziPackiFiles', Object.keys(wizziPackiFiles), __filename);
+                console.log('wizzi.cli.meta.result.wizziPackiFiles.keys', Object.keys(wizziPackiFiles), __filename);
+                metaCtx.__wz_fsc.dumpDebugObjects({
+                    kind: 'packi', 
+                    destFolder: path.join(__dirname, 'dumps', 'packi')
+                 })
                 writePackifiles(destPath, wizziPackiFiles)
             }
             )
@@ -96,8 +117,8 @@ function generateMeta(metaCtxPath, destPath, plugins, metaPlugins, globalContext
     }
     )
 }
-function loadMetaContext(metaCtxPath, plugins, callback) {
-    factory.createWizziFactory({}, plugins, (err, wf) => {
+function loadMetaContext(metaCtxPath, pluginsInfo, callback) {
+    factory.createWizziFactory({}, pluginsInfo, (err, wf) => {
     
         if (err) {
             return callback(err);

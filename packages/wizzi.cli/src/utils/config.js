@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\utils\config.js.ittf
-    utc time: Wed, 12 Jul 2023 13:04:21 GMT
+    utc time: Wed, 17 Jan 2024 05:09:03 GMT
 */
 'use strict';
 const path = require('path');
@@ -25,7 +25,7 @@ module.exports = {
         while (configPath == null && currentDir.length > 3) {
             currentPath = path.join(currentDir, configFilename);
             try {
-                // loog 'wizzi-cli.generate.searching', currentPath
+                console.log('wizzi-cli.generate.searching', currentPath, __filename);
                 const stat = fs.lstatSync(currentPath);
                 if (stat.isFile()) {
                     configPath = currentPath;

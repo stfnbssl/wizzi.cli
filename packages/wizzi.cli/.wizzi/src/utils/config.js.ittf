@@ -25,7 +25,7 @@ module
                     while configPath == null && currentDir.length > 3
                         set currentPath = path.join(currentDir, configFilename)
                         try
-                            # loog 'wizzi-cli.generate.searching', currentPath
+                            log 'wizzi-cli.generate.searching', currentPath
                             const stat = fs.lstatSync(currentPath)
                             if stat.isFile()
                                 set configPath = currentPath

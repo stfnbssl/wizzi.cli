@@ -1,0 +1,10 @@
+template root
+    $
+        var pkgPath = ''
+        var metaVer = '0_0_1'
+    $include ./commonsGit/index
+    $include ./commonsPackage/index
+    $include ./commonsWizzi/index
+    $include ./jsCommons/index
+    $include ./wizziFactory/index
+    $include ./wizziMeta/index

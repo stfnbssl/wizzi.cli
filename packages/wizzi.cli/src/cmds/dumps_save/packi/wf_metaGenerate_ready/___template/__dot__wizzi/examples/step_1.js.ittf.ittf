@@ -1,0 +1,3 @@
+module 
+   kind es6
+   $include wizziMeta/examples/step_1.js

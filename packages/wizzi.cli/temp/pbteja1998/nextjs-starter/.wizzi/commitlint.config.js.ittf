@@ -1,6 +1,0 @@
-module
-    kind react
-    set module.exports =
-        { 
-            [ extends
-                @ '@commitlint/config-conventional'

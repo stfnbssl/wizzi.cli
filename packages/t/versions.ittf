@@ -1,7 +1,5 @@
 $group
     $
         var versions = {};
-        versions['@wizzi/meta.package'] = '0.0.0';
-        versions['@wizzi/meta.package@next'] = '0.0.1';
-        versions['@wizzi/meta.js'] = '0.0.0';
-        versions['@wizzi/meta.js@next'] = '0.0.1';
+        versions['@wizzi/cli'] = '0.8.3';
+        versions['@wizzi/cli@next'] = '0.8.4';

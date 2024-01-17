@@ -7,14 +7,17 @@
 				[
                     @ ""
                     @ ""
-					@ "wizzi [noarguments] | configname | [command] <options>"
+					@ "wz [noarguments] | configname | [command] <options>"
 					@ ""
 					@ "noarguments ......... execute generation using wizzi.config.js"
                     @ "configname .......... execute generation using wizzi.config.<configname>.js"
-					@ "create .............. setup wizzi for the current project"
-					@ "fy .................. wizzify a file or folder"
-					@ "version ............. show package version"
-					@ "help ................ show help menu for a command"
+					@ "commands:"
+					@ "  create .............. setup wizzi for the current project"
+					@ "  job ................. execute a wizzi job"
+					@ "  fy .................. wizzify a file or folder"
+					@ "  meta ................ execute meta generation"
+					@ "  version ............. show package version"
+					@ "  help ................ show help menu for a command"
 					._ join('\n')
 			
             @ create

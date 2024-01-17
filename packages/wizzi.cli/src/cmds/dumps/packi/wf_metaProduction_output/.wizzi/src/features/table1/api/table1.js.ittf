@@ -1,0 +1,26 @@
+module
+    kind es6
+    $
+        var md = null;
+        for (var tIndex = 0; tIndex < wzCtx.Build.mongoDb.featureTables.length; tIndex++ ) {
+            if (wzCtx.Build.mongoDb.featureTables[tIndex].name == "table1") {
+                md = wzCtx.Build.mongoDb.featureTables[tIndex];
+            }
+        }
+        md.query = [];
+        for (var i = 0; i < md.fields.length; i++ ) {
+            if (md.fields[i].isKey) {
+                md.query.push (md.fields[i]);
+            }
+        }
+    import
+        @ Get${md.Name}Model
+        from '../mongo/${md.name}';
+    +
+    const myname = 'src/features/${md.name}/api/${md.name}'
+    +
+    v08/mongo/crud/get_list_api(&md)
+    v08/mongo/crud/get_api(&md)
+    v08/mongo/crud/create_api(&md)
+    v08/mongo/crud/update_api(&md)
+    v08/mongo/crud/delete_api(&md)

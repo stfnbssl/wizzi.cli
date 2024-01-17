@@ -1,9 +1,9 @@
 {
-    $include v08/env/vars
+    $$ $include v08/env/vars
     
     name "wizzi.cli"
-    version "0.0.1"
-    description "wizzi.cli"
+    version "0.8.4"
+    description "Wizzi Command Line Interface"
     { author
         name "Stefano Bassoli"
         email "stfn.bssl@gmail.com"

@@ -1,0 +1,16 @@
+module 
+   kind es6
+   ${'$'} 
+       var md = null;
+       for (var tIndex = 0; tIndex < wzCtx.Build.mongoDb.featureTables.length; tIndex++ ) {
+           if (wzCtx.Build.mongoDb.featureTables[tIndex].name == "table1") {
+               md = wzCtx.Build.mongoDb.featureTables[tIndex];
+           } 
+       } 
+       md.query = [];
+       for (var i = 0; i < md.fields.length; i++ ) {
+           if (md.fields[i].isKey) {
+               md.query.push (md.fields[i]);
+           } 
+       } 
+   $include jsDbMongoDb/features/crud/api/tableCRUD.js

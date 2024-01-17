@@ -1,0 +1,2 @@
+${'$'}group 
+   $include commonsPackage/scripts.json

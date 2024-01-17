@@ -1,5 +1,0 @@
-module
-    kind react
-    export 
-        @ A
-        from './A'

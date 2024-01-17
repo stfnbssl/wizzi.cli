@@ -1,0 +1,2 @@
+${'$'}group 
+   $include jsCommons/tfolder/webapp/route_api_secured.js

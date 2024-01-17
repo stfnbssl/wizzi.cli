@@ -1,0 +1,2 @@
+${'$'}group 
+   $include jsCommons/tfolder/webapp/catch_send_fail.js

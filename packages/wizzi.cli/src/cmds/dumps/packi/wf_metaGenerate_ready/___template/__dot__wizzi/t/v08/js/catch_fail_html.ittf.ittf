@@ -1,0 +1,2 @@
+${'$'}group 
+   $include jsCommons/tfolder/webapp/catch_fail_html.js
