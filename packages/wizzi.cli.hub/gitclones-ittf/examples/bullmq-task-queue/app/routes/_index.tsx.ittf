@@ -1,0 +1,77 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useTransition
+        from "@remix-run/react"
+    import 
+        @ queue
+        from "~/queues/notifier.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                const email = formData.get("email")
+                if !email || typeof email !== "string" || !email.includes("@")
+                    return 
+                        _ json
+                            @ "Invalid email!"
+                            { 
+                                @ status 400
+                await 
+                    _ queue.add
+                        @ "notification email"
+                        { 
+                            @ emailAddress email
+                    # Jobs are queued and not processed immediately.
+                    # This function is asynchronous because it is writing
+                    # the job to redis for our worker to later pick up.
+                return 
+                    _ json
+                        `lit 
+                            + Email queued for&nbsp;
+                            @ email
+                            + !
+    export-default 
+        function Index
+            const actionMessage
+                _ useActionData
+                    :param 
+                        :typeof action
+            const transition = useTransition()
+            return 
+                main 
+                    < Form 
+                        @ method "post"
+                        h2 
+                            + Send an email
+                        label 
+                            div 
+                                + Email Address
+                            input 
+                                @ name "email"
+                        div 
+                            button 
+                                @ type "submit"
+                                { 
+                                    iif transition.state === "idle"
+                                        then "Send"
+                                        else "Sending"
+                    { 
+                        iif actionMessage
+                            then
+                                p 
+                                    b 
+                                        + {actionMessage}
+                            else null

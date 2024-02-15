@@ -1,0 +1,20 @@
+module
+    import 
+        @ useParams
+        from "react-router-dom"
+    :import-type 
+        @ RouteParams
+        from "routes-gen"
+    export-default 
+        function Product
+            const params
+                _ useParams
+                    :param 
+                        :[] 
+                            :ref RouteParams
+                            :literal "/products/:productId"
+            return 
+                main 
+                    h2 
+                        + Product
+                        + {params.productId}

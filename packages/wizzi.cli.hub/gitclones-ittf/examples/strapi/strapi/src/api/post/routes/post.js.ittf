@@ -1,0 +1,11 @@
+module
+    kind react
+    const 
+        { 
+            @ createCoreRouter
+        = require("@strapi/strapi").factories
+        #
+            # *
+            # * post router.
+            # 
+    set module.exports = createCoreRouter("api::post.post")

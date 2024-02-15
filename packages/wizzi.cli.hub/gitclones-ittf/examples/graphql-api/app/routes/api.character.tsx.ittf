@@ -1,0 +1,53 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ fetchFromGraphQL
+        @ gql
+        from "~/utils"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const url = new URL(request.url)
+                const id = url.searchParams.get("id")
+                const getCharacterQuery
+                    _` gql
+                        + &lf;
+                        + &nbsp;   fragment CharacterFields on Character {&lf;
+                        + &nbsp;     gender&lf;
+                        + &nbsp;     id&lf;
+                        + &nbsp;     image&lf;
+                        + &nbsp;     name&lf;
+                        + &nbsp;     origin {&lf;
+                        + &nbsp;       dimension&lf;
+                        + &nbsp;       name&lf;
+                        + &nbsp;       type&lf;
+                        + &nbsp;     }&lf;
+                        + &nbsp;     species&lf;
+                        + &nbsp;     status&lf;
+                        + &nbsp;     type&lf;
+                        + &nbsp;   }&lf;
+                        + &lf;
+                        + &nbsp;   query getCharacter($id: ID!) {&lf;
+                        + &nbsp;     character(id: $id) {&lf;
+                        + &nbsp;       ...CharacterFields&lf;
+                        + &nbsp;     }&lf;
+                        + &nbsp;   }&lf;
+                        + &nbsp;&nbsp;
+                const res
+                    await 
+                        _ fetchFromGraphQL
+                            @ getCharacterQuery
+                            { 
+                                @ id
+                const data
+                    await 
+                        _ res.json()
+                return json(data)

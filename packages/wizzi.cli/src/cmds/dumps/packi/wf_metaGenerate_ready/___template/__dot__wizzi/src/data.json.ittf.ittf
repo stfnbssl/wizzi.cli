@@ -1,0 +1,2 @@
+{ 
+   $include jsReactWebpackGetStartedApp/src/data.json

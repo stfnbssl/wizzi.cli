@@ -1,0 +1,44 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    export-default 
+        function Index
+            return 
+                main 
+                    h1 
+                        + Infinite Scroll Demo
+                    p 
+                        + Each way of handling pagination (offset or page based) has two demos.
+                    p 
+                        + The first shows how to do this in a simple way that's pretty standard&lf;        for this type of user experience you have around the web.
+                    p 
+                        + The second is a bit more advanced but a much better user experience.
+                    p 
+                        + Pick your preferred method.
+                    h2 
+                        + Offset based
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/offset/simple"
+                                + Simple
+                        li 
+                            < Link 
+                                @ to "/offset/advanced"
+                                + Advanced
+                    h2 
+                        + Page based
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/page/simple"
+                                + Simple
+                        li 
+                            < Link 
+                                @ to "/page/advanced"
+                                + Advanced
+                        li 
+                            < Link 
+                                @ to "/page/alternative"
+                                + Alternative

@@ -1,0 +1,183 @@
+module
+    :import-type 
+        @ Session
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    :import-type 
+        @ User
+        from "~/models"
+    import 
+        @ sessionStorage
+        @ sessionKey
+        @ getUserSession
+        from "~/session.server"
+    const ERROR_KEY = "auth:error"
+    export 
+        async-function authenticate
+            param request
+                :ref Request
+            { 
+                @ loginURL
+                @ passwordField
+                @ usernameField
+                @ verify
+                @ failureRedirect
+                :{ 
+                    :p loginURL
+                        :string 
+                    :p passwordField
+                        :string 
+                    :p usernameField
+                        :string 
+                    :p verify
+                        :=> 
+                            :ref Promise
+                                :param 
+                                    :ref User
+                            param username
+                                :string 
+                            param password
+                                :string 
+                    :p failureRedirect
+                        :optional 
+                        :string 
+            :return
+                :ref Promise
+                    :param 
+                        :ref User
+            if request.method.toUpperCase() !== "POST"
+                throw 
+                    _ json
+                        { 
+                            @ message "`authenticate` can only be called in a POST request"
+                        { 
+                            @ status 405
+            const formData
+                await 
+                    _ request.formData()
+            const username = formData.get(usernameField)
+            const password = formData.get(passwordField)
+                # Validation!
+            const session
+                await 
+                    _ getUserSession(request)
+                # Validation!
+            if typeof username !== "string" || !username || typeof password !== "string" || !password
+                if typeof username !== "string" || !username
+                    _ session.flash
+                        `lit 
+                            + 
+                            @ ERROR_KEY
+                            + :user
+                        @ "Invalid username."
+                if typeof password !== "string" || !password
+                    _ session.flash
+                        `lit 
+                            + 
+                            @ ERROR_KEY
+                            + :user
+                        @ "Invalid password."
+                const cookie
+                    await 
+                        _ sessionStorage.commitSession(session)
+                throw 
+                    _ redirect
+                        @ loginURL
+                        { 
+                            { headers
+                                @ "Set-Cookie" cookie
+            let user
+                :ref User
+            try 
+                set user =
+                    await 
+                        _ verify(username, password)
+            catch error
+                const message
+                    @expr 
+                        ( 
+                            + error
+                                :as 
+                                    :ref Error
+                        . message
+                if !failureRedirect
+                    throw 
+                        _ json
+                            { 
+                                @ message
+                            { 
+                                @ status 401
+                _ session.flash
+                    @ ERROR_KEY
+                    { 
+                        @ message
+                throw 
+                    _ redirect
+                        @ failureRedirect
+                        { 
+                            { headers
+                                @ "Set-Cookie"
+                                    await 
+                                        _ sessionStorage.commitSession(session)
+            return user
+    export 
+        async=> isAuthenticated
+            param request
+                :ref Session
+            param options
+                :{ 
+                    :p failureRedirect
+                        :optional 
+                        :never 
+                :optional 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref User
+                            :null 
+    export 
+        async=> isAuthenticated
+            param request
+                :ref Session
+            param options
+                :{ 
+                    :p failureRedirect
+                        :string 
+            :return
+                :ref Promise
+                    :param 
+                        :ref User
+    export 
+        async-function isAuthenticated
+            param session
+                :ref Session
+            param options
+                :union 
+                    :{ 
+                        :p failureRedirect
+                            :optional 
+                            :never 
+                    :{ 
+                        :p failureRedirect
+                            :string 
+                = 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref User
+                            :null 
+            const user
+                :union 
+                    :ref User
+                    :null 
+                = session.get(sessionKey) ?? null
+            if user
+                return user
+            if options.failureRedirect
+                throw redirect(options.failureRedirect)
+            return null

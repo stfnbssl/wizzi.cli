@@ -1,0 +1,65 @@
+$group
+    $params &md
+    $
+        var defaultProps = [];
+    +
+    misc( setMyProps, &md )
+    +
+    import React
+        @ FunctionComponent
+        from 'react'
+    $if md.connected
+        import
+            @ bindActionCreators
+            @ Dispatch
+            from 'redux'
+        import connect from 'react-redux'
+    $if md.styled
+        # see https://mxstbr.blog/2016/11/styled-components-magic-explained/
+        import
+            @ keyframes
+            @ css
+            from 'styled-components'
+    $if md.aphrodite
+        import
+            @ StyleSheet
+            @ css
+            from 'styled-components'
+        import classnames from 'classnames'
+    +
+    $hook imports
+    +
+    $if md.aphrodite
+        const styles
+            _ StyleSheet.create
+                {
+                    $hook styles_aphrodite
+    $hook styles
+    +
+    const ${md.name}
+        =>
+            $if md.connected
+                param props
+            $else
+                {
+                    $foreach prop in myProps
+                        @ ${prop.name}
+            $hook
+    $if defaultProps.length > 0
+        set {md.name}.defaultProps
+            {
+                $foreach prop in defaultProps
+                    $if prop.type == 'string'
+                        @ ${prop.name} "${prop.xdefault}"
+                    $else
+                        @ ${prop.name} ${prop.xdefault}
+    $if md.connected
+        const ${md.name}Connect
+            _ connect
+                @ mapStateToProps
+                @ mapDispatchToProps
+                (
+                    @ ${md.name}
+        export-default ${md.name}Connect
+    $else
+        export-default ${md.name}

@@ -1,0 +1,139 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ V2_MetaFunction
+        from "@remix-run/node"
+    import 
+        @ isRouteErrorResponse
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ useRouteError
+        from "@remix-run/react"
+    :import-type 
+        @ PropsWithChildren
+        from "react"
+    import globalLargeStylesUrl from "~/styles/global-large.css"
+    import globalMediumStylesUrl from "~/styles/global-medium.css"
+    import globalStylesUrl from "~/styles/global.css"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href globalStylesUrl
+                        { 
+                            @ rel "stylesheet"
+                            @ href globalMediumStylesUrl
+                            @ media "print, (min-width: 640px)"
+                        { 
+                            @ rel "stylesheet"
+                            @ href globalLargeStylesUrl
+                            @ media "screen and (min-width: 1024px)"
+    export 
+        const meta
+            :ref V2_MetaFunction
+            =
+                => 
+                    const description = "Learn Remix and laugh at the same time!"
+                    return 
+                        [ 
+                            { 
+                                @ name "description"
+                                @ content description
+                            { 
+                                @ name "twitter:description"
+                                @ content description
+                            { 
+                                @ title "Remix: So great, it's funny!"
+    function Document
+        { 
+            @ children
+            @ title
+            :ref PropsWithChildren
+                :param 
+                    :{ 
+                        :p title
+                            :optional 
+                            :string 
+        return 
+            html 
+                @ lang "en"
+                head 
+                    meta 
+                        @ charSet "utf-8"
+                    meta 
+                        @ name "viewport"
+                        @ content "width=device-width, initial-scale=1"
+                    meta 
+                        @ name "keywords"
+                        @ content "Remix,jokes"
+                    meta 
+                        @ name "twitter:image"
+                        @ content "https://remix-jokes.lol/social.png"
+                    meta 
+                        @ name "twitter:card"
+                        @ content "summary_large_image"
+                    meta 
+                        @ name "twitter:creator"
+                        @ content "@remix_run"
+                    meta 
+                        @ name "twitter:site"
+                        @ content "@remix_run"
+                    meta 
+                        @ name "twitter:title"
+                        @ content "Remix Jokes"
+                    < Meta 
+                    { 
+                        iif title
+                            then
+                                < title 
+                                    + {title}
+                            else null
+                    < Links 
+                body 
+                    + {children}
+                    < Scripts 
+                    < LiveReload 
+    export-default 
+        function App
+            return 
+                < Document 
+                    < Outlet 
+    export 
+        function ErrorBoundary
+            const error = useRouteError()
+            _ console.error(error)
+            if isRouteErrorResponse(error)
+                return 
+                    < Document 
+                        @ title
+                            `lit 
+                                + 
+                                @ error.status
+                                + &nbsp;
+                                @ error.statusText
+                                + 
+                        div 
+                            @ className "error-container"
+                            h1 
+                                + {error.status}
+                                + {error.statusText}
+            const errorMessage
+                iif error instanceof Error
+                    then error.message
+                    else "Unknown error"
+            return 
+                < Document 
+                    @ title "Uh-oh!"
+                    div 
+                        @ className "error-container"
+                        h1 
+                            + App Error
+                        pre 
+                            + {errorMessage}

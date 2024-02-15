@@ -1,0 +1,42 @@
+module
+    :import-type 
+        @ AppLoadContext
+        @ EntryContext
+        from "@remix-run/node"
+    import 
+        @ RemixServer
+        from "@remix-run/react"
+    import 
+        @ renderToString
+        from "react-dom/server"
+    import 
+        @ ServerStyleSheet
+        from "styled-components"
+    export-default 
+        function handleRequest
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            param loadContext
+                :ref AppLoadContext
+            const sheet = new ServerStyleSheet()
+            let markup
+                _ renderToString
+                    _ sheet.collectStyles
+                        < RemixServer 
+                            @ context {remixContext}
+                            @ url {request.url}
+            const styles = sheet.getStyleTags()
+            set markup = markup.replace("__STYLES__", styles)
+            _ responseHeaders.set("Content-Type", "text/html")
+            return 
+                new Response
+                    set "<!DOCTYPE html>" + markup
+                    { 
+                        @ status responseStatusCode
+                        @ headers responseHeaders

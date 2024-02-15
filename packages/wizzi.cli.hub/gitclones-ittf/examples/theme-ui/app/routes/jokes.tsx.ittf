@@ -1,0 +1,23 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+        #
+            # * @jsx jsx
+    import 
+        @ jsx
+        from "@theme-ui/core"
+    export-default 
+        function Jokes
+            return 
+                div 
+                    @ sx
+                        { 
+                            @ backgroundColor "primary"
+                    h1 
+                        + Jokes
+                    p 
+                        + This route works fine.
+                    < Link 
+                        @ to "/"
+                        + Back to home

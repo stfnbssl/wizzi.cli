@@ -1,0 +1,23 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    export-default 
+        function Screen
+            return 
+                < React.Fragment
+                    h1 
+                        + On-Demand Hydration
+                    ul 
+                        li 
+                            < Link 
+                                @ to "with-js"
+                                + A route that always load JS
+                        li 
+                            < Link 
+                                @ to "without-js"
+                                + A route that never loads JS
+                        li 
+                            < Link 
+                                @ to "on-demand-js"
+                                + A route that loads JS based on the loader data

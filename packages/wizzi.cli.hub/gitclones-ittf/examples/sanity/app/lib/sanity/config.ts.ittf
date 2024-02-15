@@ -1,0 +1,9 @@
+module
+    export 
+        const config
+            { 
+                @ apiVersion "2021-03-25"
+                @ dataset "production"
+                    # Find these in your ./studio/sanity.json file
+                @ projectId "YOUR_PROJECT_ID"
+                @ useCdn false

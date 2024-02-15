@@ -1,0 +1,32 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import invariant from "tiny-invariant"
+    import 
+        @ updateIssue
+        from "~/data"
+    import 
+        @ emitter
+        @ EVENTS
+        from "~/events"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                const updates
+                    _ Object.fromEntries
+                        await 
+                            _ request.formData()
+                _ invariant(params.id, "Missing issue id")
+                const result
+                    await 
+                        _ updateIssue(params.id, updates)
+                _ emitter.emit(EVENTS.ISSUE_CHANGED, Date.now())
+                return json(result)

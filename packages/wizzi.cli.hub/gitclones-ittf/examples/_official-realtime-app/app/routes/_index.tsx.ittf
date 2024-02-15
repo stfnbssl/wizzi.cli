@@ -1,0 +1,360 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        @ useFetcher
+        @ useLoaderData
+        @ useNavigate
+        from "@remix-run/react"
+    import classNames from "classnames"
+    import 
+        @ useEffect
+        @ useRef
+        from "react"
+    import 
+        as AmalgoBox
+        from "~/amalgo-box.client"
+    :import-type 
+        @ Issue
+        from "~/data"
+    import 
+        @ getIssues
+        from "~/data"
+    import icons from "~/icons.svg"
+    export 
+        async-function loader
+            return 
+                _ json
+                    await 
+                        _ getIssues()
+    export-default 
+        function Index
+            const issues
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            _ useEffect
+                => 
+                    _ AmalgoBox.registerCustomElements()
+                [ 
+            return 
+                div 
+                    < Header 
+                    { 
+                        _ issues.map
+                            => 
+                                param issue
+                                < IssueLine 
+                                    @ key {issue.id}
+                                    @ issue {issue}
+    function Header
+        return 
+            div 
+                @ className "sticky top-0 z-10 flex justify-between border-b border-gray-100 bg-white px-6 py-4 text-sm"
+                div 
+                    @ className "flex-1"
+                    div 
+                        + All issues
+                div 
+                    @ className "flex-0"
+                    < ViewToggler 
+    function ViewToggler
+        return 
+            div 
+                @ className "flex rounded shadow-sm"
+                div 
+                    @ className "rounded-l border bg-gray-100 px-2 py-1"
+                    svg 
+                        @ className "h-4 w-3"
+                        use 
+                            @ href
+                                `lit 
+                                    + 
+                                    @ icons
+                                    + #list
+                div 
+                    @ className "rounded-r border px-2 py-1"
+                    svg 
+                        @ className "h-4 w-3"
+                        use 
+                            @ href
+                                `lit 
+                                    + 
+                                    @ icons
+                                    + #grid
+    function IssueLine
+        { 
+            @ issue
+            :{ 
+                :p issue
+                    :ref Issue
+        const navigate = useNavigate()
+        const fetcher = useFetcher()
+        return 
+            div 
+                @ onClick
+                    => 
+                        _ navigate
+                            `lit 
+                                + /issues/
+                                @ issue.id
+                                + 
+                @ className "flex cursor-default justify-between gap-8 border-b border-gray-100 py-3 px-6 text-sm hover:bg-gray-50"
+                div 
+                    @ className "flex min-w-0 flex-1 items-center gap-2"
+                    form 
+                        @ onClick
+                            => 
+                                param e
+                                _ e.stopPropagation()
+                        input 
+                            @ className "opacity-25 checked:opacity-100 hover:opacity-100"
+                            @ type "checkbox"
+                    < PriorityMenu 
+                        @ highlight
+                            iif fetcher.submission
+                                then
+                                    _ parseInt
+                                        _ fetcher.submission.formData.get("priority")
+                                            :as 
+                                                :string 
+                                else issue.priority
+                        @ onChange
+                            => 
+                                param priority
+                                    :string 
+                                if parseInt(priority) !== issue.priority
+                                    _ fetcher.submit
+                                        { 
+                                            @ issueId issue.id
+                                            @ priority
+                                        { 
+                                            @ method "post"
+                                            @ action
+                                                `lit 
+                                                    + /issues/
+                                                    @ issue.id
+                                                    + /update
+                    div 
+                        @ className "w-14 text-gray-400"
+                        + {issue.id}
+                    < StatusMenu 
+                        @ issue {issue}
+                    < Link 
+                        @ to
+                            `lit 
+                                + /issues/
+                                @ issue.id
+                                + 
+                        @ tabIndex {0}
+                        @ className "flex-1 cursor-default truncate font-medium text-gray-700"
+                        @ onClick
+                            => 
+                                param e
+                                _ e.stopPropagation()
+                        + {issue.title}
+                div 
+                    @ className "flex flex-shrink-0 items-center gap-3"
+                    div 
+                        @ className "text-xs text-gray-400"
+                        + {issue.date}
+                    img 
+                        @ alt {issue.owner.name + " avatar"}
+                        @ src {issue.owner.avatarUrl}
+                        @ className "h-5 w-5 rounded-full"
+    function StatusMenu
+        { 
+            @ issue
+            :{ 
+                :p issue
+                    :ref Issue
+        return 
+            button 
+                @ onClick
+                    => 
+                        param e
+                        _ e.stopPropagation()
+                svg 
+                    @ className
+                        _ classNames
+                            `lit 
+                                + h-[14px] w-[14px] rounded-full
+                            iif issue.status === 1
+                                then "text-yellow-500"
+                                else
+                                    iif issue.status === 2
+                                        then "text-orange-500"
+                                        else
+                                            iif issue.status === 3
+                                                then "text-green-600"
+                                                else
+                                                    iif issue.status === 4
+                                                        then "text-indigo-600"
+                                                        else "text-gray-300"
+                    use 
+                        @ href
+                            `lit 
+                                + 
+                                @ icons
+                                + #
+                                iif issue.status === 1
+                                    then "pie-1/4"
+                                    else
+                                        iif issue.status === 2
+                                            then "pie-1/2"
+                                            else
+                                                iif issue.status === 3
+                                                    then "pie-3/4"
+                                                    else
+                                                        iif issue.status === 4
+                                                            then "check"
+                                                            else "circle"
+                                + 
+    function PriorityMenu
+        { 
+            @ highlight
+            @ onChange
+            :{ 
+                :p highlight
+                    :number 
+                :p onChange
+                    :=> 
+                        :void 
+                        param priority
+                            :string 
+        const ref
+            _ useRef
+                :param 
+                    :ref HTMLElement
+        _ useCustomElementEvent(ref, "onOptionSelect", onChange)
+        const iconList
+            [ 
+                @ "ellipsis-horizontal"
+                @ "priority-low"
+                @ "priority-medium"
+                @ "priority-high"
+                @ "priority-urgent"
+        return 
+            < amalgo-box 
+                @ ref {ref}
+                @ onClick
+                    => 
+                        param e
+                        _ e.stopPropagation()
+                @ highlight {String(highlight)}
+                < amalgo-button 
+                    button 
+                        @ type "button"
+                        @ aria-label "Set priority..."
+                        < Icon 
+                            @ id {iconList[highlight]}
+                            @ className
+                                _ classNames
+                                    @ "h-4 w-4"
+                                    iif highlight == 4
+                                        then "text-orange-500"
+                                        else "text-gray-400"
+                < amalgo-popover 
+                    < amalgo-input 
+                        input 
+                            @ type "text"
+                            @ placeholder "Set priority..."
+                            @ aria-label "Type to filter options"
+                    < amalgo-menu 
+                        < amalgo-option 
+                            @ value "0"
+                            < Option 
+                                @ icon {iconList[0]}
+                                @ label "No Priority"
+                        < amalgo-option 
+                            @ value "4"
+                            < Option 
+                                @ icon {iconList[4]}
+                                @ label "Urgent"
+                        < amalgo-option 
+                            @ value "3"
+                            < Option 
+                                @ icon {iconList[3]}
+                                @ label "High"
+                        < amalgo-option 
+                            @ value "2"
+                            < Option 
+                                @ icon {iconList[2]}
+                                @ label "Medium"
+                        < amalgo-option 
+                            @ value "1"
+                            < Option 
+                                @ icon {iconList[1]}
+                                @ label "Low"
+    function Option
+        { 
+            @ icon
+            @ label
+            :{ 
+                :p icon
+                    :string 
+                :p label
+                    :string 
+        return 
+            div 
+                @ className "flex items-center gap-4 font-light"
+                < Icon 
+                    @ id {icon}
+                + {label}
+    function Icon
+        { 
+            @ id
+            @ className
+            :{ 
+                :p id
+                    :string 
+                :p className
+                    :optional 
+                    :string 
+        return 
+            svg 
+                @ className {className || "h-4 w-4 text-gray-500"}
+                use 
+                    @ href
+                        `lit 
+                            + 
+                            @ icons
+                            + #
+                            @ id
+                            + 
+    function useCustomElementEvent
+        :< T
+        param ref
+            :ref React.MutableRefObject
+                :param 
+                    :union 
+                        :ref HTMLElement
+                        :undefined 
+        param eventName
+            :string 
+        param eventHandler
+            :=> 
+                :void 
+                param event
+                    :ref T
+        _ useEffect
+            => 
+                const node = ref.current
+                const handler
+                    => 
+                        param event
+                            :ref CustomEvent
+                        _ eventHandler(event.detail)
+                    # @ts-ignore
+                _ node?.addEventListener?.(eventName, handler)
+                    # @ts-ignore
+                return 
+                    => 
+                        _ node?.removeEventListener?.(eventName, handler)
+                            # @ts-ignore
+            [ 
+                @ eventHandler
+                @ eventName
+                @ ref

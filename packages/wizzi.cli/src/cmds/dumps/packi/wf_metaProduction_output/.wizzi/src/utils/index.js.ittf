@@ -22,7 +22,7 @@ module
             @ NOT_FOUND 404
     const expiredAfter = "600000"
         # ms
-    export
+    set module.exports
         {
             @ getIdParam
             @ statusCode

@@ -1,0 +1,128 @@
+module
+    import 
+        as crypto
+        from "crypto"
+    import 
+        @ createSessionStorage
+        from "@remix-run/node"
+    const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL
+    const headers
+        { 
+            @ Authorization
+                `lit 
+                    + Bearer&nbsp;
+                    @ process.env.UPSTASH_REDIS_REST_TOKEN
+                    + 
+            @ Accept "application/json"
+            @ "Content-Type" "application/json"
+    const expiresToSeconds
+        => 
+            param expires
+            const now = new Date()
+            const expiresDate = new Date(expires)
+            const secondsDelta = Math.ceil((expiresDate.getTime() - now.getTime()) / 1000)
+            return 
+                iif secondsDelta < 0
+                    then 0
+                    else secondsDelta
+        # For more info check https://remix.run/utils/sessions#createsessionstorage
+    export 
+        function createUpstashSessionStorage
+            { 
+                @ cookie
+                :any 
+            return 
+                _ createSessionStorage
+                    { 
+                        @ cookie
+                        m createData
+                            async
+                            param data
+                            param expires
+                            const randomBytes = crypto.randomBytes(8)
+                                # Create a random id - taken from the core `createFileSessionStorage` Remix function.
+                            const id = Buffer.from(randomBytes).toString("hex")
+                                # Call Upstash Redis HTTP API. Set expiration according to the cookie `expired property.
+                                # Note the use of the `expiresToSeconds` that converts date to seconds.
+                            await 
+                                _ fetch
+                                    `lit 
+                                        + 
+                                        @ upstashRedisRestUrl
+                                        + /set/
+                                        @ id
+                                        + ?EX=
+                                        _ expiresToSeconds(expires)
+                                        + 
+                                    { 
+                                        @ method "post"
+                                        @ body
+                                            _ JSON.stringify
+                                                { 
+                                                    @ data
+                                        @ headers
+                                # Call Upstash Redis HTTP API. Set expiration according to the cookie `expired property.
+                                # Note the use of the `expiresToSeconds` that converts date to seconds.
+                            return id
+                        m readData
+                            async
+                            param id
+                            _ console.log(id)
+                            const response
+                                await 
+                                    _ fetch
+                                        `lit 
+                                            + 
+                                            @ upstashRedisRestUrl
+                                            + /get/
+                                            @ id
+                                            + 
+                                        { 
+                                            @ headers
+                            try 
+                                const 
+                                    { 
+                                        @ result
+                                    =
+                                        await 
+                                            _ response.json()
+                                return JSON.parse(result).data
+                            catch error
+                                return null
+                        m updateData
+                            async
+                            param id
+                            param data
+                            param expires
+                            await 
+                                _ fetch
+                                    `lit 
+                                        + 
+                                        @ upstashRedisRestUrl
+                                        + /set/
+                                        @ id
+                                        + ?EX=
+                                        _ expiresToSeconds(expires)
+                                        + 
+                                    { 
+                                        @ method "post"
+                                        @ body
+                                            _ JSON.stringify
+                                                { 
+                                                    @ data
+                                        @ headers
+                        m deleteData
+                            async
+                            param id
+                            await 
+                                _ fetch
+                                    `lit 
+                                        + 
+                                        @ upstashRedisRestUrl
+                                        + /del/
+                                        @ id
+                                        + 
+                                    { 
+                                        @ method "post"
+                                        @ headers
+        # For more info check https://remix.run/utils/sessions#createsessionstorage

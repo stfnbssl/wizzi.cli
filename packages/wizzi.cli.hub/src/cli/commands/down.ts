@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\cli\commands\down.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 import App from '../../App';
@@ -24,7 +25,6 @@ export function executeCommand(args: any):  any {
     if (!args.owner || (!args.artifact && !args.package && !args.plugin && !args.meta && !args.tfolder)) {
         return bad_parameters();
     }
-    console.log('...executing down', args.owner, args.name, args.list, args.files, args.artifact, args.package, args.plugin, args.meta, args.tfolder, args.dest, __filename);
     const options: any = {};
     if (args.list) {
         if (!args.dest) {

@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 12,
+  "column": 3,
+  "source": "@media screen and (--viewport-sm) {\n    --padding: var(--spaces-06);\n  }\n\n  @media screen and (--viewport-md) {\n    --padding: var(--spaces-07);\n  }\n}\n\n.ui--shadow-box--pad-01 {\n  --padding: var(--spaces-03);\n\n  @media screen and (--viewport-sm) {\n    --padding: var(--spaces-03);\n  }\n\n  @media screen and (--viewport-md) {\n    --padding: var(--spaces-04);\n  }\n}\n\n.ui--shadow-box--pad-02 {\n  --padding: var(--spaces-04);\n\n  @media screen and (--viewport-sm) {\n    --padding: var(--spaces-04);\n  }\n\n  @media screen and (--viewport-md) {\n    --padding: var(--spaces-05);\n  }\n}\n\n.ui--shadow-box--pad-03 {\n  --padding: var(--spaces-04);\n\n  @media screen and (--viewport-sm) {\n    --padding: var(--spaces-05);\n  }\n\n  @media screen and (--viewport-md) {\n    --padding: var(--spaces-06);\n  }\n}\n"
+}

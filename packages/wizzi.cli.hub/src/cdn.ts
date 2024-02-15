@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\cdn.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 const minimist = require('minimist');
@@ -26,11 +27,9 @@ if (cmd == 'down') {
             }
             downloadCdnResource('stfnbssl', {
                 destFolder: destFolder
-             }).then(() => {
+             }).then(() => 
             
-                console.log('done', __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -45,11 +44,9 @@ if (cmd == 'down') {
             downloadCdnResource('stfnbssl', {
                 name: p1, 
                 destFolder: destFolder
-             }).then(() => {
+             }).then(() => 
             
-                console.log('done', __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -71,11 +68,9 @@ function uploadFolder(folder) {
         const sourceFolder = path.join(__dirname, 'uploads', folder);
         uploadCdnResource('stfnbssl', {
             sourceFolder: sourceFolder
-         }).then(() => {
+         }).then(() => 
         
-            console.log('done', __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )

@@ -1,0 +1,3 @@
+module 
+   kind react
+   $include jsExpressWizziSite/webpacks/helloreact/src/index.js

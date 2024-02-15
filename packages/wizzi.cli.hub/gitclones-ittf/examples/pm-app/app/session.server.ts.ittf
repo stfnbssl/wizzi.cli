@@ -1,0 +1,214 @@
+module
+    import 
+        @ createCookieSessionStorage
+        @ redirect
+        from "@remix-run/node"
+    :import-type 
+        @ User
+        from "~/models"
+    import 
+        @ getServerSafeEnvVariable
+        from "~/utils"
+    import 
+        @ createUser
+        @ verifyLogin
+        @ getUser
+            as getDbUser
+        from "./db.server"
+    export 
+        const sessionSecret = getServerSafeEnvVariable("SESSION_SECRET")
+    export 
+        const sessionKey = "super_sick_pm_camp_session_key"
+    export 
+        const sessionUserKey = "userId"
+    export 
+        async-function register
+            param args
+                :{ 
+                    :p email
+                        :string 
+                    :p password
+                        :string 
+                    :p nameFirst
+                        :string 
+                    :p nameLast
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+            return 
+                await 
+                    _ createUser(args)
+    export 
+        async-function login
+            param email
+                :string 
+            param password
+                :string 
+            return 
+                await 
+                    _ verifyLogin(email, password)
+    export 
+        const sessionStorage
+            _ createCookieSessionStorage
+                { 
+                    { cookie
+                        @ name sessionKey
+                        @ secure process.env.NODE_ENV === "production"
+                            # secure doesn't work on localhost for Safari
+                            # https://web.dev/when-to-use-local-https/
+                        [ secrets
+                            @ sessionSecret
+                        @ sameSite "lax"
+                        @ path "/"
+                        @ maxAge 60 * 60 * 24 * 30
+                        @ httpOnly true
+    export 
+        function getUserSession
+            param request
+                :ref Request
+            return sessionStorage.getSession(request.headers.get("Cookie"))
+    export 
+        async-function getUserId
+            param request
+                :ref Request
+            const session
+                await 
+                    _ getUserSession(request)
+            const userId = session.get("userId")
+            if !userId || typeof userId !== "string"
+                return null
+            return userId
+    export 
+        async-function requireUserId
+            param request
+                :ref Request
+            param opts
+                :{ 
+                    :p redirect
+                        :optional 
+                        :string 
+                    :p loginURL
+                        :string 
+            const session
+                await 
+                    _ getUserSession(request)
+            const userId = session.get(sessionUserKey)
+            if !userId || typeof userId !== "string"
+                const searchParams
+                    new URLSearchParams
+                        [ 
+                            [ 
+                                @ "redirectTo"
+                                @ opts.redirect || new URL(request.url).pathname
+                throw 
+                    _ redirect
+                        `lit 
+                            + /
+                            @ opts.loginURL
+                            + ?
+                            @ searchParams
+                            + 
+            return userId
+    export 
+        async-function getUser
+            param request
+                :ref Request
+            param opts
+                :{ 
+                    :p loginURL
+                        :optional 
+                        :string 
+                = 
+            const userId
+                await 
+                    _ getUserId(request)
+            if typeof userId !== "string"
+                return null
+            try 
+                return 
+                    await 
+                        _ getDbUser(userId)
+            catch 
+                if opts.loginURL
+                    throw 
+                        _ logout
+                            @ request
+                            { 
+                                @ redirect opts.loginURL
+    export 
+        async-function redirectUser
+            param request
+                :ref Request
+            param opts
+                :{ 
+                    :p redirect
+                        :string 
+            :return
+                :ref Promise
+                    :param null
+            const user
+                await 
+                    _ getUser(request)
+            if user
+                throw redirect(opts.redirect)
+            return null
+    export 
+        async-function requireUser
+            param request
+                :ref Request
+            param opts
+                :{ 
+                    :p redirect
+                        :string 
+            :return
+                :ref Promise
+                    :param 
+                        :ref User
+            const user
+                await 
+                    _ getUser(request)
+            if !user
+                throw redirect(opts.redirect)
+            return user
+    export 
+        async-function logout
+            param request
+                :ref Request
+            param opts
+                :{ 
+                    :p redirect
+                        :string 
+            const session
+                await 
+                    _ sessionStorage.getSession(request.headers.get("Cookie"))
+            return 
+                _ redirect
+                    @expr opts.redirect
+                    { 
+                        { headers
+                            @ "Set-Cookie"
+                                await 
+                                    _ sessionStorage.destroySession(session)
+    export 
+        async-function createUserSession
+            param userId
+                :[] 
+                    :ref User
+                    :literal "id"
+            param opts
+                :{ 
+                    :p redirect
+                        :string 
+            const session
+                await 
+                    _ sessionStorage.getSession()
+            _ session.set(sessionUserKey, userId)
+            return 
+                _ redirect
+                    @expr opts.redirect
+                    { 
+                        { headers
+                            @ "Set-Cookie"
+                                await 
+                                    _ sessionStorage.commitSession(session)

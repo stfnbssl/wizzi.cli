@@ -1,0 +1,86 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        @ useLoaderData
+        from "@remix-run/react"
+    :import-type 
+        @ FunctionComponent
+        from "react"
+    import 
+        @ getClient
+        from "~/lib/sanity"
+    :type Movie
+        :{ 
+            :p _id
+                :string 
+            :p slug
+                :{ 
+                    :p current
+                        :string 
+            :p title
+                :string 
+    export 
+        const loader
+            async=> 
+                const movies
+                    await 
+                        _ getClient().fetch
+                            `lit 
+                                + *[_type == "movie"]{ _id, title, slug }
+                return 
+                    _ json
+                        :param 
+                            :{ 
+                                :p movies
+                                    :[ 
+                                        :ref Movie
+                        { 
+                            @ movies
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ title "Remix Starter"
+                            @ description "Welcome to remix!"
+    const Index
+        :ref FunctionComponent
+        =
+            => 
+                const 
+                    { 
+                        @ movies
+                    =
+                        _ useLoaderData
+                            :param 
+                                :{ 
+                                    :p movies
+                                        :[ 
+                                            :ref Movie
+                return 
+                    div 
+                        @ style
+                            { 
+                                @ textAlign "center"
+                                @ padding 20
+                        { 
+                            _ movies.map
+                                => 
+                                    param movie
+                                    div 
+                                        @ style
+                                            { 
+                                                @ padding 10
+                                        @ key {movie._id}
+                                        < Link 
+                                            @ to {movie.slug.current}
+                                            + {movie.title}
+    export-default Index

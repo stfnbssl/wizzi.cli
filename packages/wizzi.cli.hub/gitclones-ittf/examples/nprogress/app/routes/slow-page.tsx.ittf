@@ -1,0 +1,24 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        from "@remix-run/react"
+    export 
+        const loader
+            async=> 
+                await 
+                    new Promise
+                        => 
+                            param resolve
+                            _ setTimeout(resolve, 1000)
+                return 
+                    _ json
+                        { 
+    export-default 
+        function Screen
+            return 
+                < Link 
+                    @ to "/"
+                    + Home

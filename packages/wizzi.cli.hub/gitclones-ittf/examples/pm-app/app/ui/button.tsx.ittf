@@ -1,0 +1,267 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ LinkProps
+        @ NavLinkProps
+        from "react-router-dom"
+    import 
+        @ Link
+        @ NavLink
+        from "~/ui/link"
+        # TODO: Light mode for docs usage
+    const Button
+        _ React.forwardRef
+            :param 
+                :ref HTMLButtonElement
+            :param 
+                :ref ButtonProps
+            => 
+                param props
+                param ref
+                const 
+                    { 
+                        @ variant
+                        @ size
+                        @ rounded
+                        @ children
+                        ... domProps
+                    = props
+                return 
+                    button 
+                        @ ref {ref}
+                        @ {...domProps}
+                        @ className {getButtonClassNames(props)}
+                        span 
+                            @ className "ui--button__inner"
+                            + {children}
+        # TODO: Light mode for docs usage
+    const ButtonLink
+        _ React.forwardRef
+            :param 
+                :ref HTMLAnchorElement
+            :param 
+                :ref ButtonLinkProps
+            => 
+                param props
+                param ref
+                const 
+                    { 
+                        @ variant
+                        @ size
+                        @ disabled
+                        @ rounded
+                        @ children
+                        ... domProps
+                    = props
+                return 
+                    < Link 
+                        @ ref {ref}
+                        @ aria-disabled {disabled || undefined}
+                        @ tabIndex
+                            iif disabled
+                                then -1
+                                else undefined
+                        @ {...domProps}
+                        @ className {getButtonClassNames(props)}
+                        span 
+                            @ className "ui--button__inner"
+                            + {children}
+    const ButtonNavLink
+        _ React.forwardRef
+            :param 
+                :ref HTMLAnchorElement
+            :param 
+                :ref ButtonNavLinkProps
+            => 
+                param props
+                param ref
+                const 
+                    { 
+                        @ variant
+                        @ size
+                        @ disabled
+                        @ rounded
+                        @ children
+                        ... domProps
+                    = props
+                return 
+                    < NavLink 
+                        @ ref {ref}
+                        @ aria-disabled {disabled || undefined}
+                        @ tabIndex
+                            iif disabled
+                                then -1
+                                else undefined
+                        @ {...domProps}
+                        @ className
+                            => 
+                                { 
+                                    @ isActive
+                                _ getButtonClassNames
+                                    { 
+                                        @ ...props
+                                        @ isActive
+                        span 
+                            @ className "ui--button__inner"
+                            + {children}
+        #
+            # *
+            # * `ButtonDiv` should be used only when something is semantically not a button
+            # * but needs to look like one. It does not add a role or any aria props.
+            # 
+    const ButtonDiv
+        _ React.forwardRef
+            :param 
+                :ref HTMLDivElement
+            :param 
+                :ref ButtonDivProps
+            => 
+                param props
+                param ref
+                const 
+                    { 
+                        @ variant
+                        @ size
+                        @ disabled
+                        @ rounded
+                        @ children
+                        ... domProps
+                    = props
+                return 
+                    div 
+                        @ ref {ref}
+                        @ {...domProps}
+                        @ className {cx(props.className, getButtonClassNames(props), "ui--button--div")}
+                        span 
+                            @ className "ui--button__inner"
+                            + {children}
+        #
+            # *
+            # * `ButtonDiv` should be used only when something is semantically not a button
+            # * but needs to look like one. It does not add a role or any aria props.
+            # 
+    set Button.displayName = "Button"
+    set ButtonLink.displayName = "ButtonLink"
+    set ButtonNavLink.displayName = "ButtonNavLink"
+    set ButtonDiv.displayName = "ButtonDiv"
+    function getButtonClassNames
+        { 
+            @ className
+            @ variant
+                = "primary"
+            @ disabled
+                = false
+            @ isActive
+                = false
+            @ rounded
+                # for active NavLink styles,
+            @ size
+                = "base"
+            :{ 
+                :p className
+                    :optional 
+                    :union 
+                        :string 
+                        :paren 
+                            :=> 
+                                :string 
+                                param props
+                                    :{ 
+                                        :p isActive
+                                            :boolean 
+                :p variant
+                    :optional 
+                    :ref ButtonVariant
+                :p disabled
+                    :optional 
+                    :boolean 
+                :p isActive
+                    :optional 
+                    :boolean 
+                :p size
+                    :optional 
+                    :ref ButtonSize
+                :p rounded
+                    :optional 
+                    :boolean 
+        return 
+            _ cx
+                iif typeof className === "function"
+                    then
+                        _ className
+                            { 
+                                @ isActive
+                    else className
+                @ "ui--button"
+                `lit 
+                    + ui--button--
+                    @ variant
+                    + 
+                `lit 
+                    + ui--button--size-
+                    @ size
+                    + 
+                { 
+                    @ "ui--button--disabled" disabled
+                        # all disabled buttons
+                    @ "ui--button--rounded" rounded
+                ._ replace
+                    @ /\s+/g
+                    @ " "
+                ._ trim
+        # Based on the variants in the designs
+    :type ButtonVariant
+        :union 
+            :literal "primary"
+            :literal "secondary"
+            :literal "danger"
+            #
+                # | "transparent"
+        # Based on the variants in the designs
+    :type ButtonSize
+        :union 
+            :literal "small"
+            :literal "base"
+            :literal "large"
+    :interface ButtonSharedProps
+        :p variant
+            :optional 
+            :ref ButtonVariant
+        :p size
+            :optional 
+            :ref ButtonSize
+        :p disabled
+            :optional 
+            :boolean 
+        :p rounded
+            :optional 
+            :boolean 
+    :interface ButtonProps
+        :extends React.ComponentPropsWithRef
+            :param 
+                :literal "button"
+        :extends ButtonSharedProps
+    :interface ButtonDivProps
+        :extends React.ComponentPropsWithRef
+            :param 
+                :literal "div"
+        :extends ButtonSharedProps
+    :interface ButtonLinkProps
+        :extends LinkProps
+        :extends ButtonSharedProps
+    :interface ButtonNavLinkProps
+        :extends NavLinkProps
+        :extends ButtonSharedProps
+    export 
+        @ ButtonProps
+        @ ButtonLinkProps
+        @ ButtonNavLinkProps
+        @ ButtonDivProps
+    export 
+        @ Button
+        @ ButtonLink
+        @ ButtonNavLink
+        @ ButtonDiv

@@ -1,0 +1,25 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+        #
+            # *
+            # * This helper function helps us to return the accurate HTTP status,
+            # * 400 Bad Request, to the client.
+            # 
+    export 
+        const badRequest
+            => 
+                param data
+                    :ref T
+                _ json
+                    :param 
+                        :ref T
+                    @ data
+                    { 
+                        @ status 400
+        #
+            # *
+            # * This helper function helps us to return the accurate HTTP status,
+            # * 400 Bad Request, to the client.
+            # 

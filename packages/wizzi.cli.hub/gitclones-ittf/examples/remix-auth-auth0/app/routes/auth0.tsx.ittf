@@ -1,0 +1,21 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ auth
+        from "~/utils/auth.server"
+    export 
+        const loader
+            async=> 
+                _ redirect("/")
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                _ auth.authenticate("auth0", request)

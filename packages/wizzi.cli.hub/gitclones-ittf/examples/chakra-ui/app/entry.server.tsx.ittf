@@ -1,0 +1,161 @@
+module
+    import 
+        @ PassThrough
+        from "stream"
+    import createEmotionCache from "@emotion/cache"
+    import 
+        @ CacheProvider
+            as EmotionCacheProvider
+        from "@emotion/react"
+    import createEmotionServer from "@emotion/server/create-instance"
+    :import-type 
+        @ AppLoadContext
+        @ EntryContext
+        from "@remix-run/node"
+    import 
+        @ Response
+        from "@remix-run/node"
+    import 
+        @ RemixServer
+        from "@remix-run/react"
+    import isbot from "isbot"
+    import 
+        @ renderToPipeableStream
+        from "react-dom/server"
+    const ABORT_DELAY = 5000
+    const handleRequest
+        => 
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            param loadContext
+                :ref AppLoadContext
+            iif isbot(request.headers.get("user-agent"))
+                then handleBotRequest(request, responseStatusCode, responseHeaders, remixContext)
+                else handleBrowserRequest(request, responseStatusCode, responseHeaders, remixContext)
+    export-default handleRequest
+    const handleBotRequest
+        => 
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            new Promise
+                => 
+                    param resolve
+                    param reject
+                    let didError = false
+                    const emotionCache
+                        _ createEmotionCache
+                            { 
+                                @ key "css"
+                    const 
+                        { 
+                            @ pipe
+                            @ abort
+                        =
+                            _ renderToPipeableStream
+                                < EmotionCacheProvider 
+                                    @ value {emotionCache}
+                                    < RemixServer 
+                                        @ context {remixContext}
+                                        @ url {request.url}
+                                { 
+                                    @ onAllReady
+                                        => 
+                                            const reactBody = new PassThrough()
+                                            const emotionServer = createEmotionServer(emotionCache)
+                                            const bodyWithStyles = emotionServer.renderStylesToNodeStream()
+                                            _ reactBody.pipe(bodyWithStyles)
+                                            _ responseHeaders.set("Content-Type", "text/html")
+                                            _ resolve
+                                                new Response
+                                                    @ bodyWithStyles
+                                                    { 
+                                                        @ headers responseHeaders
+                                                        @ status
+                                                            iif didError
+                                                                then 500
+                                                                else responseStatusCode
+                                            _ pipe(reactBody)
+                                    @ onShellError
+                                        => 
+                                            param error
+                                                :unknown 
+                                            _ reject(error)
+                                    @ onError
+                                        => 
+                                            param error
+                                                :unknown 
+                                            set didError = true
+                                            _ console.error(error)
+                    _ setTimeout(abort, ABORT_DELAY)
+    const handleBrowserRequest
+        => 
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            new Promise
+                => 
+                    param resolve
+                    param reject
+                    let didError = false
+                    const emotionCache
+                        _ createEmotionCache
+                            { 
+                                @ key "css"
+                    const 
+                        { 
+                            @ pipe
+                            @ abort
+                        =
+                            _ renderToPipeableStream
+                                < EmotionCacheProvider 
+                                    @ value {emotionCache}
+                                    < RemixServer 
+                                        @ context {remixContext}
+                                        @ url {request.url}
+                                { 
+                                    @ onShellReady
+                                        => 
+                                            const reactBody = new PassThrough()
+                                            const emotionServer = createEmotionServer(emotionCache)
+                                            const bodyWithStyles = emotionServer.renderStylesToNodeStream()
+                                            _ reactBody.pipe(bodyWithStyles)
+                                            _ responseHeaders.set("Content-Type", "text/html")
+                                            _ resolve
+                                                new Response
+                                                    @ bodyWithStyles
+                                                    { 
+                                                        @ headers responseHeaders
+                                                        @ status
+                                                            iif didError
+                                                                then 500
+                                                                else responseStatusCode
+                                            _ pipe(reactBody)
+                                    @ onShellError
+                                        => 
+                                            param error
+                                                :unknown 
+                                            _ reject(error)
+                                    @ onError
+                                        => 
+                                            param error
+                                                :unknown 
+                                            set didError = true
+                                            _ console.error(error)
+                    _ setTimeout(abort, ABORT_DELAY)

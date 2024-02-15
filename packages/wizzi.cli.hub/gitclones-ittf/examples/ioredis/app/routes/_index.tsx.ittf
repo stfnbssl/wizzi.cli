@@ -1,0 +1,82 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ redis
+        from "~/utils/redis.server"
+    export 
+        const loader
+            async=> 
+                const message
+                    await 
+                        _ redis.get("message")
+                return 
+                    _ json
+                        { 
+                            @ message
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                const message = formData.get("message")
+                if !message || typeof message !== "string"
+                    return 
+                        _ json
+                            @ "String only!"
+                            { 
+                                @ status 400
+                await 
+                    _ redis.set("message", message)
+                return redirect("/")
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const actionMessage
+                _ useActionData
+                    :param 
+                        :typeof action
+            return 
+                main 
+                    div 
+                        b 
+                            + Stored Message:
+                        + {data.message}
+                    < Form 
+                        @ method "post"
+                        h2 
+                            + Change the message
+                        label 
+                            div 
+                                + Message
+                            input 
+                                @ name "message"
+                                @ defaultValue {data.message ?? ""}
+                        div 
+                            button 
+                                @ type "submit"
+                                + Save
+                    { 
+                        iif actionMessage
+                            then
+                                p 
+                                    b 
+                                        + {actionMessage}
+                            else null

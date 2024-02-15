@@ -1,0 +1,13 @@
+module
+    import 
+        @ createClient
+        from "@supabase/supabase-js"
+    export 
+        const client
+            _ createClient
+                @expr process.env.SUPABASE_URL
+                    :as 
+                        :string 
+                @expr process.env.SUPABASE_ANON_KEY
+                    :as 
+                        :string 

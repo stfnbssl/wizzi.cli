@@ -2,23 +2,23 @@ module
     kind es6
     $if wzCtx.Build.useLogger
         $if wzCtx.Build.logger.useMorgan
-            var morgan = require('morgan')
-        export
-            const LoggerMiddleware
-                =>
-                    param app
-                    $if wzCtx.Build.logger.useMorgan
-                        _ app.use(morgan('combined'))
-                    $else
-                        _ app.use
-                            =>
-                                param request
-                                param response
-                                param next
-                                _ console.log
-                                    `lit
-                                        +
-                                        @ request.method
-                                        +
-                                        @ request.path
-                                _ next
+            const morgan =  require('morgan')
+        set module.exports = {}
+        set module.exports.LoggerMiddleware
+            =>
+                param app
+                $if wzCtx.Build.logger.useMorgan
+                    _ app.use(morgan('combined'))
+                $else
+                    _ app.use
+                        =>
+                            param request
+                            param response
+                            param next
+                            _ console.log
+                                `lit
+                                    +
+                                    @ request.method
+                                    +
+                                    @ request.path
+                            _ next

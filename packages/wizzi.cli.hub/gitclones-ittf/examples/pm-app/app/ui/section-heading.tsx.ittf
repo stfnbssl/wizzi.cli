@@ -1,0 +1,142 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    const LevelContext
+        :ref React.Context
+            :param 
+                :ref HeadingLevel
+        =
+            _ React.createContext
+                + 1
+                    :as 
+                        :ref HeadingLevel
+    function useHeadingLevelContext
+        return React.useContext(LevelContext)
+    const Section
+        _ React.forwardRef
+            :param 
+                :ref HTMLElement
+            :param 
+                :ref SectionProps
+            => 
+                { 
+                    @ as asProp
+                    @ children
+                    ... props
+                param ref
+                const Wrapper = asProp || React.Fragment
+                const level = useHeadingLevelContext()
+                const ctx
+                    _ React.useMemo
+                        => 
+                            _ Math.min(level + 1, 6)
+                                :as 
+                                    :ref HeadingLevel
+                        [ 
+                            @ level
+                return 
+                    < Wrapper 
+                        @ 
+                            ( 
+                                iif asProp
+                                    then
+                                        ( 
+                                            @expr
+                                                { 
+                                                    @ ref
+                                                    @ ...props
+                                                :as 
+                                                    :any 
+                                    else null
+                        < LevelContext.Provider 
+                            @ value {ctx}
+                            + {children}
+    set Section.displayName = "Section"
+    const Heading
+        _ React.forwardRef
+            :param 
+                :ref HTMLHeadingElement
+            :param 
+                :ref HeadingProps
+            => 
+                { 
+                    @ as asProp
+                    @ level levelProp
+                    ... props
+                param ref
+                const level = useHeadingLevelContext()
+                const Comp
+                    :ref React.ElementType
+                    =
+                        iif asProp
+                            then
+                                iif asProp === "title"
+                                    then "h1"
+                                    else asProp
+                            else
+                                ( 
+                                    @expr
+                                        `lit 
+                                            + h
+                                            @ level
+                                            + 
+                                        :as 
+                                            :literal "h2"
+                return 
+                    < Comp 
+                        @ ref {ref}
+                        @ {...props}
+                        @ className
+                            _ cx
+                                @expr props.className
+                                { 
+                                    @[
+                                        `lit 
+                                            + h
+                                            @ levelProp
+                                            + 
+                                        + levelProp
+    set Heading.displayName = "Heading"
+    :interface HeadingProps
+        :extends React.ComponentPropsWithRef
+            :param 
+                :literal "h1"
+        :p level
+            :optional 
+            :ref HeadingLevel
+        :p as
+            :optional 
+            :union 
+                :literal "title"
+                :literal "h1"
+                :literal "h2"
+                :literal "h3"
+                :literal "h4"
+                :literal "h5"
+                :literal "h6"
+    :interface SectionProps
+        :extends React.ComponentPropsWithRef
+            :param 
+                :literal "section"
+        :p as
+            :optional 
+            :union 
+                :literal "section"
+                :literal "div"
+    :type HeadingLevel
+        :union 
+            :literal 1
+            :literal 2
+            :literal 3
+            :literal 4
+            :literal 5
+            :literal 6
+    export 
+        @ SectionProps
+        @ HeadingProps
+    export 
+        @ Section
+        @ Heading
+        @ useHeadingLevelContext

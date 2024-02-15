@@ -1,0 +1,358 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        @ LoaderArgs
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useSearchParams
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ getUser
+        from "~/db.server"
+    import 
+        @ createUserSession
+        @ register
+        from "~/session.server"
+    import routeStyles from "~/styles/routes/register.css"
+    import 
+        @ Button
+        from "~/ui/button"
+    import 
+        @ Field
+        @ FieldError
+        @ FieldProvider
+        @ Label
+        from "~/ui/form"
+    import 
+        @ Link
+        from "~/ui/link"
+    import 
+        @ Heading
+        from "~/ui/section-heading"
+    import 
+        @ ShadowBox
+        from "~/ui/shadow-box"
+    import 
+        @ validateEmail
+        @ validatePassword
+        from "~/utils/validation"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ title "Register | PM Camp"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href routeStyles
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                return 
+                    _ json
+                        { 
+                    # let session = await sessionStorage.getSession(request.headers.get("Cookie"));
+                    # // If the user is already authenticated, just redirect to `/done`
+                    # await isAuthenticated(session, {
+                    # successRedirect: "/done",
+                    # });
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                    # 1. Get/setup form data from the request
+                const fieldErrors
+                    { 
+                        :as 
+                            :ref FieldErrors
+                const fields
+                    { 
+                        :as 
+                            :ref Record
+                                :param 
+                                    :ref TextFields
+                                :param 
+                                    :union 
+                                        :ref FormDataEntryValue
+                                        :null 
+                for 
+                    left
+                        const fieldName
+                    of
+                        @expr
+                            [ 
+                                @ "nameFirst"
+                                @ "nameLast"
+                                @ "email"
+                                @ "password"
+                            :as 
+                                :[ 
+                                    :ref TextFields
+                    const fieldValue = formData.get(fieldName)
+                    set fields[fieldName] =
+                        + fieldValue
+                            :as 
+                                :string 
+                    set fieldErrors[fieldName] = null
+                const redirectTo = formData.get("redirectTo") || "dashboard"
+                    # 2. Validate the form data
+                if typeof fields.nameFirst !== "string" || (fields.nameLast && typeof fields.nameLast !== "string") || typeof fields.email !== "string" || typeof fields.password !== "string" || typeof redirectTo !== "string"
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors null
+                                @ formError
+                                    `lit 
+                                        + Something went wrong. Please try again later.
+                const 
+                    { 
+                        @ email
+                        @ password
+                        @ nameFirst
+                        @ nameLast
+                    = fields
+                if !nameFirst
+                    set fieldErrors.nameFirst = "First name is required"
+                if !email
+                    set fieldErrors.email = "Email is required"
+                else
+                    try 
+                        _ validateEmail(email)
+                    catch error
+                        set fieldErrors.email =
+                            @expr 
+                                ( 
+                                    + error
+                                        :as 
+                                            :ref Error
+                                . message
+                if !password
+                    set fieldErrors.password = "Password is required"
+                else
+                    try 
+                        _ validatePassword(password)
+                    catch error
+                        set fieldErrors.password =
+                            @expr 
+                                ( 
+                                    + error
+                                        :as 
+                                            :ref Error
+                                . message
+                if Object.values(fieldErrors).some(Boolean)
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors
+                                @ fields
+                                @ formError null
+                const existingUser
+                    await 
+                        _ getUser("email", email)
+                    # 3. Check for existing user
+                if existingUser
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors null
+                                @ fields
+                                @ formError
+                                    `lit 
+                                        + Sorry! That email is already taken.
+                const user
+                    await 
+                        _ register
+                            { 
+                                @ email
+                                @ password
+                                @ nameFirst
+                                @ nameLast
+                    # 4. Register a new user
+                if !user
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors null
+                                @ fields
+                                @ formError
+                                    `lit 
+                                        + Something went wrong with registration. Please try again later!
+                return 
+                    await 
+                        _ createUserSession
+                            @expr user.id
+                            { 
+                                @ redirect redirectTo
+                                    # 6. Redirect to the user's dashboard
+                    # 5. Create a user session with the new user's ID
+    export-default 
+        function Register
+            const 
+                { 
+                    @ fieldErrors
+                    @ fields
+                    @ formError
+                =
+                    _ useActionData
+                        :param 
+                            :typeof action
+            const [searchParams] = useSearchParams()
+            _ React.useEffect
+                => 
+                    if !formError && !fieldErrors
+                        return 
+                    if formError
+                        const form = document.getElementById("register-form")
+                        const input = form?.querySelector?.("input")
+                        _ input?.focus?.()
+                        return 
+                    if fieldErrors
+                        for 
+                            left
+                                const field
+                            of
+                                @expr
+                                    [ 
+                                        @ "nameFirst"
+                                        @ "nameLast"
+                                        @ "email"
+                                        @ "password"
+                                    :as 
+                                        :[ 
+                                            :ref TextFields
+                            if fieldErrors[field]
+                                const elem
+                                    _ document.getElementById
+                                        `lit 
+                                            + register-
+                                            @ field
+                                            + 
+                                _ elem?.focus?.()
+                                return 
+                [ 
+                    @ formError
+                    @ fieldErrors
+            return 
+                div 
+                    @ className "register__container"
+                    < ShadowBox 
+                        @ className "register__box"
+                        { 
+                            iif formError
+                                then
+                                    div 
+                                        @ className "register__form-error"
+                                        span 
+                                            @ className "register__form-error-text"
+                                            @ id "form-error-text"
+                                            @ role "alert"
+                                            + {formError}
+                                else null
+                        < Heading 
+                            @ level {3}
+                            @ className "register__heading"
+                            + Register
+                        < Form 
+                            @ id "register-form"
+                            @ method "post"
+                            @ aria-describedby
+                                iif formError
+                                    then "form-error-text"
+                                    else undefined
+                            input 
+                                @ type "hidden"
+                                @ name "redirectTo"
+                                @ value {searchParams.get("redirectTo") ?? undefined}
+                            div 
+                                @ className "register__email-form"
+                                < FieldProvider 
+                                    @ name "nameFirst"
+                                    @ id "register-nameFirst"
+                                    @ required
+                                    @ error {fieldErrors?.nameFirst}
+                                    < Label 
+                                        + First Name
+                                    < Field 
+                                        @ defaultValue {fields?.nameFirst}
+                                    < FieldError 
+                                < FieldProvider 
+                                    @ name "nameLast"
+                                    @ id "register-nameLast"
+                                    @ error {fieldErrors?.nameLast}
+                                    < Label 
+                                        + Last Name
+                                    < Field 
+                                        @ defaultValue {fields?.nameLast}
+                                    < FieldError 
+                                < FieldProvider 
+                                    @ name "email"
+                                    @ id "register-email"
+                                    @ required
+                                    @ error {fieldErrors?.email}
+                                    < Label 
+                                        + Email
+                                    < Field 
+                                        @ type "email"
+                                        @ placeholder "hello@remix.run"
+                                        @ defaultValue {fields?.email}
+                                    < FieldError 
+                                < FieldProvider 
+                                    @ name "password"
+                                    @ id "register-password"
+                                    @ required
+                                    @ error {fieldErrors?.password}
+                                    < Label 
+                                        + Password
+                                    < Field 
+                                        @ type "password"
+                                        @ defaultValue {fields?.password}
+                                    < FieldError 
+                                < Button 
+                                    @ className "register__email-submit-button"
+                                    + Sign Up
+                    p 
+                        @ className "register__outer-text"
+                        + Existing user?
+                        < Link 
+                            @ to "/sign-in"
+                            + Sign in here.
+    :type FieldErrors
+        :ref Record
+            :param 
+                :ref TextFields
+            :param 
+                :union 
+                    :string 
+                    :null 
+    :type TextFields
+        :union 
+            :literal "email"
+            :literal "password"
+            :literal "nameFirst"
+            :literal "nameLast"

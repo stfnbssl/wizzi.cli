@@ -1,0 +1,43 @@
+module
+    import 
+        @ injectStyles
+        @ createStylesServer
+        from "@mantine/remix"
+    :import-type 
+        @ AppLoadContext
+        @ EntryContext
+        from "@remix-run/node"
+    import 
+        @ RemixServer
+        from "@remix-run/react"
+    import 
+        @ renderToString
+        from "react-dom/server"
+    const server = createStylesServer()
+    export-default 
+        function handleRequest
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            param loadContext
+                :ref AppLoadContext
+            const markup
+                _ renderToString
+                    < RemixServer 
+                        @ context {remixContext}
+                        @ url {request.url}
+            _ responseHeaders.set("Content-Type", "text/html")
+            return 
+                new Response
+                    `lit 
+                        + <!DOCTYPE html>
+                        _ injectStyles(markup, server)
+                        + 
+                    { 
+                        @ status responseStatusCode
+                        @ headers responseHeaders

@@ -1,0 +1,16 @@
+module
+    import 
+        @ validateEmail
+        from "./utils"
+    _ test
+        @ "validateEmail returns false for non-emails"
+        => 
+            _ expect(validateEmail(undefined)).toBe(false)
+            _ expect(validateEmail(null)).toBe(false)
+            _ expect(validateEmail("")).toBe(false)
+            _ expect(validateEmail("not-an-email")).toBe(false)
+            _ expect(validateEmail("n@")).toBe(false)
+    _ test
+        @ "validateEmail returns true for emails"
+        => 
+            _ expect(validateEmail("kody@example.com")).toBe(true)

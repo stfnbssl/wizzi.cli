@@ -1,0 +1,90 @@
+module
+    :import-type 
+        @ QueryDocumentSnapshot
+        from "firebase-admin/firestore"
+    import 
+        @ getFirestore
+        from "firebase-admin/firestore"
+        # helper function to convert firestore data to typescript
+    const converter
+        => 
+            (
+                { 
+                    @ toFirestore
+                        => 
+                            param data
+                                :ref T
+                            + data
+                    @ fromFirestore
+                        => 
+                            param snap
+                                :ref QueryDocumentSnapshot
+                            _ snap.data()
+                                :as 
+                                    :ref T
+        # helper function to convert firestore data to typescript
+        # helper to apply converter to multiple collections
+    const dataPoint
+        => 
+            param collectionPath
+                :string 
+            _ getFirestore().collection(collectionPath).withConverter
+                _ converter
+                    :param 
+                        :ref T
+        # helper to apply converter to multiple collections
+    :type Todo
+        :{ 
+            :p id
+                :string 
+            :p title
+                :string 
+    const db
+        { 
+            @ userTodos
+                => 
+                    param uid
+                        :string 
+                    _ dataPoint
+                        :param 
+                            :ref Todo
+                        `lit 
+                            + users/
+                            @ uid
+                            + /todos
+    export 
+        const getUserTodos
+            async=> 
+                param uid
+                    :string 
+                const todoSnap
+                    await 
+                        _ db.userTodos(uid).get()
+                const todoData
+                    _ todoSnap.docs.map
+                        => 
+                            param doc
+                            _ doc.data()
+                return todoData
+    export 
+        const addTodo
+            async=> 
+                param uid
+                    :string 
+                param title
+                    :string 
+                const newTodoRef = db.userTodos(uid).doc()
+                await 
+                    _ newTodoRef.set
+                        { 
+                            @ title
+                            @ id newTodoRef.id
+    export 
+        const removeTodo
+            async=> 
+                param uid
+                    :string 
+                param todoId
+                    :string 
+                await 
+                    _ db.userTodos(uid).doc(todoId).delete()

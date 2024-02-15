@@ -1,2 +1,2 @@
 ${'$'}group 
-   $include jsCommons/tfolder/webapp/authHandler.js
+   $include jsExpress/tfolder/v08/authHandler.js

@@ -1,0 +1,118 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ useCatch
+        from "@remix-run/react"
+    :import-type 
+        @ FunctionComponent
+        from "react"
+    import stylesUrl from "~/styles/global.css"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ viewport "width=device-width,initial-scale=1"
+    const Document
+        :ref FunctionComponent
+            :param 
+                :{ 
+                    :p title
+                        :optional 
+                        :string 
+        =
+            => 
+                { 
+                    @ children
+                    @ title
+                html 
+                    @ lang "en"
+                    head 
+                        { 
+                            iif title
+                                then
+                                    < title 
+                                        + {title}
+                                else null
+                        < Meta 
+                        < Links 
+                    body 
+                        + {children}
+                        < Scripts 
+                        < LiveReload 
+    const App
+        :ref FunctionComponent
+        =
+            => 
+                < Document 
+                    < Outlet 
+    export-default App
+    export 
+        const CatchBoundary
+            :ref FunctionComponent
+            =
+                => 
+                    const caught = useCatch()
+                    switch caught.status
+                        case 401
+                        case 404
+                            return 
+                                < Document 
+                                    @ title
+                                        `lit 
+                                            + 
+                                            @ caught.status
+                                            + &nbsp;
+                                            @ caught.statusText
+                                            + 
+                                    h1 
+                                        + {caught.status}
+                                        + {caught.statusText}
+                        default 
+                            throw 
+                                new Error
+                                    `lit 
+                                        + Unexpected caught response with status:&nbsp;
+                                        @ caught.status
+                                        + 
+    export 
+        const ErrorBoundary
+            :ref FunctionComponent
+                :param 
+                    :{ 
+                        :p error
+                            :ref Error
+            =
+                => 
+                    { 
+                        @ error
+                    _ console.error(error)
+                    return 
+                        < Document 
+                            @ title "Uh-oh!"
+                            h1 
+                                + App Error
+                            pre 
+                                + {error.message}
+                            p 
+                                + Replace this UI with what you want users to see when your app throws&lf;        uncaught errors.

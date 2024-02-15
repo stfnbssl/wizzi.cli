@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\jobs\wizzihub.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 import {config} from '../features/config';
@@ -13,7 +14,6 @@ const wizzihubProductionsFolder = "C:/My/wizzi/stfnbssl/wizzihub-productions";
 var app: any;
 export function uploadWizzihubArtifact(name, description, mainIttf, wizziSchema, action) {
 
-    console.log('uploadWizzihubArtifact.action', action, __filename);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -25,23 +25,18 @@ export function uploadWizzihubArtifact(name, description, mainIttf, wizziSchema,
             create: action == 'create', 
             update: action == 'update', 
             sourceFolder: path.join(wizzihubProductionsFolder, "uploads", "artifacts", name)
-         }).then((result) => {
+         }).then(result => 
         
-            console.log('uploadArtifact', name, result, __filename);
-            app.services.mongodbClose();
-        }
-        ).catch((err) => {
+            app.services.mongodbClose()
+        ).catch(err => 
         
-            console.log('uploadArtifact.error', err, __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )
 }
 export function uploadWizzihubPackage(name, description, action) {
 
-    console.log('uploadWizzihubPackage.action', action, __filename);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -53,23 +48,18 @@ export function uploadWizzihubPackage(name, description, action) {
             create: action == 'create', 
             update: action == 'update', 
             sourceFolder: path.join(wizzihubProductionsFolder, "uploads", "packages", name)
-         }).then((result) => {
+         }).then(result => 
         
-            console.log('uploadPackage', name, result, __filename);
-            app.services.mongodbClose();
-        }
-        ).catch((err) => {
+            app.services.mongodbClose()
+        ).catch(err => 
         
-            console.log('uploadPackage.error', err, __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )
 }
 export function uploadWizzihubPlugin(name, description, action) {
 
-    console.log('uploadWizzihubPlugin.action', action, __filename);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -81,23 +71,18 @@ export function uploadWizzihubPlugin(name, description, action) {
             create: action == 'create', 
             update: action == 'update', 
             sourceFolder: path.join(wizzihubProductionsFolder, "uploads", "plugins", name)
-         }).then((result) => {
+         }).then(result => 
         
-            console.log('uploadPlugin', name, result, __filename);
-            app.services.mongodbClose();
-        }
-        ).catch((err) => {
+            app.services.mongodbClose()
+        ).catch(err => 
         
-            console.log('uploadPlugin.error', err, __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )
 }
 export function uploadWizzihubMeta(name, description, action) {
 
-    console.log('uploadWizzihubMeta.action', action, __filename);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -109,23 +94,18 @@ export function uploadWizzihubMeta(name, description, action) {
             create: action == 'create', 
             update: action == 'update', 
             sourceFolder: path.join(wizzihubProductionsFolder, "uploads", "metas", name)
-         }).then((result) => {
+         }).then(result => 
         
-            console.log('uploadMeta', name, result, __filename);
-            app.services.mongodbClose();
-        }
-        ).catch((err) => {
+            app.services.mongodbClose()
+        ).catch(err => 
         
-            console.log('uploadMeta.error', err, __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )
 }
 export function uploadWizzihubTFolder(name, description, action) {
 
-    console.log('uploadWizzihubTFolder.action', action, __filename);
     start((err: any, startedapp: any) => {
     
         if (err) {
@@ -137,16 +117,12 @@ export function uploadWizzihubTFolder(name, description, action) {
             create: action == 'create', 
             update: action == 'update', 
             sourceFolder: path.join(wizzihubProductionsFolder, "uploads", "tfolders", name)
-         }).then((result) => {
+         }).then(result => 
         
-            console.log('uploadTFolder', name, result, __filename);
-            app.services.mongodbClose();
-        }
-        ).catch((err) => {
+            app.services.mongodbClose()
+        ).catch(err => 
         
-            console.log('uploadTFolder.error', err, __filename);
-            app.services.mongodbClose();
-        }
+            app.services.mongodbClose()
         )
     }
     )
@@ -199,7 +175,6 @@ function downloadWizzihubArtifacts(options: any) {
         filter: options.filter
      }).then((result) => {
     
-        console.log('downloadArtifactList', result.length, __filename);
         if (options.all) {
             downloadWizzihubPackages(options)
         }
@@ -207,11 +182,9 @@ function downloadWizzihubArtifacts(options: any) {
             app.services.mongodbClose();
         }
     }
-    ).catch((err) => {
+    ).catch(err => 
     
-        console.log('downloadArtifact.error', err, __filename);
-        app.services.mongodbClose();
-    }
+        app.services.mongodbClose()
     )
 }
 function downloadWizzihubPackages(options: any) {
@@ -224,7 +197,6 @@ function downloadWizzihubPackages(options: any) {
         filter: options.filter
      }).then((result) => {
     
-        console.log('downloadPackageList', result.length, __filename);
         if (options.all) {
             downloadWizzihubPlugins(options)
         }
@@ -232,11 +204,9 @@ function downloadWizzihubPackages(options: any) {
             app.services.mongodbClose();
         }
     }
-    ).catch((err) => {
+    ).catch(err => 
     
-        console.log('downloadPackageList.error', err, __filename);
-        app.services.mongodbClose();
-    }
+        app.services.mongodbClose()
     )
 }
 function downloadWizzihubPlugins(options: any) {
@@ -249,7 +219,6 @@ function downloadWizzihubPlugins(options: any) {
         filter: options.filter
      }).then((result) => {
     
-        console.log('downloadPluginList', result.length, __filename);
         if (options.all) {
             downloadWizzihubMetas(options)
         }
@@ -257,11 +226,9 @@ function downloadWizzihubPlugins(options: any) {
             app.services.mongodbClose();
         }
     }
-    ).catch((err) => {
+    ).catch(err => 
     
-        console.log('downloadPluginList.error', err, __filename);
-        app.services.mongodbClose();
-    }
+        app.services.mongodbClose()
     )
 }
 function downloadWizzihubMetas(options: any) {
@@ -274,7 +241,6 @@ function downloadWizzihubMetas(options: any) {
         filter: options.filter
      }).then((result) => {
     
-        console.log('downloadMetaList', result.length, __filename);
         if (options.all) {
             downloadWizzihubTFolders(options)
         }
@@ -282,11 +248,9 @@ function downloadWizzihubMetas(options: any) {
             app.services.mongodbClose();
         }
     }
-    ).catch((err) => {
+    ).catch(err => 
     
-        console.log('downloadMetaList.error', err, __filename);
-        app.services.mongodbClose();
-    }
+        app.services.mongodbClose()
     )
 }
 function downloadWizzihubTFolders(options: any) {
@@ -297,16 +261,12 @@ function downloadWizzihubTFolders(options: any) {
         destFolder: path.join(wizzihubProductionsFolder, 'downloads', 'tfolders'), 
         destMetaFolder: options.metaFolder ? path.join(options.metaFolder, 'tfolders') : null, 
         filter: options.filter
-     }).then((result) => {
+     }).then(result => 
     
-        console.log('downloadTFolderList', result.length, __filename);
-        app.services.mongodbClose();
-    }
-    ).catch((err) => {
+        app.services.mongodbClose()
+    ).catch(err => 
     
-        console.log('downloadTFolderList.error', err, __filename);
-        app.services.mongodbClose();
-    }
+        app.services.mongodbClose()
     )
 }
 

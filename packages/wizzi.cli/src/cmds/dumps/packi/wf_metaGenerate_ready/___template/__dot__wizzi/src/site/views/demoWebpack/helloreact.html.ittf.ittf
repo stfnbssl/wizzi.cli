@@ -1,0 +1,2 @@
+html 
+   $include jsExpressWizziSite/views/demoWebpack/helloreact.html

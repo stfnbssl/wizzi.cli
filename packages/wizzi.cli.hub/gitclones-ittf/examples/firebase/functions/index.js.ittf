@@ -1,0 +1,18 @@
+module
+    kind react
+    const 
+        { 
+            @ onRequest
+        = require("firebase-functions/v2/https")
+    const 
+        { 
+            @ createRequestHandler
+        = require("remix-google-cloud-functions")
+    const remix
+        _ onRequest
+            _ createRequestHandler
+                { 
+                    @ build require("../build")
+    set module.exports =
+        { 
+            @ remix

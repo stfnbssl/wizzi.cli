@@ -1,0 +1,159 @@
+module
+    import Dialog from "@reach/dialog"
+    import styles from "@reach/dialog/styles.css"
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        @ useNavigate
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href styles
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                const id = params.id
+                if !id
+                    return 
+                        _ json
+                            { 
+                const invoices
+                    [ 
+                        { 
+                            @ id 1
+                            @ company "Remix"
+                            @ description "Remix license"
+                            @ amount 200
+                            @ date new Date(2021, 8, 1)
+                        { 
+                            @ id 2
+                            @ company "Amazon"
+                            @ description "AWS bill"
+                            @ amount 340
+                            @ date new Date(2022, 8, 1)
+                const invoice
+                    _ invoices.find
+                        => 
+                            param invoice
+                            set invoice.id === parseInt(id)
+                return json(invoice)
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                return redirect("/invoices")
+                    # Here we can update our database with the updated invoice
+                    # Redirect back to invoice list
+    export-default 
+        function Edit
+            const navigate = useNavigate()
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const [formData, setFormData]
+                _ React.useState
+                    { 
+                        @ company data.company
+                        @ description data.description
+                        @ amount data.amount
+                        @ date data.date
+            function handleChange
+                param event
+                    :ref React.FormEvent
+                        :param 
+                            :union 
+                                :ref HTMLInputElement
+                                :ref HTMLTextAreaElement
+                const 
+                    { 
+                        @ name
+                        @ value
+                    = event.currentTarget
+                _ setFormData
+                    { 
+                        @ ...formData
+                        @ [name] value
+            function onDismiss
+                _ navigate("/invoices")
+            return 
+                < Dialog 
+                    @ className "dialog"
+                    @ isOpen {true}
+                    @ aria-label "Edit invoice"
+                    @ onDismiss {onDismiss}
+                    h3 
+                        + Edit invoice
+                    < Form 
+                        @ method "post"
+                        @ replace
+                        @ style
+                            { 
+                                @ display "flex"
+                                @ flexDirection "column"
+                        label 
+                            @ htmlFor "company"
+                            + Company
+                        input 
+                            @ type "text"
+                            @ name "company"
+                            @ id "company"
+                            @ value {formData.company}
+                            @ onChange {handleChange}
+                        label 
+                            @ htmlFor "description"
+                            + Description
+                        textarea 
+                            @ name "description"
+                            @ id "description"
+                            @ value {formData.description}
+                            @ onChange {handleChange}
+                            @ rows {10}
+                        label 
+                            @ htmlFor "amount"
+                            + Amount
+                        input 
+                            @ type "number"
+                            @ name "amount"
+                            @ id "amount"
+                            @ value {formData.amount}
+                            @ onChange {handleChange}
+                        label 
+                            @ htmlFor "date"
+                            + Date
+                        input 
+                            @ defaultValue {formData.date}
+                            @ type "date"
+                            @ name "date"
+                            @ id "date"
+                        div 
+                            button 
+                                @ type "submit"
+                                + Save
+                            button 
+                                @ type "button"
+                                @ onClick {onDismiss}
+                                + Cancel

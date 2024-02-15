@@ -1,0 +1,114 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ marked
+        from "marked"
+    import 
+        as React
+        from "react"
+    :type Post
+        :{ 
+            :p title
+                :string 
+            :p article
+                :string 
+            :p createdAt
+                :string 
+            :p updatedAt
+                :string 
+            :p publishedAt
+                :string 
+    :type PostData
+        :[ 
+            :{ 
+                :p id
+                    :string 
+                :p attributes
+                    :ref Post
+    :type PostResponse
+        :{ 
+            :p data
+                :ref PostData
+            :p meta
+                :{ 
+                    :p pagination
+                        :{ 
+                            :p page
+                                :number 
+                            :p pageSize
+                                :number 
+                            :p pageCount
+                                :number 
+                            :p total
+                                :number 
+    export 
+        const loader
+            async=> 
+                const response
+                    await 
+                        _ fetch("http://localhost:1337/api/posts")
+                    # This is where Remix integrates with Strapi
+                const postResponse
+                    @expr
+                        await 
+                            _ response.json()
+                        :as 
+                            :ref PostResponse
+                return 
+                    _ json
+                        _ postResponse.data.map
+                            => 
+                                param post
+                                (
+                                    { 
+                                        @ ...post
+                                        { attributes
+                                            @ ...post.attributes
+                                            @ article marked(post.attributes.article)
+    export-default 
+        function Index
+            const posts
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                < React.Fragment
+                    { 
+                        _ posts.map
+                            => 
+                                param post
+                                const 
+                                    { 
+                                        @ title
+                                        @ article
+                                        @ createdAt
+                                    = post.attributes
+                                const date
+                                    _ new Date(createdAt).toLocaleString
+                                        @ "en-US"
+                                        { 
+                                            @ weekday "long"
+                                            @ year "numeric"
+                                            @ month "long"
+                                            @ day "numeric"
+                                return 
+                                    article 
+                                        @ key {post.id}
+                                        h1 
+                                            + {title}
+                                        time 
+                                            @ dateTime {createdAt}
+                                            + {date}
+                                        { 
+                                            # 
+                                                # Reminder that this can in fact be dangerous
+                                                # https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml
+                                        div 
+                                            @ dangerouslySetInnerHTML
+                                                { 
+                                                    @ __html article

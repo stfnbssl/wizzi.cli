@@ -1,0 +1,19 @@
+module
+    kind react
+    const 
+        { 
+            @ setupServer
+        = require("msw/node")
+    const server = setupServer()
+    _ server.listen
+        { 
+            @ onUnhandledRequest "bypass"
+    _ console.info("🔶 Mock server running")
+    _ process.once
+        @ "SIGINT"
+        => 
+            _ server.close()
+    _ process.once
+        @ "SIGTERM"
+        => 
+            _ server.close()

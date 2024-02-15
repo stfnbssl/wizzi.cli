@@ -1,0 +1,17 @@
+module
+    import cx from "clsx"
+    export 
+        function Note
+            { 
+                @ children
+                @ className
+                :ref React.PropsWithChildren
+                    :param 
+                        :{ 
+                            :p className
+                                :optional 
+                                :string 
+            return 
+                div 
+                    @ className {cx(className, "ui--note")}
+                    + {children}

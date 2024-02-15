@@ -1,0 +1,95 @@
+module
+    :import-type 
+        @ Password
+        @ User
+        from "@prisma/client"
+    import bcrypt from "bcryptjs"
+    import 
+        @ prisma
+        from "~/db.server"
+    export 
+        @ User
+        from "@prisma/client"
+    export 
+        async-function getUserById
+            param id
+                :[] 
+                    :ref User
+                    :literal "id"
+            return 
+                _ prisma.user.findUnique
+                    { 
+                        { where
+                            @ id
+    export 
+        async-function getUserByEmail
+            param email
+                :[] 
+                    :ref User
+                    :literal "email"
+            return 
+                _ prisma.user.findUnique
+                    { 
+                        { where
+                            @ email
+    export 
+        async-function createUser
+            param email
+                :[] 
+                    :ref User
+                    :literal "email"
+            param password
+                :string 
+            const hashedPassword
+                await 
+                    _ bcrypt.hash(password, 10)
+            return 
+                _ prisma.user.create
+                    { 
+                        { data
+                            @ email
+                            { password
+                                { create
+                                    @ hash hashedPassword
+    export 
+        async-function deleteUserByEmail
+            param email
+                :[] 
+                    :ref User
+                    :literal "email"
+            return 
+                _ prisma.user.delete
+                    { 
+                        { where
+                            @ email
+    export 
+        async-function verifyLogin
+            param email
+                :[] 
+                    :ref User
+                    :literal "email"
+            param password
+                :[] 
+                    :ref Password
+                    :literal "hash"
+            const userWithPassword
+                await 
+                    _ prisma.user.findUnique
+                        { 
+                            { where
+                                @ email
+                            { include
+                                @ password true
+            if !userWithPassword || !userWithPassword.password
+                return null
+            const isValid
+                await 
+                    _ bcrypt.compare(password, userWithPassword.password.hash)
+            if !isValid
+                return null
+            const 
+                { 
+                    @ password _password
+                    ... userWithoutPassword
+                = userWithPassword
+            return userWithoutPassword

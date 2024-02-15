@@ -1,0 +1,11 @@
+module
+    import 
+        @ defineConfig
+        @ presetUno
+        from "unocss"
+    export-default 
+        _ defineConfig
+            { 
+                [ presets
+                    @ presetUno()
+                    # more presets: https://uno.antfu.me/?s=preset

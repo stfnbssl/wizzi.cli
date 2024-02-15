@@ -1,0 +1,31 @@
+module
+    kind react
+    const express = require("express")
+    const 
+        { 
+            @ prodHandler
+            @ devHandler
+        = require("./utils")
+    const app = express()
+    const port = 3535
+    _ main()
+    function main
+        _ app.use
+            _ express.static
+                @ "public"
+                { 
+                    @ immutable true
+                    @ maxAge "1y"
+        _ app.all
+            @ "*"
+            iif process.env.NODE_ENV === "production"
+                then prodHandler()
+                else devHandler()
+        _ app.listen
+            @ port
+            => 
+                _ console.log
+                    `lit 
+                        + Express server started on http://localhost:
+                        @ port
+                        + 

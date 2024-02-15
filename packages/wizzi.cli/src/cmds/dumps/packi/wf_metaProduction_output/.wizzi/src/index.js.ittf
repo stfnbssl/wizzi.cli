@@ -1,41 +1,25 @@
 module
-    kind es6
-    $
-        var md = {
-            isGetApp: false
-        }
-    $if wzCtx.Build.useNetlify
-        index/start(&md)
-    $else
-        index/imports(&md)
-        var app
-            {
-                @ instance null
-        async-function start
-            index/start(&md)
-            _ app.instance.listen
-        try
-            _ start
-        catch ex
-            error ex
-    $if wzCtx.Build.useNetlify
-        set module.exports = app.instance
-        set module.exports.handler = serverless(app.instance)
-    $else
-        export
-            function close
-                param done
-                try
-                    _ console.log
-                        `lit
-                            + Index closing.
-                    _ console.log
-                        `lit
-                            + app.instance.close:
-                            @ app.instance.close
-                    _ app.instance.close
-                        =>
-                            _ done
-                catch ex
-                    error 'index.close. Exception:', ex
-                    _ done
+    kind react
+    import React from 'react'
+    import
+        @ createRoot
+        from "react-dom/client"
+    import './style.css'
+    import Icon from './icon.png'
+    import jsonData from './data.json'
+    import yamlData from './data.yaml'
+    info 'jsonData', jsonData
+    info 'yamlData', yamlData
+    function Hello
+        return
+            div
+                @ className hello
+                h1
+                    + Hello webpack
+                img
+                    @ src {Icon}
+    # import Hello from "./Hello"
+    const container = document.getElementById("root")
+    const root = createRoot(container)
+    _ root.render
+        < Hello

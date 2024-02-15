@@ -1,0 +1,205 @@
+module
+    :import-type 
+        @ RemoveIndex
+        from "~/utils/types"
+    export 
+        function getUserDisplayName
+            param user
+                :{ 
+                    :p nameFirst
+                        :string 
+                    :p nameLast
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+            return 
+                [ 
+                    @ user.nameFirst
+                    @ user.nameLast
+                    ._ filter
+                        @ Boolean
+                    ._ join
+                        @ " "
+    export 
+        function getUserFromDisplayName
+            :< U
+                :{ 
+                    :p nameFirst
+                        :string 
+                    :p nameLast
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+            param users
+                :ref Array
+                    :param 
+                        :ref U
+            param displayName
+                :string 
+            return 
+                _ users.find
+                    => 
+                        param u
+                        set getUserDisplayName(u) === displayName
+    export 
+        const canUseDOM
+            :boolean 
+            = !!(typeof document !== "undefined" && typeof document.createElement !== "undefined")
+    export 
+        function getClientSafeEnvVariable
+            :< K
+                :keyof 
+                    :ref RemoveIndex
+                        :param 
+                            :ref Exclude
+                                :param 
+                                    :[] 
+                                        :ref Window
+                                        :literal "ENV"
+                                :param undefined
+            param key
+                :ref K
+            :return
+                :[] 
+                    :ref Exclude
+                        :param 
+                            :[] 
+                                :ref Window
+                                :literal "ENV"
+                        :param undefined
+                    :ref K
+            if typeof document !== "undefined"
+                try 
+                    const ENV = window.ENV
+                    if !ENV
+                        throw 
+                            _ Error
+                                `lit 
+                                    + ENV is not available in the browser in this context. Check \`root.tsx\` and make sure you're setting \`window.ENV\` before rendering \`<Scripts />\`.
+                    if ENV[key] === undefined
+                        throw 
+                            _ Error
+                                `lit 
+                                    + The environment variable \`
+                                    @ key
+                                    + \` is not available in the browser in this context.
+                    return ENV[key]
+                catch error
+                    _ console.error("There was an error parsing window.ENV. See https://remix.run/guides/envvars#browser-environment-variables")
+                    throw error
+            else
+                return process.env[key]
+    export 
+        function getServerSafeEnvVariable
+            :< K
+                :keyof 
+                    :ref RemoveIndex
+                        :param 
+                            :ref NodeJS.ProcessEnv
+            param key
+                :ref K
+            :return
+                :ref Exclude
+                    :param 
+                        :[] 
+                            :ref NodeJS.ProcessEnv
+                            :ref K
+                    :param undefined
+            try 
+                const val
+                    :any 
+                    = process.env[key]
+                if !val
+                    throw 
+                        _ Error
+                            `lit 
+                                + Missing env variable:&nbsp;
+                                @ key
+                                + 
+                return val
+            catch _
+                throw Error("You tried to access a server-side environment variable on the client!")
+    export 
+        function composeEventHandlers
+            :< EventType
+                :union 
+                    :ref React.SyntheticEvent
+                    :ref Event
+            param theirHandler
+                :union 
+                    :paren 
+                        :=> 
+                            :any 
+                            param event
+                                :ref EventType
+                    :undefined 
+            param ourHandler
+                :=> 
+                    :any 
+                    param event
+                        :ref EventType
+            :return
+                :=> 
+                    :any 
+                    param event
+                        :ref EventType
+            return 
+                => 
+                    param event
+                    @expr theirHandler && theirHandler(event)
+                    if !event.defaultPrevented
+                        return ourHandler(event)
+    export 
+        function isExternalUrl
+            param str
+                :string 
+            return /^((https?:|s?ftp:|file:\/|chrome:)?\/\/|mailto:|tel:)/.test(str.toLowerCase())
+    export 
+        function isObject
+            param value
+                :any 
+            :return
+                :predicate value
+                    :object 
+            const type = typeof value
+            return value != null && (type === "object" || type === "function")
+    export 
+        function isFunction
+            param val
+                :any 
+            :return
+                :predicate val
+                    :ref Function
+            return typeof val === "function"
+    export 
+        function isPlainObject
+            param value
+                :any 
+            :return
+                :boolean 
+            let tag
+                :string 
+            if value == null
+                set tag =
+                    iif value === undefined
+                        then "[object Undefined]"
+                        else "[object Null]"
+            else
+                set tag = Object.prototype.toString.call(value)
+            if !isObjectLike(value) || tag != "[object Object]"
+                return false
+            if Object.getPrototypeOf(value) === null
+                return true
+            let proto = value
+            while Object.getPrototypeOf(proto) !== null
+                set proto = Object.getPrototypeOf(proto)
+            return Object.getPrototypeOf(value) === proto
+    export 
+        function isObjectLike
+            param value
+                :any 
+            :return
+                :boolean 
+            return typeof value === "object" && value !== null

@@ -1,0 +1,54 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ deleteTodo
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                if request.method.toLowerCase() === "post"
+                    const todoId
+                        @expr params.todoId
+                            :as 
+                                :string 
+                    if !todoId || typeof todoId !== "string"
+                        throw 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                    try 
+                        return 
+                            _ json
+                                { 
+                                    @ todo
+                                        await 
+                                            _ deleteTodo(todoId)
+                    catch 
+                        return 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                return 
+                    _ json
+                        { 
+                            @ todo null
+                        @ 400

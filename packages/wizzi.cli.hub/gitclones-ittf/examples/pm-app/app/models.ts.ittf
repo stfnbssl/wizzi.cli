@@ -1,0 +1,99 @@
+module
+    :import-type 
+        @ User
+        @ Project
+            as _Project
+        @ TodoList
+            as _TodoList
+        @ Todo
+        from "@prisma/client"
+    export 
+        @ User
+        @ Todo
+    export 
+        :type Project
+            :intersect 
+                :ref _Project
+                :{ 
+                    :p members
+                        :[ 
+                            :ref UserSecure
+                    :p todoLists
+                        :[ 
+                            :ref TodoList
+    export 
+        :type TodoList
+            :intersect 
+                :ref _TodoList
+                :{ 
+                    :p todos
+                        :[ 
+                            :ref Todo
+    export 
+        :type UserSecure
+            :ref Omit
+                :param 
+                    :ref User
+                :param 
+                    :literal "passwordHash"
+    export 
+        :type TodoData
+            :ref Omit
+                :param 
+                    :intersect 
+                        :ref Pick
+                            :param 
+                                :ref Todo
+                            :param 
+                                :union 
+                                    :literal "name"
+                                    :literal "todoListId"
+                        :ref Partial
+                            :param 
+                                :ref Omit
+                                    :param 
+                                        :ref Todo
+                                    :param 
+                                        :union 
+                                            :literal "name"
+                                            :literal "todoListId"
+                :param 
+                    :union 
+                        :literal "createdAt"
+                        :literal "updatedAt"
+    export 
+        :type TodoDataUnordered
+            :intersect 
+                :ref Omit
+                    :param 
+                        :ref TodoData
+                    :param 
+                        :union 
+                            :literal "order"
+                            :literal "todoListId"
+                :{ 
+                    :p order
+                        :optional 
+                        :never 
+                    :p todoListId
+                        :optional 
+                        :never 
+    export 
+        :type TodoDataOrdered
+            :intersect 
+                :ref Omit
+                    :param 
+                        :ref TodoData
+                    :param 
+                        :union 
+                            :literal "order"
+                            :literal "todoListId"
+                :ref Required
+                    :param 
+                        :ref Pick
+                            :param 
+                                :ref TodoData
+                            :param 
+                                :union 
+                                    :literal "order"
+                                    :literal "todoListId"

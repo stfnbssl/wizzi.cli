@@ -1,0 +1,9 @@
+module
+    import styled from "styled-components"
+    export 
+        const Box
+            _` styled("div")
+                + &lf;
+                + &nbsp; font-family: system-ui, sans-serif;&lf;
+                + &nbsp; line-height: 1.8;&lf;
+                + 

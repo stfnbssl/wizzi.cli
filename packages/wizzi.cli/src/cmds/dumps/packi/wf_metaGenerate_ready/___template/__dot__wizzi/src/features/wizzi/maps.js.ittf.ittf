@@ -1,0 +1,3 @@
+module 
+   kind es6
+   $include jsExpressFeatureWizzi/wizzi/maps.js

@@ -1,0 +1,64 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ auth
+        @ getSession
+        from "~/utils/auth.server"
+    :type LoaderError
+        :union 
+            :{ 
+                :p message
+                    :string 
+            :null 
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                await 
+                    _ auth.isAuthenticated
+                        @ request
+                        { 
+                            @ successRedirect "/private"
+                const session
+                    await 
+                        _ getSession(request.headers.get("Cookie"))
+                const error
+                    _ session.get(auth.sessionErrorKey)
+                        :as 
+                            :ref LoaderError
+                return 
+                    _ json
+                        { 
+                            @ error
+    export-default 
+        function Index
+            const 
+                { 
+                    @ error
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                < Form 
+                    @ method "post"
+                    @ action "/auth0"
+                    { 
+                        iif error
+                            then
+                                div 
+                                    + {error.message}
+                            else null
+                    button 
+                        + Sign In with Auth0

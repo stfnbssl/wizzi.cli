@@ -77,7 +77,8 @@
             ],
             "pluginsBaseFolder": "C:/My/wizzi/stfnbssl/wizzi/packages",
             "globalContext": {
-                "wzConfigIsDevelopment": true
+                "wzConfigIsDevelopment": true,
+                "wzConfigIsPackageDeploy": false
             },
             "useRunner": false
         },

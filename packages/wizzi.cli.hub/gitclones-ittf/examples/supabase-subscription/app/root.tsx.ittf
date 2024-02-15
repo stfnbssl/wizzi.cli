@@ -1,0 +1,70 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ createClient
+        from "@supabase/supabase-js"
+    import 
+        @ Provider
+        from "react-supabase"
+    export 
+        const loader
+            async=> 
+                return 
+                    _ json
+                        { 
+                            { ENV
+                                @ SUPABASE_URL
+                                    @expr process.env.SUPABASE_URL
+                                        :as 
+                                            :string 
+                                @ SUPABASE_ANON_KEY
+                                    @expr process.env.SUPABASE_ANON_KEY
+                                        :as 
+                                            :string 
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    export-default 
+        function App
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        { 
+                            iif data
+                                then
+                                    < Provider 
+                                        @ value {createClient(data.ENV.SUPABASE_URL, data.ENV.SUPABASE_ANON_KEY)}
+                                        < Outlet 
+                                else null
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 

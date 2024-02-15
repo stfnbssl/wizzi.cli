@@ -1,0 +1,22 @@
+module
+    import 
+        @ createContext
+        from "react"
+    export 
+        :interface ServerStyleContextData
+            :p key
+                :string 
+            :p ids
+                :ref Array
+                    :param string
+            :p css
+                :string 
+    const ServerStyleContext
+        _ createContext
+            :param 
+                :union 
+                    :null 
+                    :[ 
+                        :ref ServerStyleContextData
+            @ null
+    export-default ServerStyleContext

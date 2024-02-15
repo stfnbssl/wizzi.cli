@@ -1,0 +1,105 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useCatch
+        from "@remix-run/react"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ viewport "width=device-width,initial-scale=1"
+    export-default 
+        function App
+            return 
+                < Document 
+                    main 
+                        < Outlet 
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            _ console.error(error)
+            return 
+                < Document 
+                    @ title "Error!"
+                    div 
+                        h1 
+                            + There was an error
+                        p 
+                            + {error.message}
+                        hr 
+                        p 
+                            + Hey, developer, you should replace this with what you want your users&lf;          to see.
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            let message
+            switch caught.status
+                case 401
+                    set message =
+                        p 
+                            + Oops! Looks like you tried to visit a page that you do not have access&lf;          to.
+                    break 
+                case 404
+                    set message =
+                        p 
+                            + Oops! Looks like you tried to visit a page that does not exist.
+                    break 
+                default 
+                    throw new Error(caught.data || caught.statusText)
+            return 
+                < Document 
+                    @ title
+                        `lit 
+                            + 
+                            @ caught.status
+                            + &nbsp;
+                            @ caught.statusText
+                            + 
+                    h1 
+                        + {caught.status}
+                        + :
+                        + {caught.statusText}
+                    + {message}
+    function Document
+        { 
+            @ children
+            @ title
+            :{ 
+                :p children
+                    :ref React.ReactNode
+                :p title
+                    :optional 
+                    :string 
+        return 
+            html 
+                @ lang "en"
+                head 
+                    { 
+                        iif title
+                            then
+                                < title 
+                                    + {title}
+                            else null
+                    < Meta 
+                    < Links 
+                body 
+                    + {children}
+                    < ScrollRestoration 
+                    < Scripts 
+                    < LiveReload 

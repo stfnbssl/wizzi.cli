@@ -1,0 +1,34 @@
+module
+    :import-type 
+        @ Post
+        from "@prisma/client"
+    import 
+        @ prisma
+        from "~/db.server"
+    export 
+        async-function getPosts
+            return prisma.post.findMany()
+    export 
+        async-function getPost
+            param slug
+                :string 
+            return 
+                _ prisma.post.findUnique
+                    { 
+                        { where
+                            @ slug
+    export 
+        async-function createPost
+            param post
+                :ref Pick
+                    :param 
+                        :ref Post
+                    :param 
+                        :union 
+                            :literal "slug"
+                            :literal "title"
+                            :literal "markdown"
+            return 
+                _ prisma.post.create
+                    { 
+                        @ data post

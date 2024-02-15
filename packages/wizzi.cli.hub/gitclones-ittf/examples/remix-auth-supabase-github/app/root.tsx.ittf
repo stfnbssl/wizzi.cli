@@ -1,0 +1,63 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useLoaderData
+        from "@remix-run/react"
+    export 
+        const loader
+            async=> 
+                return 
+                    _ json
+                        { 
+                            { env
+                                @ SUPABASE_URL process.env.SUPABASE_URL
+                                @ PUBLIC_SUPABASE_ANON_KEY process.env.PUBLIC_SUPABASE_ANON_KEY
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    export-default 
+        function App
+            const 
+                { 
+                    @ env
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        < Outlet 
+                        < ScrollRestoration 
+                        script 
+                            @ dangerouslySetInnerHTML
+                                { 
+                                    @ __html
+                                        `lit 
+                                            + window.env =&nbsp;
+                                            _ JSON.stringify(env)
+                                            + 
+                        < Scripts 
+                        < LiveReload 

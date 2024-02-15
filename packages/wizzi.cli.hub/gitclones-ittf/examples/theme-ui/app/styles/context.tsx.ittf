@@ -1,0 +1,37 @@
+module
+    import 
+        @ createContext
+        from "react"
+    export 
+        :type ServerStyleContextData
+            :{ 
+                :p key
+                    :string 
+                :p ids
+                    :[ 
+                        :string 
+                :p css
+                    :string 
+    export 
+        const ServerStyleContext
+            _ createContext
+                :param 
+                    :union 
+                        :[ 
+                            :ref ServerStyleContextData
+                        :null 
+                @ null
+    export 
+        :type ClientStyleContextData
+            :{ 
+                :p reset
+                    :=> 
+                        :void 
+    export 
+        const ClientStyleContext
+            _ createContext
+                :param 
+                    :union 
+                        :ref ClientStyleContextData
+                        :null 
+                @ null

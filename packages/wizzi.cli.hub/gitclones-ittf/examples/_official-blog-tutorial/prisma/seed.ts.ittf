@@ -1,0 +1,108 @@
+module
+    import 
+        @ PrismaClient
+        from "@prisma/client"
+    import bcrypt from "bcryptjs"
+    const prisma = new PrismaClient()
+    async-function seed
+        const email = "rachel@remix.run"
+            # cleanup the existing database
+        await 
+            _ prisma.user.delete
+                { 
+                    { where
+                        @ email
+                ._ catch
+                    => 
+            # cleanup the existing database
+        const hashedPassword
+            await 
+                _ bcrypt.hash("racheliscool", 10)
+        const user
+            await 
+                _ prisma.user.create
+                    { 
+                        { data
+                            @ email
+                            { password
+                                { create
+                                    @ hash hashedPassword
+        await 
+            _ prisma.note.create
+                { 
+                    { data
+                        @ title "My first note"
+                        @ body "Hello, world!"
+                        @ userId user.id
+        await 
+            _ prisma.note.create
+                { 
+                    { data
+                        @ title "My second note"
+                        @ body "Hello, world!"
+                        @ userId user.id
+        const posts
+            [ 
+                { 
+                    @ slug "my-first-post"
+                    @ title "My First Post"
+                    @ markdown
+                        _ 
+                            `lit 
+                                + &lf;
+                                + # This is my first post&lf;
+                                + &lf;
+                                + Isn't it great?&lf;
+                                + &nbsp;    &nbsp;
+                            ._ trim
+                { 
+                    @ slug "90s-mixtape"
+                    @ title "A Mixtape I Made Just For You"
+                    @ markdown
+                        _ 
+                            `lit 
+                                + &lf;
+                                + # 90s Mixtape&lf;
+                                + &lf;
+                                + - I wish (Skee-Lo)&lf;
+                                + - This Is How We Do It (Montell Jordan)&lf;
+                                + - Everlong (Foo Fighters)&lf;
+                                + - Ms. Jackson (Outkast)&lf;
+                                + - Interstate Love Song (Stone Temple Pilots)&lf;
+                                + - Killing Me Softly With His Song (Fugees, Ms. Lauryn Hill)&lf;
+                                + - Just a Friend (Biz Markie)&lf;
+                                + - The Man Who Sold The World (Nirvana)&lf;
+                                + - Semi-Charmed Life (Third Eye Blind)&lf;
+                                + - ...Baby One More Time (Britney Spears)&lf;
+                                + - Better Man (Pearl Jam)&lf;
+                                + - It's All Coming Back to Me Now (Céline Dion)&lf;
+                                + - This Kiss (Faith Hill)&lf;
+                                + - Fly Away (Lenny Kravits)&lf;
+                                + - Scar Tissue (Red Hot Chili Peppers)&lf;
+                                + - Santa Monica (Everclear)&lf;
+                                + - C'mon N' Ride it (Quad City DJ's)&lf;
+                                + &nbsp;    &nbsp;
+                            ._ trim
+        for 
+            left
+                const post
+            of posts
+            await 
+                _ prisma.post.upsert
+                    { 
+                        { where
+                            @ slug post.slug
+                        @ update post
+                        @ create post
+        _ console.log
+            `lit 
+                + Database has been seeded. 🌱
+    _ seed().catch
+        => 
+            param e
+            _ console.error(e)
+            _ process.exit(1)
+        ._ finally
+            async=> 
+                await 
+                    _ prisma.$disconnect()

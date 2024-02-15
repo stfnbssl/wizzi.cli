@@ -1,0 +1,48 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ User
+        from "~/models"
+    const AuthHeader
+        :ref React.VFC
+            :param 
+                :{ 
+                    :p className
+                        :optional 
+                        :string 
+                    :m onLogOut
+                        :void 
+                        param event
+                            :ref React.FormEvent
+                                :param 
+                                    :ref HTMLFormElement
+                    :p user
+                        :ref User
+        =
+            => 
+                { 
+                    @ className
+                    @ user
+                    @ onLogOut
+                return 
+                    header 
+                        @ className {cx(className)}
+                        div 
+                            div 
+                                p 
+                                    + You are currently logged in as
+                                    strong 
+                                        + {user.email}
+                                    + .
+                                form 
+                                    @ action "/logout"
+                                    @ method "post"
+                                    @ onSubmit {onLogOut}
+                                    button 
+                                        @ type "submit"
+                                        + Log Out
+    export 
+        @ AuthHeader

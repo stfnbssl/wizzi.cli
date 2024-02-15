@@ -1,0 +1,167 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    const Stack
+        _ React.forwardRef
+            :param 
+                :ref HTMLDivElement
+            :param 
+                :ref StackProps
+            => 
+                { 
+                    @ children
+                    @ className
+                    @ align
+                        = "start"
+                    @ gap
+                        = 0
+                    ... props
+                param forwardedRef
+                const alignments
+                    :ref Partial
+                        :param 
+                            :ref Record
+                                :param 
+                                    :ref AlignClass
+                                :param boolean
+                    =
+                        iif typeof align === "object"
+                            then
+                                _ Object.entries(align).reduce
+                                    => 
+                                        param acc
+                                        param cur
+                                        const vp
+                                            @expr cur[0]
+                                                :as 
+                                                    :ref Viewport
+                                        const al = cur[1]
+                                        const key
+                                            :ref AlignClass
+                                            =
+                                                `lit 
+                                                    + ui--stack--align-
+                                                    @ vp
+                                                    + -
+                                                    @ al
+                                                    + 
+                                        return 
+                                            { 
+                                                @ ...acc
+                                                @ [key] true
+                                    { 
+                            else
+                                { 
+                                    @[
+                                        `lit 
+                                            + ui--stack--align-default-
+                                            @ align
+                                            + 
+                                        + true
+                const gaps
+                    :ref Partial
+                        :param 
+                            :ref Record
+                                :param 
+                                    :ref GapClass
+                                :param boolean
+                    =
+                        iif typeof gap === "object"
+                            then
+                                _ Object.entries(gap).reduce
+                                    => 
+                                        param acc
+                                        param cur
+                                        const vp
+                                            @expr cur[0]
+                                                :as 
+                                                    :ref Viewport
+                                        const gap = cur[1]
+                                        const key
+                                            :ref GapClass
+                                            =
+                                                `lit 
+                                                    + ui--stack--gap-
+                                                    @ vp
+                                                    + -
+                                                    @ gap
+                                                    + 
+                                        return 
+                                            { 
+                                                @ ...acc
+                                                @ [key] true
+                                    { 
+                            else
+                                { 
+                                    @[
+                                        `lit 
+                                            + ui--stack--gap-default-
+                                            @ gap
+                                            + 
+                                        + true
+                return 
+                    div 
+                        @ ref {forwardedRef}
+                        @ className {cx("ui--stack", alignments, gaps)}
+                        @ {...props}
+                        + {children}
+    set Stack.displayName = "Stack"
+    :interface StackProps
+        :extends React.ComponentPropsWithRef
+            :param 
+                :literal "div"
+        :p align
+            :optional 
+            :union 
+                :ref Alignment
+                :ref Record
+                    :param 
+                        :union 
+                            :literal "default"
+                            :ref Viewport
+                    :param 
+                        :ref Alignment
+        :p gap
+            :optional 
+            :union 
+                :ref Gap
+                :ref Record
+                    :param 
+                        :union 
+                            :literal "default"
+                            :ref Viewport
+                    :param 
+                        :ref Gap
+    :type Alignment
+        :union 
+            :literal "start"
+            :literal "center"
+            :literal "end"
+    :type Viewport
+        :union 
+            :literal "sm"
+            :literal "md"
+            :literal "lg"
+            :literal "xl"
+            :literal "2x"
+            :literal "3x"
+    :type Gap
+        :union 
+            :literal 0
+            :literal 1
+            :literal 2
+            :literal 3
+            :literal 4
+            :literal 5
+    :type BaseClass
+        :literal 
+    :type AlignClass
+        :literal 
+    :type GapClass
+        :literal 
+    export 
+        @ StackProps
+    export 
+        @ Stack

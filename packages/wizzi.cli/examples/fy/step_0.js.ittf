@@ -1,6 +1,8 @@
 module
     kind jsfile
-
-    let arg = process.argv[2]
+    const minimist = require('minimist')
+    +
+    const args = minimist(process.argv.slice(2))
+    log 'fy.step_0.args', args
     var fy = require('../../src/cmds/fy');
-    _ fy(arg)
+    _ fy(args)

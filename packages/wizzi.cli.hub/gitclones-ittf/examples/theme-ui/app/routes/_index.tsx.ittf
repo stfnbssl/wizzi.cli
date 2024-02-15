@@ -1,0 +1,27 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+        #
+            # * @jsx jsx
+    import 
+        @ jsx
+        from "@theme-ui/core"
+    export-default 
+        function Index
+            return 
+                div 
+                    @ sx
+                        { 
+                            @ backgroundColor "primary"
+                    h1 
+                        + Welcome to Remix with Emotion Example
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/jokes"
+                                + Jokes
+                        li 
+                            < Link 
+                                @ to "/jokes-error"
+                                + Jokes: Error

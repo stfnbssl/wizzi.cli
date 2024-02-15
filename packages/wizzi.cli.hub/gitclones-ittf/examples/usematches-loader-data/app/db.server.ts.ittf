@@ -1,0 +1,26 @@
+module
+    :import-type 
+        @ User
+        from "./useUser"
+        #
+            # *
+            # * Mock db/session function
+            # 
+    function getCurrentUser
+        :return
+            :ref Promise
+                :param 
+                    :union 
+                        :ref User
+                        :undefined 
+        return 
+            _ Promise.resolve
+                { 
+                    @ name "John Doe"
+                    @ email "john.doe@email.com"
+        #
+            # *
+            # * Mock db/session function
+            # 
+    export 
+        @ getCurrentUser

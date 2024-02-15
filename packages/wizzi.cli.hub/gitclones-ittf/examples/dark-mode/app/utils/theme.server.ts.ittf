@@ -1,0 +1,49 @@
+module
+    import 
+        @ createCookieSessionStorage
+        from "@remix-run/node"
+    import 
+        @ isTheme
+        from "./theme-provider"
+    :import-type 
+        @ Theme
+        from "./theme-provider"
+        # Make use to set the environment variable SESSION_SECRET before running the code
+    const sessionSecret = process.env.SESSION_SECRET ?? "DEFAULT_SECRET"
+        # Make use to set the environment variable SESSION_SECRET before running the code
+    const themeStorage
+        _ createCookieSessionStorage
+            { 
+                { cookie
+                    @ name "my_remix_theme"
+                    @ secure true
+                    [ secrets
+                        @ sessionSecret
+                    @ sameSite "lax"
+                    @ path "/"
+                    @ httpOnly true
+    async-function getThemeSession
+        param request
+            :ref Request
+        const session
+            await 
+                _ themeStorage.getSession(request.headers.get("Cookie"))
+        return 
+            { 
+                @ getTheme
+                    => 
+                        const themeValue = session.get("theme")
+                        return 
+                            iif isTheme(themeValue)
+                                then themeValue
+                                else null
+                @ setTheme
+                    => 
+                        param theme
+                            :ref Theme
+                        _ session.set("theme", theme)
+                @ commit
+                    => 
+                        _ themeStorage.commitSession(session)
+    export 
+        @ getThemeSession

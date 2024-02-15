@@ -1,0 +1,122 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        @ useNavigate
+        from "@remix-run/react"
+    import invariant from "tiny-invariant"
+    import 
+        @ getContact
+        @ updateContact
+        from "../data"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                _ invariant(params.contactId, "Missing contactId param")
+                const formData
+                    await 
+                        _ request.formData()
+                const updates = Object.fromEntries(formData)
+                await 
+                    _ updateContact(params.contactId, updates)
+                return 
+                    _ redirect
+                        `lit 
+                            + /contacts/
+                            @ params.contactId
+                            + 
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                _ invariant(params.contactId, "Missing contactId param")
+                const contact
+                    await 
+                        _ getContact(params.contactId)
+                if !contact
+                    throw 
+                        new Response
+                            @ "Not Found"
+                            { 
+                                @ status 404
+                return 
+                    _ json
+                        { 
+                            @ contact
+    export-default 
+        function EditContact
+            const 
+                { 
+                    @ contact
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            const navigate = useNavigate()
+            return 
+                < Form 
+                    @ id "contact-form"
+                    @ method "post"
+                    p 
+                        span 
+                            + Name
+                        input 
+                            @ defaultValue {contact.first}
+                            @ aria-label "First name"
+                            @ name "first"
+                            @ type "text"
+                            @ placeholder "First"
+                        input 
+                            @ aria-label "Last name"
+                            @ defaultValue {contact.last}
+                            @ name "last"
+                            @ placeholder "Last"
+                            @ type "text"
+                    label 
+                        span 
+                            + Twitter
+                        input 
+                            @ defaultValue {contact.twitter}
+                            @ name "twitter"
+                            @ placeholder "@jack"
+                            @ type "text"
+                    label 
+                        span 
+                            + Avatar URL
+                        input 
+                            @ aria-label "Avatar URL"
+                            @ defaultValue {contact.avatar}
+                            @ name "avatar"
+                            @ placeholder "https://example.com/avatar.jpg"
+                            @ type "text"
+                    label 
+                        span 
+                            + Notes
+                        textarea 
+                            @ defaultValue {contact.notes}
+                            @ name "notes"
+                            @ rows {6}
+                    p 
+                        button 
+                            @ type "submit"
+                            + Save
+                        button 
+                            @ onClick
+                                => 
+                                    _ navigate(-1)
+                            @ type "button"
+                            + Cancel

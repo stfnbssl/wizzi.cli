@@ -5,9 +5,10 @@ $group
         useErrors false
         useStaticFiles true
         { staticFiles
-            basePath "__dirname, '..', '..'"
         useSessionStore false
         useExpressValidator true
+    useIttfStaticFiles true
+    { ittfStaticFiles
     useSession true
     { session
         name "js.express"

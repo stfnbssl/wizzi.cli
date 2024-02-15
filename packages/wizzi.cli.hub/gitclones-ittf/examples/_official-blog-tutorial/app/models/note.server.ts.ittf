@@ -1,0 +1,103 @@
+module
+    :import-type 
+        @ User
+        @ Note
+        from "@prisma/client"
+    import 
+        @ prisma
+        from "~/db.server"
+    export 
+        function getNote
+            { 
+                @ id
+                @ userId
+                :intersect 
+                    :ref Pick
+                        :param 
+                            :ref Note
+                        :param 
+                            :literal "id"
+                    :{ 
+                        :p userId
+                            :[] 
+                                :ref User
+                                :literal "id"
+            return 
+                _ prisma.note.findFirst
+                    { 
+                        { select
+                            @ id true
+                            @ body true
+                            @ title true
+                        { where
+                            @ id
+                            @ userId
+    export 
+        function getNoteListItems
+            { 
+                @ userId
+                :{ 
+                    :p userId
+                        :[] 
+                            :ref User
+                            :literal "id"
+            return 
+                _ prisma.note.findMany
+                    { 
+                        { where
+                            @ userId
+                        { select
+                            @ id true
+                            @ title true
+                        { orderBy
+                            @ updatedAt "desc"
+    export 
+        function createNote
+            { 
+                @ body
+                @ title
+                @ userId
+                :intersect 
+                    :ref Pick
+                        :param 
+                            :ref Note
+                        :param 
+                            :union 
+                                :literal "body"
+                                :literal "title"
+                    :{ 
+                        :p userId
+                            :[] 
+                                :ref User
+                                :literal "id"
+            return 
+                _ prisma.note.create
+                    { 
+                        { data
+                            @ title
+                            @ body
+                            { user
+                                { connect
+                                    @ id userId
+    export 
+        function deleteNote
+            { 
+                @ id
+                @ userId
+                :intersect 
+                    :ref Pick
+                        :param 
+                            :ref Note
+                        :param 
+                            :literal "id"
+                    :{ 
+                        :p userId
+                            :[] 
+                                :ref User
+                                :literal "id"
+            return 
+                _ prisma.note.deleteMany
+                    { 
+                        { where
+                            @ id
+                            @ userId

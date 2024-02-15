@@ -1,0 +1,9 @@
+module
+    kind react
+    set module.exports =
+        { 
+            [ ignoredRouteFiles
+                @ "**/.*"
+            @ serverModuleFormat "cjs"
+        #
+            # * @type {import('@remix-run/dev').AppConfig}

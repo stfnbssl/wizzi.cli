@@ -1,0 +1,45 @@
+module
+    :import-type 
+        @ AppLoadContext
+        @ EntryContext
+        from "@remix-run/node"
+    import 
+        @ RemixServer
+        from "@remix-run/react"
+    import 
+        @ renderToString
+        from "react-dom/server"
+    import 
+        @ getCssText
+        from "~/styles/stitches.config"
+    export-default 
+        function handleRequest
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            param loadContext
+                :ref AppLoadContext
+            let markup
+                _ renderToString
+                    < RemixServer 
+                        @ context {remixContext}
+                        @ url {request.url}
+            set markup =
+                _ markup.replace
+                    @ /<style id="stitches">.*<\/style>/g
+                    `lit 
+                        + <style id="stitches">
+                        _ getCssText()
+                        + </style>
+            _ responseHeaders.set("Content-Type", "text/html")
+            return 
+                new Response
+                    set "<!DOCTYPE html>" + markup
+                    { 
+                        @ status responseStatusCode
+                        @ headers responseHeaders

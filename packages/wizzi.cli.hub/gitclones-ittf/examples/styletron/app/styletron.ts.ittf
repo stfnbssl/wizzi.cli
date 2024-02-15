@@ -1,0 +1,57 @@
+module
+    import 
+        @ Client
+        @ Server
+        from "styletron-engine-atomic"
+        # or "styletron-engine-monolithic"
+        #
+            # *
+            # * The Styletron engine to use on the current runtime.
+            # 
+    export 
+        const styletron
+            iif typeof document === "undefined"
+                then new Server()
+                else
+                    new Client
+                        { 
+                            @ hydrate getHydrateClass()
+        # or "styletron-engine-monolithic"
+        #
+            # *
+            # * The Styletron engine to use on the current runtime.
+            # 
+    export 
+        function isStyletronClient
+            param engine
+                :typeof styletron
+            :return
+                :predicate engine
+                    :ref Client
+            return styletron instanceof Client
+    export 
+        function isStyletronServer
+            param engine
+                :typeof styletron
+            :return
+                :predicate engine
+                    :ref Server
+            return styletron instanceof Server
+    export 
+        function collectStyles
+            :return
+                :string 
+            if !isStyletronServer(styletron)
+                throw new Error("Can only collect styles during server-side rendering.")
+            return styletron.getStylesheetsHtml()
+    function getHydrateClass
+        :return
+            :ref HTMLCollectionOf
+                :param 
+                    :ref HTMLStyleElement
+        return 
+            _ document.getElementsByClassName("_styletron_hydrate_")
+                :as 
+                    :ref HTMLCollectionOf
+                        :param 
+                            :ref HTMLStyleElement

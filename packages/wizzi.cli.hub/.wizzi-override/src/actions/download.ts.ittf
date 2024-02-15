@@ -37,11 +37,14 @@ module
                     {
                         @ owner owner
                     a_then_catch_reject( result, :any, , download.downloadArtifact.getArtifactProductionList )
-                        if options.destPath
-                            _ writeJSONToDest
-                                @ options.destPath
-                                @ result
                         if options.destFolder
+                            _ writeJSONToDest
+                                _ path.join
+                                    @ options.destFolder
+                                    @ '..'
+                                    @ '.packi'
+                                    @ 'artifactList.json'
+                                @ result
                             foreach item in result.item
                                 const packiFiles
                                     :ref PackiFiles
@@ -51,13 +54,16 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
-                                            @ name verify.replaceAll(item.name, '/', '%2F')
+                                            @ name verify.replaceAll(item.name, '/', '_')
                                     _ path.join
                                         @ options.destFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
-                                    _ path.join
-                                        @ options.destMetaFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                        @ verify.replaceAll(item.name, '/', '_')
+                                    iif options.destMetaFolder
+                                        then
+                                            _ path.join
+                                                @ options.destMetaFolder
+                                                @ verify.replaceAll(item.name, '/', '_')
+                                        else null
                         return
                             _ resolve
                                 @ result.item
@@ -104,10 +110,13 @@ module
                     {
                         @ owner owner
                     a_then_catch_reject( result, :any, , download.downloadPackage.getPackageProductionList )
-                        if options.destPath
-                            _ writeJSONToDest
-                                @ options.destPath
-                                @ result
+                        _ writeJSONToDest
+                            _ path.join
+                                @ options.destFolder
+                                @ '..'
+                                @ '.packi'
+                                @ 'packageList.json'
+                            @ result
                         if options.destFolder
                             foreach item in result.item
                                 const packiFiles
@@ -118,13 +127,16 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
-                                            @ name verify.replaceAll(item.name, '/', '%2F')
+                                            @ name verify.replaceAll(item.name, '/', '_')
                                     _ path.join
                                         @ options.destFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
-                                    _ path.join
-                                        @ options.destMetaFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                        @ verify.replaceAll(item.name, '/', '_')
+                                    iif options.destMetaFolder
+                                        then
+                                            _ path.join
+                                                @ options.destMetaFolder
+                                                @ verify.replaceAll(item.name, '/', '_')
+                                        else null
                         return
                             _ resolve
                                 @ result.item
@@ -171,10 +183,13 @@ module
                     {
                         @ owner owner
                     a_then_catch_reject( result, :any, , download.downloadPlugin.getPluginProductionList )
-                        if options.destPath
-                            _ writeJSONToDest
-                                @ options.destPath
-                                @ result
+                        _ writeJSONToDest
+                            _ path.join
+                                @ options.destFolder
+                                @ '..'
+                                @ '.packi'
+                                @ 'pluginList.json'
+                            @ result
                         if options.destFolder
                             foreach item in result.item
                                 const packiFiles
@@ -185,13 +200,16 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
-                                            @ name verify.replaceAll(item.name, '/', '%2F')
+                                            @ name verify.replaceAll(item.name, '/', '_')
                                     _ path.join
                                         @ options.destFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
-                                    _ path.join
-                                        @ options.destMetaFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                        @ verify.replaceAll(item.name, '/', '_')
+                                    iif options.destMetaFolder
+                                        then
+                                            _ path.join
+                                                @ options.destMetaFolder
+                                                @ verify.replaceAll(item.name, '/', '_')
+                                        else null
                         return
                             _ resolve
                                 @ result.item
@@ -238,10 +256,13 @@ module
                     {
                         @ owner owner
                     a_then_catch_reject( result, :any, , download.downloadMeta.getMetaProductionList )
-                        if options.destPath
-                            _ writeJSONToDest
-                                @ options.destPath
-                                @ result
+                        _ writeJSONToDest
+                            _ path.join
+                                @ options.destFolder
+                                @ '..'
+                                @ '.packi'
+                                @ 'metaList.json'
+                            @ result
                         if options.destFolder
                             foreach item in result.item
                                 const packiFiles
@@ -252,13 +273,16 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
-                                            @ name verify.replaceAll(item.name, '/', '%2F')
+                                            @ name verify.replaceAll(item.name, '/', '_')
                                     _ path.join
                                         @ options.destFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
-                                    _ path.join
-                                        @ options.destMetaFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                        @ verify.replaceAll(item.name, '/', '_')
+                                    iif options.destMetaFolder
+                                        then
+                                            _ path.join
+                                                @ options.destMetaFolder
+                                                @ verify.replaceAll(item.name, '/', '_')
+                                        else null
                         return
                             _ resolve
                                 @ result.item
@@ -305,10 +329,13 @@ module
                     {
                         @ owner owner
                     a_then_catch_reject( result, :any, , download.downloadTFolder.getTFolderProductionList )
-                        if options.destPath
-                            _ writeJSONToDest
-                                @ options.destPath
-                                @ result
+                        _ writeJSONToDest
+                            _ path.join
+                                @ options.destFolder
+                                @ '..'
+                                @ '.packi'
+                                @ 'tFolderList.json'
+                            @ result
                         if options.destFolder
                             foreach item in result.item
                                 const packiFiles
@@ -319,13 +346,16 @@ module
                                         @ packiFiles
                                         {
                                             @ filter options.filter
-                                            @ name verify.replaceAll(item.name, '/', '%2F')
+                                            @ name verify.replaceAll(item.name, '/', '_')
                                     _ path.join
                                         @ options.destFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
-                                    _ path.join
-                                        @ options.destMetaFolder
-                                        @ verify.replaceAll(item.name, '/', '%2F')
+                                        @ verify.replaceAll(item.name, '/', '_')
+                                    iif options.destMetaFolder
+                                        then
+                                            _ path.join
+                                                @ options.destMetaFolder
+                                                @ verify.replaceAll(item.name, '/', '_')
+                                        else null
                         return
                             _ resolve
                                 @ result.item

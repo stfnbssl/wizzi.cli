@@ -1,0 +1,9 @@
+module
+    kind es6
+    const path = require("path")
+    const spawnUtils = require("../src/utils/spawn")
+
+    var choice = process.argv[2] || '1'
+    
+    if choice == '1'
+        _ spawnUtils.procOut

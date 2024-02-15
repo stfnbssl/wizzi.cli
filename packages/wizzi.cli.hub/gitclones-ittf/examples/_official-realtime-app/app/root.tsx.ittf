@@ -1,0 +1,70 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useRevalidator
+        from "@remix-run/react"
+    import 
+        @ useEffect
+        from "react"
+    import 
+        @ useEventSource
+        from "remix-utils"
+    import icons from "~/icons.svg"
+    import styles from "~/styles.processed.css"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "Remix Fake Linear Demo"
+                            @ viewport "width=device-width,initial-scale=1"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href styles
+                        { 
+                            @ rel "preload"
+                            @ href icons
+                            @ as "image"
+                            @ fetchpriority "high"
+    export-default 
+        function App
+            _ useRealtimeIssuesRevalidation()
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        < Outlet 
+                        < ScrollRestoration 
+                        < Scripts 
+    function useRealtimeIssuesRevalidation
+        const data = useEventSource("/issues-events")
+        const 
+            { 
+                @ revalidate
+            = useRevalidator()
+        _ useEffect
+            => 
+                _ revalidate()
+            [ 
+                @ data
+                @ revalidate

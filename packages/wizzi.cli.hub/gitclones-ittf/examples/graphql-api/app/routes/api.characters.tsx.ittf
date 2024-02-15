@@ -1,0 +1,62 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ fetchFromGraphQL
+        @ gql
+        from "~/utils"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ page
+                            = 1
+                    = params
+                const getCharactersQuery
+                    _` gql
+                        + &lf;
+                        + &nbsp;   fragment CharacterFields on Character {&lf;
+                        + &nbsp;     gender&lf;
+                        + &nbsp;     id&lf;
+                        + &nbsp;     image&lf;
+                        + &nbsp;     name&lf;
+                        + &nbsp;     origin {&lf;
+                        + &nbsp;       dimension&lf;
+                        + &nbsp;       name&lf;
+                        + &nbsp;       type&lf;
+                        + &nbsp;     }&lf;
+                        + &nbsp;     species&lf;
+                        + &nbsp;     status&lf;
+                        + &nbsp;     type&lf;
+                        + &nbsp;   }&lf;
+                        + &lf;
+                        + &nbsp;   fragment GetCharactersFields on Characters {&lf;
+                        + &nbsp;     results {&lf;
+                        + &nbsp;       ...CharacterFields&lf;
+                        + &nbsp;     }&lf;
+                        + &nbsp;   }&lf;
+                        + &lf;
+                        + &nbsp;   query getCharacters($page: Int) {&lf;
+                        + &nbsp;     characters(page: $page) {&lf;
+                        + &nbsp;       ...GetCharactersFields&lf;
+                        + &nbsp;     }&lf;
+                        + &nbsp;   }&lf;
+                        + &nbsp;&nbsp;
+                const res
+                    await 
+                        _ fetchFromGraphQL
+                            @ getCharactersQuery
+                            { 
+                                @ page
+                return 
+                    _ json
+                        await 
+                            _ res.json()

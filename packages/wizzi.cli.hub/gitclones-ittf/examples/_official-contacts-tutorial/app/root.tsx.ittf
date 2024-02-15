@@ -1,0 +1,193 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ NavLink
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useLoaderData
+        @ useNavigation
+        @ useSubmit
+        from "@remix-run/react"
+    import 
+        @ useEffect
+        from "react"
+    import appStylesHref from "./app.css"
+    import 
+        @ createEmptyContact
+        @ getContacts
+        from "./data"
+    export 
+        const action
+            async=> 
+                const contact
+                    await 
+                        _ createEmptyContact()
+                return 
+                    _ redirect
+                        `lit 
+                            + /contacts/
+                            @ contact.id
+                            + /edit
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href appStylesHref
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const url = new URL(request.url)
+                const q = url.searchParams.get("q")
+                const contacts
+                    await 
+                        _ getContacts(q)
+                return 
+                    _ json
+                        { 
+                            @ contacts
+                            @ q
+    export-default 
+        function App
+            const 
+                { 
+                    @ contacts
+                    @ q
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            const navigation = useNavigation()
+            const submit = useSubmit()
+            const searching = navigation.location && new URLSearchParams(navigation.location.search).has("q")
+            _ useEffect
+                => 
+                    const searchField = document.getElementById("q")
+                    if searchField instanceof HTMLInputElement
+                        set searchField.value = q || ""
+                [ 
+                    @ q
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        meta 
+                            @ charSet "utf-8"
+                        meta 
+                            @ name "viewport"
+                            @ content "width=device-width, initial-scale=1"
+                        < Meta 
+                        < Links 
+                    body 
+                        div 
+                            @ id "sidebar"
+                            h1 
+                                + Remix Contacts
+                            div 
+                                < Form 
+                                    @ id "search-form"
+                                    @ onChange
+                                        => 
+                                            param event
+                                            const isFirstSearch = q === null
+                                            _ submit
+                                                @expr event.currentTarget
+                                                { 
+                                                    @ replace !isFirstSearch
+                                    @ role "search"
+                                    input 
+                                        @ aria-label "Search contacts"
+                                        @ className
+                                            iif searching
+                                                then "loading"
+                                                else ""
+                                        @ defaultValue {q || ""}
+                                        @ id "q"
+                                        @ name "q"
+                                        @ placeholder "Search"
+                                        @ type "search"
+                                    div 
+                                        @ aria-hidden
+                                        @ hidden {!searching}
+                                        @ id "search-spinner"
+                                < Form 
+                                    @ method "post"
+                                    button 
+                                        @ type "submit"
+                                        + New
+                            nav 
+                                { 
+                                    iif contacts.length
+                                        then
+                                            ul 
+                                                { 
+                                                    _ contacts.map
+                                                        => 
+                                                            param contact
+                                                            li 
+                                                                @ key {contact.id}
+                                                                < NavLink 
+                                                                    @ className
+                                                                        => 
+                                                                            { 
+                                                                                @ isActive
+                                                                                @ isPending
+                                                                            iif isActive
+                                                                                then "active"
+                                                                                else
+                                                                                    iif isPending
+                                                                                        then "pending"
+                                                                                        else ""
+                                                                    @ to
+                                                                        `lit 
+                                                                            + contacts/
+                                                                            @ contact.id
+                                                                            + 
+                                                                    { 
+                                                                        iif contact.first || contact.last
+                                                                            then
+                                                                                < React.Fragment
+                                                                                    + {contact.first}
+                                                                                    + {contact.last}
+                                                                            else
+                                                                                i 
+                                                                                    + No Name
+                                                                    + {" "}
+                                                                    { 
+                                                                        iif contact.favorite
+                                                                            then
+                                                                                span 
+                                                                                    + ★
+                                                                            else null
+                                        else
+                                            p 
+                                                i 
+                                                    + No contacts
+                        div 
+                            @ className
+                                iif navigation.state === "loading" && !searching
+                                    then "loading"
+                                    else ""
+                            @ id "detail"
+                            < Outlet 
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 

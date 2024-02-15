@@ -1,0 +1,20 @@
+module
+    import 
+        @ createContext
+        from "react"
+    export 
+        :interface ClientStyleContextData
+            :p reset
+                :=> 
+                    :void 
+            :p sheet
+                :string 
+    const ClientStyleContext
+        _ createContext
+            :param 
+                :ref ClientStyleContextData
+            { 
+                @ reset
+                    => 
+                @ sheet ""
+    export-default ClientStyleContext

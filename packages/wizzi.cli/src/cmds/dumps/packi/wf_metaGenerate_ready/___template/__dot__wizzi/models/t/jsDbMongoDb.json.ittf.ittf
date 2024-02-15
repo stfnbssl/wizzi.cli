@@ -11,20 +11,20 @@ ${'$'}group
            useUnifiedTopology true
        [ featureTables
            { 
-               Name "Table1"
-               name "table1"
+               Name "Todo"
+               name "todo"
                mongoName "plugin"
                descr ""
                prefix ""
                [ fields
                    { 
-                       name 'field1'
+                       name 'action'
                        type 'string'
                        isKey true
                        isListFilter true
                    { 
-                       name 'field2'
-                       type 'string'
+                       name 'done'
+                       type 'boolean'
                created_at true
                updated_at true
                update_delete_by_id true

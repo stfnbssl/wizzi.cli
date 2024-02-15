@@ -1,0 +1,253 @@
+module
+    import validator from "validator"
+        #
+            # *
+            # * @author Adam Jaso <ajaso@pocketly.com>
+            # * https://github.com/pocketly/node-sanitize
+            # 
+    import 
+        @ isFunction
+        @ isObject
+        @ isPlainObject
+        from "~/utils"
+    export 
+        class Sanitizer
+            m bool
+                static
+                param value
+                    :any 
+                :return
+                    :boolean 
+                return 
+                    iif typeof value === "boolean"
+                        then value
+                        else validator.toBoolean(value)
+            m float
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :number 
+                        :null 
+                let arg
+                let flo
+                if Array.isArray(value)
+                    set arg = parseInt(value[1])
+                    set value = value[0]
+                try 
+                    set flo = parseFloat(value)
+                    if typeof arg === "number"
+                        set flo = parseFloat(flo.toFixed(arg))
+                catch 
+                    return null
+                return flo
+            m int
+                static
+                param value
+                    :any 
+                try 
+                    return parseInt(value)
+                catch 
+                    return null
+            m array
+                static
+                param arr
+                    :any 
+                :return
+                    :union 
+                        :[ 
+                            :unknown 
+                        :null 
+                return 
+                    iif Array.isArray(arr)
+                        then
+                            ( 
+                                + arr
+                                    :as 
+                                        :[ 
+                                            :unknown 
+                        else null
+            m plainObject
+                static
+                param obj
+                    :any 
+                :return
+                    :ref Record
+                        :param 
+                            :union 
+                                :string 
+                                :number 
+                        :param unknown
+                return 
+                    iif isPlainObject(obj)
+                        then obj
+                        else null
+            m obj
+                static
+                param obj
+                    :any 
+                :return
+                    :union 
+                        :object 
+                        :null 
+                return 
+                    iif isObject(obj)
+                        then obj
+                        else null
+            m phone
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :string 
+                        :null 
+                return 
+                    iif value != null && (typeof value === "string" || typeof value === "number")
+                        then String(value).replace(/[^0-9]+/gi, "")
+                        else null
+            m email
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :string 
+                        :null 
+                return 
+                    iif validator.isEmail(value)
+                        then value
+                        else null
+            m url
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :string 
+                        :null 
+                let protocol
+                let options
+                if Array.isArray(value)
+                    set protocol = value[1]
+                    set options =
+                        { 
+                            [ protocols
+                                @ protocol
+                    set value = value[0]
+                return 
+                    iif validator.isURL(value, options)
+                        then fixUrl(value, protocol)
+                        else null
+            m regex
+                static
+                param value
+                    :any 
+                param regex
+                    :any 
+                try 
+                    if regex && regex instanceof RegExp
+                        set value = value.toString()
+                        return 
+                            iif regex.test(value)
+                                then value
+                                else null
+                    else
+                        return null
+                catch _
+                    return null
+            m func
+                static
+                param value
+                    :any 
+                param func
+                    :any 
+                :return
+                    :union 
+                        :ref ReturnType
+                            :param 
+                                :ref F
+                        :null 
+                if func && isFunction(func)
+                    return func(value)
+                return null
+            m str
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :string 
+                        :null 
+                return 
+                    iif value != null
+                        then value.toString()
+                        else null
+                # TODO: Implement
+            m cleanHtmlString
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :string 
+                        :null 
+                return 
+                    iif value != null
+                        then value.toString()
+                        else null
+                # TODO: Implement
+            m json
+                static
+                param value
+                    :any 
+                :return
+                    :union 
+                        :ref Json
+                        :null 
+                try 
+                    if typeof value === "string"
+                        return JSON.parse(value)
+                    if isPlainObject(value) || isObject(value)
+                        return JSON.parse(JSON.stringify(value))
+                    return null
+                catch 
+                    return null
+    function fixUrl
+        param url
+            :string 
+        param protocol
+            :string 
+        if !url
+            return url
+        set protocol = protocol || "http"
+            # does it start with desired protocol?
+        if new RegExp("^" + protocol + "://", "i").test(url)
+            return url
+        if /^\w+:\/\//i.test(url)
+            return null
+        if /^(?:\w+)(?:\.\w{2,})+(?:\/.*)?/.test(url)
+            return protocol + "://" + url
+        return null
+    :interface Json
+        :index 
+            :union 
+                :string 
+                :number 
+                :boolean 
+                :ref Date
+                :ref Json
+                :ref JsonArray
+            param x
+                :string 
+    :interface JsonArray
+        :extends Array
+            :param 
+                :union 
+                    :string 
+                    :number 
+                    :boolean 
+                    :ref Date
+                    :ref Json
+                    :ref JsonArray

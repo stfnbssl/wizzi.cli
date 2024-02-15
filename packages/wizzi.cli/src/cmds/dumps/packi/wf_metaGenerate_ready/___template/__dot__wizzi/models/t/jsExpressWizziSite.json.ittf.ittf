@@ -1,0 +1,11 @@
+${'$'}group 
+   useSite true
+   { site
+       useIttfStatic false
+       { ittfStatic
+       useDemoHome true
+       { demoHome
+       useDemoWizzi true
+       { demoWizzi
+       useDemoWebpack true
+       { demoWebpack

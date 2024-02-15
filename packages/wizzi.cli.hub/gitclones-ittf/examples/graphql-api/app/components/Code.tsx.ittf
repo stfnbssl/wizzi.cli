@@ -1,0 +1,37 @@
+module
+    export 
+        :interface CodeProps
+            :p data
+                :any 
+            :p summary
+                :string 
+        #
+            # *
+            # * @name Code
+            # * @description Simple component to render out our JSON responses.
+            # 
+    export 
+        const Code
+            => 
+                param props
+                    :ref CodeProps
+                const 
+                    { 
+                        @ data
+                        @ summary
+                    = props
+                return 
+                    details 
+                        summary 
+                            @ style
+                                { 
+                                    @ cursor "pointer"
+                            + {summary}
+                        code 
+                            pre 
+                                + {JSON.stringify(data, null, 2)}
+        #
+            # *
+            # * @name Code
+            # * @description Simple component to render out our JSON responses.
+            # 

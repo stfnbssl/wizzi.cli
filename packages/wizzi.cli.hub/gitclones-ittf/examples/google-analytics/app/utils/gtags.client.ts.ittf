@@ -1,0 +1,71 @@
+module
+    :declare 
+        :module global
+            :interface Window
+                :p gtag
+                    :=> 
+                        :void 
+                        param option
+                            :string 
+                        param gaTrackingId
+                            :string 
+                        param options
+                            :ref Record
+                                :param string
+                                :param unknown
+        #
+            # *
+            # * @example
+            # * https://developers.google.com/analytics/devguides/collection/gtagjs/pages
+            # 
+    export 
+        const pageview
+            => 
+                param url
+                    :string 
+                param trackingId
+                    :string 
+                if !window.gtag
+                    _ console.warn("window.gtag is not defined. This could mean your google analytics script has not loaded on the page yet.")
+                    return 
+                _ window.gtag
+                    @ "config"
+                    @ trackingId
+                    { 
+                        @ page_path url
+        #
+            # *
+            # * @example
+            # * https://developers.google.com/analytics/devguides/collection/gtagjs/pages
+            # 
+        #
+            # *
+            # * @example
+            # * https://developers.google.com/analytics/devguides/collection/gtagjs/events
+            # 
+    export 
+        const event
+            => 
+                { 
+                    @ action
+                    @ category
+                    @ label
+                    @ value
+                    :ref Record
+                        :param string
+                        :param string
+                if !window.gtag
+                    _ console.warn("window.gtag is not defined. This could mean your google analytics script has not loaded on the page yet.")
+                    return 
+                _ window.gtag
+                    @ "event"
+                    @ action
+                    { 
+                        @ event_category category
+                        @ event_label label
+                        @ value
+        #
+            # *
+            # * @example
+            # * https://developers.google.com/analytics/devguides/collection/gtagjs/events
+            # 

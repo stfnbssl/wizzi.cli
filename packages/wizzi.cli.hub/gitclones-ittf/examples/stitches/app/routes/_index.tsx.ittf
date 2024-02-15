@@ -1,0 +1,29 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    import 
+        @ styled
+        from "~/styles/stitches.config"
+    const Container
+        _ styled
+            @ "div"
+            { 
+                @ fontFamily "system-ui, sans-serif"
+                @ lineHeight 1.8
+                @ backgroundColor "#999"
+    export-default 
+        function Index
+            return 
+                < Container 
+                    h1 
+                        + Welcome to Remix with Stitches Example
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/jokes"
+                                + Jokes
+                        li 
+                            < Link 
+                                @ to "/jokes-error"
+                                + Jokes: Error

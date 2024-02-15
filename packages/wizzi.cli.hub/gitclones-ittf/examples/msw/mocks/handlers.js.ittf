@@ -1,0 +1,21 @@
+module
+    kind react
+    const 
+        { 
+            @ rest
+        = require("msw")
+    const handlers
+        [ 
+            _ rest.get
+                @ "https://my-mock-api.com"
+                => 
+                    param _
+                    param res
+                    param ctx
+                    return 
+                        _ res
+                            _ ctx.status(200)
+                            _ ctx.json
+                                { 
+                                    @ message "from msw"
+    set module.exports = handlers

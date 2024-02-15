@@ -1,0 +1,12 @@
+module
+    kind react
+    const 
+        { 
+            @ setupServer
+        = require("msw/node")
+    const handlers = require("./handlers")
+    const server = setupServer(...handlers)
+    _ server.listen
+        { 
+            @ onUnhandledRequest "warn"
+    _ console.info("MSW initialised")

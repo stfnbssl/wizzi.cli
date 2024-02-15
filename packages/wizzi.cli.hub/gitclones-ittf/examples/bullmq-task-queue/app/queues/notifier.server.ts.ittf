@@ -1,0 +1,33 @@
+module
+    import 
+        @ Queue
+        from "~/utils/queue.server"
+    :type QueueData
+        :{ 
+            :p emailAddress
+                :string 
+    export 
+        const queue
+            _ Queue
+                :param 
+                    :ref QueueData
+                @ "notifier"
+                async=> 
+                    param job
+                    _ console.log
+                        `lit 
+                            + Sending email to&nbsp;
+                            @ job.data.emailAddress
+                            + 
+                        # Delay 1 second to simulate sending an email, be it for user registration, a newsletter, etc.
+                    await 
+                        new Promise
+                            => 
+                                param resolve
+                                _ setTimeout(resolve, 1000)
+                        # Delay 1 second to simulate sending an email, be it for user registration, a newsletter, etc.
+                    _ console.log
+                        `lit 
+                            + Email sent to&nbsp;
+                            @ job.data.emailAddress
+                            + 

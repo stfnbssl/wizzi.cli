@@ -1,0 +1,64 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ auth
+        from "~/auth.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ auth.logout
+                        @ request
+                        { 
+                            @ redirectTo "/"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ profile
+                    =
+                        await 
+                            _ auth.isAuthenticated
+                                @ request
+                                { 
+                                    @ failureRedirect "/"
+                return 
+                    _ json
+                        { 
+                            @ profile
+    export-default 
+        function Screen
+            const 
+                { 
+                    @ profile
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                < React.Fragment
+                    < Form 
+                        @ method "post"
+                        button 
+                            + Log Out
+                    hr 
+                    pre 
+                        code 
+                            + {JSON.stringify(profile, null, 2)}

@@ -1,0 +1,49 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ NavLink
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        from "@remix-run/react"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    const Nav
+        => 
+            return 
+                header 
+                    nav 
+                        < NavLink 
+                            @ to "/"
+                            @ end
+                            + Home
+                        < NavLink 
+                            @ to "/articles"
+                            + Articles
+    export-default 
+        function App
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        < Nav 
+                        < Outlet 
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 

@@ -1,0 +1,37 @@
+module
+    import 
+        @ ClientOnly
+        @ useHydrated
+        from "remix-utils"
+    import 
+        @ BrokenOnTheServer
+        from "~/components/broken-on-the-server.client"
+    import 
+        @ ComplexComponent
+        from "~/components/complex-component"
+    export-default 
+        function Index
+            const hydrated = useHydrated()
+            return 
+                < React.Fragment
+                    < ClientOnly 
+                        @ fallback
+                            p 
+                                + Loading...
+                        { 
+                            => 
+                                < BrokenOnTheServer 
+                    < ClientOnly 
+                        @ fallback
+                            p 
+                                + Loading...
+                        { 
+                            => 
+                                < ComplexComponent 
+                    button 
+                        @ type "button"
+                        @ disabled {!hydrated}
+                        @ onClick
+                            => 
+                                _ alert("I has JS loaded!")
+                        + Try me!

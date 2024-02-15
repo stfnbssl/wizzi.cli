@@ -1,0 +1,39 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    const MaxContainer
+        _ React.forwardRef
+            :param 
+                :ref HTMLDivElement
+            :param 
+                :ref MaxContainerProps
+            => 
+                { 
+                    @ children
+                    @ className
+                    ... props
+                param forwardedRef
+                return 
+                    div 
+                        @ ref {forwardedRef}
+                        @ className {cx(className, "ui--max-container")}
+                        @ {...props}
+                        + {children}
+    set MaxContainer.displayName = "MaxContainer"
+    :interface MaxContainerOwnProps
+    :interface MaxContainerProps
+        :extends MaxContainerOwnProps
+        :extends Omit
+            :param 
+                :ref React.ComponentPropsWithRef
+                    :param 
+                        :literal "div"
+            :param 
+                :keyof 
+                    :ref MaxContainerOwnProps
+    export 
+        @ MaxContainerProps
+    export 
+        @ MaxContainer

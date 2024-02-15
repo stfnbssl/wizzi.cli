@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi\src\features\wizzi-production\api\production.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:40 GMT
 */
 import {packiTypes} from '../../packi';
 import {wizziProds} from '../../wizzi';
@@ -253,17 +254,13 @@ export /**
 */
 async function prepareProduction(packiProduction: productionTypes.PackiProduction, owner: string, productionName: string, queryContext: string, rootContext: any) {
 
-    console.log(myname + 'prepareProduction entered', owner, productionName, __filename);
     return new Promise((resolve, reject) => 
         
-            getDefaultContext_withCache(owner, productionName, rootContext).then((defaultContext: any) => {
+            getDefaultContext_withCache(owner, productionName, rootContext).then((defaultContext: any) => 
             
-                console.log(myname + 'prepareProduction.getDefaultContext_withCache completed', Object.keys(defaultContext), __filename);
                 getProductionObject(packiProduction, owner, productionName).then((productionObject: any) => {
                 
-                    console.log('prepareProduction.productionObject got', Object.keys(productionObject), __filename);
                     if (productionObject.packiConfig) {
-                        console.log('prepareProduction.productionObject packiConfig', productionObject.packiConfig, __filename);
                         getProductionSetFromProductionObject(owner, productionName, productionObject.packiConfig, productionObject.packiFiles, defaultContext).then((productionSet: any) => {
                         
                             productionObject.packiFiles = productionSet.packiFiles;
@@ -317,7 +314,7 @@ async function prepareProduction(packiProduction: productionTypes.PackiProductio
                     return reject(err);
                 }
                 )
-            }
+            
             ).catch((err: any) => {
             
                 if (typeof err === 'object' && err !== null) {

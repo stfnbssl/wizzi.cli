@@ -1,0 +1,81 @@
+module
+    import 
+        @ createCookieSessionStorage
+        from "@remix-run/node"
+    import 
+        @ Authenticator
+        @ AuthorizationError
+        from "remix-auth"
+    import 
+        @ SupabaseStrategy
+        from "remix-auth-supabase"
+    import 
+        @ supabaseClient
+        from "~/supabase"
+    :import-type 
+        @ Session
+        from "~/supabase"
+    export 
+        const sessionStorage
+            _ createCookieSessionStorage
+                { 
+                    { cookie
+                        @ name "sb"
+                        @ httpOnly true
+                        @ path "/"
+                        @ sameSite "lax"
+                        [ secrets
+                            @ "s3cr3t"
+                        @ secure process.env.NODE_ENV === "production"
+                            # This should be an env variable
+    export 
+        const supabaseStrategy
+            new SupabaseStrategy
+                { 
+                    @ supabaseClient
+                    @ sessionStorage
+                    @ sessionKey "sb:session"
+                    @ sessionErrorKey "sb:error"
+                        # if not set, default is sb:session
+                        # if not set, default is sb:error
+                async=> 
+                    { 
+                        @ req
+                        @ supabaseClient
+                    const form
+                        await 
+                            _ req.formData()
+                    const email = form?.get?.("email")
+                    const password = form?.get?.("password")
+                    if !email
+                        throw new AuthorizationError("Email is required")
+                    if typeof email !== "string"
+                        throw new AuthorizationError("Email must be a string")
+                    if !password
+                        throw new AuthorizationError("Password is required")
+                    if typeof password !== "string"
+                        throw new AuthorizationError("Password must be a string")
+                    return 
+                        _ supabaseClient.auth.api.signInWithEmail(email, password).then
+                            => 
+                                { 
+                                    @ data
+                                    @ error
+                                :return
+                                    :ref Session
+                                if error || !data
+                                    throw new AuthorizationError(error?.message ?? "No user session found")
+                                return data
+                    # simple verify example for email/password auth
+    export 
+        const authenticator
+            new Authenticator
+                :param 
+                    :ref Session
+                @ sessionStorage
+                { 
+                    @ sessionKey supabaseStrategy.sessionKey
+                    @ sessionErrorKey supabaseStrategy.sessionErrorKey
+                        # keep in sync
+                        # keep in sync
+    _ authenticator.use(supabaseStrategy)

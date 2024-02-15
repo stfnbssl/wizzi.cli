@@ -1,0 +1,22 @@
+module
+    export 
+        const singleton
+            => 
+                param name
+                    :string 
+                param valueFactory
+                    :=> 
+                        :ref Value
+                :return
+                    :ref Value
+                const g
+                    + global
+                        :as 
+                            :any 
+                set g.__singletons ??=
+                    { 
+                set g.__singletons[name] ??= valueFactory()
+                return g.__singletons[name]
+        # Since the dev server re-requires the bundle, do some shenanigans to make
+        # certain things persist across that 😆
+        # Borrowed/modified from https://github.com/jenseng/abuse-the-platform/blob/2993a7e846c95ace693ce61626fa072174c8d9c7/app/utils/singleton.ts

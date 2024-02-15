@@ -1,0 +1,623 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        @ LoaderArgs
+        @ RouteComponent
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useCatch
+        @ useLoaderData
+        @ useSearchParams
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ createTodoList
+        @ getUserProjects
+        from "~/db.server"
+    import stylesUrl from "~/dist/styles/routes/dashboard/todo-lists/new.css"
+    :import-type 
+        @ TodoDataUnordered
+        from "~/models"
+    import 
+        @ requireUser
+        from "~/session.server"
+    import 
+        @ Button
+        from "~/ui/button"
+    import 
+        @ Field
+        @ FieldError
+        @ FieldProvider
+        @ Label
+        @ Textarea
+        @ Select
+        from "~/ui/form"
+    import 
+        @ MaxContainer
+        from "~/ui/max-container"
+    import 
+        @ Heading
+        from "~/ui/section-heading"
+    import 
+        @ TokenDismissButton
+        from "~/ui/token"
+    :type TempTodo
+        :intersect 
+            :ref TodoDataUnordered
+            :{ 
+                :p _tempId
+                    :number 
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ passwordHash
+                        ... secureUser
+                    =
+                        await 
+                            _ requireUser
+                                @ request
+                                { 
+                                    @ redirect "/sign-in"
+                const projects
+                    await 
+                        _ getUserProjects(secureUser.id)
+                return 
+                    _ json
+                        { 
+                            @ user secureUser
+                            @ projects
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                    # 1. Get/setup form data from the request
+                const formData
+                    await 
+                        _ request.formData()
+                    # 1. Get/setup form data from the request
+                const name
+                    _ formData.get("name")
+                        :as 
+                            :string 
+                let projectId
+                    _ formData.get("project")
+                        :as 
+                            :union 
+                                :string 
+                                :null 
+                const description
+                    || 
+                        ( 
+                            _ formData.get("description")
+                                :as 
+                                    :string 
+                        + ""
+                const todosRaw = formData.get("todos")
+                if projectId === "null"
+                    set projectId = null
+                const fieldErrors
+                    :ref FieldErrors
+                    =
+                        { 
+                            @ description null
+                            @ name null
+                            @ todos null
+                            @ project null
+                    # 2. Validate the form data
+                let todos
+                    :ref Array
+                        :param 
+                            :ref TodoDataUnordered
+                    = []
+                    # 2. Validate the form data
+                try 
+                    set todos =
+                        _ 
+                            ( 
+                                @expr
+                                    _ JSON.parse
+                                        + todosRaw
+                                            :as 
+                                                :string 
+                                    :as 
+                                        :[ 
+                                            :ref TempTodo
+                            ._ map
+                                => 
+                                    { 
+                                        @ _tempId
+                                        ... todo
+                                    + todo
+                    if typeof name !== "string" || (projectId != null && typeof projectId !== "string") || typeof description !== "string" || !Array.isArray(todos)
+                        throw Error("blergh")
+                catch 
+                    return 
+                        _ json
+                            { 
+                                @ formError
+                                    `lit 
+                                        + Something went wrong. Please try again later.
+                const fields
+                    { 
+                        @ name
+                        @ description
+                        @ todos
+                if !name
+                    set fieldErrors.name = "Todo list name is required"
+                else
+                    if name.length < 3
+                        set fieldErrors.name = "Todo list name must be at least 3 characters"
+                if Object.values(fieldErrors).some(Boolean)
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors
+                                @ fields
+                try 
+                    const todoList
+                        await 
+                            _ createTodoList
+                                { 
+                                    @ name
+                                    @ description
+                                    @ todos
+                                    @ projectId
+                    return 
+                        iif projectId
+                            then
+                                _ redirect
+                                    `lit 
+                                        + dashboard/projects/
+                                        @ projectId
+                                        + 
+                            else
+                                _ redirect
+                                    `lit 
+                                        + dashboard/todo-lists/
+                                        @ todoList.id
+                                        + 
+                catch _
+                    return 
+                        _ json
+                            { 
+                                @ formError
+                                    `lit 
+                                        + Something went wrong. Please try again later.
+    const NewTodoList
+        :ref RouteComponent
+        =
+            => 
+                const actionData
+                    || 
+                        _ useActionData
+                            :param 
+                                :typeof action
+                        { 
+                const 
+                    { 
+                        @ projects
+                    =
+                        _ useLoaderData
+                            :param 
+                                :typeof loader
+                const [searchParams] = useSearchParams()
+                const 
+                    { 
+                        @ fieldErrors
+                        @ fields
+                        @ formError
+                    = actionData
+                const [todos, setTodos]
+                    _ React.useState
+                        :param 
+                            :[ 
+                                :ref TempTodo
+                        [ 
+                const [hydrated, setHyrdrated] = React.useState(false)
+                const [state, setState]
+                    _ React.useState
+                        :param 
+                            :union 
+                                :literal "IDLE"
+                                :literal "WRITING_TODO"
+                        @ "IDLE"
+                _ React.useEffect
+                    => 
+                        _ setHyrdrated(true)
+                    [ 
+                return 
+                    < MaxContainer 
+                        @ className "new-todo-list"
+                        div 
+                            @ className "new-todo-list__header"
+                            div 
+                                @ className "new-todo-list__header-inner"
+                                < Heading 
+                                    @ level {2}
+                                    @ className "new-todo-list__heading"
+                                    + Create a new todo list
+                        div 
+                            @ className "new-todo-list__section new-todo-list__create-section"
+                            < Form 
+                                @ method "post"
+                                @ aria-describedby
+                                    iif formError
+                                        then "form-error-message"
+                                        else undefined
+                                div 
+                                    @ className "new-todo-list__form"
+                                    { 
+                                        iif formError
+                                            then
+                                                div 
+                                                    @ className "new-todo-list__form-error"
+                                                    span 
+                                                        @ className "new-todo-list__form-error-text"
+                                                        @ id "form-error-text"
+                                                        @ role "alert"
+                                                        + {actionData.formError}
+                                            else null
+                                    < FieldProvider 
+                                        @ name "name"
+                                        @ id "new-todo-list-name"
+                                        @ error {fieldErrors?.name}
+                                        < Label 
+                                            + List Name
+                                        < Field 
+                                            @ required
+                                            @ defaultValue {fields?.name}
+                                        < FieldError 
+                                    < FieldProvider 
+                                        @ name "project"
+                                        @ id "new-todo-list-project"
+                                        @ error {fieldErrors?.project}
+                                        < Label 
+                                            + Project
+                                        < Select 
+                                            @ defaultValue {fields?.project || searchParams.get("project") || "null"}
+                                            @ required
+                                            option 
+                                                @ value "null"
+                                                @ disabled
+                                                + Select a project...
+                                            { 
+                                                _ projects.map
+                                                    => 
+                                                        param project
+                                                        option 
+                                                            @ key {project.id}
+                                                            @ value {project.id}
+                                                            + {project.name}
+                                        < FieldError 
+                                    < FieldProvider 
+                                        @ name "description"
+                                        @ id "new-todo-list-description"
+                                        @ error {fieldErrors?.description}
+                                        < Label 
+                                            + Description
+                                        < Textarea 
+                                            @ defaultValue {fields?.description}
+                                        < FieldError 
+                                    { 
+                                        iif hydrated
+                                            then
+                                                div 
+                                                    { 
+                                                        iif todos.length > 0
+                                                            then
+                                                                ul 
+                                                                    @ className "new-todo-list__todo-list"
+                                                                    @ onFocus {handleTodoListFocus}
+                                                                    @ onBlur {handleTodoListBlur}
+                                                                    @ onKeyDown {handleTodoListKeyDown}
+                                                                    { 
+                                                                        _ todos.map
+                                                                            => 
+                                                                                param todo
+                                                                                return 
+                                                                                    li 
+                                                                                        @ key {todo._tempId}
+                                                                                        @ className "new-todo-list__todo-item"
+                                                                                        span 
+                                                                                            @ className "new-todo-list__todo-text"
+                                                                                            + {todo.name}
+                                                                                        < TokenDismissButton 
+                                                                                            @ className "new-todo-list__todo-dismiss"
+                                                                                            @ type "button"
+                                                                                            @ onClick
+                                                                                                => 
+                                                                                                    param e
+                                                                                                    const target = e.currentTarget
+                                                                                                    const parent = target.parentElement?.parentElement?.parentElement
+                                                                                                    const currentValue
+                                                                                                        _ parent?.querySelector?.?
+                                                                                                            :param 
+                                                                                                                :ref HTMLInputElement
+                                                                                                            @ 'input[type="text"]'
+                                                                                                            . value
+                                                                                                    _ setTodos
+                                                                                                        => 
+                                                                                                            param todos
+                                                                                                            _ todos.filter
+                                                                                                                => 
+                                                                                                                    param t
+                                                                                                                    set t._tempId !== todo._tempId
+                                                                                                    if state === "WRITING_TODO"
+                                                                                                        _ window.requestAnimationFrame
+                                                                                                            => 
+                                                                                                                const nextInput
+                                                                                                                    _ parent?.querySelector?.
+                                                                                                                        :param 
+                                                                                                                            :ref HTMLInputElement
+                                                                                                                        @ 'input[type="text"]'
+                                                                                                                if nextInput
+                                                                                                                    set nextInput.value = currentValue || ""
+                                                                                                                    _ nextInput.focus
+                                                                                                                        { 
+                                                                                                                            @ preventScroll true
+                                                                                            @ aria-label
+                                                                                                `lit 
+                                                                                                    + Remove "
+                                                                                                    @ todo.name
+                                                                                                    + " from list
+                                                                                            @ title "Remove"
+                                                                                    # TODO: Feature: Allow drag/drop sorting
+                                                            else null
+                                                    { 
+                                                        iif state === "WRITING_TODO"
+                                                            then
+                                                                input 
+                                                                    @ className "new-todo-list__new-input"
+                                                                    @ placeholder "What should you do?"
+                                                                    @ type "text"
+                                                                    @ key {todos.length}
+                                                                    @ onBlur
+                                                                        => 
+                                                                            _ setState("IDLE")
+                                                                    @ onKeyDown
+                                                                        => 
+                                                                            param e
+                                                                            if e.key === "Enter"
+                                                                                _ e.preventDefault()
+                                                                                const target
+                                                                                    @expr e.target
+                                                                                        :as 
+                                                                                            :ref HTMLInputElement
+                                                                                const value = target.value
+                                                                                if value.trim()
+                                                                                    _ setTodos
+                                                                                        => 
+                                                                                            param todos
+                                                                                            _ todos.concat
+                                                                                                { 
+                                                                                                    @ name value
+                                                                                                    @ _tempId Date.now()
+                                                                                    const parent = target.parentElement
+                                                                                    _ window.requestAnimationFrame
+                                                                                        => 
+                                                                                            _ parent?.querySelector?.?
+                                                                                                :param 
+                                                                                                    :ref HTMLInputElement
+                                                                                                @ 'input[type="text"]'
+                                                                                                ._ focus
+                                                                                                    { 
+                                                                                                        @ preventScroll true
+                                                                                else
+                                                                                    _ setState("IDLE")
+                                                                                    const parent = target.parentElement
+                                                                                    _ window.requestAnimationFrame
+                                                                                        => 
+                                                                                            _ parent?.querySelector?.?
+                                                                                                :param 
+                                                                                                    :ref HTMLInputElement
+                                                                                                @ "button"
+                                                                                                ._ focus
+                                                                                                    { 
+                                                                                                        @ preventScroll true
+                                                            else
+                                                                button 
+                                                                    @ type "button"
+                                                                    @ className "new-todo-list__new-button"
+                                                                    @ onClick
+                                                                        => 
+                                                                            param e
+                                                                            _ e.preventDefault()
+                                                                            const button = e.currentTarget
+                                                                            const parent = button.parentElement
+                                                                            _ setState("WRITING_TODO")
+                                                                            _ window.requestAnimationFrame
+                                                                                => 
+                                                                                    _ parent?.querySelector?.?
+                                                                                        :param 
+                                                                                            :ref HTMLInputElement
+                                                                                        @ 'input[type="text"]'
+                                                                                        ._ focus
+                                                                                            { 
+                                                                                                @ preventScroll true
+                                                                    + Add new todo
+                                            else null
+                                    input 
+                                        @ type "hidden"
+                                        @ name "todos"
+                                        @ value {JSON.stringify(todos)}
+                                    < Button 
+                                        @ className "new-todo-list__form-submit"
+                                        + Create List
+    export-default NewTodoList
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            switch caught.status
+                case 401
+                case 404
+                    return 
+                        div 
+                            h1 
+                                + {caught.status}
+                                + --
+                                + {caught.statusText}
+                default 
+                    throw 
+                        new Error
+                            `lit 
+                                + Unexpected caught response with status:&nbsp;
+                                @ caught.status
+                                + 
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            _ React.useEffect
+                => 
+                    _ console.error(error)
+                [ 
+                    @ error
+            return 
+                div 
+                    div 
+                        h1 
+                            + PM Camp
+                        div 
+                            + Crap
+    function handleTodoListFocus
+        param event
+            :ref React.FocusEvent
+                :param 
+                    :ref HTMLUListElement
+        const target = event.target
+        if !(target instanceof HTMLElement)
+            return 
+        const listItem
+            :! 
+                @expr target.parentElement
+        const list
+            :! 
+                @expr listItem.parentElement
+        for 
+            left
+                const button
+            of list.querySelectorAll("li button")
+            _ button.setAttribute
+                @ "tabIndex"
+                iif button.parentElement === listItem
+                    then "0"
+                    else "-1"
+    function handleTodoListBlur
+        param event
+            :ref React.FocusEvent
+                :param 
+                    :ref HTMLUListElement
+        const list = event.currentTarget
+        if !list.contains(event.relatedTarget)
+            for 
+                left
+                    const button
+                of list.querySelectorAll("li button")
+                _ button.removeAttribute("tabIndex")
+    function handleTodoListKeyDown
+        param event
+            :ref React.KeyboardEvent
+                :param 
+                    :ref HTMLUListElement
+        if 
+            test
+                op! 
+                    [ 
+                        @ "ArrowUp"
+                        @ "ArrowDown"
+                        @ "ArrowLeft"
+                        @ "ArrowRight"
+                        @ "Home"
+                        @ "End"
+                        ._ includes
+                            @expr event.key
+            return 
+        const list
+            :! 
+                @expr event.currentTarget
+        const activeElement
+            @expr document.activeElement
+                :as 
+                    :union 
+                        :ref HTMLElement
+                        :null 
+        const listButtons
+            _ Array.from
+                _ list.querySelectorAll
+                    :param 
+                        :ref HTMLButtonElement
+                    @ "li button"
+        const currentIndex
+            _ listButtons.findIndex
+                => 
+                    param el
+                    set el === activeElement
+        switch event.key
+            case "ArrowLeft"
+            case "ArrowUp"
+                if currentIndex === 0
+                    _ listButtons[listButtons.length - 1].focus()
+                else
+                    _ listButtons[(currentIndex - 1) % listButtons.length]?.focus?.()
+                return 
+            case "ArrowRight"
+            case "ArrowDown"
+                _ listButtons[(currentIndex + 1) % listButtons.length]?.focus?.()
+                return 
+            case "Home"
+                _ listButtons[0].focus()
+                return 
+            case "End"
+                _ listButtons[listButtons.length - 1].focus()
+                return 
+    :type FieldErrors
+        :ref Record
+            :param 
+                :union 
+                    :ref TextFields
+                    :ref SelectFields
+            :param 
+                :union 
+                    :string 
+                    :undefined 
+                    :null 
+    :type TextFields
+        :union 
+            :literal "name"
+            :literal "description"
+            :literal "todos"
+    :type SelectFields
+        :literal "project"

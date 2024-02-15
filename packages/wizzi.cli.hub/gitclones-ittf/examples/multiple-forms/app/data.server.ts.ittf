@@ -1,0 +1,93 @@
+module
+    import fs from "fs/promises"
+    export 
+        :type Invitation
+            :{ 
+                :p id
+                    :string 
+                :p email
+                    :string 
+                :p sentTime
+                    :number 
+    export 
+        async-function getInvitations
+            :return
+                :ref Promise
+                    :param 
+                        :ref Array
+                            :param 
+                                :ref Invitation
+            const data
+                _ JSON.parse
+                    await 
+                        _ fs.readFile("./data.json", "utf8")
+            return data.invitations
+    export 
+        async-function sendInvitation
+            param email
+                :[] 
+                    :ref Invitation
+                    :literal "email"
+            const invitations
+                await 
+                    _ getInvitations()
+            _ invitations.push
+                { 
+                    @ id Math.random().toString(32).slice(2)
+                    @ email
+                    @ sentTime Date.now()
+            _ console.log
+                `lit 
+                    + Sending invitation to&nbsp;
+                    @ email
+                    + 
+            await 
+                _ writeInvitations(invitations)
+    async-function writeInvitations
+        param invitations
+            :ref Array
+                :param 
+                    :ref Invitation
+        return 
+            _ fs.writeFile
+                @ "./data.json"
+                _ JSON.stringify
+                    { 
+                        @ invitations
+                    @ null
+                    @ 2
+    export 
+        async-function deleteInvitiation
+            param invitation
+                :ref Invitation
+            const invitations
+                await 
+                    _ getInvitations()
+            await 
+                _ writeInvitations
+                    _ invitations.filter
+                        => 
+                            param i
+                            set i.id !== invitation.id
+    export 
+        async-function resendInvitation
+            param invite
+                :ref Invitation
+            _ console.log
+                `lit 
+                    + Resending invitation to&nbsp;
+                    @ invite.email
+                    + 
+            const invitations
+                await 
+                    _ getInvitations()
+            const invitation
+                _ invitations.find
+                    => 
+                        param i
+                        set i.id === invite.id
+            if !invitation
+                throw new Error("Missing invitation")
+            set invitation.sentTime = Date.now()
+            await 
+                _ writeInvitations(invitations)

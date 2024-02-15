@@ -1,51 +1,40 @@
 $group
     $params &ctrl
-    import express from 'express'
-    import
-        @ Router
-        @ Request
-        @ Response
-        @ NextFunction
-        from 'express'
+    const express = require('express')
+    const Router = require('express').Router
+    +
     $if ctrl.apiSecured || ctrl.webSecured
-        import
-            $if ctrl.apiSecured
-                @ apiSecured
-            $if ctrl.webSecured
-                @ webSecured
-            $if ctrl.kind == 'site'
-                from '../../middlewares/index'
-            $else
-                from '../../../middlewares/index'
-    import
-        @ sendHtml
-        @ sendSuccess
-        @ sendPromiseResult
-        @ sendFailure
         $if ctrl.kind == 'site'
-            from '../../utils/sendResponse'
+            const mw = require('../../middlewares/index')
         $else
-            from '../../../utils/sendResponse'
-    import
-        @ restParamsCheck
-        $if ctrl.kind == 'site'
-            from '../../utils/rest'
-        $else
-            from '../../../utils/rest'
-    import
-        @ FcError
-        @ SYSTEM_ERROR
-        $if ctrl.kind == 'site'
-            from '../../utils/error'
-        $else
-            from '../../../utils/error'
-    import
-        @ statusCode
-        $if ctrl.kind == 'site'
-            from '../../utils'
-        $else
-            from '../../../utils'
+            const mw = require('../../../middlewares/index')
+        $if ctrl.apiSecured
+            const apiSecured = mw.apiSecured
+        $if ctrl.webSecured
+            const webSecured = mw.webSecured
+    +
+    $if ctrl.kind == 'site'
+        const utils = require('../../utils')
+        const utilsSr = require('../../utils/sendResponse')
+        const utilsRest = require('../../utils/rest')
+        const utilsError = require('../../utils/error')
+    $else
+        const utils = require('../../../utils')
+        const utilsSr = require('../../../utils/sendResponse')
+        const utilsRest = require('../../../utils/rest')
+        const utilsError = require('../../../utils/error')
+    const sendHtml = utilsSr.sendHtml
+    const sendSuccess = utilsSr.sendSuccess
+    const sendPromiseResult = utilsSr.sendPromiseResult
+    const sendFailure = utilsSr.sendFailure
+    const restParamsCheck = utilsRest.restParamsCheck
+    const FcError = utilsError.FcError
+    const SYSTEM_ERROR = utilsError.SYSTEM_ERROR
+    const statusCode = utils.statusCode
+    +
     $hook imports
+    +
+    const md = module.exports = {}
     +
     function makeHandlerAwareOfAsyncErrors
         param handler
@@ -78,7 +67,7 @@ $group
                                         + fcError.data
                                         {
     +
-    export
+    set md.${ctrl.name}Controller
         class ${ctrl.name}Controller
             +
             p path = '${ctrl.path}'

@@ -1,0 +1,48 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ cn
+        @ sitePath
+        from "~/cn.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                const slug = params.slug
+                if typeof slug !== "string"
+                    throw new Error("Missing slug")
+                const 
+                    { 
+                        @ body
+                    =
+                        await 
+                            _ cn.body(sitePath, slug)
+                return 
+                    _ json
+                        { 
+                            @ body
+    export-default 
+        function Screen
+            const 
+                { 
+                    @ body
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                main 
+                    article 
+                        @ dangerouslySetInnerHTML
+                            { 
+                                @ __html body

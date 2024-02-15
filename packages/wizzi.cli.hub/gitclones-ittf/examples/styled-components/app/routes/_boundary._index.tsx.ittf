@@ -1,0 +1,22 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    import 
+        @ Box
+        from "~/components/Box"
+    export-default 
+        function Index
+            return 
+                < Box 
+                    h1 
+                        + Welcome to Remix With Styled Components
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/error"
+                                + Error
+                        li 
+                            < Link 
+                                @ to "/404"
+                                + 404

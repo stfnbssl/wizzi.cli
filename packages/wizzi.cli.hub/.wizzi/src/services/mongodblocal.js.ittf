@@ -1,0 +1,41 @@
+module
+    import
+        @ ModelBuilderType
+        from '../features/app'
+    import
+        @ ConfigType
+        from '../features/config'
+    import
+        @ Mongoose
+        from 'mongoose'
+    +
+    export
+        function mongodbLocalStart
+            param config
+                :ref ConfigType
+            param modelBuilders
+                :[
+                    :ref ModelBuilderType
+            +
+            +
+            let connectUrl: string
+            const { mongoLocalPath } = config;
+            set connectUrl = `${mongoPath}`;
+            +
+            let instance = new Mongoose()
+            +
+            # TODO (VIA) set mongoose.Promise = global.Promise
+            return
+                _ instance.connect
+                    @ connectUrl
+                    ._ then
+                        =>
+                            success 'Mongodb. Connected to', mongoPath
+                            _ modelBuilders.forEach
+                                =>
+                                    param builder
+                                    _ builder.buildModel
+                            return 'Connected'
+                        =>
+                            param err
+                            throw new Error('\n\nMongodb. \nCannot connect to \n"' + connectUrl + '". \n\n' + err.message + '\n\n')

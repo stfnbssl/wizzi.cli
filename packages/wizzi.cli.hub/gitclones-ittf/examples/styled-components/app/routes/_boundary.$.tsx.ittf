@@ -1,0 +1,16 @@
+module
+    export 
+        const loader
+            => 
+                throw 
+                    new Response
+                        @ null
+                        { 
+                            @ status 404
+                            @ statusText "Not Found"
+        # Any request for this top-level splat route is a 404
+        # This is needed to tell Remix it isn't a resource route
+    export-default 
+        => 
+            + null
+        # This is needed to tell Remix it isn't a resource route

@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\index.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 const minimist = require('minimist');
@@ -18,6 +19,8 @@ import {downloadWizzihub, uploadWizzihubArtifact, uploadWizzihubPackage, uploadW
 
 const args = minimist(process.argv.slice(2));
 let cmd = args._[0];
+let p_list = args.list;
+let p_dest = args.d || args.dest;
 let p_artifact = args.a || args.artifact;
 let p_package = args.p || args.package;
 let p_plugin = args.l || args.plugin;
@@ -48,7 +51,14 @@ if (p_filter_string && p_filter_string.length > 0) {
     ;
 }
 if (cmd == 'down') {
-    if (p1 == 'wizzihub') {
+    if (p_list) {
+        downloadWizzihub({
+            all: true, 
+            list: true, 
+            dest: p_dest
+         })
+    }
+    else if (p1 == 'wizzihub') {
         downloadWizzihub({
             all: true, 
             metaFolder: p_meta, 
@@ -133,7 +143,6 @@ else if (cmd == 'up') {
         }
     }
     else {
-        console.log('nothing to do', cmd, p1, p2, p3, p4, __filename);
     }
 }
 else if (cmd == 'gen') {
@@ -170,7 +179,6 @@ else if (cmd == 'gitclone') {
     }
     ).catch((err) => {
     
-        console.log('downloadGitRepo.error', err, __filename);
     }
     )
 }
@@ -178,7 +186,6 @@ else {
     if (false) {
         listRepos().then((result) => {
         
-            console.log('listRepos', result, __filename);
         }
         )
     }
@@ -186,7 +193,6 @@ else {
     if (false) {
         viewRepo("stfnbssl", "vscode-ittf").then((result) => {
         
-            console.log('viewRepo', result.repo._contents, __filename);
         }
         )
     }
@@ -194,7 +200,6 @@ else {
     if (false) {
         cloneRepo("stfnbssl", "vscode-ittf", "main").then((result) => {
         
-            console.log('cloneRepo', result.cloned, __filename);
         }
         )
     }
@@ -251,16 +256,12 @@ else {
             }
             downloadArtifact("stfnbssl", "quick.html", {
                 destFolder: path.join(__dirname, '..', 'downloads', 'quick', 'html')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadArtifact', result, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadArtifact.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -274,16 +275,12 @@ else {
             }
             uploadArtifact("stfnbssl", "quick.html", "quick.html description", "index.html.ittf", "html", {
                 sourceFolder: path.join(__dirname, '..', 'downloads', 'quick', 'html')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('uploadArtifact', result, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('uploadArtifact.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -297,16 +294,12 @@ else {
             }
             uploadPackage("stfnbssl", "__cli_test__", "CLI Test", {
                 sourceFolder: path.join(__dirname, '..', 'downloads', 'quick', 'html')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('uploadPackage', result, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('uploadPackage.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -329,11 +322,9 @@ else {
              }).then(result => 
             
                 app.services.mongodbClose()
-            ).catch((err) => {
+            ).catch(err => 
             
-                console.log('downloadGitRepo.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -350,16 +341,12 @@ else {
             uploadPackage("stfnbssl", "__cli_test__", "CLI Test", {
                 sourceFolder: path.join(__dirname, '..', 'downloads', 'vanillajs-ittf', 'examples'), 
                 merge: true
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('mergePackage', result, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('mergePackage.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -377,16 +364,12 @@ else {
                 sourceFolder: path.join(__dirname, '..', 'downloads', 'vanillajs-ittf', 'examples'), 
                 merge: true, 
                 mergeToFolder: 't/three'
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('mergeArtifact', result, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('mergeArtifact.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -401,16 +384,12 @@ else {
             downloadArtifactList("stfnbssl", {
                 destPath: path.join(__dirname, '..', 'downloads', 'artifactList.json'), 
                 destFolder: path.join('C:/My/wizzi/stfnbssl/wizzihub-productions', 'artifacts')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadArtifactList', result.length, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadArtifact.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -425,16 +404,12 @@ else {
             downloadPackageList("stfnbssl", {
                 destPath: path.join(__dirname, '..', 'downloads', 'packageList.json'), 
                 destFolder: path.join('C:/My/wizzi/stfnbssl/wizzihub-productions', 'packages')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadPackageList', result.length, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadPackageList.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -449,16 +424,12 @@ else {
             downloadPluginList("stfnbssl", {
                 destPath: path.join(__dirname, '..', 'downloads', 'pluginList.json'), 
                 destFolder: path.join('C:/My/wizzi/stfnbssl/wizzihub-productions', 'plugins')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadPluginList', result.length, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadPluginList.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -473,16 +444,12 @@ else {
             downloadMetaList("stfnbssl", {
                 destPath: path.join(__dirname, '..', 'downloads', 'metaList.json'), 
                 destFolder: path.join('C:/My/wizzi/stfnbssl/wizzihub-productions', 'metas')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadMetaList', result.length, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadMetaList.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )
@@ -497,16 +464,12 @@ else {
             downloadTFolderList("stfnbssl", {
                 destPath: path.join(__dirname, '..', 'downloads', 'tfolderList.json'), 
                 destFolder: path.join('C:/My/wizzi/stfnbssl/wizzihub-productions', 'tfolders')
-             }).then((result) => {
+             }).then(result => 
             
-                console.log('downloadTFolderList', result.length, __filename);
-                app.services.mongodbClose();
-            }
-            ).catch((err) => {
+                app.services.mongodbClose()
+            ).catch(err => 
             
-                console.log('downloadTFolderList.error', err, __filename);
-                app.services.mongodbClose();
-            }
+                app.services.mongodbClose()
             )
         }
         )

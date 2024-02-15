@@ -1,0 +1,17 @@
+module
+    import 
+        as React
+        from "react"
+    const StylesContext
+        _ React.createContext
+            :param 
+                :union 
+                    :null 
+                    :ref React.ReactNode
+            @ null
+    export 
+        const StylesProvider = StylesContext.Provider
+    export 
+        const useStyles
+            => 
+                _ React.useContext(StylesContext)

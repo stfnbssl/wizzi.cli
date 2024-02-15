@@ -1,0 +1,55 @@
+module
+    :import-type 
+        @ FunctionComponent
+        from "react"
+    import 
+        @ useEffect
+        from "react"
+    import 
+        @ usePreviewSubscription
+        from "~/lib/sanity"
+    :type Props
+        :{ 
+            :p data
+                :unknown 
+            :p query
+                :string 
+            :p queryParams
+                :ref Record
+                    :param string
+                    :param unknown
+            :p setData
+                :=> 
+                    :void 
+                    param data
+                        :unknown 
+    export 
+        const Preview
+            :ref FunctionComponent
+                :param 
+                    :ref Props
+            =
+                => 
+                    { 
+                        @ data
+                        @ query
+                        @ queryParams
+                        @ setData
+                    const 
+                        { 
+                            @ data previewData
+                        =
+                            _ usePreviewSubscription
+                                @ query
+                                { 
+                                    @ initialData data
+                                    @ params queryParams
+                    _ useEffect
+                        => 
+                            _ setData(previewData)
+                        [ 
+                            @ setData
+                            @ previewData
+                    return 
+                        div 
+                            + Preview Mode

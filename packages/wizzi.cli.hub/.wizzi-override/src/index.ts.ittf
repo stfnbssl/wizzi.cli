@@ -55,6 +55,8 @@ module
     +
 	const args = minimist(process.argv.slice(2))
 	let cmd = args._[0]
+    let p_list = args.list
+    let p_dest = args.d || args.dest
     let p_artifact = args.a || args.artifact
     let p_package = args.p || args.package
     let p_plugin = args.l || args.plugin
@@ -86,7 +88,13 @@ module
                 return name.startsWith(p_filter_string) 
     
     if cmd == 'down'
-        if p1 == 'wizzihub'
+        if p_list
+            _ downloadWizzihub
+                {
+                    @ all true
+                    @ list true
+                    @ dest p_dest
+        elif p1 == 'wizzihub'
             _ downloadWizzihub
                 {
                     @ all true

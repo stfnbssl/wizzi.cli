@@ -1,0 +1,36 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ deleteProject
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const projectId
+                    @expr params.projectId
+                        :as 
+                            :string 
+                if projectId
+                    try 
+                        await 
+                            _ deleteProject(projectId)
+                    catch error
+                        _ console.error(error)
+                return redirect("/dashboard")

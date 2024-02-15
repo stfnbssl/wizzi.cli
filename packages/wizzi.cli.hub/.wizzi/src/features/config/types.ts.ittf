@@ -24,6 +24,8 @@ module
                         :string
                     :p mongoConnectUrl
                         :string
+                    :p mongoLocalPath
+                        :string
                 $if wzCtx.Build.useRedis
                     :p redisCa
                         :string

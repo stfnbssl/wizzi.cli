@@ -1,0 +1,95 @@
+module
+    import 
+        @ fold
+        from "fp-ts/Either"
+    import 
+        @ pipe
+        from "fp-ts/function"
+    :import-type 
+        @ TypeC
+        from "io-ts"
+        #
+            # *
+            # * A type guard that ensures that `value` is numeric, even if passed as
+            # * a `string`:
+            # * isNumeric(1)   === true
+            # * isNumeric('1') === true
+            # * isNumeric('a') === false
+            # * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
+            # 
+    const isNumeric
+        => 
+            param value
+                :any 
+            :return
+                :predicate value
+                    :union 
+                        :number 
+                        :string 
+            @expr !isNaN(parseFloat(value)) && isFinite(value)
+        #
+            # *
+            # * A type guard that ensures that `value` is numeric, even if passed as
+            # * a `string`:
+            # * isNumeric(1)   === true
+            # * isNumeric('1') === true
+            # * isNumeric('a') === false
+            # * https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates
+            # 
+    :type Form
+        :ref Record
+            :param string
+            :param any
+        #
+            # *
+            # * Takes a `request` and a runtime representation of a type (see `const User` in
+            # * `/routes/_index.tsx`) and returns the correctly typed form data if it equates
+            # * to the given runtime-type. Throws a 422 otherwise.
+            # 
+    export 
+        const decodeFormData
+            async=> 
+                param request
+                    :ref Request
+                param codec
+                    :ref TypeC
+                        :param 
+                            :ref DecodedForm
+                const formData
+                    await 
+                        _ request.formData()
+                const form
+                    :ref Form
+                    =
+                        { 
+                for 
+                    left
+                        const [name, value]
+                    of formData.entries()
+                    const numericValueExpected = codec.props[name]?.name === "number"
+                    set form[name] =
+                        iif numericValueExpected && isNumeric(value)
+                            then Number(value)
+                            else value
+                return 
+                    _ pipe
+                        _ codec.decode(form)
+                        _ fold
+                            => 
+                                param errors
+                                throw 
+                                    new Response
+                                        _ JSON.stringify(errors)
+                                        { 
+                                            @ status 422
+                                # left: the error case
+                            => 
+                                param decodedFormData
+                                + decodedFormData
+                                # right: successful computation of `codec.decode(form)`
+        #
+            # *
+            # * Takes a `request` and a runtime representation of a type (see `const User` in
+            # * `/routes/_index.tsx`) and returns the correctly typed form data if it equates
+            # * to the given runtime-type. Throws a 422 otherwise.
+            # 

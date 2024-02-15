@@ -1,0 +1,11 @@
+module
+    kind react
+    const 
+        { 
+            @ createCoreController
+        = require("@strapi/strapi").factories
+        #
+            # *
+            # *  post controller
+            # 
+    set module.exports = createCoreController("api::post.post")

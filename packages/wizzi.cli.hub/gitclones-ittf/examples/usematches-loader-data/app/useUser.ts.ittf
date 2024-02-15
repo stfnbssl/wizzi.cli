@@ -1,0 +1,78 @@
+module
+    import 
+        @ useMatchesData
+        from "./useMatchesData"
+    :interface User
+        :p name
+            :string 
+        :p email
+            :string 
+    function isUser
+        param user
+            :unknown 
+        :return
+            :predicate user
+                :ref User
+        return 
+            (
+                && 
+                    && 
+                        + !!user
+                        === 
+                            optypeof 
+                                @expr 
+                                    ( 
+                                        + user
+                                            :as 
+                                                :ref User
+                                    . name
+                            + "string"
+                    === 
+                        optypeof 
+                            @expr 
+                                ( 
+                                    + user
+                                        :as 
+                                            :ref User
+                                . email
+                        + "string"
+        #
+            # *
+            # * Build a custom hook for each data object
+            # * of your loader data.
+            # * Use useMatchesData to access loader data
+            # * across your application.
+            # * Use tiny-invariant and Typescript "is"
+            # * to require data on runtime.
+            # * Or return undefined if data is optional and not found.
+            # 
+    export 
+        function useOptionalUser
+            :return
+                :union 
+                    :ref User
+                    :undefined 
+            const data = useMatchesData("root")
+            if !data || !isUser(data.user)
+                return undefined
+            return data.user
+        #
+            # *
+            # * Build a custom hook for each data object
+            # * of your loader data.
+            # * Use useMatchesData to access loader data
+            # * across your application.
+            # * Use tiny-invariant and Typescript "is"
+            # * to require data on runtime.
+            # * Or return undefined if data is optional and not found.
+            # 
+    export 
+        function useUser
+            :return
+                :ref User
+            const maybeUser = useOptionalUser()
+            if !maybeUser
+                throw new Error("No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.")
+            return maybeUser
+    export 
+        @ User

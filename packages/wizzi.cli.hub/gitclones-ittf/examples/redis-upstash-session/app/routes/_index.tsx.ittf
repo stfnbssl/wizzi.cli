@@ -1,0 +1,55 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ commitSession
+        @ getSession
+        from "~/sessions.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const session
+                    await 
+                        _ getSession(request.headers.get("Cookie"))
+                    # Get the session from the cookie
+                const myStoredData = session.get("myStoredData")
+                    # If no session found (was never created or was expired) create a new session.
+                if !myStoredData
+                    _ session.set("myStoredData", "Some data")
+                    return 
+                        _ json
+                            { 
+                                @ message "Created new session"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ commitSession(session)
+                return 
+                    _ json
+                        { 
+                            @ message
+                                `lit 
+                                    + Showing Session info:&nbsp;
+                                    @ myStoredData
+                                    + 
+                    # If session was found, present the session info.
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    + {data.message}

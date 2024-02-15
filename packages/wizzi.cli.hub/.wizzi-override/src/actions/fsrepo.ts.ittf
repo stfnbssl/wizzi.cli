@@ -105,3 +105,24 @@ module
                             $$ loog 'getFileJSON.json.contents', contents
                             _ resolve
                                 @ JSON.parse(contents)
+
+    +
+    export
+        function createPackifilesFromFs
+            param folderPath
+            param callback
+            #
+            const fsFile = fSystem.vfile()
+            _ fsFile.getFiles
+                @ folderPath
+                {
+                    @ deep true
+                    @ documentContent true
+                a_cb( files )
+                    const packiFiles = {}
+                    foreach file in files
+                        set packiFiles[file.relPath]
+                            {
+                                @ type 'CODE'
+                                @ contents file.content
+                    r_cb( packiFiles )

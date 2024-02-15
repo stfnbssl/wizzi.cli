@@ -2,12 +2,9 @@ template root
     $
         var pkgPath = ''
         var metaVer = '0_0_1'
+    $include ./commonsBabel/index
     $include ./commonsGit/index
     $include ./commonsPackage/index
+    $include ./commonsWebpack/index
     $include ./commonsWizzi/index
-    $include ./jsCommons/index
-    $include ./jsDbMongoDb/index
-    $include ./jsExpress/index
-    $include ./jsExpressApp/index
-    $include ./jsExpressStyles/index
-    $include ./jsExpressUtils/index
+    $include ./jsReactWebpackGetStartedApp/index

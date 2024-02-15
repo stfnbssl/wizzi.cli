@@ -1,0 +1,57 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ getTodo
+        @ updateTodo
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const formData
+                    await 
+                        _ request.formData()
+                const todoId = formData.get("todo")
+                if !todoId || typeof todoId !== "string"
+                    throw 
+                        _ json
+                            { 
+                                @ message "Bad request"
+                                @ todo null
+                            @ 400
+                const todo
+                    await 
+                        _ getTodo(todoId)
+                if !todo
+                    throw 
+                        _ json
+                            { 
+                                @ message "No todo found"
+                                @ todo null
+                            @ 400
+                await 
+                    _ updateTodo
+                        @ todoId
+                        { 
+                            @ completed !todo.completed
+                return 
+                    _ json
+                        { 
+                            @ message "Success"
+                            @ todo
+                        @ 200

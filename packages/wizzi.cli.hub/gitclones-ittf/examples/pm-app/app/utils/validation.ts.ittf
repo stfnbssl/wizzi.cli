@@ -1,0 +1,19 @@
+module
+    export 
+        function validateEmail
+            param email
+                :unknown 
+            if typeof email !== "string" || email.length < 3
+                throw Error("Usernames must be at least 3 characters long")
+            if !email.includes("@")
+                throw Error("Invalid email")
+            return email
+    export 
+        function validatePassword
+            param password
+                :unknown 
+            if typeof password !== "string" || password.length < 6
+                throw Error("Passwords must be at least 6 characters long")
+            if !/[!@.$^*()]/.test(password)
+                throw Error("Passwords must contain at least 1 special character")
+            return password

@@ -1,0 +1,95 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ canUseDOM
+        from "~/utils"
+    export 
+        function useFocusOnFormError
+            { 
+                @ formError
+                @ fieldErrors
+                @ formRef
+                :{ 
+                    :p formError
+                        :any 
+                    :p fieldErrors
+                        :union 
+                            :ref Record
+                                :param string
+                                :param any
+                            :null 
+                            :undefined 
+                    :p formRef
+                        :ref React.RefObject
+                            :param 
+                                :union 
+                                    :ref HTMLFormElement
+                                    :null 
+                                    :undefined 
+            _ React.useEffect
+                => 
+                    const form = formRef.current
+                    if !form
+                        return 
+                    if !formError && !fieldErrors
+                        return 
+                    if formError
+                        const input
+                            _ form.querySelector
+                                :param 
+                                    :ref HTMLInputElement
+                                @ "input:not([disabled],[hidden],[aria-hidden=true])"
+                        _ input?.focus?.()
+                        return 
+                    if fieldErrors
+                        for 
+                            left
+                                const fieldName
+                            of Object.keys(fieldErrors)
+                            if fieldErrors[fieldName]
+                                const input
+                                    _ form.querySelector
+                                        :param 
+                                            :ref HTMLInputElement
+                                        `lit 
+                                            + input[name=
+                                            @ fieldName
+                                            + ]:not([disabled],[hidden],[aria-hidden=true])
+                                _ input?.focus?.()
+                                return 
+                [ 
+                    @ formError
+                    @ fieldErrors
+                    @ formRef
+    export 
+        function useThrottle
+            param value
+                :any 
+            param limit
+                :number 
+            const [throttledValue, setThrottledValue] = React.useState(value)
+            const lastRan = React.useRef(Date.now())
+            _ React.useEffect
+                => 
+                    const handler
+                        _ window.setTimeout
+                            => 
+                                if Date.now() - lastRan.current >= limit
+                                    _ setThrottledValue(value)
+                                    set lastRan.current = Date.now()
+                            set limit - (Date.now() - lastRan.current)
+                    return 
+                        => 
+                            _ window.clearTimeout(handler)
+                [ 
+                    @ value
+                    @ limit
+            return throttledValue
+    export 
+        const useLayoutEffect
+            iif canUseDOM
+                then React.useLayoutEffect
+                else
+                    => 

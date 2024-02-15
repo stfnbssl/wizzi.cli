@@ -1,0 +1,125 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    :import-type 
+        @ FunctionComponent
+        from "react"
+    import 
+        @ useState
+        from "react"
+    import 
+        @ Preview
+        from "~/components"
+    import 
+        @ filterDataToSingleItem
+        @ getClient
+        @ PortableText
+        @ urlFor
+        from "~/lib/sanity"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref LoaderArgs
+                const requestUrl = new URL(request?.url)
+                const preview = requestUrl?.searchParams?.get?.("preview") === process.env.SANITY_PREVIEW_SECRET
+                    # Query for _all_ documents with this slug
+                    # There could be two: Draft and Published!
+                const query
+                    `lit 
+                        + *[_type == "movie" && slug.current == $slug]
+                    # Query for _all_ documents with this slug
+                    # There could be two: Draft and Published!
+                const queryParams
+                    { 
+                        @ slug params.slug
+                const initialData
+                    await 
+                        _ getClient(preview).fetch(query, queryParams)
+                return 
+                    _ json
+                        { 
+                            @ initialData
+                            @ preview
+                            @ query
+                                iif preview
+                                    then query
+                                    else ""
+                                # If `preview` mode is active, we'll need these for live updates
+                            @ queryParams
+                                iif preview
+                                    then queryParams
+                                    else
+                                        { 
+    const Movie
+        :ref FunctionComponent
+        =
+            => 
+                const 
+                    { 
+                        @ initialData
+                        @ preview
+                        @ query
+                        @ queryParams
+                    =
+                        _ useLoaderData
+                            :param 
+                                :typeof loader
+                    # If `preview` mode is active, its component update this state for us
+                const [data, setData] = useState(initialData)
+                    # If `preview` mode is active, its component update this state for us
+                    # Bonus, a helper function checks the returned documents
+                    # To show Draft if in preview mode, otherwise Published
+                const movie = filterDataToSingleItem(data, preview)
+                    # Bonus, a helper function checks the returned documents
+                    # To show Draft if in preview mode, otherwise Published
+                return 
+                    div 
+                        @ style
+                            { 
+                                @ textAlign "center"
+                                @ padding 20
+                        { 
+                            iif preview
+                                then
+                                    < Preview 
+                                        @ data {data}
+                                        @ setData {setData}
+                                        @ query {query}
+                                        @ queryParams {queryParams}
+                                else null
+                        { 
+                            # 
+                                # When working with draft content, optional chain _everything_
+                        { 
+                            iif movie?.title
+                                then
+                                    h1 
+                                        + {movie.title}
+                                else null
+                        { 
+                            iif movie?.poster
+                                then
+                                    img 
+                                        @ loading "lazy"
+                                        @ src {urlFor(movie.poster).width(400).height(200).toString()}
+                                        @ width "400"
+                                        @ height "200"
+                                        @ alt {movie?.title ?? ""}
+                                else null
+                        { 
+                            iif movie?.overview?.length
+                                then
+                                    < PortableText 
+                                        @ value {movie?.overview}
+                                else null
+    export-default Movie

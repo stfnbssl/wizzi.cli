@@ -1,0 +1,39 @@
+module
+    import 
+        @ useEffect
+        @ useState
+        from "react"
+    export 
+        function ComplexComponent
+            const [count, setCount]
+                _ useState
+                    => 
+                        const stored = localStorage.getItem("count")
+                        if !stored
+                            return 0
+                        return JSON.parse(stored)
+            _ useEffect
+                function sync
+                    _ localStorage.setItem("count", JSON.stringify(count))
+                [ 
+                    @ count
+            return 
+                < React.Fragment
+                    button 
+                        @ onClick
+                            => 
+                                _ setCount
+                                    => 
+                                        param c
+                                        set c - 1
+                        + -
+                    span 
+                        + {count}
+                    button 
+                        @ onClick
+                            => 
+                                _ setCount
+                                    => 
+                                        param c
+                                        set c + 1
+                        + +

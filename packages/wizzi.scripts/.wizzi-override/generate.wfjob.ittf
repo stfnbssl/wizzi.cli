@@ -58,5 +58,5 @@ wfjob wizzi.meta.js/job
             line-ref ittf-ittf
         line-ref ittf-root
         line-ref ittf-src
-        $if false
+        $if true
             line-ref ittf-examples

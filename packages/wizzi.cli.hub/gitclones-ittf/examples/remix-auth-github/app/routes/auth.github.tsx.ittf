@@ -1,0 +1,21 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ auth
+        from "~/auth.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                return 
+                    await 
+                        _ auth.authenticate
+                            @ "github"
+                            @ request
+                            { 
+                                @ successRedirect "/private"
+                                @ failureRedirect "/"

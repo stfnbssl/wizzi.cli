@@ -1,0 +1,15 @@
+module
+    import 
+        @ createContext
+        from "react"
+    export 
+        const ClientStyleContext
+            _ createContext
+                :param 
+                    :union 
+                        :{ 
+                            :p reset
+                                :=> 
+                                    :void 
+                        :null 
+                @ null

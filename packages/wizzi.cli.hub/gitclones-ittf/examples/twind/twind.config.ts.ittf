@@ -1,0 +1,13 @@
+module
+    import presetAutoprefix from "@twind/preset-autoprefix"
+    import presetTailwind from "@twind/preset-tailwind"
+    import 
+        @ defineConfig
+        from "twind"
+    export-default 
+        _ defineConfig
+            { 
+                [ presets
+                    @ presetAutoprefix()
+                    @ presetTailwind()
+                    # config goes here

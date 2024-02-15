@@ -1,0 +1,55 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ useSubmit
+        from "@remix-run/react"
+    import 
+        @ useEffect
+        from "react"
+    import 
+        @ authenticator
+        from "~/auth.server"
+    import 
+        @ supabaseClient
+        from "~/supabase.client"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ authenticator.authenticate
+                        @ "sb-oauth"
+                        @ request
+                        { 
+                            @ successRedirect "/private"
+                            @ failureRedirect "/login"
+    export-default 
+        function OAuth
+            const submit = useSubmit()
+            _ useEffect
+                => 
+                    const 
+                        { 
+                            @ data authListener
+                        =
+                            _ supabaseClient.auth.onAuthStateChange
+                                => 
+                                    param event
+                                    param session
+                                    if event === "SIGNED_IN"
+                                        const formData = new FormData()
+                                        _ formData.append("session", JSON.stringify(session))
+                                        _ submit
+                                            @ formData
+                                            { 
+                                                @ method "post"
+                    return 
+                        => 
+                            _ authListener?.unsubscribe?.()
+                [ 
+                    @ submit
+            return null

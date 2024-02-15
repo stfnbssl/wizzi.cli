@@ -1,0 +1,22 @@
+module
+    export 
+        const handle
+            { 
+                @ hydrate true
+    export-default 
+        function Screen
+            return 
+                < React.Fragment
+                    h1 
+                        + Reload to see how it loaded JS
+                    blockquote 
+                        + Tip: Inspect the Network tab to see it has JS
+                    button 
+                        @ type "button"
+                        @ onClick
+                            => 
+                                _ alert("It has JS!")
+                        + Click me to see JS has loaded
+                    a 
+                        @ href "/"
+                        + Go back

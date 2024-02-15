@@ -1,0 +1,47 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        @ Outlet
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ getWorkshops
+        from "~/data.server"
+    export 
+        const loader
+            async=> 
+                return 
+                    _ json
+                        { 
+                            @ workshops
+                                await 
+                                    _ getWorkshops()
+    export-default 
+        function Workshops
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    h1 
+                        + There are
+                        + {data.workshops.length}
+                        + workshops
+                    ul 
+                        { 
+                            _ data.workshops.map
+                                => 
+                                    param workshop
+                                    li 
+                                        @ key {workshop.id}
+                                        < Link 
+                                            @ to {workshop.id}
+                                            + {workshop.title}
+                    < Outlet 
+                    < Link 
+                        @ to "/"
+                        + Go home

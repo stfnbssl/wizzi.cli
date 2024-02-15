@@ -1,0 +1,44 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        from "@remix-run/react"
+    import 
+        @ destroySession
+        @ getSession
+        from "~/sessions"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const session
+                    await 
+                        _ getSession(request.headers.get("Cookie"))
+                return 
+                    _ redirect
+                        @ "/"
+                        { 
+                            { headers
+                                @ "Set-Cookie"
+                                    await 
+                                        _ destroySession(session)
+    export-default 
+        function Logout
+            return 
+                div 
+                    h1 
+                        + Logout
+                    p 
+                        + Press the button below to log out.
+                    < Form 
+                        @ method "post"
+                        button 
+                            @ type "submit"
+                            + Logout

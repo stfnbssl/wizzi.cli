@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\download.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 import {fSystem, verify} from 'wizzi-utils';
@@ -19,18 +20,16 @@ export function downloadArtifactList(owner: string, options: any):  Promise<any>
                 owner: owner
              }).then((result: any) => {
             
-                if (options.destPath) {
-                    writeJSONToDest(options.destPath, result)
-                }
                 if (options.destFolder) {
+                    writeJSONToDest(path.join(options.destFolder, '..', '.packi', 'artifactList.json'), result)
                     var i, i_items=result.item, i_len=result.item.length, item;
                     for (i=0; i<i_len; i++) {
                         item = result.item[i];
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
                             filter: options.filter, 
-                            name: verify.replaceAll(item.name, '/', '%2F')
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            name: verify.replaceAll(item.name, '/', '_')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '_')), options.destMetaFolder ? path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '_')) : null)
                     }
                 }
                 return resolve(result.item);
@@ -78,9 +77,7 @@ export function downloadPackageList(owner: string, options: any):  Promise<any> 
                 owner: owner
              }).then((result: any) => {
             
-                if (options.destPath) {
-                    writeJSONToDest(options.destPath, result)
-                }
+                writeJSONToDest(path.join(options.destFolder, '..', '.packi', 'packageList.json'), result)
                 if (options.destFolder) {
                     var i, i_items=result.item, i_len=result.item.length, item;
                     for (i=0; i<i_len; i++) {
@@ -88,8 +85,8 @@ export function downloadPackageList(owner: string, options: any):  Promise<any> 
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
                             filter: options.filter, 
-                            name: verify.replaceAll(item.name, '/', '%2F')
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            name: verify.replaceAll(item.name, '/', '_')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '_')), options.destMetaFolder ? path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '_')) : null)
                     }
                 }
                 return resolve(result.item);
@@ -137,9 +134,7 @@ export function downloadPluginList(owner: string, options: any):  Promise<any> {
                 owner: owner
              }).then((result: any) => {
             
-                if (options.destPath) {
-                    writeJSONToDest(options.destPath, result)
-                }
+                writeJSONToDest(path.join(options.destFolder, '..', '.packi', 'pluginList.json'), result)
                 if (options.destFolder) {
                     var i, i_items=result.item, i_len=result.item.length, item;
                     for (i=0; i<i_len; i++) {
@@ -147,8 +142,8 @@ export function downloadPluginList(owner: string, options: any):  Promise<any> {
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
                             filter: options.filter, 
-                            name: verify.replaceAll(item.name, '/', '%2F')
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            name: verify.replaceAll(item.name, '/', '_')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '_')), options.destMetaFolder ? path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '_')) : null)
                     }
                 }
                 return resolve(result.item);
@@ -196,9 +191,7 @@ export function downloadMetaList(owner: string, options: any):  Promise<any> {
                 owner: owner
              }).then((result: any) => {
             
-                if (options.destPath) {
-                    writeJSONToDest(options.destPath, result)
-                }
+                writeJSONToDest(path.join(options.destFolder, '..', '.packi', 'metaList.json'), result)
                 if (options.destFolder) {
                     var i, i_items=result.item, i_len=result.item.length, item;
                     for (i=0; i<i_len; i++) {
@@ -206,8 +199,8 @@ export function downloadMetaList(owner: string, options: any):  Promise<any> {
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
                             filter: options.filter, 
-                            name: verify.replaceAll(item.name, '/', '%2F')
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            name: verify.replaceAll(item.name, '/', '_')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '_')), options.destMetaFolder ? path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '_')) : null)
                     }
                 }
                 return resolve(result.item);
@@ -255,9 +248,7 @@ export function downloadTFolderList(owner: string, options: any):  Promise<any> 
                 owner: owner
              }).then((result: any) => {
             
-                if (options.destPath) {
-                    writeJSONToDest(options.destPath, result)
-                }
+                writeJSONToDest(path.join(options.destFolder, '..', '.packi', 'tFolderList.json'), result)
                 if (options.destFolder) {
                     var i, i_items=result.item, i_len=result.item.length, item;
                     for (i=0; i<i_len; i++) {
@@ -265,8 +256,8 @@ export function downloadTFolderList(owner: string, options: any):  Promise<any> 
                         const packiFiles: PackiFiles = JSON.parse(item.packiFiles);
                         writePackiToDest(filterPackiFiles(packiFiles, {
                             filter: options.filter, 
-                            name: verify.replaceAll(item.name, '/', '%2F')
-                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '%2F')), path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '%2F')))
+                            name: verify.replaceAll(item.name, '/', '_')
+                         }), path.join(options.destFolder, verify.replaceAll(item.name, '/', '_')), options.destMetaFolder ? path.join(options.destMetaFolder, verify.replaceAll(item.name, '/', '_')) : null)
                     }
                 }
                 return resolve(result.item);
@@ -355,7 +346,6 @@ function filterPackiFiles(packiFiles: PackiFiles, options: any) {
         var i, i_items=Object.keys(packiFiles), i_len=Object.keys(packiFiles).length, k;
         for (i=0; i<i_len; i++) {
             k = Object.keys(packiFiles)[i];
-            console.log('filterPackiFiles', options.name + '/' + k , options.filter(k, packiFiles[k].type, packiFiles[k].contents), __filename);
             if (options.filter(options.name + '/' + k, packiFiles[k].type, packiFiles[k].contents)) {
                 result[k] = packiFiles[k];
             }

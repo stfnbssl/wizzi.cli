@@ -1,0 +1,55 @@
+module
+    kind react
+    const path = require("path")
+    const 
+        { 
+            @ createRequestHandler
+        = require("@remix-run/express")
+    function purgeAppRequireCache
+        const cwd = process.cwd()
+        for 
+            left
+                const key
+            in require.cache
+            if key.startsWith(path.join(cwd, "server/build"))
+                delete require.cache[key]
+        #
+            # *
+            # * @returns {ReturnType<typeof createRequestHandler>}
+            # 
+    function devHandler
+        return 
+            => 
+                param req
+                param res
+                param next
+                _ purgeAppRequireCache()
+                return 
+                    _ createRequestHandler
+                        { 
+                            @ build require("./build")
+                                # @ts-ignore
+                        (
+                            @ req
+                            @ res
+                            @ next
+        #
+            # *
+            # * @returns {ReturnType<typeof createRequestHandler>}
+            # 
+        #
+            # *
+            # * @returns {ReturnType<typeof createRequestHandler>}
+            # 
+    function prodHandler
+        return 
+            _ createRequestHandler
+                { 
+                    @ build require("./build")
+                        # @ts-ignore
+        #
+            # *
+            # * @returns {ReturnType<typeof createRequestHandler>}
+            # 
+    set exports.devHandler = devHandler
+    set exports.prodHandler = prodHandler

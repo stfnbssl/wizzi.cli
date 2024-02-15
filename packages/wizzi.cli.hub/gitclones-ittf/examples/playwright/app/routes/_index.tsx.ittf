@@ -1,0 +1,13 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    export-default 
+        function Index
+            return 
+                main 
+                    h1 
+                        + Welcome to Remix + Playwright example
+                    < Link 
+                        @ to "/login"
+                        + Login

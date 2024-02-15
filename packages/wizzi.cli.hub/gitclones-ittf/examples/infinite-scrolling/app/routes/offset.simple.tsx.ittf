@@ -1,0 +1,209 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useFetcher
+        @ useLoaderData
+        @ useTransition
+        from "@remix-run/react"
+    import 
+        @ useCallback
+        @ useEffect
+        @ useRef
+        @ useState
+        from "react"
+    import 
+        @ useVirtual
+        from "react-virtual"
+    import stylesUrl from "~/styles/index.css"
+    import 
+        @ getItems
+        from "~/utils/backend.server"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    const LIMIT = 200
+    const DATA_OVERSCAN = 40
+    const getStartLimit
+        => 
+            param searchParams
+                :ref URLSearchParams
+            (
+                { 
+                    @ start Number(searchParams.get("start") || "0")
+                    @ limit Number(searchParams.get("limit") || LIMIT.toString())
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ start
+                        @ limit
+                    = getStartLimit(new URL(request.url).searchParams)
+                return 
+                    _ json
+                        { 
+                            @ items
+                                await 
+                                    _ getItems
+                                        { 
+                                            @ start
+                                            @ limit
+                        { 
+                            { headers
+                                @ "Cache-Control" "public, max-age=120"
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const [items, setItems] = useState(data.items)
+            const transition = useTransition()
+            const fetcher = useFetcher()
+            const startRef = useRef(0)
+            const parentRef
+                _ useRef
+                    :param 
+                        :ref HTMLDivElement
+                    @ null
+            const rowVirtualizer
+                _ useVirtual
+                    { 
+                        @ size items.length
+                        @ parentRef
+                        @ estimateSize
+                            _ useCallback
+                                => 
+                                    + 35
+                                [ 
+                        { initialRect
+                            @ width 0
+                            @ height 800
+            const [lastVirtualItem]
+                [ 
+                    @ ...rowVirtualizer.virtualItems
+                    ._ reverse
+            if !lastVirtualItem
+                throw new Error("this should never happen")
+            let newStart = startRef.current
+            const upperBoundary = startRef.current + LIMIT - DATA_OVERSCAN
+            if lastVirtualItem.index > upperBoundary
+                set newStart = startRef.current + LIMIT
+                    # user is scrolling down. Move the window down
+            _ useEffect
+                => 
+                    if newStart === startRef.current
+                        return 
+                    const qs
+                        new URLSearchParams
+                            [ 
+                                [ 
+                                    @ "start"
+                                    @ String(newStart)
+                                [ 
+                                    @ "limit"
+                                    @ String(LIMIT)
+                    _ fetcher.load
+                        `lit 
+                            + /offset/simple?
+                            @ qs
+                            + 
+                    set startRef.current = newStart
+                [ 
+                    @ newStart
+                    @ fetcher
+            _ useEffect
+                => 
+                    if fetcher.data
+                        _ setItems
+                            => 
+                                param prevItems
+                                [ 
+                                    @ ...prevItems
+                                    @ ...fetcher.data.items
+                [ 
+                    @ fetcher.data
+            return 
+                main 
+                    h1 
+                        + Simple Infinite Scrolling (offset=
+                        + {startRef.current}
+                        + )
+                    div 
+                        @ ref {parentRef}
+                        @ className "List"
+                        @ style
+                            { 
+                                @ height
+                                    `lit 
+                                        + 800px
+                                @ width
+                                    `lit 
+                                        + 100%
+                                @ overflow "auto"
+                        div 
+                            @ style
+                                { 
+                                    @ height
+                                        `lit 
+                                            + 
+                                            @ rowVirtualizer.totalSize
+                                            + px
+                                    @ width "100%"
+                                    @ position "relative"
+                            { 
+                                _ rowVirtualizer.virtualItems.map
+                                    => 
+                                        param virtualRow
+                                        const item = items[virtualRow.index]
+                                        return 
+                                            div 
+                                                @ key {virtualRow.key}
+                                                @ className
+                                                    `lit 
+                                                        + list-item&nbsp;
+                                                        iif virtualRow.index % 2
+                                                            then "list-item--odd"
+                                                            else "list-item--even"
+                                                        + 
+                                                @ style
+                                                    { 
+                                                        @ position "absolute"
+                                                        @ top 0
+                                                        @ left 0
+                                                        @ width "100%"
+                                                        @ height
+                                                            `lit 
+                                                                + 
+                                                                @ virtualRow.size
+                                                                + px
+                                                        @ transform
+                                                            `lit 
+                                                                + translateY(
+                                                                @ virtualRow.start
+                                                                + px)
+                                                span 
+                                                    + {virtualRow.index}
+                                                span 
+                                                    { 
+                                                        iif item
+                                                            then item.value
+                                                            else
+                                                                iif transition.state === "loading"
+                                                                    then "Loading more..."
+                                                                    else "Nothing to see here..."

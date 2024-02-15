@@ -1,0 +1,39 @@
+module
+    import 
+        @ useEffect
+        from "react"
+    import 
+        @ useSocket
+        from "~/context"
+    export-default 
+        function Index
+            const socket = useSocket()
+            _ useEffect
+                => 
+                    if !socket
+                        return 
+                    _ socket.on
+                        @ "event"
+                        => 
+                            param data
+                            _ console.log(data)
+                    _ socket.emit("event", "ping")
+                [ 
+                    @ socket
+            return 
+                div 
+                    @ style
+                        { 
+                            @ fontFamily "system-ui, sans-serif"
+                            @ lineHeight "1.8"
+                    h1 
+                        + Welcome to Remix + Socket.io
+                    div 
+                        button 
+                            @ type "button"
+                            @ onClick
+                                => 
+                                    _ socket?.emit?.("event", "ping")
+                            + Send ping
+                    p 
+                        + See Browser console and Server terminal

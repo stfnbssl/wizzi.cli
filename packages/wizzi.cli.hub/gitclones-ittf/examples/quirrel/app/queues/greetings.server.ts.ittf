@@ -1,0 +1,15 @@
+module
+    import 
+        @ Queue
+        from "quirrel/remix"
+    export-default 
+        _ Queue
+            @ "/queues/greetings"
+            async=> 
+                param name
+                    :string 
+                _ console.log
+                    `lit 
+                        + Greetings,&nbsp;
+                        @ name
+                        + !

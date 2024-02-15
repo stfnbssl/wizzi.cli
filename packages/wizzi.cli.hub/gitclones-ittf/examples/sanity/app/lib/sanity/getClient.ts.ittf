@@ -1,0 +1,27 @@
+module
+    import PicoSanity from "picosanity"
+    import 
+        @ config
+        from "./config"
+        # Standard client for fetching data
+    export 
+        const sanityClient = new PicoSanity(config)
+        # Standard client for fetching data
+        # Authenticated client for fetching draft documents
+    export 
+        const previewClient
+            new PicoSanity
+                { 
+                    @ ...config
+                    @ token process.env.SANITY_API_TOKEN ?? ""
+                    @ useCdn false
+        # Authenticated client for fetching draft documents
+        # Helper function to choose the correct client
+    export 
+        const getClient
+            => 
+                param usePreview = false
+                iif usePreview
+                    then previewClient
+                    else sanityClient
+        # Helper function to choose the correct client

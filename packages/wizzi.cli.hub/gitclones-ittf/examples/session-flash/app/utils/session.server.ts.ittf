@@ -1,0 +1,55 @@
+module
+    import 
+        @ createCookieSessionStorage
+        from "@remix-run/node"
+    export 
+        :interface FlashMessage
+            :p color
+                :string 
+            :p text
+                :string 
+        # Create a minimal cookie sesssion
+    export 
+        const storage
+            _ createCookieSessionStorage
+                { 
+                    { cookie
+                        @ name "session-flash__session"
+                        [ secrets
+                            @ "mySESSIONsecret"
+                        @ sameSite "lax"
+                        @ path "/"
+                        @ maxAge 60 * 60 * 24 * 30
+                        @ httpOnly true
+        # Create a minimal cookie sesssion
+    export 
+        async-function getSession
+            param request
+                :ref Request
+            return 
+                await 
+                    _ storage.getSession(request.headers.get("Cookie"))
+    export 
+        async-function getSessionFlash
+            param request
+                :ref Request
+            const session
+                await 
+                    _ getSession(request)
+            const message
+                :ref FlashMessage
+                =
+                    { 
+                        @ color session.get("messageColor")
+                        @ text session.get("messageText")
+            if !message.color || !message.text
+                return null
+            const headers
+                { 
+                    @ "Set-Cookie"
+                        await 
+                            _ storage.commitSession(session)
+            return 
+                { 
+                    @ message
+                    @ headers

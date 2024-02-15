@@ -1,0 +1,118 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ User
+        from "~/models"
+    function Avatar
+        { 
+            @ className
+            @ style
+            @ avatar
+            @ nameFirst
+            @ nameLast
+            @ size
+                = "md"
+            :ref AvatarProps
+        if !avatar && !nameFirst && !nameLast
+            return null
+        const sharedClassName
+            _ cx
+                @ className
+                @ "ui--avatar"
+                `lit 
+                    + ui--avatar--
+                    @ size
+                    + 
+        const fullName
+            [ 
+                @ nameFirst
+                @ nameLast
+                ._ filter
+                    @ Boolean
+                ._ join
+                    @ " "
+                ._ trim
+        if !avatar
+            return 
+                div 
+                    @ className {cx(sharedClassName, "ui--avatar--initials")}
+                    @ style {style}
+                    @ title {fullName}
+                    < AvatarInits 
+                        @ name {fullName}
+        return 
+            div 
+                @ className {sharedClassName}
+                @ style {style}
+                @ title {fullName}
+                img 
+                    @ src {avatar}
+                    @ alt ""
+    function AvatarInits
+        { 
+            @ name
+            :{ 
+                :p name
+                    :string 
+        const inits
+            _ React.useMemo
+                => 
+                    let inits
+                        :union 
+                            :[ 
+                                :string 
+                            :string 
+                            :undefined 
+                        = name.split(" ").filter(filterMinorWords)
+                    if inits.length > 1
+                        set inits = (inits[0][0] + inits[1][0]).toUpperCase()
+                    else
+                        set inits = inits[0].substring(0, 1).toUpperCase()
+                    return inits
+                [ 
+                    @ name
+        return 
+            span 
+                @ className "ui--avatar__initials"
+                + {inits}
+    export 
+        @ Avatar
+    function filterMinorWords
+        param string
+            :string 
+        :return
+            :boolean 
+        return 
+            op! 
+                [ 
+                    @ "the"
+                    @ "a"
+                    @ "an"
+                    @ "and"
+                    ._ includes
+                        @ string
+    :interface AvatarProps
+        :extends Partial
+            :param 
+                :ref User
+        :p size
+            :optional 
+            :union 
+                :literal "sm"
+                :literal "md"
+                :literal "lg"
+                :literal "xl"
+                :literal "2x"
+        :p className
+            :optional 
+            :string 
+        :p style
+            :optional 
+            :[] 
+                :ref React.ComponentProps
+                    :param 
+                        :literal "div"
+                :literal "style"

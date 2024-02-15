@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 6,
+  "column": 3,
+  "source": "@apply cursor-default;\n}\n\namalgo-box {\n  @apply relative z-10;\n}\n\namalgo-box input {\n  @apply w-52 border-none bg-inherit py-2 px-4 font-light outline-none;\n}\n\namalgo-box amalgo-popover {\n  @apply pointer-events-none absolute -top-2 left-3  z-10 block rounded-lg border bg-white shadow-md;\n  @apply origin-top-left scale-90 opacity-0  transition-all;\n}\n\namalgo-box[open] amalgo-popover {\n  @apply pointer-events-auto scale-100 opacity-100;\n}\n\namalgo-menu {\n  @apply relative z-10 block border-t;\n}\n\namalgo-option {\n  @apply relative z-10 m-1 block rounded-md p-2;\n}\n\namalgo-option[hidden] {\n  @apply hidden;\n}\n\namalgo-option[highlight] {\n  @apply bg-gray-100;\n}\n"
+}

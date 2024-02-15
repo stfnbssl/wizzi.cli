@@ -1,0 +1,35 @@
+module
+    import DataLoader from "dataloader"
+    import 
+        @ db
+        from "~/data.server"
+    export 
+        const createUsersByIdLoader
+            => 
+                new DataLoader
+                    async=> 
+                        param ids
+                            :ref Readonly
+                                :param 
+                                    :[ 
+                                        :string 
+                        const users
+                            await 
+                                _ db.user.findMany
+                                    { 
+                                        { where
+                                            { id
+                                                @ in ids
+                        const userMap
+                            new Map
+                                _ users.map
+                                    => 
+                                        param user
+                                        [ 
+                                            @expr user.id
+                                            @id user
+                        return 
+                            _ ids.map
+                                => 
+                                    param id
+                                    @expr userMap.get(id) ?? null

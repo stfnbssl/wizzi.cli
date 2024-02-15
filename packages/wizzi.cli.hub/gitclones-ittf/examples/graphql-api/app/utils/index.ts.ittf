@@ -1,0 +1,37 @@
+module
+    export 
+        const fetchFromGraphQL
+            async=> 
+                param query
+                    :string 
+                param variables
+                    :ref Record
+                        :param string
+                        :param any
+                    :optional 
+                if !process.env.GRAPHQL_API
+                    throw new Error("GRAPHQL_API is required")
+                const body
+                    :any 
+                    =
+                        { 
+                            @ query
+                if variables
+                    set body.variables = variables
+                return 
+                    _ fetch
+                        @expr process.env.GRAPHQL_API
+                        { 
+                            @ body JSON.stringify(body)
+                            { headers
+                                @ "Content-Type" "application/json"
+                            @ method "POST"
+        #
+            # *
+            # * @name fetchFromGraphQL
+            # * @external https://css-tricks.com/raw-graphql-querying
+            # * @description This function is used to fetch data from the GraphQL API.
+            # * Check out the link above for more information.
+            # 
+    export 
+        const gql = String.raw

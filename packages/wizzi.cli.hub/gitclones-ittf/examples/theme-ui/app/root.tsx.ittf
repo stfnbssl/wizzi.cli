@@ -1,0 +1,100 @@
+module
+    import 
+        @ withEmotionCache
+        from "@emotion/react"
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        from "@remix-run/react"
+    import 
+        @ ThemeProvider
+        from "@theme-ui/core"
+    :import-type 
+        @ ReactNode
+        from "react"
+    import 
+        @ useContext
+        @ useEffect
+        from "react"
+    import 
+        @ ServerStyleContext
+        @ ClientStyleContext
+        from "~/styles/context"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    :type DocumentProps
+        :{ 
+            :p children
+                :ref ReactNode
+    const Document
+        _ withEmotionCache
+            => 
+                { 
+                    @ children
+                    :ref DocumentProps
+                param emotionCache
+                const serverStyleData = useContext(ServerStyleContext)
+                const clientStyleData = useContext(ClientStyleContext)
+                const resetClientStyleData = clientStyleData?.reset
+                    # Only executed on client
+                _ useEffect
+                    => 
+                        _ resetClientStyleData()
+                    [ 
+                        @ resetClientStyleData
+                    # Only executed on client
+                return 
+                    html 
+                        @ lang "en"
+                        head 
+                            < Meta 
+                            < Links 
+                            { 
+                                _ serverStyleData?.map?.
+                                    => 
+                                        { 
+                                            @ key
+                                            @ ids
+                                            @ css
+                                        < style 
+                                            @ key {key}
+                                            @ data-emotion
+                                                `lit 
+                                                    + 
+                                                    @ key
+                                                    + &nbsp;
+                                                    _ ids.join(" ")
+                                                    + 
+                                            @ dangerouslySetInnerHTML
+                                                { 
+                                                    @ __html css
+                        body 
+                            + {children}
+                            < ScrollRestoration 
+                            < Scripts 
+                            < LiveReload 
+    export-default 
+        function App
+            return 
+                < Document 
+                    < ThemeProvider 
+                        @ theme
+                            { 
+                                { colors
+                                    @ primary "#33e"
+                        < Outlet 

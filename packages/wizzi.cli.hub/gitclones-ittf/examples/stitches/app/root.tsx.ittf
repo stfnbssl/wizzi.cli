@@ -1,0 +1,117 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useCatch
+        from "@remix-run/react"
+    import 
+        @ useContext
+        @ useEffect
+        from "react"
+    import ClientStyleContext from "~/styles/client.context"
+    import 
+        @ styled
+        from "~/styles/stitches.config"
+    const Container
+        _ styled
+            @ "div"
+            { 
+                @ backgroundColor "#ff0000"
+                @ padding "1em"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "Remix with Stitches"
+                            @ viewport "width=device-width,initial-scale=1"
+    :interface DocumentProps
+        :p children
+            :ref React.ReactNode
+        :p title
+            :optional 
+            :string 
+    const Document
+        => 
+            { 
+                @ children
+                @ title
+                :ref DocumentProps
+            const clientStyleData = useContext(ClientStyleContext)
+                # Only executed on client
+            _ useEffect
+                => 
+                    _ clientStyleData.reset()
+                        # reset cache to re-apply global styles
+                [ 
+                    @ clientStyleData
+                # Only executed on client
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        { 
+                            iif title
+                                then
+                                    < title 
+                                        + {title}
+                                else null
+                        < Meta 
+                        < Links 
+                        < style 
+                            @ id "stitches"
+                            @ dangerouslySetInnerHTML
+                                { 
+                                    @ __html clientStyleData.sheet
+                            @ suppressHydrationWarning
+                    body 
+                        + {children}
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 
+    export-default 
+        function App
+            return 
+                < Document 
+                    < Outlet 
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            return 
+                < Document 
+                    @ title
+                        `lit 
+                            + 
+                            @ caught.status
+                            + &nbsp;
+                            @ caught.statusText
+                            + 
+                    < Container 
+                        p 
+                            + [CatchBoundary]:
+                            + {caught.status}
+                            + {caught.statusText}
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            return 
+                < Document 
+                    @ title "Error!"
+                    < Container 
+                        p 
+                            + [ErrorBoundary]: There was an error:
+                            + {error.message}

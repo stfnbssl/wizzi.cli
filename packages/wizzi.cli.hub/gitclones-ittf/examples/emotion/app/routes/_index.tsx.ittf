@@ -1,0 +1,27 @@
+module
+    import styled from "@emotion/styled"
+    import 
+        @ Link
+        from "@remix-run/react"
+    const Container
+        _` styled("div")
+            + &lf;
+            + &nbsp; font-family: "system-ui, sans-serif";&lf;
+            + &nbsp; line-height: 1.8;&lf;
+            + &nbsp; background-color: #ddd;&lf;
+            + 
+    export-default 
+        function Index
+            return 
+                < Container 
+                    h1 
+                        + Welcome to Remix with Emotion Example
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/jokes"
+                                + Jokes
+                        li 
+                            < Link 
+                                @ to "/jokes-error"
+                                + Jokes: Error

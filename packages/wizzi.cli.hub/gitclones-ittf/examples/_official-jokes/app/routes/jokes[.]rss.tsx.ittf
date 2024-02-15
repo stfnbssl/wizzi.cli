@@ -1,0 +1,136 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ db
+        from "~/utils/db.server"
+    import 
+        @ getUserId
+        from "~/utils/session.server"
+    function escapeCdata
+        param s
+            :string 
+        return s.replace(/\]\]>/g, "]]]]><![CDATA[>")
+    function escapeHtml
+        param s
+            :string 
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;")
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const userId
+                    await 
+                        _ getUserId(request)
+                    # In the official deployed version of the app, we don't want to deploy
+                    # a site with none-moderated content, so we only show users their own jokes
+                const jokes
+                    iif userId
+                        then
+                            await 
+                                _ db.joke.findMany
+                                    { 
+                                        { include
+                                            { jokester
+                                                { select
+                                                    @ username true
+                                        { orderBy
+                                            @ createdAt "desc"
+                                        @ take 100
+                                        { where
+                                            @ jokesterId userId
+                        else []
+                    # In the official deployed version of the app, we don't want to deploy
+                    # a site with none-moderated content, so we only show users their own jokes
+                const host = request.headers.get("X-Forwarded-Host") ?? request.headers.get("host")
+                if !host
+                    throw new Error("Could not determine domain URL.")
+                const protocol
+                    iif host.includes("localhost")
+                        then "http"
+                        else "https"
+                const domain
+                    `lit 
+                        + 
+                        @ protocol
+                        + ://
+                        @ host
+                        + 
+                const jokesUrl
+                    `lit 
+                        + 
+                        @ domain
+                        + /jokes
+                const rssString
+                    _ 
+                        `lit 
+                            + &lf;
+                            + &nbsp;   <rss xmlns:blogChannel="
+                            @ jokesUrl
+                            + " version="2.0">&lf;
+                            + &nbsp;     <channel>&lf;
+                            + &nbsp;       <title>Remix Jokes</title>&lf;
+                            + &nbsp;       <link>
+                            @ jokesUrl
+                            + </link>&lf;
+                            + &nbsp;       <description>Some funny jokes</description>&lf;
+                            + &nbsp;       <language>en-us</language>&lf;
+                            + &nbsp;       <generator>Kody the Koala</generator>&lf;
+                            + &nbsp;       <ttl>40</ttl>&lf;
+                            + &nbsp;      &nbsp;
+                            _ jokes.map
+                                => 
+                                    param joke
+                                    _ 
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;           <item>&lf;
+                                            + &nbsp;             <title><![CDATA[
+                                            _ escapeCdata(joke.name)
+                                            + ]]></title>&lf;
+                                            + &nbsp;             <description><![CDATA[A funny joke called&nbsp;
+                                            _ escapeHtml(joke.name)
+                                            + ]]></description>&lf;
+                                            + &nbsp;             <author><![CDATA[
+                                            _ escapeCdata(joke.jokester.username)
+                                            + ]]></author>&lf;
+                                            + &nbsp;             <pubDate>
+                                            _ joke.createdAt.toUTCString()
+                                            + </pubDate>&lf;
+                                            + &nbsp;             <link>
+                                            @ jokesUrl
+                                            + /
+                                            @ joke.id
+                                            + </link>&lf;
+                                            + &nbsp;             <guid>
+                                            @ jokesUrl
+                                            + /
+                                            @ joke.id
+                                            + </guid>&lf;
+                                            + &nbsp;           </item>&lf;
+                                            + &nbsp;        &nbsp;
+                                        ._ trim
+                                ._ join
+                                    @ "\n"
+                            + &lf;
+                            + &nbsp;     </channel>&lf;
+                            + &nbsp;   </rss>&lf;
+                            + &nbsp;&nbsp;
+                        ._ trim
+                return 
+                    new Response
+                        @ rssString
+                        { 
+                            { headers
+                                @ "Cache-Control"
+                                    `lit 
+                                        + public, max-age=
+                                        @ 60 * 10
+                                        + , s-maxage=
+                                        @ 60 * 60 * 24
+                                        + 
+                                @ "Content-Type" "application/xml"
+                                @ "Content-Length" String(Buffer.byteLength(rssString))

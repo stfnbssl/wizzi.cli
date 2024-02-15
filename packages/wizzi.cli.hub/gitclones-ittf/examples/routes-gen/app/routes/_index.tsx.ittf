@@ -1,0 +1,18 @@
+module
+    import 
+        @ Link
+        from "react-router-dom"
+    import 
+        @ route
+        from "routes-gen"
+    export-default 
+        function Index
+            return 
+                main 
+                    h2 
+                        + Homepage
+                    ul 
+                        li 
+                            < Link 
+                                @ to {route("/products")}
+                                + Products

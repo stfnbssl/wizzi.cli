@@ -1,0 +1,40 @@
+module
+    :import-type 
+        @ ReactNode
+        from "react"
+    import 
+        @ useState
+        @ useEffect
+        from "react"
+    :type Props
+        :{ 
+            :m children
+                :ref ReactNode
+            :p fallback
+                :optional 
+                :ref ReactNode
+    let hydrating = true
+    export 
+        function ClientOnly
+            { 
+                @ children
+                @ fallback
+                    = null
+                :ref Props
+            const [hydrated, setHydrated]
+                _ useState
+                    => 
+                        + !hydrating
+            _ useEffect
+                function hydrate
+                    set hydrating = false
+                    _ setHydrated(true)
+                [ 
+            return 
+                iif hydrated
+                    then
+                        < React.Fragment
+                            + {children()}
+                    else
+                        < React.Fragment
+                            + {fallback}

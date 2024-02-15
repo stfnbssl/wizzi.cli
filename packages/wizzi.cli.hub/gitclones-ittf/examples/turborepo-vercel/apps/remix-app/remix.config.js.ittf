@@ -1,0 +1,40 @@
+module
+    kind react
+    const path = require("node:path")
+    const glob = require("glob")
+    const packages
+        _ glob.sync
+            @ "packages/**/package.json"
+            { 
+                @ cwd path.join(__dirname, "..", "..")
+                [ ignore
+                    @ "**/node_modules/**"
+                @ absolute true
+            ._ map
+                => 
+                    param pkg
+                    _ path.dirname(pkg)
+        #
+            # *
+            # * @type {import('@remix-run/dev').AppConfig}
+            # 
+    set module.exports =
+        { 
+            { future
+                @ v2_routeConvention true
+            [ ignoredRouteFiles
+                @ "**/.*"
+            @ server
+                iif process.env.NODE_ENV === "development"
+                    then undefined
+                    else "./server.js"
+                # When running locally in development mode, we use the built-in remix
+                # server. This does not understand the vercel lambda module format,
+                # so we default back to the standard build output.
+            @ serverBuildPath "api/index.js"
+            @ serverDependenciesToBundle "all"
+            @ watchPaths packages
+        #
+            # *
+            # * @type {import('@remix-run/dev').AppConfig}
+            # 

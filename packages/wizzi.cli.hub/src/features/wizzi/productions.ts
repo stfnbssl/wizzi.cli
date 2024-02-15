@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi\src\features\wizzi\productions.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:40 GMT
 */
 import path from 'path';
 import fs from 'fs';
@@ -209,11 +210,9 @@ export async function wrapIttfText(schema: string, ittftext: string, context?: a
                     contents: ittftext
                  }
              };
-            console.log(myname, 'wrapIttfText', 'mainIttf',mainIttf, __filename);
             mTree(mainIttf, packiFiles, context).then((result) => {
             
                 const requiredRoot = wizziMaps.ittfRootFromSchema(schema);
-                console.log(myname, 'wrapIttfText', 'root node', result.mTree.nodes[0].n, 'requiredRoot', requiredRoot, __filename);
                 if (requiredRoot == 'any' || result.mTree.nodes[0].n == requiredRoot) {
                     resolve(ittftext)
                 }
@@ -489,8 +488,6 @@ export async function metaGenerate(files: packiTypes.PackiFiles, context: any): 
                         files
                      });
             }
-            console.log(myname, 'metaGenerate.files', Object.keys(files), __filename);
-            console.log(myname, 'metaGenerate.context', Object.keys(context), __filename);
             let jsonwf: any = {};
             try {
                 jsonwf = await createJsonFsAndFactory(files);

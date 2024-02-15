@@ -1,0 +1,162 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useFetcher
+        @ useLoaderData
+        from "@remix-run/react"
+    import invariant from "tiny-invariant"
+    :import-type 
+        @ ContactRecord
+        from "../data"
+    import 
+        @ getContact
+        @ updateContact
+        from "../data"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                _ invariant(params.contactId, "Missing contactId param")
+                const formData
+                    await 
+                        _ request.formData()
+                return 
+                    _ updateContact
+                        @expr params.contactId
+                        { 
+                            @ favorite formData.get("favorite") === "true"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                _ invariant(params.contactId, "Missing contactId param")
+                const contact
+                    await 
+                        _ getContact(params.contactId)
+                if !contact
+                    throw 
+                        new Response
+                            @ "Not Found"
+                            { 
+                                @ status 404
+                return 
+                    _ json
+                        { 
+                            @ contact
+    export-default 
+        function Contact
+            const 
+                { 
+                    @ contact
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                div 
+                    @ id "contact"
+                    div 
+                        img 
+                            @ alt
+                                `lit 
+                                    + 
+                                    @ contact.first
+                                    + &nbsp;
+                                    @ contact.last
+                                    + &nbsp;avatar
+                            @ key {contact.avatar}
+                            @ src {contact.avatar}
+                    div 
+                        h1 
+                            { 
+                                iif contact.first || contact.last
+                                    then
+                                        < React.Fragment
+                                            + {contact.first}
+                                            + {contact.last}
+                                    else
+                                        i 
+                                            + No Name
+                            + {" "}
+                            < Favorite 
+                                @ contact {contact}
+                        { 
+                            iif contact.twitter
+                                then
+                                    p 
+                                        a 
+                                            @ href
+                                                `lit 
+                                                    + https://twitter.com/
+                                                    @ contact.twitter
+                                                    + 
+                                            + {contact.twitter}
+                                else null
+                        { 
+                            iif contact.notes
+                                then
+                                    p 
+                                        + {contact.notes}
+                                else null
+                        div 
+                            < Form 
+                                @ action "edit"
+                                button 
+                                    @ type "submit"
+                                    + Edit
+                            < Form 
+                                @ action "destroy"
+                                @ method "post"
+                                @ onSubmit
+                                    => 
+                                        param event
+                                        const response = confirm("Please confirm you want to delete this record.")
+                                        if !response
+                                            _ event.preventDefault()
+                                button 
+                                    @ type "submit"
+                                    + Delete
+    function Favorite
+        { 
+            @ contact
+            :{ 
+                :p contact
+                    :ref Pick
+                        :param 
+                            :ref ContactRecord
+                        :param 
+                            :literal "favorite"
+        const fetcher = useFetcher()
+        const favorite
+            iif fetcher.formData
+                then fetcher.formData.get("favorite") === "true"
+                else contact.favorite
+        return 
+            < fetcher.Form 
+                @ method "post"
+                button 
+                    @ aria-label
+                        iif favorite
+                            then "Remove from favorites"
+                            else "Add to favorites"
+                    @ name "favorite"
+                    @ value
+                        iif favorite
+                            then "false"
+                            else "true"
+                    { 
+                        iif favorite
+                            then "★"
+                            else "☆"

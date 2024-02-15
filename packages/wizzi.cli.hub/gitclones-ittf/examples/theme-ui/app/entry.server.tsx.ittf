@@ -1,0 +1,67 @@
+module
+    import 
+        @ CacheProvider
+        from "@emotion/react"
+    import createEmotionServer from "@emotion/server/create-instance"
+    :import-type 
+        @ AppLoadContext
+        @ EntryContext
+        from "@remix-run/node"
+    import 
+        @ RemixServer
+        from "@remix-run/react"
+    import 
+        @ renderToString
+        from "react-dom/server"
+    import 
+        @ ServerStyleContext
+        from "~/styles/context"
+    import 
+        @ createEmotionCache
+        from "~/styles/createEmotionCache"
+    export-default 
+        function handleRequest
+            param request
+                :ref Request
+            param responseStatusCode
+                :number 
+            param responseHeaders
+                :ref Headers
+            param remixContext
+                :ref EntryContext
+            param loadContext
+                :ref AppLoadContext
+            const cache = createEmotionCache()
+            const 
+                { 
+                    @ extractCriticalToChunks
+                = createEmotionServer(cache)
+            const html
+                _ renderToString
+                    < ServerStyleContext.Provider 
+                        @ value {null}
+                        < CacheProvider 
+                            @ value {cache}
+                            < RemixServer 
+                                @ context {remixContext}
+                                @ url {request.url}
+            const chunks = extractCriticalToChunks(html)
+            const markup
+                _ renderToString
+                    < ServerStyleContext.Provider 
+                        @ value {chunks.styles}
+                        < CacheProvider 
+                            @ value {cache}
+                            < RemixServer 
+                                @ context {remixContext}
+                                @ url {request.url}
+            _ responseHeaders.set("Content-Type", "text/html")
+            return 
+                new Response
+                    `lit 
+                        + <!DOCTYPE html>
+                        @ markup
+                        + 
+                    { 
+                        @ status responseStatusCode
+                        @ headers responseHeaders

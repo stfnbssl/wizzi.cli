@@ -1,0 +1,355 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useCatch
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ createProject
+        @ getUsers
+        from "~/db.server"
+    import stylesUrl from "~/dist/styles/routes/dashboard/projects/new.css"
+    import 
+        @ requireUser
+        from "~/session.server"
+    import 
+        @ Button
+        from "~/ui/button"
+    import 
+        @ Field
+        @ FieldError
+        @ FieldProvider
+        @ Label
+        @ Textarea
+        from "~/ui/form"
+    import 
+        @ MaxContainer
+        from "~/ui/max-container"
+    import 
+        @ MemberSearch
+        @ MemberSearchCombobox
+        @ MemberSearchHiddenField
+        @ MemberSearchSelections
+        from "~/ui/member-search"
+    import 
+        @ Heading
+        from "~/ui/section-heading"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ passwordHash
+                        ... secureUser
+                    =
+                        await 
+                            _ requireUser
+                                @ request
+                                { 
+                                    @ redirect "/sign-in"
+                const allUsers
+                    await 
+                        _ getUsers()
+                return 
+                    _ json
+                        { 
+                            @ user secureUser
+                            @ allUsers
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const currentUser
+                    await 
+                        _ requireUser
+                            @ request
+                            { 
+                                @ redirect "/sign-in"
+                    # 1. Get/setup form data from the request
+                const formData
+                    await 
+                        _ request.formData()
+                    # 1. Get/setup form data from the request
+                const name
+                    _ formData.get("name")
+                        :as 
+                            :string 
+                const description
+                    || 
+                        ( 
+                            _ formData.get("description")
+                                :as 
+                                    :string 
+                        + ""
+                const membersRaw = formData.get("members")
+                const fieldErrors
+                    :ref FieldErrors
+                    =
+                        { 
+                            @ description null
+                            @ name null
+                            @ members null
+                    # 2. Validate the form data
+                let members
+                    :[ 
+                        :string 
+                    = []
+                    # 2. Validate the form data
+                try 
+                    set members =
+                        _ JSON.parse
+                            + membersRaw
+                                :as 
+                                    :string 
+                    if typeof name !== "string" || typeof description !== "string" || !Array.isArray(members)
+                        throw Error("blergh")
+                catch 
+                    return 
+                        _ json
+                            { 
+                                @ formError
+                                    `lit 
+                                        + Something went wrong. Please try again later.
+                const fields
+                    { 
+                        @ name
+                        @ description
+                        @ members
+                if !name
+                    set fieldErrors.name = "Project name is required"
+                else
+                    if name.length < 3
+                        set fieldErrors.name = "Project name must be at least 3 characters"
+                if Object.values(fieldErrors).some(Boolean)
+                    return 
+                        _ json
+                            { 
+                                @ fieldErrors
+                                @ fields
+                try 
+                    const project
+                        await 
+                            _ createProject
+                                { 
+                                    @ name
+                                    @ description
+                                    @ ownerId currentUser.id
+                                    @ members
+                    return 
+                        _ redirect
+                            `lit 
+                                + dashboard/projects/
+                                @ project.id
+                                + 
+                catch 
+                    return 
+                        _ json
+                            { 
+                                @ formError
+                                    `lit 
+                                        + Something went wrong. Please try again later.
+    function NewProject
+        const 
+            { 
+                @ allUsers
+                @ user
+            =
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+        const 
+            { 
+                @ fieldErrors
+                @ fields
+                @ formError
+            =
+                _ useActionData
+                    :param 
+                        :typeof action
+        const selectableUsers
+            _ React.useMemo
+                => 
+                    return 
+                        _ allUsers.filter
+                            => 
+                                param u
+                                set u.id !== user.id
+                [ 
+                    @ allUsers
+                    @ user.id
+            # We don't show the combobox initially to prevent SSR jank. We show and hide
+            # it based on whether or not a name is set for the project.
+        const [nameComplete, setNameComplete] = React.useState(false)
+            # We don't show the combobox initially to prevent SSR jank. We show and hide
+            # it based on whether or not a name is set for the project.
+        function handleNameBlur
+            param event
+                :ref React.FocusEvent
+                    :param 
+                        :ref HTMLInputElement
+            _ setNameComplete(!!event.target.value)
+        function handleNameChange
+            param event
+                :ref React.ChangeEvent
+                    :param 
+                        :ref HTMLInputElement
+            _ setNameComplete
+                => 
+                    param complete
+                    if complete && !event.target.value
+                        return false
+                    return complete
+        return 
+            < MaxContainer 
+                @ className "new-project"
+                div 
+                    @ className "new-project__header"
+                    div 
+                        @ className "new-project__header-inner"
+                        < Heading 
+                            @ level {2}
+                            + Create a new project
+                div 
+                    @ className "new-project__section new-project__create-section"
+                    < Form 
+                        @ method "post"
+                        @ aria-describedby
+                            iif formError
+                                then "form-error-message"
+                                else undefined
+                        div 
+                            @ className "new-project__form"
+                            { 
+                                iif formError
+                                    then
+                                        div 
+                                            @ className "new-project__form-error"
+                                            span 
+                                                @ className "new-project__form-error-text"
+                                                @ id "form-error-text"
+                                                @ role "alert"
+                                                + {actionData.formError}
+                                    else null
+                            < FieldProvider 
+                                @ name "name"
+                                @ id "new-project-name"
+                                @ error {fieldErrors?.name}
+                                < Label 
+                                    + Project Name
+                                < Field 
+                                    @ required
+                                    @ defaultValue {fields?.name}
+                                    @ onChange {handleNameChange}
+                                    @ onBlur {handleNameBlur}
+                                < FieldError 
+                            < FieldProvider 
+                                @ name "description"
+                                @ id "new-project-description"
+                                @ error {fieldErrors?.description}
+                                < Label 
+                                    + Description
+                                < Textarea 
+                                    @ defaultValue {fields?.description}
+                                < FieldError 
+                            { 
+                                iif nameComplete
+                                    then
+                                        < FieldProvider 
+                                            @ name "members-combobox"
+                                            @ id "new-project-members"
+                                            @ error {fieldErrors?.members}
+                                            < Label 
+                                                + Members
+                                            < MemberSearch 
+                                                @ users {selectableUsers}
+                                                < MemberSearchCombobox 
+                                                < MemberSearchHiddenField 
+                                                    @ name "members"
+                                                div 
+                                                    @ className "member-selection-wrapper flex flex-wrap gap-2"
+                                                    < MemberSearchSelections 
+                                            < FieldError 
+                                    else null
+                            < Button 
+                                @ className "new-project__form-submit"
+                                + Create Project
+    export-default NewProject
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            switch caught.status
+                case 401
+                case 404
+                    return 
+                        div 
+                            h1 
+                                + {caught.status}
+                                + --
+                                + {caught.statusText}
+                default 
+                    throw 
+                        new Error
+                            `lit 
+                                + Unexpected caught response with status:&nbsp;
+                                @ caught.status
+                                + 
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            _ React.useEffect
+                => 
+                    _ console.error(error)
+                [ 
+                    @ error
+            return 
+                div 
+                    div 
+                        h1 
+                            + PM Camp
+                        div 
+                            + Crap
+    :type FieldErrors
+        :ref Record
+            :param 
+                :ref TextFields
+            :param 
+                :union 
+                    :string 
+                    :undefined 
+                    :null 
+    :type TextFields
+        :union 
+            :literal "name"
+            :literal "description"
+            :literal "members"

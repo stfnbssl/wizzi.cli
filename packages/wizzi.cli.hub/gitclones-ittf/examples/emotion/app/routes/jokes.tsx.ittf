@@ -1,0 +1,21 @@
+module
+    import styled from "@emotion/styled"
+    import 
+        @ Link
+        from "@remix-run/react"
+    const Container
+        _` styled("div")
+            + &lf;
+            + &nbsp; background-color: #d6d6d6;&lf;
+            + 
+    export-default 
+        function Jokes
+            return 
+                < Container 
+                    h1 
+                        + Jokes
+                    p 
+                        + This route works fine.
+                    < Link 
+                        @ to "/"
+                        + Back to home

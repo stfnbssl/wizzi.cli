@@ -1,0 +1,94 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useCatch
+        @ useMatches
+        @ useParams
+        from "@remix-run/react"
+    :import-type 
+        @ Workshop
+        from "~/data.server"
+    import 
+        @ getWorkshops
+        from "~/data.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ workshopId
+                    = params
+                const workshops
+                    await 
+                        _ getWorkshops()
+                const workshop
+                    _ workshops.find
+                        => 
+                            param w
+                            set w.id === workshopId
+                if !workshop
+                    throw 
+                        new Response
+                            @ "Workshop not found"
+                            { 
+                                @ status 404
+                return 
+                    _ json
+                        { 
+                    # notice that the benefit here is that even though the backend needs
+                    # to read into our database to handle the 404 case, we don't have to send
+                    # the client the workshop data in this route because we sent that to the client
+                    # in the parent route already and we can access that data via useMatches.
+    export-default 
+        function WorkshopRoute
+            const parentData
+                @expr
+                    _ useMatches().find?
+                        => 
+                            param m
+                            set m.pathname === "/workshops"
+                        . data
+                    :as 
+                        :{ 
+                            :p workshops
+                                :ref Array
+                                    :param 
+                                        :ref Workshop
+            const params = useParams()
+            const workshop
+                _ parentData.workshops.find
+                    => 
+                        param w
+                        set w.id === params.workshopId
+            if !workshop
+                throw new Error("This should be impossible.")
+            return 
+                div 
+                    h2 
+                        + {workshop.title}
+                    p 
+                        + {workshop.description}
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            const params = useParams()
+            if caught.status === 404
+                return 
+                    div 
+                        + Workshop with ID "
+                        + {params.workshopId}
+                        + " not found.
+            throw 
+                new Error
+                    `lit 
+                        + Unexpected caught response with status:&nbsp;
+                        @ caught.status
+                        + 

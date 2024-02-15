@@ -1,0 +1,90 @@
+module
+    :import-type 
+        @ GroqStore
+        from "@sanity/groq-store"
+    import 
+        @ groqStore
+        from "@sanity/groq-store"
+    :import-type 
+        @ Subscription
+        from "@sanity/groq-store/dist/typings/types"
+    import 
+        @ useEffect
+        @ useState
+        from "react"
+    import 
+        @ config
+        from "./config"
+    :type SubscriptionOptions
+        :{ 
+            :p initialData
+                :unknown 
+            :p params
+                :ref Record
+                    :param string
+                    :param unknown
+    export 
+        const usePreviewSubscription
+            => 
+                param query
+                    :string 
+                { 
+                    @ initialData
+                    @ params
+                    :ref SubscriptionOptions
+                const [data, setData] = useState(initialData)
+                _ useEffect
+                    => 
+                        let store
+                            :union 
+                                :ref GroqStore
+                                :null 
+                            = null
+                        let sub
+                            :union 
+                                :ref Subscription
+                                :null 
+                            = null
+                        const createStore
+                            async=> 
+                                const 
+                                    { 
+                                        @ projectId
+                                        @ dataset
+                                    = config
+                                set store =
+                                    _ groqStore
+                                        { 
+                                            @ projectId
+                                            @ dataset
+                                            @ listen true
+                                            @ overlayDrafts true
+                                            @ documentLimit 1000
+                                set sub =
+                                    _ store.subscribe
+                                        :param unknown
+                                        @ query
+                                        ?? 
+                                            + params
+                                            { 
+                                        => 
+                                            param err
+                                            param result
+                                            if err
+                                                _ console.error("Oh no, an error:", err)
+                                                return 
+                                            _ setData(result)
+                                            # Params
+                        if !store
+                            _ createStore()
+                        return 
+                            => 
+                                if sub?.unsubscribe
+                                    _ sub.unsubscribe()
+                                if store
+                                    _ store.close()
+                            # eslint-disable-next-line react-hooks/exhaustive-deps
+                    [ 
+                return 
+                    { 
+                        @ data

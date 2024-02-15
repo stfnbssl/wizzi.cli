@@ -1,0 +1,36 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ gdprConsent
+        from "~/cookies"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                const cookieHeader = request.headers.get("Cookie")
+                const cookie
+                    || 
+                        await 
+                            _ gdprConsent.parse(cookieHeader)
+                        { 
+                if formData.get("accept-gdpr") === "true"
+                    set cookie.gdprConsent = true
+                return 
+                    _ json
+                        { 
+                            @ success true
+                        { 
+                            { headers
+                                @ "Set-Cookie"
+                                    await 
+                                        _ gdprConsent.serialize(cookie)

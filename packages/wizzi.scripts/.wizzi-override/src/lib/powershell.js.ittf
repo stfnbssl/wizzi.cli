@@ -1,0 +1,7 @@
+module
+    kind es6
+    const powershell = require("powershell")
+    +
+    const md = module.exports = {}
+    +
+    $include ./t/powershell

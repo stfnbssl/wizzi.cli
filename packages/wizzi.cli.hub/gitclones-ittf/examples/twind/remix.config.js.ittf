@@ -1,0 +1,15 @@
+module
+    kind react
+    set module.exports =
+        { 
+            { future
+                @ v2_routeConvention true
+            [ ignoredRouteFiles
+                @ "**/.*"
+            [ serverDependenciesToBundle
+                @ "twind"
+                @ "@twind/preset-autoprefix"
+                @ "@twind/preset-tailwind"
+                @ "@twind/with-remix"
+        #
+            # * @type {import('@remix-run/dev').AppConfig}

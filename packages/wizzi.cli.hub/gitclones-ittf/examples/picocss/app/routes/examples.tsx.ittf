@@ -1,0 +1,557 @@
+module
+    export-default 
+        function Examples
+            function setTheme
+                param theme
+                    :string 
+                if theme === "auto"
+                    _ document.documentElement.removeAttribute("data-theme")
+                    return 
+                _ document.documentElement.setAttribute("data-theme", theme)
+            return 
+                < React.Fragment
+                    < hgroup 
+                        h1 
+                            + Pico
+                        h2 
+                            + A starter example with all elements and components used in Pico design&lf;          system.
+                    article 
+                        header 
+                            h2 
+                                + Theme System
+                        + Pico is shipped with 2 consistent themes: Light & Dark. You can use the
+                        + {" "}
+                        code 
+                            + data-theme
+                        + attribute to change the theme in indiviudals&lf;        components:
+                        br 
+                        br 
+                        pre 
+                            code 
+                                + <
+                                b 
+                                    + article
+                                i 
+                                    + data-theme
+                                + =
+                                u 
+                                    + "dark"
+                                + > … </
+                                b 
+                                    + article
+                                + >
+                        br 
+                        br 
+                        + The buttons below use React to change themes. Auto will get the default&lf;        (if dark mode is enabled in your SO).
+                        pre 
+                            code 
+                                { 
+                                    `lit 
+                                        + &lf;
+                                        + &nbsp;           jsx:&nbsp;&lf;
+                                        + &nbsp;           <button onClick={() => setTheme("auto")}>Auto</button>&lf;
+                                        + &nbsp;           <button onClick={() => setTheme("light")}>Light</button>&lf;
+                                        + &nbsp;           <button onClick={() => setTheme("dark")}>Dark</button>&lf;
+                                        + &lf;
+                                        + &nbsp;           code:&lf;
+                                        + &nbsp;           function setTheme(theme: string) {&lf;
+                                        + &nbsp;               if (theme === "auto") {&lf;
+                                        + &nbsp;                 document.documentElement.removeAttribute("data-theme");&lf;
+                                        + &nbsp;                 return;&lf;
+                                        + &nbsp;               }&lf;
+                                        + &nbsp;               document.documentElement.setAttribute("data-theme", theme);&lf;
+                                        + &nbsp;             }&lf;
+                                        + &nbsp;          &nbsp;
+                        footer 
+                            button 
+                                @ onClick
+                                    => 
+                                        _ setTheme("auto")
+                                + Auto
+                            button 
+                                @ onClick
+                                    => 
+                                        _ setTheme("light")
+                                + Light
+                            button 
+                                @ onClick
+                                    => 
+                                        _ setTheme("dark")
+                                + Dark
+                    main 
+                        @ className "container"
+                        section 
+                            @ id "preview"
+                            h2 
+                                + Preview
+                            p 
+                                + Sed ultricies dolor non ante vulputate hendrerit. Vivamus sit amet&lf;            suscipit sapien. Nulla iaculis eros a elit pharetra egestas.
+                            form 
+                                div 
+                                    @ className "grid"
+                                    input 
+                                        @ type "text"
+                                        @ name "firstname"
+                                        @ placeholder "First name"
+                                        @ aria-label "First name"
+                                        @ required
+                                    input 
+                                        @ type "email"
+                                        @ name "email"
+                                        @ placeholder "Email address"
+                                        @ aria-label "Email address"
+                                        @ required
+                                    button 
+                                        @ type "submit"
+                                        + Subscribe
+                                fieldset 
+                                    label 
+                                        @ htmlFor "terms"
+                                        input 
+                                            @ type "checkbox"
+                                            @ role "switch"
+                                            @ id "terms"
+                                            @ name "terms"
+                                        + I&lf;                agree to the
+                                        a 
+                                            @ href "#"
+                                            + Privacy Policy
+                        section 
+                            @ id "typography"
+                            h2 
+                                + Typography
+                            p 
+                                + Aliquam lobortis vitae nibh nec rhoncus. Morbi mattis neque eget&lf;            efficitur feugiat. Vivamus porta nunc a erat mattis, mattis feugiat&lf;            turpis pretium. Quisque sed tristique felis.
+                            blockquote 
+                                + "Maecenas vehicula metus tellus, vitae congue turpis hendrerit non.&lf;            Nam at dui sit amet ipsum cursus ornare."
+                                footer 
+                                    cite 
+                                        + - Phasellus eget lacinia
+                            h3 
+                                + Lists
+                            ul 
+                                li 
+                                    + Aliquam lobortis lacus eu libero ornare facilisis.
+                                li 
+                                    + Nam et magna at libero scelerisque egestas.
+                                li 
+                                    + Suspendisse id nisl ut leo finibus vehicula quis eu ex.
+                                li 
+                                    + Proin ultricies turpis et volutpat vehicula.
+                            h3 
+                                + Inline text elements
+                            div 
+                                @ className "grid"
+                                p 
+                                    a 
+                                        @ href "#"
+                                        + Primary link
+                                p 
+                                    a 
+                                        @ href "#"
+                                        @ className "secondary"
+                                        + Secondary link
+                                p 
+                                    a 
+                                        @ href "#"
+                                        @ className "contrast"
+                                        + Contrast link
+                            div 
+                                @ className "grid"
+                                p 
+                                    strong 
+                                        + Bold
+                                p 
+                                    em 
+                                        + Italic
+                                p 
+                                    u 
+                                        + Underline
+                            div 
+                                @ className "grid"
+                                p 
+                                    del 
+                                        + Deleted
+                                p 
+                                    ins 
+                                        + Inserted
+                                p 
+                                    s 
+                                        + Strikethrough
+                            div 
+                                @ className "grid"
+                                p 
+                                    small 
+                                        + Small
+                                p 
+                                    + Text
+                                    sub 
+                                        + Sub
+                                p 
+                                    + Text
+                                    sup 
+                                        + Sup
+                            div 
+                                @ className "grid"
+                                p 
+                                    abbr 
+                                        @ title "Abbreviation"
+                                        @ data-tooltip "Abbreviation"
+                                        + Abbr.
+                                p 
+                                    kbd 
+                                        + Kbd
+                                p 
+                                    mark 
+                                        + Highlighted
+                            h3 
+                                + Heading 3
+                            p 
+                                + Integer bibendum malesuada libero vel eleifend. Fusce iaculis turpis&lf;            ipsum, at efficitur sem scelerisque vel. Aliquam auctor diam ut&lf;            purus cursus fringilla. Class aptent taciti sociosqu ad litora&lf;            torquent per conubia nostra, per inceptos himenaeos.
+                            h4 
+                                + Heading 4
+                            p 
+                                + Cras fermentum velit vitae auctor aliquet. Nunc non congue urna, at&lf;            blandit nibh. Donec ac fermentum felis. Vivamus tincidunt arcu ut&lf;            lacus hendrerit, eget mattis dui finibus.
+                            h5 
+                                + Heading 5
+                            p 
+                                + Donec nec egestas nulla. Sed varius placerat felis eu suscipit.&lf;            Mauris maximus ante in consequat luctus. Morbi euismod sagittis&lf;            efficitur. Aenean non eros orci. Vivamus ut diam sem.
+                            h6 
+                                + Heading 6
+                            p 
+                                + Ut sed quam non mauris placerat consequat vitae id risus. Vestibulum&lf;            tincidunt nulla ut tortor posuere, vitae malesuada tortor molestie.&lf;            Sed nec interdum dolor. Vestibulum id auctor nisi, a efficitur sem.&lf;            Aliquam sollicitudin efficitur turpis, sollicitudin hendrerit ligula&lf;            semper id. Nunc risus felis, egestas eu tristique eget, convallis in&lf;            velit.
+                        section 
+                            @ id "buttons"
+                            h2 
+                                + Buttons
+                            div 
+                                @ className "grid"
+                                button 
+                                    + Primary
+                                button 
+                                    @ className "secondary"
+                                    + Secondary
+                                button 
+                                    @ className "contrast"
+                                    + Contrast
+                            div 
+                                @ className "grid"
+                                button 
+                                    @ className "outline"
+                                    + Primary outline
+                                button 
+                                    @ className "outline secondary"
+                                    + Secondary outline
+                                button 
+                                    @ className "outline contrast"
+                                    + Contrast outline
+                        section 
+                            @ id "form"
+                            form 
+                                h2 
+                                    + Form elements
+                                label 
+                                    @ htmlFor "search"
+                                    + Search
+                                input 
+                                    @ type "search"
+                                    @ id "search"
+                                    @ name "search"
+                                    @ placeholder "Search"
+                                label 
+                                    @ htmlFor "text"
+                                    + Text
+                                input 
+                                    @ type "text"
+                                    @ id "text"
+                                    @ name "text"
+                                    @ placeholder "Text"
+                                small 
+                                    + Curabitur consequat lacus at lacus porta finibus.
+                                label 
+                                    @ htmlFor "select"
+                                    + Select
+                                select 
+                                    @ id "select"
+                                    @ name "select"
+                                    @ required
+                                    option 
+                                        @ defaultValue ""
+                                        + Select…
+                                    option 
+                                        + …
+                                label 
+                                    @ htmlFor "file"
+                                    + File browser
+                                    input 
+                                        @ type "file"
+                                        @ id "file"
+                                        @ name "file"
+                                label 
+                                    @ htmlFor "range"
+                                    + Range slider
+                                    input 
+                                        @ type "range"
+                                        @ min "0"
+                                        @ max "100"
+                                        @ defaultValue "50"
+                                        @ id "range"
+                                        @ name "range"
+                                div 
+                                    @ className "grid"
+                                    label 
+                                        @ htmlFor "valid"
+                                        + Valid
+                                        input 
+                                            @ type "text"
+                                            @ id "valid"
+                                            @ name "valid"
+                                            @ placeholder "Valid"
+                                            @ aria-invalid "false"
+                                    label 
+                                        @ htmlFor "invalid"
+                                        + Invalid
+                                        input 
+                                            @ type "text"
+                                            @ id "invalid"
+                                            @ name "invalid"
+                                            @ placeholder "Invalid"
+                                            @ aria-invalid "true"
+                                    label 
+                                        @ htmlFor "disabled"
+                                        + Disabled
+                                        input 
+                                            @ type "text"
+                                            @ id "disabled"
+                                            @ name "disabled"
+                                            @ placeholder "Disabled"
+                                            @ disabled
+                                div 
+                                    @ className "grid"
+                                    label 
+                                        @ htmlFor "date"
+                                        + Date
+                                        input 
+                                            @ type "date"
+                                            @ id "date"
+                                            @ name "date"
+                                    label 
+                                        @ htmlFor "time"
+                                        + Time
+                                        input 
+                                            @ type "time"
+                                            @ id "time"
+                                            @ name "time"
+                                    label 
+                                        @ htmlFor "color"
+                                        + Color
+                                        input 
+                                            @ type "color"
+                                            @ id "color"
+                                            @ name "color"
+                                            @ defaultValue "#0eaaaa"
+                                div 
+                                    @ className "grid"
+                                    fieldset 
+                                        legend 
+                                            strong 
+                                                + Checkboxes
+                                        label 
+                                            @ htmlFor "checkbox-1"
+                                            input 
+                                                @ type "checkbox"
+                                                @ id "checkbox-1"
+                                                @ name "checkbox-1"
+                                                @ defaultChecked {true}
+                                            + Checkbox
+                                        label 
+                                            @ htmlFor "checkbox-2"
+                                            input 
+                                                @ type "checkbox"
+                                                @ id "checkbox-2"
+                                                @ name "checkbox-2"
+                                            + Checkbox
+                                    fieldset 
+                                        legend 
+                                            strong 
+                                                + Radio buttons
+                                        label 
+                                            @ htmlFor "radio-1"
+                                            input 
+                                                @ type "radio"
+                                                @ id "radio-1"
+                                                @ name "radio"
+                                                @ defaultValue "radio-1"
+                                            + Radio button
+                                        label 
+                                            @ htmlFor "radio-2"
+                                            input 
+                                                @ type "radio"
+                                                @ id "radio-2"
+                                                @ name "radio"
+                                                @ defaultValue "radio-2"
+                                            + Radio button
+                                    fieldset 
+                                        legend 
+                                            strong 
+                                                + Switches
+                                        label 
+                                            @ htmlFor "switch-1"
+                                            input 
+                                                @ type "checkbox"
+                                                @ id "switch-1"
+                                                @ name "switch-1"
+                                                @ role "switch"
+                                            + Switch
+                                        label 
+                                            @ htmlFor "switch-2"
+                                            input 
+                                                @ type "checkbox"
+                                                @ id "switch-2"
+                                                @ name "switch-2"
+                                                @ role "switch"
+                                            + Switch
+                                input 
+                                    @ type "reset"
+                                    @ defaultValue "Reset"
+                                input 
+                                    @ type "submit"
+                                    @ defaultValue "Submit"
+                        section 
+                            @ id "tables"
+                            h2 
+                                + Tables
+                            figure 
+                                table 
+                                    @ role "grid"
+                                    thead 
+                                        tr 
+                                            th 
+                                                @ scope "col"
+                                                + #
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                            th 
+                                                @ scope "col"
+                                                + Heading
+                                    tbody 
+                                        tr 
+                                            th 
+                                                @ scope "row"
+                                                + 1
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                        tr 
+                                            th 
+                                                @ scope "row"
+                                                + 2
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                        tr 
+                                            th 
+                                                @ scope "row"
+                                                + 3
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                                            td 
+                                                + Cell
+                        section 
+                            @ id "accordions"
+                            h2 
+                                + Accordions
+                            details 
+                                summary 
+                                    + Accordion 1
+                                p 
+                                    + Lorem ipsum dolor sit amet, consectetur adipiscing elit.&lf;              Pellentesque urna diam, tincidunt nec porta sed, auctor id velit.&lf;              Etiam venenatis nisl ut orci consequat, vitae tempus quam commodo.&lf;              Nulla non mauris ipsum. Aliquam eu posuere orci. Nulla convallis&lf;              lectus rutrum quam hendrerit, in facilisis elit sollicitudin.&lf;              Mauris pulvinar pulvinar mi, dictum tristique elit auctor quis.&lf;              Maecenas ac ipsum ultrices, porta turpis sit amet, congue turpis.
+                            details 
+                                @ open
+                                summary 
+                                    + Accordion 2
+                                ul 
+                                    li 
+                                        + Vestibulum id elit quis massa interdum sodales.
+                                    li 
+                                        + Nunc quis eros vel odio pretium tincidunt nec quis neque.
+                                    li 
+                                        + Quisque sed eros non eros ornare elementum.
+                                    li 
+                                        + Cras sed libero aliquet, porta dolor quis, dapibus ipsum.
+                        article 
+                            @ id "article"
+                            h2 
+                                + Article
+                            p 
+                                + Nullam dui arcu, malesuada et sodales eu, efficitur vitae dolor. Sed&lf;            ultricies dolor non ante vulputate hendrerit. Vivamus sit amet&lf;            suscipit sapien. Nulla iaculis eros a elit pharetra egestas. Nunc&lf;            placerat facilisis cursus. Sed vestibulum metus eget dolor pharetra&lf;            rutrum.
+                            footer 
+                                small 
+                                    + Duis nec elit placerat, suscipit nibh quis, finibus neque.
+                        section 
+                            @ id "progress"
+                            h2 
+                                + Progress bar
+                            progress 
+                                @ id "progress-1"
+                                @ defaultValue "25"
+                                @ max "100"
+                            progress 
+                                @ id "progress-2"
+                        section 
+                            @ id "loading"
+                            h2 
+                                + Loading
+                            article 
+                                @ aria-busy "true"
+                            button 
+                                @ aria-busy "true"
+                                + Please wait…

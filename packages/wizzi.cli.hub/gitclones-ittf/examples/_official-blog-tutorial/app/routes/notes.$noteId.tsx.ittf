@@ -1,0 +1,109 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ isRouteErrorResponse
+        @ useLoaderData
+        @ useRouteError
+        from "@remix-run/react"
+    import invariant from "tiny-invariant"
+    import 
+        @ deleteNote
+        @ getNote
+        from "~/models/note.server"
+    import 
+        @ requireUserId
+        from "~/session.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref LoaderArgs
+                const userId
+                    await 
+                        _ requireUserId(request)
+                _ invariant(params.noteId, "noteId not found")
+                const note
+                    await 
+                        _ getNote
+                            { 
+                                @ id params.noteId
+                                @ userId
+                if !note
+                    throw 
+                        new Response
+                            @ "Not Found"
+                            { 
+                                @ status 404
+                return 
+                    _ json
+                        { 
+                            @ note
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                const userId
+                    await 
+                        _ requireUserId(request)
+                _ invariant(params.noteId, "noteId not found")
+                await 
+                    _ deleteNote
+                        { 
+                            @ id params.noteId
+                            @ userId
+                return redirect("/notes")
+    export-default 
+        function NoteDetailsPage
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    h3 
+                        @ className "text-2xl font-bold"
+                        + {data.note.title}
+                    p 
+                        @ className "py-6"
+                        + {data.note.body}
+                    hr 
+                        @ className "my-4"
+                    < Form 
+                        @ method "post"
+                        button 
+                            @ type "submit"
+                            @ className "rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+                            + Delete
+    export 
+        function ErrorBoundary
+            const error = useRouteError()
+            if error instanceof Error
+                return 
+                    div 
+                        + An unexpected error occurred:
+                        + {error.message}
+            if !isRouteErrorResponse(error)
+                return 
+                    h1 
+                        + Unknown Error
+            if error.status === 404
+                return 
+                    div 
+                        + Note not found
+            return 
+                div 
+                    + An unexpected error occurred:
+                    + {error.statusText}

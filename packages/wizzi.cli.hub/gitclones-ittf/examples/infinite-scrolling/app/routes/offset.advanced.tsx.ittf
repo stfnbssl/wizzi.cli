@@ -1,0 +1,263 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useBeforeUnload
+        @ useLoaderData
+        @ useSearchParams
+        @ useTransition
+        from "@remix-run/react"
+    import 
+        @ useCallback
+        @ useEffect
+        @ useLayoutEffect
+        @ useRef
+        @ useState
+        from "react"
+    import 
+        @ useVirtual
+        from "react-virtual"
+    import stylesUrl from "~/styles/index.css"
+    import 
+        @ countItems
+        @ getItems
+        from "~/utils/backend.server"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    const LIMIT = 200
+    const DATA_OVERSCAN = 40
+    const getStartLimit
+        => 
+            param searchParams
+                :ref URLSearchParams
+            (
+                { 
+                    @ start Number(searchParams.get("start") || "0")
+                    @ limit Number(searchParams.get("limit") || LIMIT.toString())
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ start
+                        @ limit
+                    = getStartLimit(new URL(request.url).searchParams)
+                return 
+                    _ json
+                        { 
+                            @ items
+                                await 
+                                    _ getItems
+                                        { 
+                                            @ start
+                                            @ limit
+                            @ totalItems
+                                await 
+                                    _ countItems()
+                        { 
+                            { headers
+                                @ "Cache-Control" "public, max-age=120"
+    const isServerRender = typeof document === "undefined"
+    const useSSRLayoutEffect
+        iif isServerRender
+            then
+                => 
+            else useLayoutEffect
+    function useIsHydrating
+        param queryString
+            :string 
+        const [isHydrating]
+            _ useState
+                => 
+                    @expr !isServerRender && Boolean(document.querySelector(queryString))
+        return isHydrating
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const transition = useTransition()
+            const hydrating = useIsHydrating("[data-hydrating-signal]")
+            const [searchParams, setSearchParams] = useSearchParams()
+            const 
+                { 
+                    @ start
+                    @ limit
+                = getStartLimit(searchParams)
+            const [initialStart]
+                _ useState
+                    => 
+                        + start
+            const isMountedRef = useRef(false)
+            const parentRef
+                _ useRef
+                    :param 
+                        :ref HTMLDivElement
+                    @ null
+            const rowVirtualizer
+                _ useVirtual
+                    { 
+                        @ size data.totalItems
+                        @ parentRef
+                        @ estimateSize
+                            _ useCallback
+                                => 
+                                    + 35
+                                [ 
+                        { initialRect
+                            @ width 0
+                            @ height 800
+            _ useBeforeUnload
+                _ useCallback
+                    => 
+                        if !parentRef.current
+                            return 
+                        _ sessionStorage.setItem("infiniteScrollTop", parentRef.current.scrollTop.toString())
+                    [ 
+            _ useSSRLayoutEffect
+                => 
+                    if !hydrating
+                        return 
+                    if !parentRef.current
+                        return 
+                    const infiniteScrollTop = sessionStorage.getItem("infiniteScrollTop")
+                    if !infiniteScrollTop
+                        return 
+                    set parentRef.current.scrollTop = Number(infiniteScrollTop)
+                    return 
+                        => 
+                            _ sessionStorage.removeItem("infiniteScrollTop")
+                [ 
+                    @ initialStart
+                    @ hydrating
+            const lowerBoundary = start + DATA_OVERSCAN
+            const upperBoundary = start + limit - DATA_OVERSCAN
+            const middleCount = Math.ceil(limit / 2)
+            const [firstVirtualItem] = rowVirtualizer.virtualItems
+            const [lastVirtualItem]
+                [ 
+                    @ ...rowVirtualizer.virtualItems
+                    ._ reverse
+            if !firstVirtualItem || !lastVirtualItem
+                throw new Error("this should never happen")
+            let neededStart = start
+            if firstVirtualItem.index < lowerBoundary
+                set neededStart = Math.floor((firstVirtualItem.index - middleCount) / DATA_OVERSCAN) * DATA_OVERSCAN
+                    # user is scrolling up. Move the window up
+            else
+                if lastVirtualItem.index > upperBoundary
+                    set neededStart = Math.ceil((lastVirtualItem.index - middleCount) / DATA_OVERSCAN) * DATA_OVERSCAN
+                        # user is scrolling down. Move the window down
+            if neededStart < 0
+                set neededStart = 0
+            if neededStart + limit > data.totalItems
+                set neededStart = data.totalItems - limit
+            _ useEffect
+                => 
+                    if !isMountedRef.current
+                        return 
+                    if neededStart !== start
+                        _ setSearchParams
+                            { 
+                                @ start String(neededStart)
+                                @ limit LIMIT.toString()
+                            { 
+                                @ replace true
+                [ 
+                    @ start
+                    @ neededStart
+                    @ setSearchParams
+            _ useEffect
+                => 
+                    set isMountedRef.current = true
+                [ 
+            return 
+                main 
+                    h1 
+                        + Advanced Infinite Scrolling (offset=
+                        + {start}
+                        + )
+                    div 
+                        @ ref {parentRef}
+                        @ data-hydrating-signal
+                        @ className "List"
+                        @ style
+                            { 
+                                @ height
+                                    `lit 
+                                        + 800px
+                                @ width
+                                    `lit 
+                                        + 100%
+                                @ overflow "auto"
+                        div 
+                            @ style
+                                { 
+                                    @ height
+                                        `lit 
+                                            + 
+                                            @ rowVirtualizer.totalSize
+                                            + px
+                                    @ width "100%"
+                                    @ position "relative"
+                            { 
+                                _ rowVirtualizer.virtualItems.map
+                                    => 
+                                        param virtualRow
+                                        const index
+                                            iif isMountedRef.current
+                                                then Math.abs(start - virtualRow.index)
+                                                else virtualRow.index
+                                        const item = data.items[index]
+                                        return 
+                                            div 
+                                                @ key {virtualRow.key}
+                                                @ className
+                                                    `lit 
+                                                        + list-item&nbsp;
+                                                        iif virtualRow.index % 2
+                                                            then "list-item--odd"
+                                                            else "list-item--even"
+                                                        + 
+                                                @ style
+                                                    { 
+                                                        @ position "absolute"
+                                                        @ top 0
+                                                        @ left 0
+                                                        @ width "100%"
+                                                        @ height
+                                                            `lit 
+                                                                + 
+                                                                @ virtualRow.size
+                                                                + px
+                                                        @ transform
+                                                            `lit 
+                                                                + translateY(
+                                                                @ virtualRow.start
+                                                                + px)
+                                                span 
+                                                    + {virtualRow.index}
+                                                span 
+                                                    { 
+                                                        iif item
+                                                            then item.value
+                                                            else
+                                                                iif transition.state === "loading"
+                                                                    then "Loading more..."
+                                                                    else "Nothing to see here..."

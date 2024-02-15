@@ -1,0 +1,88 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ getAllTodoLists
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const lists
+                    await 
+                        _ getAllTodoLists()
+                return 
+                    _ json
+                        { 
+                            @ lists
+    export-default 
+        function AllLists
+            const 
+                { 
+                    @ lists
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                div 
+                    { 
+                        _ lists.map
+                            => 
+                                param list
+                                return 
+                                    div 
+                                        @ key {list.id}
+                                        @ className "flex gap-2"
+                                        div 
+                                            + Name:
+                                            + {list.name}
+                                        div 
+                                            + ID:
+                                            + {list.id}
+                                        div 
+                                            + Project:
+                                            + {" "}
+                                            < Link 
+                                                @ to
+                                                    `lit 
+                                                        + /dashboard/projects/
+                                                        @ list.projectId
+                                                        + 
+                                                + {list.projectId}
+                                        div 
+                                            + Todos:
+                                            + {" "}
+                                            { 
+                                                iif list.todos.length > 0
+                                                    then
+                                                        ul 
+                                                            { 
+                                                                _ list.todos.map
+                                                                    => 
+                                                                        param todo
+                                                                        li 
+                                                                            @ key {todo.id}
+                                                                            + {todo.name}
+                                                    else "None"

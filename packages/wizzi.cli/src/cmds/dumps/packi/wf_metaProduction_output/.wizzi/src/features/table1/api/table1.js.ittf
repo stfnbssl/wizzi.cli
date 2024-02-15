@@ -15,7 +15,7 @@ module
         }
     import
         @ Get${md.Name}Model
-        from '../mongo/${md.name}';
+        from '../mongo/${md.name}.js';
     +
     const myname = 'src/features/${md.name}/api/${md.name}'
     +

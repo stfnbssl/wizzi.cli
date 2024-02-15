@@ -1,0 +1,188 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Link
+        @ useActionData
+        @ useFetcher
+        @ useLoaderData
+        from "@remix-run/react"
+    :import-type 
+        @ FunctionComponent
+        from "react"
+    import 
+        @ useEffect
+        @ useRef
+        from "react"
+    import 
+        @ requireAuth
+        from "~/server/auth.server"
+    import 
+        @ addTodo
+        @ getUserTodos
+        @ removeTodo
+        from "~/server/db.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const user
+                    await 
+                        _ requireAuth(request)
+                const todos
+                    await 
+                        _ getUserTodos(user.uid)
+                return 
+                    _ json
+                        { 
+                            @ message
+                                `lit 
+                                    + Hello&nbsp;
+                                    @ user.displayName || "unknown"
+                                    + !
+                            @ todos
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const 
+                    { 
+                        @ uid
+                    =
+                        await 
+                            _ requireAuth(request)
+                const form
+                    await 
+                        _ request.formData()
+                const intent = form.get("intent")
+                if intent === "create"
+                    const title = form.get("title")
+                    if typeof title !== "string" || title.length === 0
+                        return 
+                            _ json
+                                { 
+                                    @ error "title is required"
+                                { 
+                                    @ status 400
+                    await 
+                        _ addTodo(uid, title)
+                    return redirect("/")
+                if intent === "delete"
+                    const id = form.get("id")
+                    if typeof id !== "string"
+                        return 
+                            _ json
+                                { 
+                                    @ error "id is required"
+                                { 
+                                    @ status 400
+                    await 
+                        _ removeTodo(uid, id)
+                    return redirect("/")
+                return 
+                    _ json
+                        { 
+                            @ error "unknown method"
+                        { 
+                            @ status 400
+    const TodoComponent
+        :ref FunctionComponent
+            :param 
+                :{ 
+                    :p id
+                        :string 
+                    :p title
+                        :string 
+        =
+            => 
+                { 
+                    @ id
+                    @ title
+                const fetcher = useFetcher()
+                return 
+                    li 
+                        < fetcher.Form 
+                            @ method "post"
+                            input 
+                                @ type "hidden"
+                                @ name "id"
+                                @ value {id}
+                            span 
+                                + {title}
+                            button 
+                                @ type "submit"
+                                @ name "intent"
+                                @ value "delete"
+                                + Delete
+    export-default 
+        function Index
+            const actionData
+                _ useActionData
+                    :param 
+                        :typeof action
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const ref
+                _ useRef
+                    :param 
+                        :ref HTMLInputElement
+                    @ null
+            _ useEffect
+                => 
+                    _ ref.current?.focus?.()
+                [ 
+                    @ ref
+            return 
+                div 
+                    h1 
+                        + {data.message}
+                    p 
+                        + Want to
+                        < Link 
+                            @ to "/logout"
+                            + log out
+                        + ?
+                    { 
+                        iif actionData?.error
+                            then
+                                p 
+                                    @ style
+                                        { 
+                                            @ color "red"
+                                    + {actionData.error}
+                            else null
+                    < Form 
+                        @ method "post"
+                        h2 
+                            + Create new Todo:
+                        input 
+                            @ ref {ref}
+                            @ name "title"
+                            @ type "text"
+                            @ placeholder "Get Milk"
+                        button 
+                            @ type "submit"
+                            @ name "intent"
+                            @ value "create"
+                            + Create
+                    ul 
+                        { 
+                            _ data.todos.map
+                                => 
+                                    param todo
+                                    < TodoComponent 
+                                        @ key {todo.id}
+                                        @ {...todo}

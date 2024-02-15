@@ -1,0 +1,17 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    return 
+                        { 
+                            @ title "Home"
+    export-default 
+        function Index
+            return 
+                h2 
+                    + Home

@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 25,
+  "column": 3,
+  "source": "@media (min-width: 400px) {\n    margin: max(10vh, var(--dialog-gutter)) auto;\n  }\n\n  @media (--viewport-md) {\n    width: max(50vw);\n    margin: 10vh auto;\n  }\n}\n\n.ui--dialog__close-button {\n  color: var(--colors-gray-11);\n  border: 1px solid currentColor;\n  padding: var(--spaces-02);\n  position: absolute;\n  right: var(--spaces-02);\n  top: var(--spaces-02);\n  border-radius: 9999px;\n}\n"
+}

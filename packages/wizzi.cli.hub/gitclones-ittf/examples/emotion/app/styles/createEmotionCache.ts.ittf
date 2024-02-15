@@ -1,0 +1,8 @@
+module
+    import createCache from "@emotion/cache"
+    export-default 
+        function createEmotionCache
+            return 
+                _ createCache
+                    { 
+                        @ key "remix-css"

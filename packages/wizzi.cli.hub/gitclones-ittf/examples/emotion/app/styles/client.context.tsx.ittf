@@ -1,0 +1,17 @@
+module
+    import 
+        @ createContext
+        from "react"
+    export 
+        :interface ClientStyleContextData
+            :p reset
+                :=> 
+                    :void 
+    const ClientStyleContext
+        _ createContext
+            :param 
+                :ref ClientStyleContextData
+            { 
+                @ reset
+                    => 
+    export-default ClientStyleContext

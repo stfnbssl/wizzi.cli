@@ -1,0 +1,30 @@
+module
+    :declare 
+        :module NodeJS
+            export 
+                :interface ProcessEnv
+                    :p NODE_ENV
+                        :union 
+                            :literal "production"
+                            :literal "development"
+                    :p DATABASE_URL
+                        :string 
+                    :p PORT
+                        :string 
+                    :p SITE_URL
+                        :string 
+                    :p SESSION_SECRET
+                        :string 
+    :interface Window
+        :extends EventTarget
+        :extends AnimationFrameProvider
+        :extends GlobalEventHandlers
+        :extends WindowEventHandlers
+        :extends WindowLocalStorage
+        :extends WindowOrWorkerGlobalScope
+        :extends WindowSessionStorage
+        :p ENV
+            :optional 
+            :{ 
+                :p SITE_URL
+                    :string 

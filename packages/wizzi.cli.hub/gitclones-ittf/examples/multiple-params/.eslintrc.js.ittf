@@ -1,0 +1,17 @@
+module
+    kind react
+    set module.exports =
+        { 
+            [ extends
+                @ "@remix-run/eslint-config"
+                @ "@remix-run/eslint-config/node"
+            [ overrides
+                { 
+                    [ files
+                        @ "**/*.md/*.jsx"
+                        @ "**/*.md/*.tsx"
+                        # all ```jsx & ```tsx code blocks in .md files
+                    { rules
+                        @ "react/jsx-no-undef" "off"
+        #
+            # * @type {import('eslint').Linter.Config}

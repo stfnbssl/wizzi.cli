@@ -1,0 +1,4 @@
+css
+    < [style*="opacity:0;"]
+        opacity unset !important
+        cursor default !important

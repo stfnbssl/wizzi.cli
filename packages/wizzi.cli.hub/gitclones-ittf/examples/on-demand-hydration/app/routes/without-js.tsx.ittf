@@ -1,0 +1,18 @@
+module
+    export-default 
+        function Screen
+            return 
+                < React.Fragment
+                    h1 
+                        + Reload to see how it didn't loaded JS
+                    blockquote 
+                        + Tip: Inspect the Network tab to see the lack of JS
+                    button 
+                        @ type "button"
+                        @ onClick
+                            => 
+                                _ alert("It has JS!")
+                        + If you click me nothing will happen
+                    a 
+                        @ href "/"
+                        + Go back

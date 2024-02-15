@@ -1,0 +1,58 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ Link
+        from "react-router-dom"
+    import 
+        @ route
+        from "routes-gen"
+    :type Post
+        :{ 
+            :p id
+                :string 
+            :p title
+                :string 
+    const posts
+        :[ 
+            :ref Post
+        =
+            [ 
+                { 
+                    @ id "1"
+                    @ title "Cool Product"
+                { 
+                    @ id "2"
+                    @ title "Best Product"
+    export 
+        const loader
+            async=> 
+                return json(posts)
+    export-default 
+        function Products
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                main 
+                    h2 
+                        + Products
+                    ul 
+                        { 
+                            _ data.map
+                                => 
+                                    param product
+                                    li 
+                                        @ key {product.id}
+                                        < Link 
+                                            @ to
+                                                _ route
+                                                    @ "/products/:productId"
+                                                    { 
+                                                        @ productId product.id
+                                            + {product.title}

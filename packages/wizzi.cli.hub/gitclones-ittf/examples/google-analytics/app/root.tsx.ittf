@@ -1,0 +1,150 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+        # import { json } from "@remix-run/node";
+    import 
+        @ Link
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useLoaderData
+        @ useLocation
+        from "@remix-run/react"
+        # import { json } from "@remix-run/node";
+    import 
+        @ useEffect
+        from "react"
+    import 
+        as gtag
+        from "~/utils/gtags.client"
+        #
+            # *
+            # * @description
+            # * If you would like to include the development env values in your browser bundle AKA
+            # * set some global values on the window object, take a look at these docs here:
+            # * https://remix.run/guides/envvars#server-environment-variables
+            # 
+        # export async function loader() {
+        # return json({
+        # ENV: {
+        # APP_ENV: process.env.NODE_ENV,
+        # },
+        # });
+        # }
+        # Load the GA tracking id from the .env
+    export 
+        const loader
+            async=> 
+                return 
+                    _ json
+                        { 
+                            @ gaTrackingId process.env.GA_TRACKING_ID
+        #
+            # *
+            # * @description
+            # * If you would like to include the development env values in your browser bundle AKA
+            # * set some global values on the window object, take a look at these docs here:
+            # * https://remix.run/guides/envvars#server-environment-variables
+            # 
+        # export async function loader() {
+        # return json({
+        # ENV: {
+        # APP_ENV: process.env.NODE_ENV,
+        # },
+        # });
+        # }
+        # Load the GA tracking id from the .env
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    export-default 
+        function App
+            const location = useLocation()
+            const 
+                { 
+                    @ gaTrackingId
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            _ useEffect
+                => 
+                    if gaTrackingId?.length
+                        _ gtag.pageview(location.pathname, gaTrackingId)
+                [ 
+                    @ location
+                    @ gaTrackingId
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        { 
+                            iif process.env.NODE_ENV === "development" || !gaTrackingId
+                                then null
+                                else
+                                    < React.Fragment
+                                        script 
+                                            @ async
+                                            @ src
+                                                `lit 
+                                                    + https://www.googletagmanager.com/gtag/js?id=
+                                                    @ gaTrackingId
+                                                    + 
+                                        script 
+                                            @ async
+                                            @ id "gtag-init"
+                                            @ dangerouslySetInnerHTML
+                                                { 
+                                                    @ __html
+                                                        `lit 
+                                                            + &lf;
+                                                            + &nbsp;               window.dataLayer = window.dataLayer || [];&lf;
+                                                            + &nbsp;               function gtag(){dataLayer.push(arguments);}&lf;
+                                                            + &nbsp;               gtag('js', new Date());&lf;
+                                                            + &lf;
+                                                            + &nbsp;               gtag('config', '
+                                                            @ gaTrackingId
+                                                            + ', {&lf;
+                                                            + &nbsp;                 page_path: window.location.pathname,&lf;
+                                                            + &nbsp;               });&lf;
+                                                            + &nbsp;            &nbsp;
+                        header 
+                            nav 
+                                ul 
+                                    li 
+                                        < Link 
+                                            @ to "/"
+                                            + Home
+                                    li 
+                                        < Link 
+                                            @ to "/dashboard"
+                                            + Dashboard
+                                    li 
+                                        < Link 
+                                            @ to "/contact"
+                                            + Contact
+                                    li 
+                                        < Link 
+                                            @ to "/profile"
+                                            + Profile
+                        < Outlet 
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 

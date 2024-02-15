@@ -1,0 +1,45 @@
+module
+    const items
+        set global.__items =
+            ?? 
+                + global.__items
+                _ Array.from
+                    { 
+                        @ length 50000
+                    => 
+                        param _
+                        param i
+                        (
+                            { 
+                                @ id i.toString()
+                                @ value
+                                    `lit 
+                                        + Item&nbsp;
+                                        @ i
+                                        + 
+    export 
+        async-function getItems
+            { 
+                @ start
+                @ limit
+                :{ 
+                    :p start
+                        :number 
+                    :p limit
+                        :number 
+            return items.slice(start, start + limit)
+    export 
+        async-function getItemsPaginated
+            { 
+                @ page
+                @ limit
+                :{ 
+                    :p page
+                        :number 
+                    :p limit
+                        :number 
+            const start = page * limit
+            return items.slice(start, start + limit)
+    export 
+        async-function countItems
+            return items.length

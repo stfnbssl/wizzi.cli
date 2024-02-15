@@ -1,0 +1,155 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Link
+        @ Outlet
+        @ useLoaderData
+        from "@remix-run/react"
+    import stylesUrl from "~/styles/jokes.css"
+    import 
+        @ db
+        from "~/utils/db.server"
+    import 
+        @ getUser
+        from "~/utils/session.server"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const user
+                    await 
+                        _ getUser(request)
+                    # In the official deployed version of the app, we don't want to deploy
+                    # a site with none-moderated content, so we only show users their own jokes
+                const jokeListItems
+                    iif user
+                        then
+                            await 
+                                _ db.joke.findMany
+                                    { 
+                                        { orderBy
+                                            @ createdAt "desc"
+                                        { select
+                                            @ id true
+                                            @ name true
+                                        @ take 5
+                                        { where
+                                            @ jokesterId user.id
+                        else []
+                    # In the official deployed version of the app, we don't want to deploy
+                    # a site with none-moderated content, so we only show users their own jokes
+                return 
+                    _ json
+                        { 
+                            @ jokeListItems
+                            @ user
+    export-default 
+        function JokesRoute
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    @ className "jokes-layout"
+                    header 
+                        @ className "jokes-header"
+                        div 
+                            @ className "container"
+                            h1 
+                                @ className "home-link"
+                                < Link 
+                                    @ to "/"
+                                    @ title "Remix Jokes"
+                                    @ aria-label "Remix Jokes"
+                                    span 
+                                        @ className "logo"
+                                        + 🤪
+                                    span 
+                                        @ className "logo-medium"
+                                        + J🤪KES
+                            { 
+                                iif data.user
+                                    then
+                                        div 
+                                            @ className "user-info"
+                                            span 
+                                                { 
+                                                    `lit 
+                                                        + Hi&nbsp;
+                                                        @ data.user.username
+                                                        + 
+                                            < Form 
+                                                @ action "/logout"
+                                                @ method "post"
+                                                button 
+                                                    @ type "submit"
+                                                    @ className "button"
+                                                    + Logout
+                                    else
+                                        < Link 
+                                            @ to "/login"
+                                            + Login
+                    main 
+                        @ className "jokes-main"
+                        div 
+                            @ className "container"
+                            div 
+                                @ className "jokes-list"
+                                < Link 
+                                    @ to "."
+                                    + Get a random joke
+                                p 
+                                    + Here are a few more jokes to check out:
+                                ul 
+                                    { 
+                                        iif data.jokeListItems.length > 0
+                                            then
+                                                (
+                                                    _ data.jokeListItems.map
+                                                        => 
+                                                            { 
+                                                                @ id
+                                                                @ name
+                                                            li 
+                                                                @ key {id}
+                                                                < Link 
+                                                                    @ prefetch "intent"
+                                                                    @ to {id}
+                                                                    + {name}
+                                            else
+                                                li 
+                                                    + No jokes found
+                                < Link 
+                                    @ to "new"
+                                    @ className "button"
+                                    + Add your own
+                            div 
+                                @ className "jokes-outlet"
+                                < Outlet 
+                    footer 
+                        @ className "jokes-footer"
+                        div 
+                            @ className "container"
+                            < Link 
+                                @ reloadDocument
+                                @ to "/jokes.rss"
+                                + RSS

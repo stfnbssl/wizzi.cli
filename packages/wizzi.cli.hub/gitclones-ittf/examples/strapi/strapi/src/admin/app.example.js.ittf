@@ -1,0 +1,9 @@
+module
+    kind react
+    export-default 
+        { 
+            { config
+                @ locales []
+            m bootstrap
+                param app
+                _ console.log(app)

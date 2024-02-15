@@ -1,0 +1,120 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ getInvitations
+        @ resendInvitation
+        @ sendInvitation
+        from "~/data.server"
+    export 
+        const loader
+            async=> 
+                return 
+                    _ json
+                        { 
+                            @ invitations
+                                await 
+                                    _ getInvitations()
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                if formData.get("intent") === "send"
+                    const email = formData.get("email")
+                    if typeof email !== "string"
+                        throw new Error("make sure you implement validation")
+                            # you'll want to handle this in a real app...
+                    await 
+                        _ sendInvitation(email)
+                    return redirect(request.url)
+                const invitationId = formData.get("invitationId")
+                if !invitationId
+                    throw new Error("make sure you implement validation")
+                        # you'll want to handle this in a real app...
+                const invitiations
+                    await 
+                        _ getInvitations()
+                const invitation
+                    _ invitiations.find
+                        => 
+                            param i
+                            set i.id === invitationId
+                if !invitation
+                    throw new Error("make sure you implement validation")
+                        # you'll want to handle this in a real app...
+                if formData.get("intent") === "resend"
+                    await 
+                        _ resendInvitation(invitation)
+                    return redirect(request.url)
+                if formData.get("intent") === "delete"
+                    await 
+                        _ deleteInvitiation(invitation)
+                    return redirect(request.url)
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    h1 
+                        + Invitations:
+                    ul 
+                        { 
+                            _ data.invitations.map
+                                => 
+                                    param invitation
+                                    li 
+                                        @ key {invitation.id}
+                                        < Form 
+                                            @ method "post"
+                                            input 
+                                                @ type "hidden"
+                                                @ name "invitationId"
+                                                @ value {invitation.id}
+                                            { 
+                                                `lit 
+                                                    + 
+                                                    @ invitation.email
+                                                    + &nbsp;last sent&nbsp;
+                                                    _ new Date(invitation.sentTime).toLocaleTimeString()
+                                                    + :&nbsp;
+                                            button 
+                                                @ type "submit"
+                                                @ name "intent"
+                                                @ value "resend"
+                                                + Resend
+                                            button 
+                                                @ type "submit"
+                                                @ name "intent"
+                                                @ value "delete"
+                                                + Delete
+                    < Form 
+                        @ method "post"
+                        + Send a new invitation:
+                        br 
+                        label 
+                            + Email:
+                            input 
+                                @ type "email"
+                                @ name "email"
+                        button 
+                            @ type "submit"
+                            @ name "intent"
+                            @ value "send"
+                            + Send

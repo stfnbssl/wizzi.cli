@@ -1,0 +1,18 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ title "Home"
+    export-default 
+        function Index
+            return 
+                div 
+                    h1 
+                        + This is a Index/Home page

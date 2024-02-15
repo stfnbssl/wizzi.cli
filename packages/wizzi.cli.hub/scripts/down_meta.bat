@@ -1,0 +1,3 @@
+rem ./node_modules/.bin/ts-node src/index.ts gitclone -o hagopj13 -n node-express-boilerplate -b master
+rem ./node_modules/.bin/ts-node src/index.ts down wizzihub -m C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.meta\.wizzi-override\meta-templates\tfolder-web -f wizzihub%%2Fjs
+./node_modules/.bin/ts-node src/index.ts down wizzihub -m C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.meta\.wizzi-override\meta-templates\tfolder-web -f works-media.html

@@ -1,0 +1,2 @@
+yaml 
+   $include jsReactWebpackGetStartedApp/src/data.yaml

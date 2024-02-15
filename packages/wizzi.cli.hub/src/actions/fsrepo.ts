@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\fsrepo.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 import {fSystem} from 'wizzi-utils';
@@ -21,7 +22,6 @@ export function getFilteredPackiFiles(options: any):  Promise<PackiFiles> {
                 if (err) {
                     return reject(err);
                 }
-                console.log('getFilteredPackiFiles.files', files, __filename);
                 const result: PackiFiles = {};
                 var i, i_items=files, i_len=files.length, f;
                 for (i=0; i<i_len; i++) {
@@ -48,7 +48,6 @@ export function getFileContents(options: any):  Promise<string> {
                 if (err) {
                     return reject(err);
                 }
-                console.log('getFileContents.contents', contents, __filename);
                 resolve(contents)
             }
             )
@@ -72,11 +71,9 @@ export function getFileJSON(options: any):  Promise<string> {
     return new Promise((resolve, reject) => {
         
             if (options.sourceFile.endsWith(".ittf")) {
-                wizziProds.generateArtifactFs(options.sourceFile).then((contents: any) => {
+                wizziProds.generateArtifactFs(options.sourceFile).then((contents: any) => 
                 
-                    console.log('getFileJSON.ittf.contents', contents, __filename);
                     resolve(JSON.parse(contents.artifactContent))
-                }
                 ).catch((err: any) => {
                 
                     if (typeof err === 'object' && err !== null) {
@@ -92,11 +89,36 @@ export function getFileJSON(options: any):  Promise<string> {
                     if (err) {
                         return reject(err);
                     }
-                    console.log('getFileJSON.json.contents', contents, __filename);
                     resolve(JSON.parse(contents))
                 }
                 )
             }
         }
         );
+}
+
+export // 
+function createPackifilesFromFs(folderPath, callback) {
+
+    const fsFile = fSystem.vfile();
+    fsFile.getFiles(folderPath, {
+        deep: true, 
+        documentContent: true
+     }, (err: any, files: any) => {
+    
+        if (err) {
+            return callback(err);
+        }
+        const packiFiles = {};
+        var i, i_items=files, i_len=files.length, file;
+        for (i=0; i<i_len; i++) {
+            file = files[i];
+            packiFiles[file.relPath] = {
+                type: 'CODE', 
+                contents: file.content
+             };
+        }
+        return callback(null, packiFiles);
+    }
+    )
 }

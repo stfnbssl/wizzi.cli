@@ -1,0 +1,79 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useFetcher
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ useSubscription
+        from "react-supabase"
+    import 
+        @ client
+        from "~/utils/supabaseClient.server"
+    export 
+        const loader
+            async=> 
+                const 
+                    { 
+                        @ count
+                    =
+                        await 
+                            _ client.from("clicks").select
+                                @ "id"
+                                { 
+                                    @ count "exact"
+                                    @ head true
+                return 
+                    _ json
+                        :param number
+                        @ count
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                if formData.get("like")
+                    await 
+                        _ client.from("clicks").insert
+                            [ 
+                                { 
+                return 
+                    _ json
+                        { 
+    const Buttons
+        => 
+            const count
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            const fetcher = useFetcher()
+            _ useSubscription
+                => 
+                    _ fetcher.submit
+                        @ null
+                        { 
+                            @ method "post"
+                { 
+                    @ event "INSERT"
+                    @ table "clicks"
+            return 
+                < React.Fragment
+                    < Form 
+                        @ method "post"
+                        button 
+                            @ name "like"
+                            @ value "1"
+                            @ type "submit"
+                            + 👍
+                            + {count}
+    export-default Buttons

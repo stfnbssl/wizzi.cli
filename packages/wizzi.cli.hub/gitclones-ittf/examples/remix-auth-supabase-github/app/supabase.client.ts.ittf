@@ -1,0 +1,46 @@
+module
+    import 
+        @ createClient
+        from "@supabase/supabase-js"
+    :declare 
+        :module global
+            :interface Window
+                :p env
+                    :{ 
+                        :p SUPABASE_URL
+                            :string 
+                        :p PUBLIC_SUPABASE_ANON_KEY
+                            :string 
+    if !window.env.SUPABASE_URL
+        throw new Error("SUPABASE_URL is required")
+    if !window.env.PUBLIC_SUPABASE_ANON_KEY
+        throw new Error("PUBLIC_SUPABASE_ANON_KEY is required")
+    export 
+        const supabaseClient
+            _ createClient
+                @expr window.env.SUPABASE_URL
+                @expr window.env.PUBLIC_SUPABASE_ANON_KEY
+                { 
+                    @ autoRefreshToken false
+                    @ persistSession false
+        # Supabase options example (build your own :))
+        # https://supabase.com/docs/reference/javascript/initializing#with-additional-parameters
+        # const supabaseOptions = {
+        # fetch, // see ⚠️ cloudflare
+        # schema: "public",
+        # persistSession: false,
+        # autoRefreshToken: false,
+        # detectSessionInUrl: true,
+        # headers: { "x-application-name": "{my-site-name}" }
+        # };
+        # ⚠️ cloudflare needs you define fetch option : https://github.com/supabase/supabase-js#custom-fetch-implementation
+        # Use Remix fetch polyfill for node (See https://remix.run/other-api/node)
+    export 
+        const signInWithGithub
+            => 
+                param redirectTo = "http://localhost:3000/oauth/callback"
+                _ supabaseClient.auth.signIn
+                    { 
+                        @ provider "github"
+                    { 
+                        @ redirectTo

@@ -13,16 +13,6 @@ wfjob demo.ts.node.git-override/job
         schema json
         src ${jobCtx.ittf_models_folder}/wzctx.json.ittf
     
-    line ittf-root
-        cwd-folder ${jobCtx.ittf_root_folder}
-        dest-folder ${jobCtx.dest_folder}/
-        wfjobs(any_js, &jobCtx)
-        wfjobs(any_ts, &jobCtx)
-        wfjobs(any_tsx, &jobCtx)
-        wfjobs(any_json, &jobCtx)
-        wfjobs(any_xml, &jobCtx)
-        wfjobs(any_md, &jobCtx)
-    
     line ittf-src
         cwd-folder ${jobCtx.ittf_src_folder}
         dest-folder ${jobCtx.dest_folder}/src
@@ -42,5 +32,4 @@ wfjob demo.ts.node.git-override/job
     
     production
         dest-folder ${jobCtx.dest_folder}
-        line-ref ittf-root
         line-ref ittf-src

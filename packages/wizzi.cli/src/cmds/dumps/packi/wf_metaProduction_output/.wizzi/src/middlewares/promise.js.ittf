@@ -1,11 +1,6 @@
 module
     kind es6
     # see https://www.toptal.com/express-js/routes-js-promises-error-handling
-    import
-        @ Application
-        @ Request
-        @ Response
-        from 'express'
     const handleResponse
         =>
             param res
@@ -19,14 +14,13 @@ module
             _ res.status(err.status || 500).send
                 {
                     @ error err.message
-    export
-        const PromiseMiddleware
-            =
-                =>
-                    param app
-                    _ app.use
-                        _ promiseMiddleware
-                    success 'PromiseMiddleware installed.'
+    set module.exports = {}
+    set module.exports.PromiseMiddleware
+        =>
+            param app
+            _ app.use
+                _ promiseMiddleware
+            success 'PromiseMiddleware installed.'
     function promiseMiddleware
         return
             =>

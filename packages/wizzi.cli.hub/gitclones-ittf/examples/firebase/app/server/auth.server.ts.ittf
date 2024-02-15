@@ -1,0 +1,106 @@
+module
+    :import-type 
+        @ Session
+        from "@remix-run/node"
+    import 
+        @ redirect
+        from "@remix-run/node"
+    :import-type 
+        @ UserRecord
+        from "firebase-admin/auth"
+    import 
+        @ destroySession
+        @ getSession
+        from "~/sessions"
+    import 
+        @ auth
+        from "./firebase.server"
+    export 
+        const checkSessionCookie
+            async=> 
+                param session
+                    :ref Session
+                try 
+                    const decodedIdToken
+                        await 
+                            _ auth.server.verifySessionCookie(session.get("session") || "")
+                    return decodedIdToken
+                catch 
+                    return 
+                        { 
+                            @ uid undefined
+    export 
+        const requireAuth
+            async=> 
+                param request
+                    :ref Request
+                :return
+                    :ref Promise
+                        :param 
+                            :ref UserRecord
+                const session
+                    await 
+                        _ getSession(request.headers.get("cookie"))
+                const 
+                    { 
+                        @ uid
+                    =
+                        await 
+                            _ checkSessionCookie(session)
+                if !uid
+                    throw 
+                        _ redirect
+                            @ "/login"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ destroySession(session)
+                return auth.server.getUser(uid)
+    export 
+        const signIn
+            async=> 
+                param email
+                    :string 
+                param password
+                    :string 
+                const 
+                    { 
+                        @ idToken
+                    =
+                        await 
+                            _ auth.signInWithPassword(email, password)
+                return signInWithToken(idToken)
+    export 
+        const signInWithToken
+            async=> 
+                param idToken
+                    :string 
+                const expiresIn = 1000 * 60 * 60 * 24 * 7
+                    # 1 week
+                const sessionCookie
+                    await 
+                        _ auth.server.createSessionCookie
+                            @ idToken
+                            { 
+                                @ expiresIn
+                    # 1 week
+                return sessionCookie
+    export 
+        const signUp
+            async=> 
+                param name
+                    :string 
+                param email
+                    :string 
+                param password
+                    :string 
+                await 
+                    _ auth.server.createUser
+                        { 
+                            @ email
+                            @ password
+                            @ displayName name
+                return 
+                    await 
+                        _ signIn(email, password)

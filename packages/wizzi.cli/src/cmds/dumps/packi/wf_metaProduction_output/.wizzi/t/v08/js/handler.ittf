@@ -2,7 +2,7 @@ $group
     $params name
     +
     m ${name}
-        async=>
-            param request
-            param response
-            $hook
+        async
+        param request
+        param response
+        $hook

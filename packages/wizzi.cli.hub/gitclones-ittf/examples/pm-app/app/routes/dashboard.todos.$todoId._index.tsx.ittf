@@ -1,0 +1,96 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ getTodo
+        @ updateTodo
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref LoaderArgs
+                const todoId
+                    @expr params.todoId
+                        :as 
+                            :string 
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const todo
+                    await 
+                        _ getTodo(todoId)
+                if !todo
+                    return 
+                        _ json
+                            { 
+                                @ todo null
+                            @ 404
+                return 
+                    _ json
+                        { 
+                            @ todo
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                    # Toggle actions
+                if request.method.toLowerCase() === "post"
+                    const todoId
+                        @expr params.todoId
+                            :as 
+                                :string 
+                    if !todoId || typeof todoId !== "string"
+                        throw 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                    try 
+                        const formData
+                            await 
+                                _ request.formData()
+                        const status = formData.get("id")
+                        const todo
+                            await 
+                                _ updateTodo
+                                    @ todoId
+                                    { 
+                                        @ completed status === "on"
+                        return 
+                            _ json
+                                { 
+                                    @ todo
+                                @ 200
+                    catch 
+                        return 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                return 
+                    _ json
+                        { 
+                            @ message "Bad request"
+                            @ todo null
+                        @ 400

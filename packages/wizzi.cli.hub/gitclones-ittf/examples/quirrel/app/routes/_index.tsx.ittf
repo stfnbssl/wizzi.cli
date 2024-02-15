@@ -1,0 +1,18 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import greetingsQueue from "~/queues/greetings.server"
+    export 
+        const loader
+            async=> 
+                await 
+                    _ greetingsQueue.enqueue("Groot")
+                return 
+                    _ json
+                        { 
+    export-default 
+        function Index
+            return 
+                p 
+                    + Check the code. Nothing relevant in the UI.

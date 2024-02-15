@@ -1,0 +1,479 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        @ LoaderArgs
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ useFetcher
+        @ useFetchers
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ getProjects
+        @ getTodo
+        @ getTodoList
+        @ updateTodo
+        @ updateTodoList
+        from "~/db.server"
+    import stylesUrl from "~/dist/styles/routes/dashboard/todo-lists/$listId/index.css"
+    :import-type 
+        @ TodoList
+            as TTodoList
+        @ Todo
+        from "~/models"
+    import 
+        @ requireUser
+        from "~/session.server"
+    import 
+        @ Button
+        from "~/ui/button"
+    import 
+        @ Field
+        @ FieldProvider
+        @ Label
+        from "~/ui/form"
+    import 
+        @ Link
+        from "~/ui/link"
+    import 
+        @ MaxContainer
+        from "~/ui/max-container"
+    import 
+        @ Heading
+        @ Section
+        from "~/ui/section-heading"
+    import 
+        @ Stack
+        from "~/ui/stack"
+    import 
+        @ TodoItem
+        @ TodoList
+        from "~/ui/todo-list"
+        # TODO: Add feature: Allow reassigning list to a different project
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+        # TODO: Add feature: Allow reassigning list to a different project
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    { 
+                        @ data
+                    return 
+                        { 
+                            @ title
+                                `lit 
+                                    + 
+                                    iif data.todoList
+                                        then data.todoList.name?.trim?.()
+                                        else "List Overview"
+                                    + &nbsp;| PM Camp
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref LoaderArgs
+                const listId
+                    @expr params.listId
+                        :as 
+                            :string 
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const [todoList, projects]
+                    await 
+                        _ Promise.all
+                            [ 
+                                @ getTodoList(listId)
+                                @ getProjects()
+                if !todoList
+                    throw redirect("/dashboard")
+                const project
+                    _ projects.find
+                        => 
+                            param p
+                            set p.id === todoList?.projectId
+                if !project
+                    throw redirect("/dashboard")
+                        # TODO:
+                return 
+                    _ json
+                        { 
+                            @ todoList
+                            @ projects
+                            @ project
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                const listId
+                    @expr params.listId
+                        :as 
+                            :string 
+                const formData
+                    await 
+                        _ request.formData()
+                const assign = formData.get("assign")
+                const todoId = formData.get("todo")
+                if todoId
+                    if !todoId || typeof todoId !== "string"
+                        throw 
+                            _ json
+                                { 
+                                    @ message "Bad request"
+                                    @ todo null
+                                @ 400
+                    const todo
+                        await 
+                            _ getTodo(todoId)
+                    if !todo
+                        throw 
+                            _ json
+                                { 
+                                    @ message "No todo found"
+                                    @ todo null
+                                @ 400
+                    await 
+                        _ updateTodo
+                            @ todoId
+                            { 
+                                @ completed !todo.completed
+                    return 
+                        _ json
+                            { 
+                                @ message "Success"
+                                @ todo
+                            @ 200
+                else
+                    if assign
+                        let projectId
+                            _ formData.get("project")
+                                :as 
+                                    :union 
+                                        :string 
+                                        :null 
+                        if projectId === "null"
+                            set projectId = null
+                        const fieldErrors
+                            :ref FieldErrors
+                            =
+                                { 
+                                    @ project null
+                        if projectId != null && typeof projectId !== "string"
+                            return 
+                                _ json
+                                    { 
+                                        @ formError
+                                            `lit 
+                                                + Something went wrong. Please try again later.
+                        const fields
+                            :ref Fields
+                            =
+                                { 
+                                    @ project projectId
+                        if Object.values(fieldErrors).some(Boolean)
+                            return 
+                                _ json
+                                    { 
+                                        @ fieldErrors
+                                        @ fields
+                        if projectId
+                            await 
+                                _ updateTodoList
+                                    @ listId
+                                    { 
+                                        @ projectId
+                        return 
+                            _ json
+                                { 
+                                    @ fieldErrors
+                                    @ fields
+                return 
+                    _ json
+                        { 
+    function TodoListRoute
+        const 
+            { 
+                @ todoList
+                @ project
+            =
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+        const fetchers = useFetchers()
+        const taskFetcherMap
+            new Map
+                :param string
+                :param boolean
+        const allTodos
+            :[ 
+                :ref Todo
+            = todoList.todos
+        for 
+            left
+                const fetcher
+            of fetchers
+            if fetcher.type === "actionSubmission"
+                const todoId
+                    _ fetcher.submission.formData.get("id")
+                        :as 
+                            :string 
+                if 
+                    test
+                        _ fetcher.submission.action.startsWith
+                            `lit 
+                                + /dashboard/todos/
+                                @ todoId
+                                + /edit
+                    _ taskFetcherMap.set(todoId, fetcher.submission.formData.get("complete") === "on")
+                if fetcher.submission.action.startsWith("/dashboard/todos/new")
+                    _ allTodos.push
+                        @expr
+                            { 
+                                @ id String(allTodos.length + 1)
+                                @ todoListId todoList.id
+                                @ name
+                                    _ fetcher.submission.formData.get("name")
+                                        :as 
+                                            :string 
+                                @ completed false
+                            :as 
+                                :ref Todo
+                        # temporarily add a todo; it will be updated on the next render
+                if 
+                    test
+                        _ fetcher.submission.action.startsWith
+                            `lit 
+                                + /dashboard/todos/
+                                @ todoId
+                                + /delete
+                    const todoId = fetcher.submission.formData.get("todoId")
+                    _ allTodos.filter
+                        => 
+                            param todo
+                            set todoId === todo.id
+        function getTodoCompletionState
+            param todo
+                :ref Todo
+            return isTodoCompleted(taskFetcherMap, todo)
+        const [completeTodos, incompleteTodos]
+            _ 
+                const completeTodos
+                    :[ 
+                        :ref Todo
+                    = []
+                const imcompleteTodos
+                    :[ 
+                        :ref Todo
+                    = []
+                for 
+                    left
+                        const todo
+                    of allTodos
+                    _ 
+                        ( 
+                            iif getTodoCompletionState(todo)
+                                then completeTodos
+                                else imcompleteTodos
+                        ._ push
+                            @ todo
+                return 
+                    @expr
+                        [ 
+                            @ completeTodos
+                            @ imcompleteTodos
+                        :as 
+                            :ref const
+        return 
+            < MaxContainer 
+                @ className "todolist-index"
+                div 
+                    @ className "todolist-index__header"
+                    div 
+                        @ className "todolist-index__header-inner"
+                        < Heading 
+                            @ level {1}
+                            + {todoList.name}
+                        { 
+                            iif todoList.description
+                                then
+                                    p 
+                                        + {todoList.description}
+                                else null
+                        div 
+                            p 
+                                strong 
+                                    + Project:
+                                + {" "}
+                                < Link 
+                                    @ to
+                                        `lit 
+                                            + /dashboard/projects/
+                                            @ project.id
+                                            + 
+                                    + {project.name}
+                        hr 
+                < Section 
+                    @ className "todolist-index__section todolist-index__lists"
+                    @ aria-label "Todos"
+                    @ as "section"
+                    div 
+                        @ className "todolist-index__lists-list"
+                        div 
+                            { 
+                                iif allTodos.length > 0
+                                    then
+                                        < Stack 
+                                            @ gap {5}
+                                            div 
+                                                < Heading 
+                                                    @ className "mb-2"
+                                                    + Incomplete
+                                                { 
+                                                    iif incompleteTodos.length > 0
+                                                        then
+                                                            < TodoList 
+                                                                { 
+                                                                    _ incompleteTodos.map
+                                                                        => 
+                                                                            param todo
+                                                                            return 
+                                                                                < TodoItem 
+                                                                                    @ todo {todo}
+                                                                                    @ key {todo.id}
+                                                        else
+                                                            p 
+                                                                + All done! 🥳
+                                            div 
+                                                < Heading 
+                                                    @ className "mb-2"
+                                                    + Complete
+                                                { 
+                                                    iif completeTodos.length > 0
+                                                        then
+                                                            < TodoList 
+                                                                { 
+                                                                    _ completeTodos.map
+                                                                        => 
+                                                                            param todo
+                                                                            return 
+                                                                                < TodoItem 
+                                                                                    @ key {todo.id}
+                                                                                    @ todo {todo}
+                                                        else
+                                                            p 
+                                                                + Nothing here. Let's get to work! 💪
+                                            hr 
+                                            < NewTodoForm 
+                                                @ listId {todoList.id}
+                                    else
+                                        div 
+                                            p 
+                                                @ className "mb-5"
+                                                + No todos for this list yet. Let's get started! 📝
+                                            < NewTodoForm 
+                                                @ listId {todoList.id}
+    function NewTodoForm
+        { 
+            @ listId
+            :{ 
+                :p listId
+                    :[] 
+                        :ref TTodoList
+                        :literal "id"
+        const todoFetcher = useFetcher()
+        const [value, setValue] = React.useState("")
+        const submissionAction = todoFetcher.submission?.action
+        _ React.useEffect
+            => 
+                if submissionAction?.startsWith?.("/dashboard/todos/new")
+                    _ setValue("")
+            [ 
+                @ submissionAction
+        return 
+            < todoFetcher.Form 
+                @ action "/dashboard/todos/new"
+                @ className "flex flex-col gap-4"
+                @ method "post"
+                input 
+                    @ type "hidden"
+                    @ name "listId"
+                    @ value {listId}
+                < FieldProvider 
+                    @ name "name"
+                    @ id "new-todo"
+                    @ required
+                    @ disabled {todoFetcher.state !== "idle"}
+                    < Label 
+                        + New Todo
+                    < Field 
+                        @ value {value}
+                        @ onChange
+                            => 
+                                param e
+                                _ setValue(e.target.value)
+                div 
+                    < Button 
+                        @ className "flex-shrink-0"
+                        + Create Todo
+    export-default TodoListRoute
+    :type Fields
+        :ref Record
+            :param 
+                :ref SelectFields
+            :param 
+                :union 
+                    :string 
+                    :null 
+    :type FieldErrors
+        :ref Record
+            :param 
+                :ref SelectFields
+            :param 
+                :union 
+                    :string 
+                    :undefined 
+                    :null 
+    :type SelectFields
+        :literal "project"
+    function isTodoCompleted
+        param taskFetchers
+            :ref Map
+                :param string
+                :param boolean
+        param todo
+            :ref Todo
+        if taskFetchers.has(todo.id)
+            if taskFetchers.get(todo.id)
+                return true
+        return todo.completed
+            # Use the true state

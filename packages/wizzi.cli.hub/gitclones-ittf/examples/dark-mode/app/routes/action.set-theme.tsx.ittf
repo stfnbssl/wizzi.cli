@@ -1,0 +1,55 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ isTheme
+        from "~/utils/theme-provider"
+    import 
+        @ getThemeSession
+        from "~/utils/theme.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const themeSession
+                    await 
+                        _ getThemeSession(request)
+                const requestText
+                    await 
+                        _ request.text()
+                const form = new URLSearchParams(requestText)
+                const theme = form.get("theme")
+                if !isTheme(theme)
+                    return 
+                        _ json
+                            { 
+                                @ success false
+                                @ message
+                                    `lit 
+                                        + theme value of&nbsp;
+                                        @ theme
+                                        + &nbsp;is not a valid theme
+                _ themeSession.setTheme(theme)
+                return 
+                    _ json
+                        { 
+                            @ success true
+                        { 
+                            { headers
+                                @ "Set-Cookie"
+                                    await 
+                                        _ themeSession.commit()
+    export 
+        const loader
+            async=> 
+                _ redirect
+                    @ "/"
+                    { 
+                        @ status 404

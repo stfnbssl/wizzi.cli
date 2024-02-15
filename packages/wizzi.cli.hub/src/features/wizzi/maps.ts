@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi\src\features\wizzi\maps.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:40 GMT
 */
 import path from 'path';
 type parsedFilePath = { 
@@ -37,7 +38,7 @@ const schemaArtifactMap: {
     js: 'js/module', 
     json: 'json/document', 
     jsx: 'js/module', 
-    md: 'md/document', 
+    md: 'md/tohtml', 
     scss: 'scss/document', 
     svg: 'svg/document', 
     text: 'text/document', 
@@ -241,6 +242,7 @@ const extContentTypeMap: {
     '.js': 'text/javascript', 
     '.jsx': 'text/javascript', 
     '.json': 'application/json', 
+    '.md': 'text/html', 
     '.png': 'image/png', 
     '.scss': 'text/scss', 
     '.svg': 'image/svg+xml', 

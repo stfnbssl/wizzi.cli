@@ -1,0 +1,72 @@
+module
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ NavLink
+        @ Scripts
+        @ ScrollRestoration
+        from "@remix-run/react"
+    import 
+        @ AnimatePresence
+        @ motion
+        from "framer-motion"
+    import 
+        @ useLocation
+        @ useOutlet
+        from "react-router-dom"
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "New Remix App"
+                            @ viewport "width=device-width,initial-scale=1"
+    export-default 
+        function App
+            const outlet = useOutlet()
+            return 
+                html 
+                    @ lang "en"
+                    head 
+                        < Meta 
+                        < Links 
+                    body 
+                        header 
+                            nav 
+                                < NavLink 
+                                    @ to "/"
+                                    + Home
+                                < NavLink 
+                                    @ to "/about"
+                                    + About
+                                < NavLink 
+                                    @ to "/blogs"
+                                    + Blogs
+                        < AnimatePresence 
+                            @ exitBeforeEnter
+                            @ initial {false}
+                            < motion.main 
+                                @ key {useLocation().pathname}
+                                @ initial
+                                    { 
+                                        @ x "10%"
+                                        @ opacity 0
+                                @ animate
+                                    { 
+                                        @ x "0"
+                                        @ opacity 1
+                                @ exit
+                                    { 
+                                        @ x "-40%"
+                                        @ opacity 0
+                                + {outlet}
+                        < ScrollRestoration 
+                        < Scripts 
+                        < LiveReload 

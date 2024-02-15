@@ -1,0 +1,59 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ marked
+        from "marked"
+    import invariant from "tiny-invariant"
+    import 
+        @ getPost
+        from "~/models/post.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    :ref LoaderArgs
+                _ invariant(params.slug, "params.slug is required")
+                const post
+                    await 
+                        _ getPost(params.slug)
+                _ invariant
+                    @ post
+                    `lit 
+                        + Post not found:&nbsp;
+                        @ params.slug
+                        + 
+                const html = marked(post.markdown)
+                return 
+                    _ json
+                        { 
+                            @ html
+                            @ post
+    export-default 
+        function PostSlug
+            const 
+                { 
+                    @ html
+                    @ post
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                main 
+                    @ className "mx-auto max-w-4xl"
+                    h1 
+                        @ className "my-6 border-b-2 text-center text-3xl"
+                        + {post.title}
+                    div 
+                        @ dangerouslySetInnerHTML
+                            { 
+                                @ __html html

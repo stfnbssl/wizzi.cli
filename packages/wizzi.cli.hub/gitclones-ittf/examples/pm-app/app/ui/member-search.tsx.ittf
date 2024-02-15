@@ -1,0 +1,443 @@
+module
+    import cx from "clsx"
+    import 
+        @ matchSorter
+        from "match-sorter"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ UserSecure
+        from "~/models"
+    import 
+        @ Combobox
+        @ ComboboxInput
+        @ ComboboxList
+        @ ComboboxOption
+        @ ComboboxPopover
+        from "~/ui/combobox"
+    :import-type 
+        @ ComboboxProps
+        from "~/ui/combobox"
+    import 
+        @ Token
+        @ TokenDismissButton
+        from "~/ui/token"
+    import 
+        @ getUserDisplayName
+        @ getUserFromDisplayName
+        @ isFunction
+        from "~/utils"
+    import 
+        @ useLayoutEffect
+        @ useThrottle
+        from "~/utils/react"
+    :interface MemberSearchContextValue
+        :p selectableUsers
+            :[ 
+                :ref UserSecure
+        :p selectedUsers
+            :[ 
+                :ref UserSecure
+        :p setSelectedUsers
+            :ref React.Dispatch
+                :param 
+                    :ref React.SetStateAction
+                        :param 
+                            :[ 
+                                :ref UserSecure
+    const MemberSearchContext
+        _ React.createContext
+            :param 
+                :ref MemberSearchContextValue
+            :! null
+    export 
+        function MemberSearch
+            { 
+                @ users
+                @ className
+                @ children
+                @ initialSelection
+                @ selection
+                @ onSelectionChange
+                :{ 
+                    :p users
+                        :[ 
+                            :ref UserSecure
+                    :p className
+                        :optional 
+                        :string 
+                    :p children
+                        :union 
+                            :ref React.ReactNode
+                            :paren 
+                                :=> 
+                                    :ref React.ReactNode
+                                    param props
+                                        :ref MemberSearchContextValue
+                    :p initialSelection
+                        :optional 
+                        :[ 
+                            :ref UserSecure
+                    :p selection
+                        :optional 
+                        :[ 
+                            :ref UserSecure
+                    :p onSelectionChange
+                        :optional 
+                        :ref React.Dispatch
+                            :param 
+                                :ref React.SetStateAction
+                                    :param 
+                                        :[ 
+                                            :ref UserSecure
+            const isControlledRef = React.useRef(selection !== undefined)
+            const [valueState, setValue] = React.useState(initialSelection || [])
+            const selectedUsers
+                iif isControlledRef.current
+                    then
+                        :! selection
+                    else valueState
+            const setSelectionRef = React.useRef(onSelectionChange)
+            _ useLayoutEffect
+                => 
+                    set setSelectionRef.current = onSelectionChange
+                [ 
+                    @ onSelectionChange
+            const setSelectedUsers
+                :ref React.Dispatch
+                    :param 
+                        :ref React.SetStateAction
+                            :param 
+                                :[ 
+                                    :ref UserSecure
+                =
+                    _ React.useCallback
+                        => 
+                            param val
+                            const setSelection = setSelectionRef.current
+                            if !isControlledRef.current
+                                _ setValue(val)
+                            @expr setSelection && setSelection(val)
+                        [ 
+            const context
+                _ React.useMemo
+                    :param 
+                        :ref MemberSearchContextValue
+                    => 
+                        const selectableUsers
+                            _ users.filter
+                                => 
+                                    param u
+                                    return 
+                                        op! 
+                                            _ selectedUsers.find
+                                                => 
+                                                    param sel
+                                                    set sel.id === u.id
+                        return 
+                            { 
+                                @ selectableUsers
+                                @ selectedUsers
+                                @ setSelectedUsers
+                    [ 
+                        @ users
+                        @ selectedUsers
+                        @ setSelectedUsers
+            return 
+                div 
+                    @ className {cx(className, "ui--member-search")}
+                    < MemberSearchContext.Provider 
+                        @ value {context}
+                        { 
+                            iif isFunction(children)
+                                then children(context)
+                                else children
+    export 
+        function MemberSearchCombobox
+            { 
+                @ className
+                ... props
+                :intersect 
+                    :{ 
+                        :p className
+                            :optional 
+                            :string 
+                    :ref Omit
+                        :param 
+                            :ref ComboboxProps
+                        :param 
+                            :literal "children"
+            const 
+                { 
+                    @ selectableUsers
+                    @ setSelectedUsers
+                = useMemberSearchContext()
+            const [comboboxValue, setComboboxValue] = React.useState("")
+            const comboboxResults = useUserMatch(selectableUsers, comboboxValue)
+            function handleComboboxBlur
+                param event
+                    :ref React.FocusEvent
+                        :param 
+                            :ref HTMLDivElement
+                if 
+                    test
+                        op! 
+                            _ event.currentTarget.contains
+                                @expr event.relatedTarget
+                                    :as 
+                                        :ref Node
+                    _ setComboboxValue("")
+            function handleComboboxChange
+                param event
+                    :ref React.ChangeEvent
+                        :param 
+                            :ref HTMLInputElement
+                _ setComboboxValue(event.target.value)
+            function handleComboboxSelect
+                param value
+                    :string 
+                const found = getUserFromDisplayName(selectableUsers, value)
+                if found
+                    _ setSelectedUsers
+                        => 
+                            param selectedUsers
+                            _ selectedUsers.concat
+                                [ 
+                                    :! found
+                _ setComboboxValue("")
+            return 
+                < Combobox 
+                    @ aria-label "Choose a team member"
+                    @ onSelect {handleComboboxSelect}
+                    @ onBlur {handleComboboxBlur}
+                    @ className {cx("ui--member-search__combobox", className)}
+                    @ {...props}
+                    < ComboboxInput 
+                        @ autocomplete {false}
+                        @ onChange {handleComboboxChange}
+                        @ value {comboboxValue}
+                    { 
+                        iif comboboxResults && comboboxResults.length > 0
+                            then
+                                < ComboboxPopover 
+                                    < ComboboxList 
+                                        { 
+                                            _ comboboxResults.slice(0, 10).map
+                                                => 
+                                                    param result
+                                                    < ComboboxOption 
+                                                        @ key {result.id}
+                                                        @ value {getUserDisplayName(result)}
+                            else null
+    export 
+        function MemberSearchSelections
+            { 
+                @ className
+                :{ 
+                    :p className
+                        :optional 
+                        :string 
+            const 
+                { 
+                    @ selectedUsers
+                    @ setSelectedUsers
+                = useMemberSearchContext()
+            return 
+                div 
+                    @ className {cx(className, "ui--member-search__selections")}
+                    @ onKeyDown {handleMemberListKeyDown}
+                    @ onBlur {handleMemberListBlur}
+                    @ onFocus {handleMemberListFocus}
+                    { 
+                        _ selectedUsers.map
+                            => 
+                                param selection
+                                return 
+                                    < MemberToken 
+                                        @ key {selection.id}
+                                        @ value {getUserDisplayName(selection)}
+                                        @ className {"ui--member-search__selection-token"}
+                                        @ remove
+                                            => 
+                                                param val
+                                                _ setSelectedUsers
+                                                    => 
+                                                        param s
+                                                        _ s.filter
+                                                            => 
+                                                                param u
+                                                                set getUserDisplayName(u) !== val
+    export 
+        function MemberSearchHiddenField
+            { 
+                @ name
+                :{ 
+                    :p name
+                        :string 
+            const 
+                { 
+                    @ selectedUsers
+                = useMemberSearchContext()
+            return 
+                input 
+                    @ type "hidden"
+                    @ name {name}
+                    @ value
+                        _ JSON.stringify
+                            _ selectedUsers.map
+                                => 
+                                    param u
+                                    +
+                                        @expr u.id
+    function useUserMatch
+        param users
+            :[ 
+                :ref UserSecure
+        param term
+            :string 
+        const throttledTerm = useThrottle(term, 100)
+        return 
+            _ React.useMemo
+                => 
+                    iif throttledTerm.trim() === ""
+                        then null
+                        else
+                            _ matchSorter
+                                @ users
+                                @ throttledTerm
+                                { 
+                                    [ keys
+                                        => 
+                                            param user
+                                            _ getUserDisplayName(user)
+                [ 
+                    @ throttledTerm
+                    @ users
+    function MemberToken
+        { 
+            @ value
+            @ remove
+            ... props
+            :intersect 
+                :ref React.ComponentPropsWithoutRef
+                    :param 
+                        :literal "span"
+                :{ 
+                    :p value
+                        :string 
+                    :p remove
+                        :=> 
+                            :void 
+                            param value
+                                :string 
+        return 
+            < Token 
+                @ {...props}
+                + {value}
+                < TokenDismissButton 
+                    @ aria-label
+                        `lit 
+                            + Remove&nbsp;
+                            @ value
+                            + 
+                    @ onClick
+                        => 
+                            _ remove(value)
+    function handleMemberListFocus
+        param event
+            :ref React.FocusEvent
+                :param 
+                    :ref HTMLElement
+        const target = event.target
+        if !(target instanceof HTMLElement)
+            return 
+        const listItem
+            :! 
+                @expr target.parentElement
+        const list
+            :! 
+                @expr listItem.parentElement
+        for 
+            left
+                const button
+            of list.querySelectorAll("button")
+            _ button.setAttribute
+                @ "tabIndex"
+                iif button.parentElement === listItem
+                    then "0"
+                    else "-1"
+    function handleMemberListBlur
+        param event
+            :ref React.FocusEvent
+                :param 
+                    :ref HTMLElement
+        const list = event.currentTarget
+        if !list.contains(event.relatedTarget)
+            for 
+                left
+                    const button
+                of list.querySelectorAll("button")
+                _ button.removeAttribute("tabIndex")
+    function handleMemberListKeyDown
+        param event
+            :ref React.KeyboardEvent
+                :param 
+                    :ref HTMLElement
+        if 
+            test
+                op! 
+                    [ 
+                        @ "ArrowUp"
+                        @ "ArrowDown"
+                        @ "ArrowLeft"
+                        @ "ArrowRight"
+                        @ "Home"
+                        @ "End"
+                        ._ includes
+                            @expr event.key
+            return 
+        const list
+            :! 
+                @expr event.currentTarget
+        const activeElement
+            @expr document.activeElement
+                :as 
+                    :union 
+                        :ref HTMLElement
+                        :null 
+        const listButtons
+            _ Array.from
+                _ list.querySelectorAll
+                    :param 
+                        :ref HTMLButtonElement
+                    @ "button"
+        const currentIndex
+            _ listButtons.findIndex
+                => 
+                    param el
+                    set el === activeElement
+        switch event.key
+            case "ArrowLeft"
+            case "ArrowUp"
+                if currentIndex === 0
+                    _ listButtons[listButtons.length - 1].focus()
+                else
+                    _ listButtons[(currentIndex - 1) % listButtons.length]?.focus?.()
+                return 
+            case "ArrowRight"
+            case "ArrowDown"
+                _ listButtons[(currentIndex + 1) % listButtons.length]?.focus?.()
+                return 
+            case "Home"
+                _ listButtons[0].focus()
+                return 
+            case "End"
+                _ listButtons[listButtons.length - 1].focus()
+                return 
+    export 
+        function useMemberSearchContext
+            const ctx = React.useContext(MemberSearchContext)
+            if !MemberSearchContext
+                throw Error("Called useMemberSearchContext outside of its provider!")
+            return ctx

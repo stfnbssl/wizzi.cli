@@ -1,0 +1,20 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ auth
+        from "~/utils/auth.server"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                return 
+                    _ auth.authenticate
+                        @ "auth0"
+                        @ request
+                        { 
+                            @ successRedirect "/private"
+                            @ failureRedirect "/"

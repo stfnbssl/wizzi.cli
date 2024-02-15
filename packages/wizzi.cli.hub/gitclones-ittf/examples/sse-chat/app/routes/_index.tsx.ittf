@@ -1,0 +1,89 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLocation
+        from "@remix-run/react"
+    import 
+        @ useEffect
+        @ useRef
+        @ useState
+        from "react"
+    import 
+        @ useEventSource
+        from "remix-utils"
+    import 
+        @ emitter
+        from "~/services/emitter"
+    export 
+        async-function action
+            { 
+                @ request
+                :ref LoaderArgs
+            const formData
+                await 
+                    _ request.formData()
+            const message = formData.get("message")
+            _ emitter.emit("message", message)
+            return 
+                _ json
+                    { 
+                        @ message
+    export-default 
+        function Component
+            const $form
+                _ useRef
+                    :param 
+                        :ref HTMLFormElement
+                    @ null
+            const 
+                { 
+                    @ key
+                = useLocation()
+            _ useEffect
+                function clearFormOnSubmit
+                    _ $form.current?.reset?.()
+                [ 
+                    @ key
+            const [messages, setMessages]
+                _ useState
+                    :param 
+                        :[ 
+                            :string 
+                    [ 
+            const lastMessage = useEventSource("/sse/chat")
+            _ useEffect
+                function saveMessage
+                    _ setMessages
+                        => 
+                            param current
+                            if typeof lastMessage === "string"
+                                return current.concat(lastMessage)
+                            return current
+                [ 
+                    @ lastMessage
+            return 
+                < React.Fragment
+                    < Form 
+                        @ ref {$form}
+                        @ method "post"
+                        label 
+                            + Message
+                        input 
+                            @ type "text"
+                            @ name "message"
+                        button 
+                            + Send
+                    ul 
+                        { 
+                            _ messages.map
+                                => 
+                                    param message
+                                    li 
+                                        @ key {message}
+                                        + {message}

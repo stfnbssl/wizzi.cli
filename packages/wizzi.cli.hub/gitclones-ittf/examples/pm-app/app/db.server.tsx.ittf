@@ -1,0 +1,741 @@
+module
+    import 
+        @ PrismaClient
+        from "@prisma/client"
+    :import-type 
+        @ MembersOnProjects
+        @ Project
+            as PrismaProject
+        from "@prisma/client"
+    import bcrypt from "bcrypt"
+    :import-type 
+        @ Project
+        @ Todo
+        @ TodoDataUnordered
+        @ TodoDataOrdered
+        @ TodoList
+        @ User
+        @ UserSecure
+        from "~/models"
+    const __DEV__ = process.env.NODE_ENV === "development"
+    :interface TodoListData
+        :p name
+            :[] 
+                :ref TodoList
+                :literal "name"
+        :p description
+            :optional 
+            :[] 
+                :ref TodoList
+                :literal "description"
+        :p todos
+            :optional 
+            :ref Array
+                :param 
+                    :ref TodoDataUnordered
+        :p projectId
+            :optional 
+            :[] 
+                :ref TodoList
+                :literal "projectId"
+    let prisma
+        :ref PrismaClient
+    :declare 
+        :module global
+            var db
+                :ref PrismaClient
+    if process.env.NODE_ENV === "production"
+        set prisma = new PrismaClient()
+    else
+        if !global.db
+            set global.db = new PrismaClient()
+        set prisma = global.db
+    export 
+        async=> getUser
+            param key
+                :union 
+                    :literal "id"
+                    :literal "email"
+            param value
+                :string 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref User
+                            :null 
+    export 
+        async=> getUser
+            param id
+                :[] 
+                    :ref User
+                    :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref User
+                            :null 
+    export 
+        async-function getUser
+            param id
+                :string 
+            param value
+                :string 
+                :optional 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref User
+                            :null 
+            if value != null
+                if 
+                    test
+                        op! 
+                            [ 
+                                @ "id"
+                                @ "email"
+                                ._ includes
+                                    @ id
+                    throw Error("Invalid key provided to getUser. Must be either `id` or `email`.")
+                return 
+                    await 
+                        _ prisma.user.findUnique
+                            { 
+                                { where
+                                    @[
+                                        + id
+                                            :as 
+                                                :literal "id"
+                                        + value
+            return 
+                await 
+                    _ prisma.user.findUnique
+                        { 
+                            { where
+                                @ id
+    export 
+        async-function getUsers
+            :return
+                :ref Promise
+                    :param 
+                        :ref Array
+                            :param 
+                                :ref UserSecure
+            const users
+                await 
+                    _ prisma.user.findMany()
+            return 
+                _ users.map
+                    => 
+                        param user
+                        const 
+                            { 
+                                @ passwordHash
+                                ... secureUser
+                            = user
+                        return secureUser
+    export 
+        async-function createUser
+            { 
+                @ email
+                @ nameFirst
+                @ nameLast
+                @ timeZone
+                @ title
+                @ avatar
+                @ password
+                @ projects
+                :{ 
+                    :p email
+                        :string 
+                    :p password
+                        :string 
+                    :p nameFirst
+                        :string 
+                    :p nameLast
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+                    :p title
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+                    :p timeZone
+                        :optional 
+                        :union 
+                            :string 
+                            :null 
+                    :p avatar
+                        :optional 
+                        :{ 
+                            :p url
+                                :string 
+                    :p projects
+                        :optional 
+                        :ref Array
+                            :param 
+                                :[] 
+                                    :ref Project
+                                    :literal "id"
+            const passwordHash
+                await 
+                    _ bcrypt.hash(password, 10)
+            const createArgs
+                :[] 
+                    :ref Parameters
+                        :param 
+                            :typeof prisma.user.create
+                    :literal 0
+                =
+                    { 
+                        { data
+                            @ email
+                            @ nameFirst
+                            @ nameLast nameLast || null
+                            @ timeZone timeZone || null
+                            @ title title || null
+                            @ avatar avatar?.url || null
+                            @ passwordHash
+            if projects && projects.length > 0
+                set createArgs.data.projects =
+                    { 
+                        @ create
+                            _ projects.map
+                                => 
+                                    param id
+                                    return 
+                                        { 
+                                            { project
+                                                { connect
+                                                    @ id
+            return 
+                await 
+                    _ prisma.user.create
+                        { 
+                            { data
+                                @ email
+                                @ nameFirst
+                                @ nameLast nameLast || null
+                                @ timeZone timeZone || null
+                                @ title title || null
+                                @ avatar avatar?.url || null
+                                @ passwordHash
+    export 
+        async-function verifyLogin
+            param email
+                :string 
+            param password
+                :string 
+            :return
+                :ref Promise
+                    :param 
+                        :ref User
+            const user
+                await 
+                    _ prisma.user.findUnique
+                        { 
+                            { where
+                                @ email
+            if !user
+                throw Error("User not found")
+            if 
+                test
+                    op! 
+                        await 
+                            _ bcrypt.compare(password, user.passwordHash)
+                throw Error("Incorrect password")
+            return user
+    export 
+        async-function createProject
+            { 
+                @ name
+                @ description
+                @ ownerId
+                @ todoLists
+                @ members
+                :{ 
+                    :p name
+                        :string 
+                    :p ownerId
+                        :[] 
+                            :ref User
+                            :literal "id"
+                    :p description
+                        :optional 
+                        :string 
+                    :p todoLists
+                        :optional 
+                        :ref Array
+                            :param 
+                                :ref TodoListData
+                    :p members
+                        :optional 
+                        :ref Array
+                            :param 
+                                :[] 
+                                    :ref User
+                                    :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :ref Project
+            set members =
+                iif members
+                    then
+                        [ 
+                            @ ...members
+                            @ ownerId
+                    else
+                        [ 
+                            @ ownerId
+            return 
+                _ modelProject
+                    await 
+                        _ prisma.project.create
+                            { 
+                                { data
+                                    @ name
+                                    @ description description || null
+                                    @ ownerId
+                                    { members
+                                        @ create
+                                            _ members.map
+                                                => 
+                                                    param id
+                                                    return 
+                                                        { 
+                                                            { user
+                                                                { connect
+                                                                    @ id
+                                    { todoLists
+                                        @ create
+                                            _ (todoLists || []).map
+                                                => 
+                                                    { 
+                                                        @ todos
+                                                        ... list
+                                                    return 
+                                                        { 
+                                                            @ ...list
+                                                            { todos
+                                                                @ create
+                                                                    || 
+                                                                        _ todos?.map?.
+                                                                            => 
+                                                                                param todo
+                                                                                param index
+                                                                                return 
+                                                                                    { 
+                                                                                        @ ...todo
+                                                                                        @ order index
+                                                                        + []
+                                { include
+                                    { members
+                                        { include
+                                            @ user true
+                                    { todoLists
+                                        { include
+                                            { todos
+                                                { orderBy
+                                                    @ createdAt "asc"
+    export 
+        async-function getProject
+            param id
+                :string 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref Project
+                            :null 
+            const project
+                await 
+                    _ prisma.project.findUnique
+                        { 
+                            { where
+                                @ id
+                            { include
+                                { members
+                                    { include
+                                        @ user true
+                                { todoLists
+                                    { include
+                                        { todos
+                                            { orderBy
+                                                @ createdAt "asc"
+            return 
+                iif project
+                    then
+                        { 
+                            @ ...project
+                            @ members
+                                _ project.members.map
+                                    => 
+                                        param member
+                                        return 
+                                            { 
+                                                @ ...member.user
+                    else null
+    export 
+        async-function getProjects
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref Project
+            const projects
+                || 
+                    await 
+                        _ prisma.project.findMany
+                            { 
+                                { include
+                                    { members
+                                        { include
+                                            @ user true
+                                    { todoLists
+                                        { include
+                                            { todos
+                                                { orderBy
+                                                    @ createdAt "asc"
+                    + []
+            return projects.map(modelProject)
+    export 
+        async-function getUserProjects
+            param userId
+                :[] 
+                    :ref User
+                    :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref Project
+            const projects
+                || 
+                    await 
+                        _ prisma.project.findMany
+                            { 
+                                { where
+                                    { members
+                                        { some
+                                            @ userId
+                                { include
+                                    { members
+                                        { include
+                                            @ user true
+                                    { todoLists
+                                        { include
+                                            { todos
+                                                { orderBy
+                                                    @ createdAt "asc"
+                    + []
+            return projects.map(modelProject)
+    export 
+        async-function deleteProject
+            param id
+                :string 
+            try 
+                const project
+                    await 
+                        _ prisma.project.delete
+                            { 
+                                { where
+                                    @ id
+                                { include
+                                    { members
+                                        { include
+                                            @ user true
+                                    { todoLists
+                                        { include
+                                            { todos
+                                                { orderBy
+                                                    @ createdAt "asc"
+                return project && modelProject(project)
+            catch error
+                if __DEV__
+                    _ console.error(error)
+                throw error
+    export 
+        async-function createTodoList
+            { 
+                @ name
+                @ description
+                @ todos
+                @ projectId
+                :ref TodoListData
+            :return
+                :ref Promise
+                    :param 
+                        :ref TodoList
+            return 
+                await 
+                    _ prisma.todoList.create
+                        { 
+                            { data
+                                @ name
+                                @ description description || null
+                                @ projectId projectId || null
+                                { todos
+                                    @ create
+                                        _ (todos || []).map
+                                            => 
+                                                param todo
+                                                param index
+                                                return 
+                                                    { 
+                                                        @ ...todo
+                                                        @ order index
+                            { include
+                                { todos
+                                    { orderBy
+                                        @ createdAt "asc"
+    export 
+        async-function getTodoList
+            param id
+                :string 
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref TodoList
+                            :null 
+            return 
+                await 
+                    _ prisma.todoList.findUnique
+                        { 
+                            { where
+                                @ id
+                            { include
+                                { todos
+                                    { orderBy
+                                        @ createdAt "asc"
+    export 
+        async-function updateTodoList
+            param id
+                :string 
+            param data
+                :ref Partial
+                    :param 
+                        :ref Omit
+                            :param 
+                                :ref TodoList
+                            :param 
+                                :union 
+                                    :literal "id"
+                                    :literal "todos"
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref TodoList
+                            :null 
+            return 
+                await 
+                    _ prisma.todoList.update
+                        { 
+                            { where
+                                @ id
+                            @ data
+                            { include
+                                { todos
+                                    { orderBy
+                                        @ createdAt "asc"
+    export 
+        async-function deleteTodoList
+            param id
+                :string 
+            :return
+                :ref Promise
+                    :param 
+                        :ref TodoList
+            return 
+                await 
+                    _ prisma.todoList.delete
+                        { 
+                            { where
+                                @ id
+                            { include
+                                { todos
+                                    { orderBy
+                                        @ createdAt "asc"
+    export 
+        async-function createTodo
+            { 
+                @ name
+                @ order
+                @ description
+                @ ownerId
+                @ todoListId
+                :ref TodoDataOrdered
+            :return
+                :ref Promise
+                    :param 
+                        :ref Todo
+            return 
+                await 
+                    _ prisma.todo.create
+                        { 
+                            { data
+                                @ name
+                                @ todoListId
+                                @ order
+                                @ description description || null
+                                @ ownerId ownerId || null
+    export 
+        async-function getTodo
+            param id
+                :[] 
+                    :ref Todo
+                    :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref Todo
+                            :null 
+            return 
+                await 
+                    _ prisma.todo.findUnique
+                        { 
+                            { where
+                                @ id
+    export 
+        async-function getAllTodos
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref Todo
+            return 
+                await 
+                    _ prisma.todo.findMany
+                        { 
+                            { orderBy
+                                @ createdAt "asc"
+    export 
+        async-function getTodosFromList
+            param listId
+                :[] 
+                    :ref TodoList
+                    :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref Todo
+            return 
+                await 
+                    _ prisma.todo.findMany
+                        { 
+                            { where
+                                @ todoListId listId
+                            { orderBy
+                                @ createdAt "asc"
+    export 
+        async-function getAllTodoLists
+            :return
+                :ref Promise
+                    :param 
+                        :[ 
+                            :ref TodoList
+            return 
+                await 
+                    _ prisma.todoList.findMany
+                        { 
+                            { include
+                                { todos
+                                    { orderBy
+                                        @ createdAt "asc"
+    export 
+        async-function updateTodo
+            param id
+                :string 
+            param data
+                :ref Partial
+                    :param 
+                        :ref Omit
+                            :param 
+                                :ref Todo
+                            :param 
+                                :literal "id"
+            :return
+                :ref Promise
+                    :param 
+                        :union 
+                            :ref Todo
+                            :null 
+            return 
+                await 
+                    _ prisma.todo.update
+                        { 
+                            { where
+                                @ id
+                            @ data
+    export 
+        async-function deleteTodo
+            param id
+                :[] 
+                    :ref Todo
+                    :literal "id"
+            return 
+                await 
+                    _ prisma.todo.delete
+                        { 
+                            { where
+                                @ id
+    function getProjectMembers
+        param project
+            :intersect 
+                :ref PrismaProject
+                :{ 
+                    :p todoLists
+                        :[ 
+                            :ref TodoList
+                    :p members
+                        :[ 
+                            :paren 
+                                :intersect 
+                                    :ref MembersOnProjects
+                                    :{ 
+                                        :p user
+                                            :ref User
+        :return
+            :[ 
+                :ref UserSecure
+        const members
+            _ project.members.map
+                => 
+                    param member
+                    const 
+                        { 
+                            @ passwordHash
+                            ... secureUser
+                        = member.user
+                    return secureUser
+        return members
+    function modelProject
+        param project
+            :intersect 
+                :ref PrismaProject
+                :{ 
+                    :p todoLists
+                        :[ 
+                            :ref TodoList
+                    :p members
+                        :[ 
+                            :paren 
+                                :intersect 
+                                    :ref MembersOnProjects
+                                    :{ 
+                                        :p user
+                                            :ref User
+        :return
+            :ref Project
+        return 
+            { 
+                @ ...project
+                @ members getProjectMembers(project)

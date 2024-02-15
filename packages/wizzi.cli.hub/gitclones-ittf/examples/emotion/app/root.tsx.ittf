@@ -1,0 +1,166 @@
+module
+    import 
+        @ withEmotionCache
+        from "@emotion/react"
+    import styled from "@emotion/styled"
+    :import-type 
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ Links
+        @ LiveReload
+        @ Meta
+        @ Outlet
+        @ Scripts
+        @ ScrollRestoration
+        @ useCatch
+        from "@remix-run/react"
+    import 
+        @ useContext
+        @ useEffect
+        @ useRef
+        from "react"
+    import ClientStyleContext from "~/styles/client.context"
+    import ServerStyleContext from "~/styles/server.context"
+    const Container
+        _` styled("div")
+            + &lf;
+            + &nbsp; background-color: #ff0000;&lf;
+            + &nbsp; padding: 1em;&lf;
+            + 
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    (
+                        { 
+                            @ charset "utf-8"
+                            @ title "Remix with Emotion"
+                            @ viewport "width=device-width,initial-scale=1"
+    :interface DocumentProps
+        :p children
+            :ref React.ReactNode
+        :p title
+            :optional 
+            :string 
+    const Document
+        _ withEmotionCache
+            => 
+                { 
+                    @ children
+                    @ title
+                    :ref DocumentProps
+                param emotionCache
+                const serverStyleData = useContext(ServerStyleContext)
+                const clientStyleData = useContext(ClientStyleContext)
+                const reinjectStylesRef = useRef(true)
+                    # Only executed on client
+                    # When a top level ErrorBoundary or CatchBoundary are rendered,
+                    # the document head gets removed, so we have to create the style tags
+                _ useEffect
+                    => 
+                        if !reinjectStylesRef.current
+                            return 
+                        set emotionCache.sheet.container = document.head
+                            # re-link sheet container
+                            # re-inject tags
+                        const tags = emotionCache.sheet.tags
+                            # re-inject tags
+                        _ emotionCache.sheet.flush()
+                        _ tags.forEach
+                            => 
+                                param tag
+                                _ 
+                                    ( 
+                                        @expr emotionCache.sheet
+                                            :as 
+                                                :any 
+                                    ._ _insertTag
+                                        @ tag
+                            # reset cache to re-apply global styles
+                        _ clientStyleData.reset()
+                            # reset cache to re-apply global styles
+                            # ensure we only do this once per mount
+                        set reinjectStylesRef.current = false
+                            # ensure we only do this once per mount
+                    [ 
+                        @ clientStyleData
+                        @ emotionCache.sheet
+                    # Only executed on client
+                    # When a top level ErrorBoundary or CatchBoundary are rendered,
+                    # the document head gets removed, so we have to create the style tags
+                return 
+                    html 
+                        @ lang "en"
+                        head 
+                            { 
+                                iif title
+                                    then
+                                        < title 
+                                            + {title}
+                                    else null
+                            < Meta 
+                            < Links 
+                            { 
+                                _ serverStyleData?.map?.
+                                    => 
+                                        { 
+                                            @ key
+                                            @ ids
+                                            @ css
+                                        < style 
+                                            @ key {key}
+                                            @ data-emotion
+                                                `lit 
+                                                    + 
+                                                    @ key
+                                                    + &nbsp;
+                                                    _ ids.join(" ")
+                                                    + 
+                                                # eslint-disable-next-line react/no-danger
+                                            @ dangerouslySetInnerHTML
+                                                { 
+                                                    @ __html css
+                                                # eslint-disable-next-line react/no-danger
+                        body 
+                            + {children}
+                            < ScrollRestoration 
+                            < Scripts 
+                            < LiveReload 
+    export-default 
+        function App
+            return 
+                < Document 
+                    < Outlet 
+    export 
+        function CatchBoundary
+            const caught = useCatch()
+            return 
+                < Document 
+                    @ title
+                        `lit 
+                            + 
+                            @ caught.status
+                            + &nbsp;
+                            @ caught.statusText
+                            + 
+                    < Container 
+                        p 
+                            + [CatchBoundary]:
+                            + {caught.status}
+                            + {caught.statusText}
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            return 
+                < Document 
+                    @ title "Error!"
+                    < Container 
+                        p 
+                            + [ErrorBoundary]: There was an error:
+                            + {error.message}

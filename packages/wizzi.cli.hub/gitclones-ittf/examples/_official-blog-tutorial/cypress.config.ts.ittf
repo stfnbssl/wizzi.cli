@@ -1,0 +1,49 @@
+module
+    import 
+        @ defineConfig
+        from "cypress"
+    export-default 
+        _ defineConfig
+            { 
+                { e2e
+                    @ setupNodeEvents
+                        => 
+                            param on
+                            param config
+                            const isDev = config.watchForFileChanges
+                            const port
+                                ?? 
+                                    + process.env.PORT
+                                    ( 
+                                        iif isDev
+                                            then "3000"
+                                            else "8811"
+                            const configOverrides
+                                :ref Partial
+                                    :param 
+                                        :ref Cypress.PluginConfigOptions
+                                =
+                                    { 
+                                        @ baseUrl
+                                            `lit 
+                                                + http://localhost:
+                                                @ port
+                                                + 
+                                        @ video !process.env.CI
+                                        @ screenshotOnRunFailure !process.env.CI
+                                # To use this:
+                                # cy.task('log', whateverYouWantInTheTerminal)
+                            _ on
+                                @ "task"
+                                { 
+                                    @ log
+                                        => 
+                                            param message
+                                            _ console.log(message)
+                                            return null
+                                # To use this:
+                                # cy.task('log', whateverYouWantInTheTerminal)
+                            return 
+                                { 
+                                    @ ...config
+                                    @ ...configOverrides

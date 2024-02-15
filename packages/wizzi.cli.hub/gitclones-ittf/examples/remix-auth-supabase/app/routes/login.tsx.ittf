@@ -1,0 +1,94 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ authenticator
+        @ sessionStorage
+        @ supabaseStrategy
+        from "~/auth.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ authenticator.authenticate
+                        @ "sb"
+                        @ request
+                        { 
+                            @ successRedirect "/private"
+                            @ failureRedirect "/login"
+    :type LoaderError
+        :union 
+            :{ 
+                :p message
+                    :string 
+            :null 
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                await 
+                    _ supabaseStrategy.checkSession
+                        @ request
+                        { 
+                            @ successRedirect "/private"
+                const session
+                    await 
+                        _ sessionStorage.getSession(request.headers.get("Cookie"))
+                const error
+                    _ session.get(authenticator.sessionErrorKey)
+                        :as 
+                            :ref LoaderError
+                return 
+                    _ json
+                        { 
+                            @ error
+    export-default 
+        function Screen
+            const 
+                { 
+                    @ error
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                < Form 
+                    @ method "post"
+                    { 
+                        iif error
+                            then
+                                div 
+                                    + {error.message}
+                            else null
+                    div 
+                        label 
+                            @ htmlFor "email"
+                            + Email
+                        input 
+                            @ type "email"
+                            @ name "email"
+                            @ id "email"
+                    div 
+                        label 
+                            @ htmlFor "password"
+                            + Password
+                        input 
+                            @ type "password"
+                            @ name "password"
+                            @ id "password"
+                    button 
+                        + Log In

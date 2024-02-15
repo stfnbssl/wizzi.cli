@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 34,
+  "column": 3,
+  "source": "@media (--viewport-md) {\n    gap: var(--spaces-05);\n  }\n\n  @media (--viewport-lg) {\n    gap: var(--spaces-06);\n  }\n}\n\n.dashboard-layout__nav-item {\n  margin: 0;\n  padding: 0;\n  font-family: var(--fonts-sans);\n  font-weight: bold;\n}\n\n.dashboard-layout__nav-link {\n  text-decoration: none;\n  color: inherit;\n\n  &:hover {\n    color: var(--colors-blue-09);\n  }\n}\n\n.dashboard-layout__main {\n  flex: 1 1 auto;\n  padding-top: var(--spaces-06);\n  padding-bottom: var(--spaces-06);\n\n  @media (--viewport-md) {\n    padding-top: var(--spaces-08);\n    padding-bottom: var(--spaces-08);\n  }\n}\n\n.dashboard-layout__footer {\n  border-top: 1px solid var(--colors-gray-08);\n  padding-top: var(--spaces-04);\n  padding-bottom: var(--spaces-04);\n  width: 100%;\n}\n\n.dashboard-layout__copyright {\n  text-align: center;\n  color: var(--colors-gray-12);\n}\n"
+}

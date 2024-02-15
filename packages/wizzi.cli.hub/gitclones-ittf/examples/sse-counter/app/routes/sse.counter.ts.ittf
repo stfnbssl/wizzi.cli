@@ -1,0 +1,33 @@
+module
+    :import-type 
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ eventStream
+        from "remix-utils"
+    export 
+        function loader
+            { 
+                @ request
+                :ref LoaderArgs
+            return 
+                _ eventStream
+                    @expr request.signal
+                    function setup
+                        param send
+                        const interval
+                            _ setInterval
+                                => 
+                                    _ send
+                                        { 
+                                            @ data
+                                                _ new Date().toLocaleTimeString
+                                                    @ "en"
+                                                    { 
+                                                        @ hour "2-digit"
+                                                        @ minute "2-digit"
+                                                        @ second "2-digit"
+                                @ 1000
+                        return 
+                            function cleanup
+                                _ clearInterval(interval)

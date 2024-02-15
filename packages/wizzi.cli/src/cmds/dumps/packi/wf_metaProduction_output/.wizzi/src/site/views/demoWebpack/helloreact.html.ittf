@@ -1,0 +1,11 @@
+html
+    $
+        var opt = {
+            title: 'Hello react webpack'
+        }
+    html/layouts/demo(&opt)
+        $append styles
+            css /ittf/demo/webpack/helloreact/NewsFeedApplication_styles.css
+        h1 The content is created by a react javascript compiled by webpack
+        # root
+        js http://localhost:3016/webpacks/helloreact/helloreact.bundle.js

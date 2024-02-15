@@ -1,0 +1,8 @@
+module
+    import createCache from "@emotion/cache"
+    export 
+        const createEmotionCache
+            => 
+                _ createCache
+                    { 
+                        @ key "css"

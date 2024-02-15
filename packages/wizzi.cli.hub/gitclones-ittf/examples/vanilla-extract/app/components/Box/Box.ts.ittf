@@ -1,0 +1,120 @@
+module
+    :import-type 
+        @ ClassValue
+        from "clsx"
+        #
+            # *
+            # * This file is used to convert our custom `sprinkles` function
+            # * into a primitive `Box` component so that we don't need to
+            # * manually manage the `className` prop when using our own
+            # * utility classes, e.g. `<Box padding="small">` rather than
+            # * `<Box className={sprinkles({ padding: 'small' })}>`.
+            # 
+    import clsx from "clsx"
+    :import-type 
+        @ AllHTMLAttributes
+        @ ElementType
+        from "react"
+    import 
+        @ createElement
+        @ forwardRef
+        from "react"
+    :import-type 
+        @ Sprinkles
+        from "./sprinkles.css"
+    import 
+        @ sprinkles
+        from "./sprinkles.css"
+    :interface ExtendedBoxProps
+        :extends Sprinkles
+        :p as
+            :optional 
+            :ref ElementType
+        :p className
+            :optional 
+            :ref ClassValue
+    :type BoxProps
+        :intersect 
+            :ref Omit
+                :param 
+                    :ref AllHTMLAttributes
+                        :param 
+                            :ref HTMLElement
+                :param 
+                    :keyof 
+                        :ref ExtendedBoxProps
+            :ref ExtendedBoxProps
+    export 
+        const Box
+            _ forwardRef
+                :param 
+                    :ref HTMLElement
+                :param 
+                    :ref BoxProps
+                => 
+                    { 
+                        @ as
+                            = "div"
+                        @ className
+                        ... props
+                    param ref
+                    const atomProps
+                        :ref Record
+                            :param string
+                            :param unknown
+                        =
+                            { 
+                    const nativeProps
+                        :ref Record
+                            :param string
+                            :param unknown
+                        =
+                            { 
+                    for 
+                        left
+                            const key
+                        in props
+                        if 
+                            test
+                                _ sprinkles.properties.has
+                                    + key
+                                        :as 
+                                            :keyof 
+                                                :ref Sprinkles
+                            set atomProps[key] =
+                                @expr props
+                                    .[
+                                        + key
+                                            :as 
+                                                :keyof 
+                                                    :typeof props
+                        else
+                            set nativeProps[key] =
+                                @expr props
+                                    .[
+                                        + key
+                                            :as 
+                                                :keyof 
+                                                    :typeof props
+                    const atomicClasses = sprinkles(atomProps)
+                    const customClasses = clsx(className)
+                    return 
+                        _ createElement
+                            @ as
+                            { 
+                                @ className
+                                    `lit 
+                                        + 
+                                        @ atomicClasses
+                                        + 
+                                        iif customClasses
+                                            then
+                                                `lit 
+                                                    + &nbsp;
+                                                    @ customClasses
+                                                    + 
+                                            else ""
+                                        + 
+                                @ ...nativeProps
+                                @ ref
+    set Box.displayName = "Box"

@@ -1,0 +1,60 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ auth
+        from "~/auth.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ auth.logout
+                        @ request
+                        { 
+                            @ redirectTo "/login"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const email
+                    await 
+                        _ auth.isAuthenticated
+                            @ request
+                            { 
+                                @ failureRedirect "/login"
+                return 
+                    _ json
+                        { 
+                            @ email
+    export-default 
+        function Screen
+            const 
+                { 
+                    @ email
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            return 
+                < React.Fragment
+                    h1 
+                        + Hello
+                        + {email}
+                    < Form 
+                        @ method "post"
+                        button 
+                            + Log Out

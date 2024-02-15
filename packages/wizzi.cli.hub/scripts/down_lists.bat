@@ -1,0 +1,2 @@
+rem @ "down [--list|--files] [--artifact|--package|--plugin|--meta|--tfolder] --owner <name> [--name <name>] [--dest <path>]"
+./node_modules/.bin/ts-node src/index.ts down --list --artifact -o stfnbssl -d

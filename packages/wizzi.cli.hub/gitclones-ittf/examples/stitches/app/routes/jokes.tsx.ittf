@@ -1,0 +1,23 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    import 
+        @ styled
+        from "~/styles/stitches.config"
+    const Container
+        _ styled
+            @ "div"
+            { 
+                @ backgroundColor "#d6d6d6"
+    export-default 
+        function Jokes
+            return 
+                < Container 
+                    h1 
+                        + Jokes
+                    p 
+                        + This route works fine.
+                    < Link 
+                        @ to "/"
+                        + Back to home

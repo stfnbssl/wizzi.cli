@@ -1,0 +1,53 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Link
+        @ Outlet
+        @ useLoaderData
+        from "@remix-run/react"
+    import 
+        @ getClients
+        from "~/db"
+    export 
+        const loader
+            async=> 
+                const clients
+                    await 
+                        _ getClients()
+                return 
+                    _ json
+                        { 
+                            @ clients
+                                _ clients.map
+                                    => 
+                                        param c
+                                        (
+                                            { 
+                                                @ id c.id
+                                                @ name c.name
+    export-default 
+        function ClientsRoute
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    h1 
+                        + Clients
+                    ul 
+                        { 
+                            iif data.clients.length
+                                then
+                                    _ data.clients.map
+                                        => 
+                                            param c
+                                            li 
+                                                @ key {c.id}
+                                                < Link 
+                                                    @ to {c.id}
+                                                    + {c.name}
+                                else "You got no clients"
+                    < Outlet 

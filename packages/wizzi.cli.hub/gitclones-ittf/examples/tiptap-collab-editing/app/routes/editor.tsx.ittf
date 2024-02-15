@@ -1,0 +1,41 @@
+module
+    import 
+        @ useEditor
+        @ EditorContent
+        from "@tiptap/react"
+    import StarterKit from "@tiptap/starter-kit"
+    import 
+        @ Collaboration
+        @ ydoc
+        @ WebrtcProvider
+        from "~/utils/webrtc.client"
+    if typeof document !== "undefined"
+        new WebrtcProvider("room-remix-example", ydoc)
+    export-default 
+        => 
+            let editor
+            if typeof document !== "undefined"
+                set editor =
+                    _ useEditor
+                        { 
+                            [ extensions
+                                _ StarterKit.configure
+                                    { 
+                                        @ history false
+                                _ Collaboration.configure
+                                    { 
+                                        @ document ydoc
+            return 
+                div 
+                    h1 
+                        + Open in two browsers and see the editing in sync
+                    div 
+                        @ style
+                            { 
+                                @ border "1px solid"
+                        { 
+                            iif editor
+                                then
+                                    < EditorContent 
+                                        @ editor {editor}
+                                else null

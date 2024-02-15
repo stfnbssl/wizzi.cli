@@ -1,3 +1,2 @@
 module 
-   kind es6
-   $include jsExpressApp/index.js
+   $include jsReactWebpackGetStartedApp/src/index.js

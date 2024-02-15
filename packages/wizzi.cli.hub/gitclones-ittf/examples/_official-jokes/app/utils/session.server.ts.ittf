@@ -1,0 +1,172 @@
+module
+    import 
+        @ createCookieSessionStorage
+        @ redirect
+        from "@remix-run/node"
+    import bcrypt from "bcryptjs"
+    import 
+        @ db
+        from "./db.server"
+    :type LoginForm
+        :{ 
+            :p password
+                :string 
+            :p username
+                :string 
+    export 
+        async-function register
+            { 
+                @ password
+                @ username
+                :ref LoginForm
+            const passwordHash
+                await 
+                    _ bcrypt.hash(password, 10)
+            const user
+                await 
+                    _ db.user.create
+                        { 
+                            { data
+                                @ passwordHash
+                                @ username
+            return 
+                { 
+                    @ id user.id
+                    @ username
+    export 
+        async-function login
+            { 
+                @ password
+                @ username
+                :ref LoginForm
+            const user
+                await 
+                    _ db.user.findUnique
+                        { 
+                            { where
+                                @ username
+            if !user
+                return null
+            const isCorrectPassword
+                await 
+                    _ bcrypt.compare(password, user.passwordHash)
+            if !isCorrectPassword
+                return null
+            return 
+                { 
+                    @ id user.id
+                    @ username
+    const sessionSecret = process.env.SESSION_SECRET
+    if !sessionSecret
+        throw new Error("SESSION_SECRET must be set")
+    const storage
+        _ createCookieSessionStorage
+            { 
+                { cookie
+                    @ name "RJ_session"
+                    @ secure process.env.NODE_ENV === "production"
+                        # normally you want this to be `secure: true`
+                        # but that doesn't work on localhost for Safari
+                        # https://web.dev/when-to-use-local-https/
+                    [ secrets
+                        @ sessionSecret
+                    @ sameSite "lax"
+                    @ path "/"
+                    @ maxAge 60 * 60 * 24 * 30
+                    @ httpOnly true
+    function getUserSession
+        param request
+            :ref Request
+        return storage.getSession(request.headers.get("Cookie"))
+    export 
+        async-function getUserId
+            param request
+                :ref Request
+            const session
+                await 
+                    _ getUserSession(request)
+            const userId = session.get("userId")
+            if !userId || typeof userId !== "string"
+                return null
+            return userId
+    export 
+        async-function requireUserId
+            param request
+                :ref Request
+            param redirectTo
+                :string 
+                = new URL(request.url).pathname
+            const session
+                await 
+                    _ getUserSession(request)
+            const userId = session.get("userId")
+            if !userId || typeof userId !== "string"
+                const searchParams
+                    new URLSearchParams
+                        [ 
+                            [ 
+                                @ "redirectTo"
+                                @ redirectTo
+                throw 
+                    _ redirect
+                        `lit 
+                            + /login?
+                            @ searchParams
+                            + 
+            return userId
+    export 
+        async-function getUser
+            param request
+                :ref Request
+            const userId
+                await 
+                    _ getUserId(request)
+            if typeof userId !== "string"
+                return null
+            const user
+                await 
+                    _ db.user.findUnique
+                        { 
+                            { select
+                                @ id true
+                                @ username true
+                            { where
+                                @ id userId
+            if !user
+                throw 
+                    await 
+                        _ logout(request)
+            return user
+    export 
+        async-function logout
+            param request
+                :ref Request
+            const session
+                await 
+                    _ getUserSession(request)
+            return 
+                _ redirect
+                    @ "/login"
+                    { 
+                        { headers
+                            @ "Set-Cookie"
+                                await 
+                                    _ storage.destroySession(session)
+    export 
+        async-function createUserSession
+            param userId
+                :string 
+            param redirectTo
+                :string 
+            const session
+                await 
+                    _ storage.getSession()
+            _ session.set("userId", userId)
+            return 
+                _ redirect
+                    @ redirectTo
+                    { 
+                        { headers
+                            @ "Set-Cookie"
+                                await 
+                                    _ storage.commitSession(session)

@@ -1,0 +1,76 @@
+module
+    :import-type 
+        @ Processor
+        from "bullmq"
+    import 
+        @ Queue
+            as BullQueue
+        @ Worker
+        from "bullmq"
+    import 
+        @ redis
+        from "./redis.server"
+    :type RegisteredQueue
+        :{ 
+            :p queue
+                :ref BullQueue
+            :p worker
+                :ref Worker
+    :declare 
+        :module global
+            var __registeredQueues
+                :union 
+                    :ref Record
+                        :param string
+                        :param 
+                            :ref RegisteredQueue
+                    :undefined 
+    const registeredQueues
+        || 
+            + global.__registeredQueues
+            + global.__registeredQueues =
+                { 
+    export 
+        function Queue
+            :< Payload
+            param name
+                :string 
+            param handler
+                :ref Processor
+                    :param 
+                        :ref Payload
+            :return
+                :ref BullQueue
+                    :param 
+                        :ref Payload
+            if registeredQueues[name]
+                return registeredQueues[name].queue
+            const queue
+                new BullQueue
+                    :param 
+                        :ref Payload
+                    @ name
+                    { 
+                        @ connection redis
+                # Bullmq queues are the storage container managing jobs.
+                # Workers are where the meat of our processing lives within a queue.
+                # They reach out to our redis connection and pull jobs off the queue
+                # in an order determined by factors such as job priority, delay, etc.
+                # The scheduler plays an important role in helping workers stay busy.
+            const worker
+                new Worker
+                    :param 
+                        :ref Payload
+                    @ name
+                    @ handler
+                    { 
+                        @ connection redis
+                # Workers are where the meat of our processing lives within a queue.
+                # They reach out to our redis connection and pull jobs off the queue
+                # in an order determined by factors such as job priority, delay, etc.
+                # The scheduler plays an important role in helping workers stay busy.
+            set registeredQueues[name] =
+                { 
+                    @ queue
+                    @ worker
+            return queue

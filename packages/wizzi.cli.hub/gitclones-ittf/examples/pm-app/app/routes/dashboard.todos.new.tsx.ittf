@@ -1,0 +1,93 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ createTodo
+        @ getTodosFromList
+        from "~/db.server"
+    import 
+        @ requireUser
+        from "~/session.server"
+    import 
+        @ Sanitizer
+        from "~/utils/sanitizer"
+    export 
+        const action
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref ActionArgs
+                await 
+                    _ requireUser
+                        @ request
+                        { 
+                            @ redirect "/sign-in"
+                if request.method.toLowerCase() === "post"
+                    const formData
+                        await 
+                            _ request.formData()
+                    const todoListId
+                        || 
+                            + params.listId
+                            ( 
+                                _ formData.get("listId")
+                                    :as 
+                                        :string 
+                    if !todoListId || typeof todoListId !== "string"
+                        throw 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                    const existingTodos
+                        await 
+                            _ getTodosFromList(todoListId)
+                    try 
+                        const name = Sanitizer.cleanHtmlString(formData.get("name"))
+                        const description = Sanitizer.cleanHtmlString(formData.get("description"))
+                        const order = existingTodos.length - 1
+                        if !name
+                            throw 
+                                _ json
+                                    { 
+                                        @ todo null
+                                    @ 400
+                        const todoData
+                            :[] 
+                                :ref Parameters
+                                    :param 
+                                        :typeof createTodo
+                                :literal 0
+                            =
+                                { 
+                                    @ name
+                                    @ order
+                                    @ todoListId
+                                    @ completed false
+                            # TODO: Handle invalid inputs
+                        if description
+                            set todoData.description = description
+                        const todo
+                            await 
+                                _ createTodo(todoData)
+                        return 
+                            _ json
+                                { 
+                                    @ todo
+                                @ 200
+                    catch 
+                        return 
+                            _ json
+                                { 
+                                    @ todo null
+                                @ 400
+                return 
+                    _ json
+                        { 
+                            @ todo null
+                        @ 400

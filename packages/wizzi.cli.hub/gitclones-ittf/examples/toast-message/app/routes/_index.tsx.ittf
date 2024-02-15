@@ -1,0 +1,108 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useFetcher
+        from "@remix-run/react"
+    import 
+        @ commitSession
+        @ getSession
+        @ setErrorMessage
+        @ setSuccessMessage
+        from "~/message.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const session
+                    await 
+                        _ getSession(request.headers.get("cookie"))
+                const formData
+                    await 
+                        _ request.formData()
+                const number = formData.get("number")
+                if !number
+                    _ setErrorMessage(session, "Number is required!")
+                    return 
+                        _ redirect
+                            @ "/"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ commitSession(session)
+                if Number(number) === 10
+                    _ setSuccessMessage(session, "Awesome")
+                    return 
+                        _ redirect
+                            @ "/"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ commitSession(session)
+                else
+                    _ setErrorMessage(session, "Wrong! Guess again")
+                    return 
+                        _ redirect
+                            @ "/"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ commitSession(session)
+    export-default 
+        function Index
+            const fetcher = useFetcher()
+            return 
+                < React.Fragment
+                    h2 
+                        + Action handled by the same route
+                    < Form 
+                        @ method "post"
+                        label 
+                            + Enter the secret number:
+                            input 
+                                @ name "number"
+                                @ type "text"
+                                @ required
+                        button 
+                            + Submit
+                    h2 
+                        + Action handled by resource route (fetcher.Form)
+                    < fetcher.Form 
+                        @ method "post"
+                        @ action "/submit-secret"
+                        label 
+                            + Enter the secret number:
+                            input 
+                                @ name "number"
+                                @ type "text"
+                                @ required
+                        button 
+                            + Submit
+                    h2 
+                        + Action handled by resource route (fetcher.submit())
+                    < fetcher.Form 
+                        @ action "/submit-secret"
+                        @ method "post"
+                        label 
+                            + Enter the secret number:
+                            input 
+                                @ name "number"
+                                @ type "text"
+                                @ required
+                        button 
+                            @ type "button"
+                            @ onClick
+                                => 
+                                    param event
+                                    _ fetcher.submit(event.currentTarget.form)
+                            + Submit

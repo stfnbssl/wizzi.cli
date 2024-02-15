@@ -1,0 +1,86 @@
+module
+    kind es6
+    const path = require("path")
+    const spawnUtils = require("../src/utils/spawn")
+
+    var choice = process.argv[2] || '1'
+    
+    if choice == '1'
+        _ spawnUtils.spawn
+            @ "dir"
+            [ 
+            { 
+                @ cwd __dirname
+            => 
+                param err
+                param stdout
+                param stderr
+                log "1", err || stderr || stdout
+                    # =>
+                    # total 4
+                    # -rw-rw-r-- 1 ionicabizau ionicabizau 256 Mar 27 14:53 index.js
+    
+    if choice == '1b'
+        _ spawnUtils.spawnPromise
+            @ "dir"
+            [ 
+            { 
+                @ cwd __dirname
+            ._ then
+                @expr console.log
+
+    if choice == '1c'
+        _ spawnUtils.spawnPromise
+            @ "node"
+            [ 
+                @ "procOutput"
+                @ "2"
+            { 
+                @ cwd __dirname
+            ._ then
+                @expr console.log
+
+    if choice == '1d'
+        _ spawnUtils.spawnPromise
+            @ "wz"
+            [ 
+                @ "override"
+            { 
+                @ cwd path.join(__dirname, '..')
+            ._ then
+                @expr console.log
+
+    if choice == '1e'
+        _ spawnUtils.spawnPromise
+            @ "ver"
+            [ 
+                @ "override"
+            { 
+                @ cwd path.join(__dirname, '..')
+            ._ then
+                @expr console.log
+
+    if choice == '2'
+        # Pipe the output in the stdout/stderr streams (this will not collect the output in memory)
+        let proc
+            _ spawnUtils.spawn
+                @ "ping"
+                [ 
+                    @ "ionicabizau.net"
+                { 
+                    @ cwd __dirname
+                    @ output true
+
+    if choice == '3'
+        # PING ionicabizau.net (109.107.37.233) 56(84) bytes of data.
+        # 64 bytes from cip-109-107-37-233.gb1.brightbox.com (109.107.37.233): icmp_seq=1 ttl=54 time=49.2 ms
+        # 64 bytes from cip-109-107-37-233.gb1.brightbox.com (109.107.37.233): icmp_seq=2 ttl=54 time=44.4 ms
+        # 64 bytes from cip-109-107-37-233.gb1.brightbox.com (109.107.37.233): icmp_seq=3 ttl=54 time=47.9 ms
+        # 64 bytes from cip-109-107-37-233.gb1.brightbox.com (109.107.37.233): icmp_seq=4 ttl=54 time=46.3 ms
+        # Promise interface
+        _ spawnUtils.spawnPromise
+            @ "curl"
+            [ 
+                @ "ionicabizau.net"
+            ._ then
+                @expr console.log

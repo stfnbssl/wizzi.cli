@@ -1,0 +1,6 @@
+{
+  "reason": "missing '}'",
+  "line": 9,
+  "column": 3,
+  "source": "@media (--viewport-md) {\n    --gutter: var(--spaces-05);\n  }\n\n  @media (--viewport-lg) {\n    --gutter: var(--spaces-06);\n  }\n\n  @media (--viewport-xl) {\n    --width: 72rem;\n  }\n}\n"
+}

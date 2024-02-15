@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\fy.js.ittf
-    utc time: Wed, 17 Jan 2024 05:09:03 GMT
+    utc time: Mon, 22 Jan 2024 19:08:53 GMT
 */
 'use strict';
 const path = require('path');
@@ -157,36 +157,79 @@ function wizzifyGitRepo(args, accessToken, callback) {
 function wizzifyFolder(sourceFolder, destFolder, from, to, callback) {
     console.log('wizzifyFolder.sourceFolder', sourceFolder, __filename);
     console.log('wizzifyFolder.destFolder', destFolder, __filename);
-    vfile().getFiles(sourceFolder, {
-        deep: true, 
-        documentContent: false
-     }, (err, files) => {
+    getWizziFactory((err, wf) => {
     
         if (err) {
             return callback(err);
         }
-        console.log('wizzifyFolder.sourceFiles', files.length, __filename);
-        function run(i) {
-            if (from != null && i < from) {
-                return run(i+1);
+        vfile().getFiles(sourceFolder, {
+            deep: true, 
+            documentContent: false
+         }, (err, files) => {
+        
+            if (err) {
+                return callback(err);
             }
-            if (to != null && i > to) {
-                return run(i+1);
-            }
-            console.log("from, to, i", from, to, i, __filename);
-            if (!files[i]) {
-                return callback(null);
-            }
-            wizzifyFile(files[i].fullPath, path.join(destFolder, files[i].relPath + '.ittf'), (err, notUsed) => {
-            
-                if (err) {
-                    return callback(err);
+            console.log('wizzifyFolder.sourceFiles', files.length, __filename);
+            function run(i) {
+                if (from != null && i < from) {
+                    return run(i+1);
                 }
-                run(i+1);
+                if (to != null && i > to) {
+                    return run(i+1);
+                }
+                if (!files[i]) {
+                    return callback(null);
+                }
+                try {
+                    var sourcePath = files[i].fullPath;
+                    var wizzifyName = getWizzifyName(sourcePath);
+                    if (!wf.canWizzify(wizzifyName)) {
+                        console.log(i+1, '/', files.length, sourcePath,'has no wizzifier', __filename);
+                        return file.copyFile(sourcePath, path.join(destFolder, files[i].relPath), (err, result) => {
+                            
+                                if (err) {
+                                    console.log("[31m%s[0m", 'copying file', sourcePath);
+                                    console.log("[31m%s[0m", err);
+                                    return run(i+1);
+                                }
+                                console.log(i+1, '/', files.length, sourcePath, 'copied', __filename);
+                                return run(i+1);
+                            }
+                            );
+                    }
+                    console.log("from, to, i", from, to, i+1, '/', files.length, __filename);
+                    var destPath = path.join(destFolder, files[i].relPath + '.ittf');
+                    wf.getWizziIttfFromText(file.read(sourcePath), getWizzifyName(sourcePath), (err, result) => {
+                    
+                        if (err) {
+                            console.log("[31m%s[0m", 'on file', sourcePath);
+                            console.log("[31m%s[0m", err);
+                            return process.nextTick(() => 
+                                
+                                    run(i+1)
+                                );
+                        }
+                        file.write(destPath, result);
+                        console.log('Done. Wizzify file', destPath, __filename);
+                        return process.nextTick(() => 
+                            
+                                run(i+1)
+                            );
+                    }
+                    )
+                } 
+                catch (ex) {
+                    console.log("[31m%s[0m", 'in file', sourcePath, 'message', ex.message);
+                    process.nextTick(() => 
+                    
+                        run(i+1)
+                    )
+                } 
             }
-            )
+            run(0);
         }
-        run(0);
+        )
     }
     )
 }

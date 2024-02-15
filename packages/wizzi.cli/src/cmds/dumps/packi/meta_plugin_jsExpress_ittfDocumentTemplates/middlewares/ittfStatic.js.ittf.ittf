@@ -5,24 +5,20 @@ $group
         import { fileURLToPath } from 'url'
         const __dirname = dirname(fileURLToPath(import.meta.url))
     
-    import stringify from 'json-stringify-safe'
-    import util from 'util'
-    import path from 'path'
-    import fs from 'fs'
-    import parseUrl from 'parseurl'
-    import 
-        @ config
-        from '../features/config/index.js'
-    import 
-        @ wizziProds
-        from '../features/wizzi/index.js'
+    const stringify =  require('json-stringify-safe')
+    const util =  require('util')
+    const path =  require('path')
+    const fs =  require('fs')
+    const parseUrl =  require('parseUrl')
+    const config =  require('../features/config/index.js').config
+    const wizziProds =  require('../features/wizzi/index.js').wizziProds
     
-    export 
-        const IttfStaticMiddleware
-            => 
-                param app
-                success 'IttfStaticMiddleware. Folder served from ', path.resolve(__dirname, '..', '..', 'ittf')
-                _ app.use('/ittf', ittfMiddleware(path.resolve(__dirname, '..', '..', 'ittf'), '/ittf'))
+    set module.exports = {}
+    set module.exports.IttfStaticMiddleware
+        => 
+            param app
+            success 'IttfStaticMiddleware. Folder served from ', path.resolve(__dirname, '..', '..', 'ittf')
+            _ app.use('/ittf', ittfMiddleware(path.resolve(__dirname, '..', '..', 'ittf'), '/ittf'))
     
     const extContentTypeMap
         { 

@@ -1,0 +1,43 @@
+module
+    import 
+        @ useMatches
+        from "@remix-run/react"
+    import 
+        @ useMemo
+        from "react"
+        #
+            # *
+            # * This base hook is used in other hooks to quickly search for specific data
+            # * across all loader data using useMatches.
+            # * @param {string} id The route id
+            # * @returns {JSON|undefined} The router data or undefined if not found
+            # 
+    export 
+        function useMatchesData
+            param id
+                :string 
+            :return
+                :union 
+                    :ref Record
+                        :param string
+                        :param unknown
+                    :undefined 
+            const matchingRoutes = useMatches()
+            const route
+                _ useMemo
+                    => 
+                        _ matchingRoutes.find
+                            => 
+                                param route
+                                set route.id === id
+                    [ 
+                        @ matchingRoutes
+                        @ id
+            return route?.data
+        #
+            # *
+            # * This base hook is used in other hooks to quickly search for specific data
+            # * across all loader data using useMatches.
+            # * @param {string} id The route id
+            # * @returns {JSON|undefined} The router data or undefined if not found
+            # 

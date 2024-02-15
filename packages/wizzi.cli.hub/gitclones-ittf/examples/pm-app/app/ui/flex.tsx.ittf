@@ -1,0 +1,326 @@
+module
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    const COMP_CLASS = "ui--flex"
+    const Flex
+        _ React.forwardRef
+            :param 
+                :ref HTMLDivElement
+            :param 
+                :ref FlexProps
+            => 
+                { 
+                    @ children
+                    @ className
+                    @ inline
+                    @ direction
+                    @ wrap
+                    @ flex
+                    @ alignItems
+                    @ alignContent
+                    @ justifyItems
+                    @ justifyContent
+                    @ placeContent
+                    @ placeItems
+                    ... props
+                param forwardedRef
+                return 
+                    div 
+                        @ ref {forwardedRef}
+                        @ className
+                            _ cx
+                                @ className
+                                @ COMP_CLASS
+                                { 
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --inline
+                                        + inline
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --dir-
+                                            @ direction
+                                            + 
+                                        + direction
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --
+                                            iif wrap === true
+                                                then "wrap"
+                                                else
+                                                    iif wrap === false || wrap === "nowrap"
+                                                        then "nowrap"
+                                                        else
+                                                            iif wrap === "reverse"
+                                                                then "wrap-reverse"
+                                                                else wrap
+                                            + 
+                                        + wrap != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --align-items-
+                                            @ alignItems
+                                            + 
+                                        + alignItems != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --align-content-
+                                            @ alignContent
+                                            + 
+                                        + alignContent != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --justify-items-
+                                            @ justifyItems
+                                            + 
+                                        + justifyItems != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --justify-content-
+                                            @ justifyContent
+                                            + 
+                                        + justifyContent != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --place-items-
+                                            @ placeItems
+                                            + 
+                                        + placeItems != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + --place-content-
+                                            @ placeContent
+                                            + 
+                                        + placeContent != null
+                        @ {...props}
+                        + {children}
+    set Flex.displayName = "Flex"
+    const FlexItem
+        _ React.forwardRef
+            :param 
+                :ref HTMLDivElement
+            :param 
+                :ref FlexItemProps
+            => 
+                { 
+                    @ children
+                    @ className
+                    @ grow
+                    @ shrink
+                    @ justify
+                    @ align
+                    @ place
+                    ... props
+                param forwardedRef
+                return 
+                    div 
+                        @ ref {forwardedRef}
+                        @ className
+                            _ cx
+                                @ className
+                                `lit 
+                                    + 
+                                    @ COMP_CLASS
+                                    + __item
+                                { 
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + __item--grow-
+                                            @ grow
+                                            + 
+                                        + grow != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + __item--grow-
+                                            @ shrink
+                                            + 
+                                        + shrink != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + __item--align-
+                                            @ align
+                                            + 
+                                        + align != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + __item--justify-
+                                            @ justify
+                                            + 
+                                        + justify != null
+                                    @[
+                                        `lit 
+                                            + 
+                                            @ COMP_CLASS
+                                            + __item--place-
+                                            @ place
+                                            + 
+                                        + place != null
+                        @ {...props}
+                        + {children}
+    set FlexItem.displayName = "FlexItem"
+    :interface FlexOwnProps
+        :p inline
+            :optional 
+            :boolean 
+        :p direction
+            :optional 
+            :union 
+                :literal "row"
+                :literal "column"
+                :literal "row-reverse"
+                :literal "column-reverse"
+        :p wrap
+            :optional 
+            :union 
+                :boolean 
+                :null 
+                :literal "wrap"
+                :literal "nowrap"
+                :literal "reverse"
+        :p flex
+            :optional 
+            :union 
+                :literal 1
+                :literal "auto"
+                :literal "initial"
+                :literal "none"
+        :p alignItems
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+                :literal "baseline"
+        :p alignContent
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "between"
+                :literal "around"
+                :literal "evenly"
+        :p justifyItems
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+        :p justifyContent
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "between"
+                :literal "around"
+                :literal "evenly"
+        :p placeItems
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+        :p placeContent
+            :optional 
+            :union 
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "between"
+                :literal "around"
+                :literal "evenly"
+                :literal "stretch"
+    :interface FlexItemOwnProps
+        :p grow
+            :optional 
+            :union 
+                :literal 1
+                :literal 0
+        :p shrink
+            :optional 
+            :union 
+                :literal 1
+                :literal 0
+        :p justify
+            :optional 
+            :union 
+                :literal "auto"
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+        :p place
+            :optional 
+            :union 
+                :literal "auto"
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+        :p align
+            :optional 
+            :union 
+                :literal "auto"
+                :literal "start"
+                :literal "end"
+                :literal "center"
+                :literal "stretch"
+                :literal "baseline"
+    :interface FlexProps
+        :extends FlexOwnProps
+        :extends Omit
+            :param 
+                :ref React.ComponentPropsWithRef
+                    :param 
+                        :literal "div"
+            :param 
+                :keyof 
+                    :ref FlexOwnProps
+    :interface FlexItemProps
+        :extends FlexItemOwnProps
+        :extends Omit
+            :param 
+                :ref React.ComponentPropsWithRef
+                    :param 
+                        :literal "div"
+            :param 
+                :keyof 
+                    :ref FlexItemOwnProps
+    export 
+        @ FlexProps
+        @ FlexItemProps
+    export 
+        @ Flex
+        @ FlexItem

@@ -1,0 +1,62 @@
+module
+    :import-type 
+        @ Session
+        from "@remix-run/node"
+    import 
+        @ createCookieSessionStorage
+        from "@remix-run/node"
+    export 
+        :type ToastMessage
+            :{ 
+                :p message
+                    :string 
+                :p type
+                    :union 
+                        :literal "success"
+                        :literal "error"
+    const ONE_YEAR = 1000 * 60 * 60 * 24 * 365
+    export 
+        const 
+            { 
+                @ commitSession
+                @ getSession
+            =
+                _ createCookieSessionStorage
+                    { 
+                        { cookie
+                            @ name "__message"
+                            @ path "/"
+                            @ httpOnly true
+                            @ sameSite "lax"
+                            @ expires new Date(Date.now() + ONE_YEAR)
+                            [ secrets
+                                @ "SUPER_SECRET"
+                            @ secure true
+    export 
+        function setSuccessMessage
+            param session
+                :ref Session
+            param message
+                :string 
+            _ session.flash
+                @ "toastMessage"
+                @expr
+                    { 
+                        @ message
+                        @ type "success"
+                    :as 
+                        :ref ToastMessage
+    export 
+        function setErrorMessage
+            param session
+                :ref Session
+            param message
+                :string 
+            _ session.flash
+                @ "toastMessage"
+                @expr
+                    { 
+                        @ message
+                        @ type "error"
+                    :as 
+                        :ref ToastMessage

@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.14
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\upload.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:47 GMT
 */
 import path from 'path';
 import {PackiFiles} from '../features/packi/types';
@@ -11,9 +12,8 @@ import {getFileContents, getFilteredPackiFiles} from './fsrepo';
 
 export function uploadArtifact(owner: string, name: string, description: string, mainIttf: string, wizziSchema: string, options: any):  Promise<any> {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => 
         
-            console.log('uploadArtifact.options', options, __filename);
             getFilteredPackiFiles(options).then((packiFiles: PackiFiles) => {
             
                 if (options.merge) {
@@ -43,9 +43,8 @@ export function uploadArtifact(owner: string, name: string, description: string,
                     )
                 }
                 else if (options.update) {
-                    artifactApi.getArtifactProduction(owner, name).then((ap: any) => {
+                    artifactApi.getArtifactProduction(owner, name).then((ap: any) => 
                     
-                        console.log('upload.uploadArtifact.artifactApi.getArtifactProduction', Object.keys(ap.item._doc), __filename);
                         artifactApi.updateArtifactProduction(ap.item._doc._id, owner, name, description, mainIttf, wizziSchema, JSON.stringify(packiFiles)).then((result: any) => 
                         
                             resolve(result)
@@ -57,7 +56,7 @@ export function uploadArtifact(owner: string, name: string, description: string,
                             return reject(err);
                         }
                         )
-                    }
+                    
                     ).catch((err: any) => {
                     
                         if (typeof err === 'object' && err !== null) {
@@ -76,15 +75,14 @@ export function uploadArtifact(owner: string, name: string, description: string,
                 return reject(err);
             }
             )
-        }
+        
         );
 }
 
 export function uploadPackage(owner: string, name: string, description: string, options: any):  Promise<any> {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => 
         
-            console.log('uploadPackage.sourceFolder', options.sourceFolder, __filename);
             getFilteredPackiFiles(options).then((packiFiles: PackiFiles) => {
             
                 if (options.merge) {
@@ -114,9 +112,8 @@ export function uploadPackage(owner: string, name: string, description: string, 
                     )
                 }
                 else if (options.update) {
-                    packageApi.getPackageProduction(owner, name).then((ap: any) => {
+                    packageApi.getPackageProduction(owner, name).then((ap: any) => 
                     
-                        console.log('upload.uploadPackage.packageApi.getPackageProduction', Object.keys(ap.item._doc), __filename);
                         packageApi.updatePackageProduction(ap.item._doc._id, owner, name, description, JSON.stringify(packiFiles)).then((result: any) => 
                         
                             resolve(result)
@@ -128,7 +125,7 @@ export function uploadPackage(owner: string, name: string, description: string, 
                             return reject(err);
                         }
                         )
-                    }
+                    
                     ).catch((err: any) => {
                     
                         if (typeof err === 'object' && err !== null) {
@@ -147,15 +144,14 @@ export function uploadPackage(owner: string, name: string, description: string, 
                 return reject(err);
             }
             )
-        }
+        
         );
 }
 
 export function uploadPlugin(owner: string, name: string, description: string, options: any):  Promise<any> {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => 
         
-            console.log('uploadPlugin.sourceFolder', options.sourceFolder, __filename);
             getFilteredPackiFiles(options).then((packiFiles: PackiFiles) => {
             
                 if (options.merge) {
@@ -185,9 +181,8 @@ export function uploadPlugin(owner: string, name: string, description: string, o
                     )
                 }
                 else if (options.update) {
-                    pluginApi.getPluginProduction(owner, name).then((ap: any) => {
+                    pluginApi.getPluginProduction(owner, name).then((ap: any) => 
                     
-                        console.log('upload.uploadPlugin.pluginApi.getPluginProduction', Object.keys(ap.item._doc), __filename);
                         pluginApi.updatePluginProduction(ap.item._doc._id, owner, name, description, JSON.stringify(packiFiles)).then((result: any) => 
                         
                             resolve(result)
@@ -199,7 +194,7 @@ export function uploadPlugin(owner: string, name: string, description: string, o
                             return reject(err);
                         }
                         )
-                    }
+                    
                     ).catch((err: any) => {
                     
                         if (typeof err === 'object' && err !== null) {
@@ -218,15 +213,14 @@ export function uploadPlugin(owner: string, name: string, description: string, o
                 return reject(err);
             }
             )
-        }
+        
         );
 }
 
 export function uploadTFolder(owner: string, name: string, description: string, options: any):  Promise<any> {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => 
         
-            console.log('uploadTFolder.sourceFolder', options.sourceFolder, __filename);
             getFilteredPackiFiles(options).then((packiFiles: PackiFiles) => {
             
                 if (options.merge) {
@@ -256,9 +250,8 @@ export function uploadTFolder(owner: string, name: string, description: string, 
                     )
                 }
                 else if (options.update) {
-                    tFolderApi.getTFolder(owner, name).then((ap: any) => {
+                    tFolderApi.getTFolder(owner, name).then((ap: any) => 
                     
-                        console.log('upload.uploadTFolder.tFolderApi.getTFolder', Object.keys(ap.item._doc), __filename);
                         tFolderApi.updateTFolder(ap.item._doc._id, owner, name, description, JSON.stringify(packiFiles)).then((result: any) => 
                         
                             resolve(result)
@@ -270,7 +263,7 @@ export function uploadTFolder(owner: string, name: string, description: string, 
                             return reject(err);
                         }
                         )
-                    }
+                    
                     ).catch((err: any) => {
                     
                         if (typeof err === 'object' && err !== null) {
@@ -289,15 +282,14 @@ export function uploadTFolder(owner: string, name: string, description: string, 
                 return reject(err);
             }
             )
-        }
+        
         );
 }
 
 export function uploadMeta(owner: string, name: string, description: string, options: any):  Promise<any> {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => 
         
-            console.log('uploadMeta.sourceFolder', options.sourceFolder, __filename);
             getFilteredPackiFiles(options).then((packiFiles: PackiFiles) => {
             
                 if (options.merge) {
@@ -327,9 +319,8 @@ export function uploadMeta(owner: string, name: string, description: string, opt
                     )
                 }
                 else if (options.update) {
-                    metaApi.getMetaProduction(owner, name).then((ap: any) => {
+                    metaApi.getMetaProduction(owner, name).then((ap: any) => 
                     
-                        console.log('upload.uploadMeta.metaApi.getMetaProduction', Object.keys(ap.item._doc), __filename);
                         metaApi.updateMetaProduction(ap.item._doc._id, owner, name, description, JSON.stringify(packiFiles)).then((result: any) => 
                         
                             resolve(result)
@@ -341,7 +332,7 @@ export function uploadMeta(owner: string, name: string, description: string, opt
                             return reject(err);
                         }
                         )
-                    }
+                    
                     ).catch((err: any) => {
                     
                         if (typeof err === 'object' && err !== null) {
@@ -360,7 +351,7 @@ export function uploadMeta(owner: string, name: string, description: string, opt
                 return reject(err);
             }
             )
-        }
+        
         );
 }
 
@@ -368,7 +359,6 @@ export function uploadCdnResource(owner: string, options: any):  Promise<any> {
 
     return new Promise((resolve, reject) => {
         
-            console.log('uploadCdnResource.sourceFile.sourceFolder', options.sourceFile, options.sourceFolder, __filename);
             if (options.sourceFile && options.sourceFile.length > 0) {
                 getFileContents(options).then((contents: string) => 
                 
@@ -404,11 +394,9 @@ export function uploadCdnResource(owner: string, options: any):  Promise<any> {
                         if (count >= paths.length) {
                             return resolve(paths);
                         }
-                        resourceApi.createCdnResource(owner, paths[count], packiFiles[paths[count]].contents).then((result: any) => {
+                        resourceApi.createCdnResource(owner, paths[count], packiFiles[paths[count]].contents).then((result: any) => 
                         
-                            console.log('uploadCdnResource', paths[count], "uploaded", __filename);
-                            execUpload();
-                        }
+                            execUpload()
                         ).catch((err: any) => {
                         
                             if (typeof err === 'object' && err !== null) {

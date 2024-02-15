@@ -1,0 +1,160 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Link
+        @ useActionData
+        @ useTransition
+        from "@remix-run/react"
+    import 
+        @ useEffect
+        @ useRef
+        from "react"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                await 
+                    new Promise
+                        => 
+                            param res
+                            _ setTimeout(res, 1000)
+                const formData
+                    await 
+                        _ request.formData()
+                const email = formData.get("email")
+                const API_KEY = "..."
+                const FORM_ID = "..."
+                const API = "https://api.convertkit.com/v3"
+                const res
+                    await 
+                        _ fetch
+                            `lit 
+                                + 
+                                @ API
+                                + /forms/
+                                @ FORM_ID
+                                + /subscribe
+                            { 
+                                @ method "post"
+                                @ body
+                                    _ JSON.stringify
+                                        { 
+                                            @ email
+                                            @ api_key API_KEY
+                                { headers
+                                    @ "Content-Type" "application/json; charset=utf-8"
+                return 
+                    _ json
+                        await 
+                            _ res.json()
+    export-default 
+        function Newsletter
+            const actionData
+                _ useActionData
+                    :param 
+                        :typeof action
+            const transition = useTransition()
+            const state
+                :union 
+                    :literal "idle"
+                    :literal "success"
+                    :literal "error"
+                    :literal "submitting"
+                =
+                    iif transition.submission
+                        then "submitting"
+                        else
+                            iif actionData?.subscription
+                                then "success"
+                                else
+                                    iif actionData?.error
+                                        then "error"
+                                        else "idle"
+            const inputRef
+                _ useRef
+                    :param 
+                        :ref HTMLInputElement
+                    @ null
+            const successRef
+                _ useRef
+                    :param 
+                        :ref HTMLHeadingElement
+                    @ null
+            const mounted
+                _ useRef
+                    :param boolean
+                    @ false
+            _ useEffect
+                => 
+                    if state === "error"
+                        _ inputRef.current?.focus?.()
+                    if state === "idle" && mounted.current
+                        _ inputRef.current?.select?.()
+                    if state === "success"
+                        _ successRef.current?.focus?.()
+                    set mounted.current = true
+                [ 
+                    @ state
+            return 
+                main 
+                    < Form 
+                        @ replace
+                        @ method "post"
+                        @ aria-hidden {state === "success"}
+                        h2 
+                            + Subscribe!
+                        p 
+                            + Don't miss any of the action!
+                        fieldset 
+                            @ disabled {state === "submitting"}
+                            input 
+                                @ aria-label "Email address"
+                                @ aria-describedby "error-message"
+                                @ ref {inputRef}
+                                @ type "email"
+                                @ name "email"
+                                @ placeholder "you@example.com"
+                                @ tabIndex
+                                    iif state === "success"
+                                        then -1
+                                        else 0
+                            button 
+                                @ type "submit"
+                                @ tabIndex
+                                    iif state === "success"
+                                        then -1
+                                        else 0
+                                { 
+                                    iif state === "submitting"
+                                        then "Subscribing..."
+                                        else "Subscribe"
+                        p 
+                            @ id "error-message"
+                            { 
+                                iif state === "error"
+                                    then actionData.message
+                                    else
+                                        < React.Fragment
+                    div 
+                        @ aria-hidden {state !== "success"}
+                        h2 
+                            @ ref {successRef}
+                            @ tabIndex {-1}
+                            + You're subscribed!
+                        p 
+                            + Please check your email to confirm your subscription.
+                        < Link 
+                            @ to "."
+                            @ tabIndex
+                                iif state === "success"
+                                    then 0
+                                    else -1
+                            + Start over

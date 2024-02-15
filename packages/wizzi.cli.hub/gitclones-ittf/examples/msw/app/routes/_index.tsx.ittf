@@ -1,0 +1,38 @@
+module
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ useLoaderData
+        from "@remix-run/react"
+    export 
+        const loader
+            async=> 
+                const data
+                    await 
+                        _ fetch("https://my-mock-api.com").then
+                            => 
+                                param response
+                                _ response.json()
+                if !data || typeof data.message !== "string"
+                    throw 
+                        _ json
+                            { 
+                                @ message "Server error"
+                            { 
+                                @ status 500
+                return json(data)
+    export-default 
+        function Index
+            const data
+                _ useLoaderData
+                    :param 
+                        :typeof loader
+            return 
+                div 
+                    @ style
+                        { 
+                            @ fontFamily "system-ui, sans-serif"
+                            @ lineHeight "1.8"
+                    h1 
+                        + {data.message}

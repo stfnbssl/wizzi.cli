@@ -1,0 +1,106 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LinksFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        from "@remix-run/react"
+    import 
+        @ add
+        from "~/rust.server"
+    import indexStylesUrl from "~/styles/index.css"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href indexStylesUrl
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                const 
+                    { 
+                        @ left_operand
+                        @ operator
+                        @ right_operand
+                    = Object.fromEntries(formData)
+                _ console.log(Object.fromEntries(formData))
+                switch operator
+                    case "+"
+                        const result = add(Number(left_operand), Number(right_operand))
+                        _ console.log("result", result)
+                        return 
+                            _ json
+                                { 
+                                    @ result
+                    default 
+                        return 
+                            _ json
+                                { 
+                                    @ result "🤷🏾"
+                            # Implement other operators
+    export-default 
+        function Index
+            const data
+                _ useActionData
+                    :param 
+                        :typeof action
+            return 
+                < Form 
+                    @ className "form-container"
+                    @ method "post"
+                    @ replace
+                    div 
+                        @ className "grid-container"
+                        input 
+                            @ className "operand"
+                            @ type "number"
+                            @ name "left_operand"
+                            @ id "left_operand"
+                            @ placeholder "2"
+                        select 
+                            @ className "operator"
+                            @ name "operator"
+                            @ id "operator"
+                            option 
+                                @ value "+"
+                                + +
+                            option 
+                                @ value "-"
+                                + -
+                            option 
+                                @ value "*"
+                                + *
+                            option 
+                                @ value "/"
+                                + /
+                        input 
+                            @ className "operand"
+                            @ type "number"
+                            @ name "right_operand"
+                            @ id "right_operand"
+                            @ placeholder "2"
+                        button 
+                            @ className "submit"
+                            @ type "submit"
+                            + =
+                        div 
+                            @ className "result"
+                            { 
+                                iif data?.result
+                                    then data?.result
+                                    else ""

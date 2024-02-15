@@ -1,0 +1,24 @@
+module
+    export 
+        const filterDataToSingleItem
+            => 
+                param data
+                    :unknown 
+                    = 
+                        [ 
+                param preview = false
+                if !Array.isArray(data)
+                    return data
+                if data.length === 1
+                    return data[0]
+                if preview
+                    return 
+                        || 
+                            _ data.find
+                                => 
+                                    param item
+                                    _ item._id.startsWith
+                                        `lit 
+                                            + drafts.
+                            + data[0]
+                return data[0]

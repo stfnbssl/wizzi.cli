@@ -1,0 +1,25 @@
+module
+    import 
+        @ Link
+        @ useMatches
+        from "@remix-run/react"
+    :import-type 
+        @ User
+        from "~/data.server"
+    export-default 
+        function Index
+            const rootData
+                @expr useMatches()[0].data
+                    :as 
+                        :{ 
+                            :p user
+                                :ref User
+                # the root route will always be the first match
+            return 
+                div 
+                    h1 
+                        + Hi there,
+                        + {rootData.user.name}
+                    < Link 
+                        @ to "workshops"
+                        + /workshops

@@ -1,0 +1,305 @@
+module
+    :import-type 
+        @ DOMAttributes
+        from "react"
+    import invariant from "tiny-invariant"
+    :type CustomElement
+        :< T
+        :ref Partial
+            :param 
+                :intersect 
+                    :ref T
+                    :ref DOMAttributes
+                        :param 
+                            :ref T
+                    :{ 
+                        :p children
+                            :any 
+                        :p class
+                            :string 
+                        :p ref
+                            :optional 
+                            :any 
+    export 
+        class AmalgoBox
+            super HTMLElement
+            get input
+                return 
+                    _ this.querySelector("input")
+                        :as 
+                            :ref HTMLInputElement
+            get button
+                return 
+                    _ this.querySelector("button")
+                        :as 
+                            :ref HTMLButtonElement
+            get popover
+                return 
+                    _ this.querySelector("amalgo-popover")
+                        :as 
+                            :ref Popover
+            get allOptions
+                return 
+                    _ Array.from(this.querySelectorAll("amalgo-option"))
+                        :as 
+                            :[ 
+                                :ref Option
+            get visibleOptions
+                return 
+                    _ Array.from(this.querySelectorAll("amalgo-option:not([hidden])"))
+                        :as 
+                            :[ 
+                                :ref Option
+            get highlightedIndex
+                const activeElement
+                    _ this.querySelector("amalgo-option[highlight]")
+                        :as 
+                            :ref Option
+                return 
+                    iif activeElement
+                        then this.visibleOptions.indexOf(activeElement)
+                        else -1
+            m toggle
+                if this.hasAttribute("open")
+                    _ this.close()
+                else
+                    _ this.open()
+            m open
+                _ this.setAttribute("open", "")
+                _ this.button.setAttribute("aria-expanded", "true")
+                _ this.addEventListener("keydown", this.keydownEvent)
+                _ this.highlightInitial()
+                _ this.input.focus()
+                set document.body.style.overflow = "hidden"
+                _ document.addEventListener("mousedown", this.documentOuterEvent)
+                _ document.addEventListener("touchstart", this.documentOuterEvent)
+                _ document.addEventListener("focusin", this.documentOuterEvent)
+            m close
+                _ this.removeAttribute("open")
+                _ this.button.setAttribute("aria-expanded", "false")
+                _ this.clearHighlighted()
+                _ this.clearSearch()
+                _ this.removeEventListener("keydown", this.keydownEvent)
+                set document.body.style.overflow = ""
+                _ document.removeEventListener("mousedown", this.documentOuterEvent)
+                _ document.removeEventListener("touchstart", this.documentOuterEvent)
+                _ document.removeEventListener("focusin", this.documentOuterEvent)
+            m highlightInitial
+                const highlightValue = this.getAttribute("highlight")
+                const option
+                    @expr
+                        _ this.querySelector
+                            `lit 
+                                + amalgo-option[value="
+                                @ highlightValue
+                                + "]
+                        :as 
+                            :ref Option
+                if option
+                    _ this.highlightOption(option)
+            m filter
+                param query
+                    :string 
+                for 
+                    left
+                        const option
+                    of this.allOptions
+                    const text = option.textContent?.trim?.()?.toLowerCase?.() || ""
+                    const matches = text.includes(query.trim().toLowerCase())
+                    _ console.log
+                        { 
+                            @ matches
+                            @ text
+                            @ query
+                    if matches
+                        set option.hidden = false
+                    else
+                        set option.hidden = true
+            p keydownEvent
+                :private 
+                => 
+                    param event
+                        :ref KeyboardEvent
+                    switch event.key
+                        case "ArrowDown"
+                            _ this.cycleHighlight(1)
+                            _ event.preventDefault()
+                            break 
+                        case "ArrowUp"
+                            _ this.cycleHighlight(-1)
+                            _ event.preventDefault()
+                            break 
+                        case "Enter"
+                            _ this.selectHighlighted()
+                            break 
+                        case "Escape"
+                            _ this.close()
+                            _ this.button.focus()
+                            break 
+            m cycleHighlight
+                :private 
+                param which
+                    :number 
+                const nextOption = this.visibleOptions[this.highlightedIndex + which]
+                if nextOption
+                    _ this.highlightOption(nextOption)
+            m highlightOption
+                param option
+                    :ref Option
+                _ this.clearHighlighted()
+                _ option.setAttribute("highlight", "")
+                _ this.input.setAttribute("aria-activedescendant", option.id)
+            m selectHighlighted
+                :private 
+                const option = this.visibleOptions[this.highlightedIndex]
+                if option
+                    _ this.select(option)
+            p documentOuterEvent
+                :private 
+                => 
+                    param event
+                        :ref Event
+                    const interactedInside = event.target instanceof Node && this.contains(event.target)
+                    if !interactedInside
+                        _ this.close()
+            m clearHighlighted
+                _ this.querySelector("amalgo-option[highlight]")?.removeAttribute?.("highlight")
+            m clearSearch
+                set this.input.value = ""
+                const items = this.querySelectorAll("amalgo-option[hidden]")
+                for 
+                    left
+                        const item
+                    of items
+                    _ item.removeAttribute("hidden")
+            m select
+                param option
+                    :ref Option
+                _ this.dispatchEvent
+                    new CustomEvent
+                        @ "onOptionSelect"
+                        { 
+                            @ detail option.getAttribute("value")
+                _ this.close()
+                    # let focus rest, otherwise "keyup" will be fired on the button when
+                    # selecting with keyboard "Enter" and the button will be "clicked" again,
+                    # opening the menu
+                _ requestAnimationFrame
+                    => 
+                        _ this.button.focus()
+                    # let focus rest, otherwise "keyup" will be fired on the button when
+                    # selecting with keyboard "Enter" and the button will be "clicked" again,
+                    # opening the menu
+    class AmalgoElement
+        super HTMLElement
+        get root
+            const root = this.closest("amalgo-box")
+            _ invariant(root instanceof AmalgoBox)
+            return root
+    class Button
+        super AmalgoElement
+        get button
+            const button = this.querySelector("button")
+            _ invariant(button instanceof HTMLButtonElement)
+            return button
+        m connectedCallback
+            _ this.button.setAttribute("aria-haspopup", "menu")
+            _ this.button.addEventListener
+                @ "click"
+                => 
+                    _ this.root.toggle()
+    class Input
+        super AmalgoElement
+        get input
+            return 
+                _ this.querySelector("input")
+                    :as 
+                        :ref HTMLInputElement
+        m connectedCallback
+            _ this.input.setAttribute("role", "combobox")
+            _ this.input.setAttribute("aria-autocomplete", "list")
+            _ this.input.setAttribute("aria-expanded", "true")
+            _ this.input.addEventListener
+                @ "input"
+                => 
+                    _ this.root.filter(this.input.value)
+    class Popover
+        super AmalgoElement
+        m connectedCallback
+            set this.id = "popover-" + Math.random().toString(36).slice(2)
+            _ this.root.button.setAttribute("aria-controls", this.id)
+    class Menu
+        super AmalgoElement
+        m connectedCallback
+            set this.id = "menu-" + Math.random().toString(36).slice(2)
+            _ this.setAttribute("role", "listbox")
+            _ this.root.input.setAttribute("aria-controls", this.id)
+    class Option
+        super AmalgoElement
+        m connectedCallback
+            set this.id = "option-" + Math.random().toString(36).slice(2)
+            _ this.setAttribute("role", "option")
+            _ this.addEventListener
+                @ "mouseenter"
+                => 
+                    _ this.root.highlightOption(this)
+            _ this.addEventListener
+                @ "click"
+                => 
+                    _ this.root.select(this)
+        # //////////////////////////////////////////////////////////////////////////////
+    :declare 
+        :module global
+            :module JSX
+                :interface IntrinsicElements
+                    :p ["amalgo-box"]
+                        :ref CustomElement
+                            :param 
+                                :intersect 
+                                    :ref AmalgoBox
+                                    :{ 
+                                        :p highlight
+                                            :optional 
+                                            :string 
+                    :p ["amalgo-button"]
+                        :ref CustomElement
+                            :param 
+                                :ref Button
+                    :p ["amalgo-input"]
+                        :ref CustomElement
+                            :param 
+                                :ref Input
+                    :p ["amalgo-popover"]
+                        :ref CustomElement
+                            :param 
+                                :ref Popover
+                    :p ["amalgo-menu"]
+                        :ref CustomElement
+                            :param 
+                                :ref Menu
+                    :p ["amalgo-option"]
+                        :ref CustomElement
+                            :param 
+                                :intersect 
+                                    :ref Option
+                                    :{ 
+                                        :p highlight
+                                            :optional 
+                                            :string 
+                                        :p value
+                                            :optional 
+                                            :string 
+        # //////////////////////////////////////////////////////////////////////////////
+    let registered = false
+    export 
+        function registerCustomElements
+            _ console.log("registering")
+            if registered
+                return 
+            set registered = true
+            _ window.customElements.define("amalgo-box", AmalgoBox)
+            _ window.customElements.define("amalgo-button", Button)
+            _ window.customElements.define("amalgo-input", Input)
+            _ window.customElements.define("amalgo-popover", Popover)
+            _ window.customElements.define("amalgo-menu", Menu)
+            _ window.customElements.define("amalgo-option", Option)

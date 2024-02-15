@@ -1,0 +1,20 @@
+module
+    kind react
+    set module.exports =
+        { 
+            { future
+                @ v2_routeConvention true
+            [ ignoredRouteFiles
+                @ "**/.*"
+                # appDirectory: "app",
+                # assetsBuildDirectory: "public/build",
+                # publicPath: "/build/",
+                # serverBuildPath: "build/index.js",
+        #
+            # * @type {import('@remix-run/dev').AppConfig}
+    set module.exports =
+        { 
+            @ browserBuildDirectory "public/build"
+                # appDirectory: "app",
+            @ publicPath "/build/"
+            @ serverBuildDirectory "server/build"

@@ -1,0 +1,38 @@
+module
+    import 
+        @ RemixBrowser
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ hydrate
+        from "react-dom"
+    import ClientStyleContext from "~/styles/client.context"
+    import 
+        @ getCssText
+        from "~/styles/stitches.config"
+    :interface ClientCacheProviderProps
+        :p children
+            :ref React.ReactNode
+    function ClientCacheProvider
+        { 
+            @ children
+            :ref ClientCacheProviderProps
+        const [sheet, setSheet] = React.useState(getCssText())
+        const reset
+            _ React.useCallback
+                => 
+                    _ setSheet(getCssText())
+                [ 
+        return 
+            < ClientStyleContext.Provider 
+                @ value
+                    { 
+                        @ reset
+                        @ sheet
+                + {children}
+    _ hydrate
+        < ClientCacheProvider 
+            < RemixBrowser 
+        @ document

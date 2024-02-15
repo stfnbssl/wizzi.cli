@@ -1,0 +1,19 @@
+module
+    import 
+        @ Link
+        from "@remix-run/react"
+    export-default 
+        function Index
+            return 
+                < React.Fragment
+                    h1 
+                        + Index page
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/private"
+                                + Go to private page
+                        li 
+                            < Link 
+                                @ to "/login"
+                                + Go to login page

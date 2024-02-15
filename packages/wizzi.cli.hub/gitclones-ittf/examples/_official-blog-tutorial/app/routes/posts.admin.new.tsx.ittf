@@ -1,0 +1,134 @@
+module
+    :import-type 
+        @ ActionArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ useActionData
+        @ useNavigation
+        from "@remix-run/react"
+    import invariant from "tiny-invariant"
+    import 
+        @ createPost
+        from "~/models/post.server"
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const formData
+                    await 
+                        _ request.formData()
+                const title = formData.get("title")
+                const slug = formData.get("slug")
+                const markdown = formData.get("markdown")
+                const errors
+                    { 
+                        @ title
+                            iif title
+                                then null
+                                else "Title is required"
+                        @ slug
+                            iif slug
+                                then null
+                                else "Slug is required"
+                        @ markdown
+                            iif markdown
+                                then null
+                                else "Markdown is required"
+                const hasErrors
+                    _ Object.values(errors).some
+                        => 
+                            param errorMessage
+                            + errorMessage
+                if hasErrors
+                    return json(errors)
+                _ invariant(typeof title === "string", "title must be a string")
+                _ invariant(typeof slug === "string", "slug must be a string")
+                _ invariant(typeof markdown === "string", "markdown must be a string")
+                await 
+                    _ createPost
+                        { 
+                            @ title
+                            @ slug
+                            @ markdown
+                return redirect("/posts/admin")
+    const inputClassName = "w-full rounded border border-gray-500 px-2 py-1 text-lg"
+    export-default 
+        function NewPost
+            const errors
+                _ useActionData
+                    :param 
+                        :typeof action
+            const navigation = useNavigation()
+            const isCreating = Boolean(navigation.state === "submitting")
+            return 
+                < Form 
+                    @ method "post"
+                    p 
+                        label 
+                            + Post Title:
+                            + {" "}
+                            { 
+                                iif errors?.title
+                                    then
+                                        em 
+                                            @ className "text-red-600"
+                                            + {errors.title}
+                                    else null
+                            input 
+                                @ type "text"
+                                @ name "title"
+                                @ className {inputClassName}
+                    p 
+                        label 
+                            + Post Slug:
+                            + {" "}
+                            { 
+                                iif errors?.slug
+                                    then
+                                        em 
+                                            @ className "text-red-600"
+                                            + {errors.slug}
+                                    else null
+                            input 
+                                @ type "text"
+                                @ name "slug"
+                                @ className {inputClassName}
+                    p 
+                        label 
+                            @ htmlFor "markdown"
+                            + Markdown:
+                            + {" "}
+                            { 
+                                iif errors?.markdown
+                                    then
+                                        em 
+                                            @ className "text-red-600"
+                                            + {errors.markdown}
+                                    else null
+                        br 
+                        textarea 
+                            @ id "markdown"
+                            @ rows {20}
+                            @ name "markdown"
+                            @ className
+                                `lit 
+                                    + 
+                                    @ inputClassName
+                                    + &nbsp;font-mono
+                    p 
+                        @ className "text-right"
+                        button 
+                            @ type "submit"
+                            @ className "rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:bg-blue-300"
+                            @ disabled {isCreating}
+                            { 
+                                iif isCreating
+                                    then "Creating..."
+                                    else "Create Post"

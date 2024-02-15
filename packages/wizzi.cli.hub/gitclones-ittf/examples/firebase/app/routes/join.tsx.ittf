@@ -1,0 +1,152 @@
+module
+    :import-type 
+        @ ActionArgs
+        @ LoaderArgs
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Link
+        @ useActionData
+        from "@remix-run/react"
+    import 
+        @ checkSessionCookie
+        @ signUp
+        from "~/server/auth.server"
+    import 
+        @ commitSession
+        @ getSession
+        from "~/sessions"
+    export 
+        const loader
+            async=> 
+                { 
+                    @ request
+                    :ref LoaderArgs
+                const session
+                    await 
+                        _ getSession(request.headers.get("cookie"))
+                const 
+                    { 
+                        @ uid
+                    =
+                        await 
+                            _ checkSessionCookie(session)
+                const headers
+                    { 
+                        @ "Set-Cookie"
+                            await 
+                                _ commitSession(session)
+                if uid
+                    return 
+                        _ redirect
+                            @ "/"
+                            { 
+                                @ headers
+                return 
+                    _ json
+                        @ null
+                        { 
+                            @ headers
+    export 
+        const action
+            async=> 
+                { 
+                    @ request
+                    :ref ActionArgs
+                const form
+                    await 
+                        _ request.formData()
+                const name = form.get("name")
+                const email = form.get("email")
+                const password = form.get("password")
+                const formError
+                    _ json
+                        { 
+                            @ error "Please fill all fields!"
+                        { 
+                            @ status 400
+                if typeof name !== "string"
+                    return formError
+                if typeof email !== "string"
+                    return formError
+                if typeof password !== "string"
+                    return formError
+                try 
+                    const sessionCookie
+                        await 
+                            _ signUp(name, email, password)
+                    const session
+                        await 
+                            _ getSession(request.headers.get("cookie"))
+                    _ session.set("session", sessionCookie)
+                    return 
+                        _ redirect
+                            @ "/"
+                            { 
+                                { headers
+                                    @ "Set-Cookie"
+                                        await 
+                                            _ commitSession(session)
+                catch error
+                    _ console.error(error)
+                    return 
+                        _ json
+                            { 
+                                @ error String(error)
+                            { 
+                                @ status 401
+    export-default 
+        function Login
+            const actionData
+                _ useActionData
+                    :param 
+                        :typeof action
+            return 
+                div 
+                    h1 
+                        + Join
+                    { 
+                        iif actionData?.error
+                            then
+                                p 
+                                    + {actionData.error}
+                            else null
+                    < Form 
+                        @ method "post"
+                        input 
+                            @ style
+                                { 
+                                    @ display "block"
+                            @ name "name"
+                            @ placeholder "Peter"
+                            @ type "text"
+                        input 
+                            @ style
+                                { 
+                                    @ display "block"
+                            @ name "email"
+                            @ placeholder "you@example.com"
+                            @ type "email"
+                        input 
+                            @ style
+                                { 
+                                    @ display "block"
+                            @ name "password"
+                            @ placeholder "password"
+                            @ type "password"
+                        button 
+                            @ style
+                                { 
+                                    @ display "block"
+                            @ type "submit"
+                            + Join
+                    p 
+                        + Do you want to
+                        < Link 
+                            @ to "/login"
+                            + login
+                        + ?

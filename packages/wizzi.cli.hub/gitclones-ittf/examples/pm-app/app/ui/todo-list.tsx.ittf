@@ -1,0 +1,118 @@
+module
+    import 
+        @ useFetcher
+        @ useFetchers
+        from "@remix-run/react"
+    import cx from "clsx"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ Todo
+        from "~/models"
+    import 
+        @ Token
+        from "~/ui/token"
+    export 
+        function TodoList
+            { 
+                @ className
+                @ children
+                :ref React.PropsWithChildren
+                    :param 
+                        :{ 
+                            :p className
+                                :optional 
+                                :string 
+            return 
+                ul 
+                    @ className {cx(className, "ui--todo-list")}
+                    + {children}
+    export 
+        function TodoItem
+            { 
+                @ todo
+                @ className
+                :{ 
+                    :p todo
+                        :ref Todo
+                    :p className
+                        :optional 
+                        :string 
+            const fetcher = useFetcher()
+            const deleteFetcher = useFetcher()
+            const deleteFormRef
+                _ React.useRef
+                    :param 
+                        :union 
+                            :ref HTMLFormElement
+                            :null 
+                    @ null
+            const isCompleted
+                iif fetcher.submission
+                    then Boolean(fetcher.submission.formData.get("complete"))
+                    else todo.completed
+            const fetchers = useFetchers()
+            let isCreating = false
+            for 
+                left
+                    const fetcher
+                of fetchers
+                if fetcher.type === "actionSubmission"
+                    if fetcher.submission.action.startsWith("/dashboard/todos/new")
+                        set isCreating = true
+            return 
+                li 
+                    @ className
+                        _ cx
+                            @ className
+                            @ "ui--todo-list__item flex gap-2"
+                            { 
+                                @ "ui--todo-list__item--completed" isCompleted
+                    < fetcher.Form 
+                        @ method "post"
+                        @ action
+                            `lit 
+                                + /dashboard/todos/
+                                @ todo.id
+                                + /edit
+                        label 
+                            input 
+                                @ className "ui--todo-list__checkbox"
+                                @ name "id"
+                                @ type "checkbox"
+                                @ checked {isCompleted}
+                                @ onChange
+                                    => 
+                                        param e
+                                        _ fetcher.submit(e.target.form)
+                                @ disabled {isCreating || undefined}
+                            span 
+                                + {todo.name}
+                    < deleteFetcher.Form 
+                        @ ref {deleteFormRef}
+                        @ method "post"
+                        @ action
+                            `lit 
+                                + /dashboard/todos/
+                                @ todo.id
+                                + /delete
+                        input 
+                            @ type "hidden"
+                            @ name "listId"
+                            @ value {todo.todoListId}
+                        input 
+                            @ type "hidden"
+                            @ name "todoId"
+                            @ value {todo.id}
+                        button 
+                            @ aria-label
+                                `lit 
+                                    + Delete todo:&nbsp;
+                                    @ todo.name
+                                    + 
+                            input 
+                                @ type "hidden"
+                                @ value "none"
+                            < Token 
+                                + Delete

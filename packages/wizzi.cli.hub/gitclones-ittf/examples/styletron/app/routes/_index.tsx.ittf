@@ -1,0 +1,20 @@
+module
+    import 
+        @ styled
+        from "styletron-react"
+    const Box
+        _ styled
+            @ "div"
+            => 
+                (
+                    { 
+                        @ fontFamily "system-ui, sans-serif"
+                        @ lineHeight 1.8
+    export-default 
+        function Index
+            return 
+                < Box 
+                    h1 
+                        + Welcome to Remix + Styletron
+                    p 
+                        + These styles were extracted during server-side rendering!

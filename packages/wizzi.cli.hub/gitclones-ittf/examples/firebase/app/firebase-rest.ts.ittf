@@ -1,0 +1,122 @@
+module
+    :interface RestError
+        :p error
+            :{ 
+                :p code
+                    :number 
+                :p message
+                    :string 
+                :p errors
+                    :[ 
+                        :any 
+    export 
+        const isError
+            => 
+                param input
+                    :unknown 
+                :return
+                    :predicate input
+                        :ref RestError
+                @expr !!input && typeof input === "object" && "error" in input
+        # https://firebase.google.com/docs/reference/rest/auth#section-sign-in-email-password
+    :interface SignInWithPasswordResponse
+        :extends Response
+        :m json
+            :ref Promise
+                :param 
+                    :union 
+                        :ref RestError
+                        :{ 
+                            :p idToken
+                                :string 
+                                #
+                                    # *
+                                    # * A Firebase Auth ID token for the authenticated user.
+                                    # 
+                                #
+                                    # *
+                                    # * The email for the authenticated user.
+                                    # 
+                            :p email
+                                :string 
+                                #
+                                    # *
+                                    # * The email for the authenticated user.
+                                    # 
+                                #
+                                    # *
+                                    # * A Firebase Auth refresh token for the authenticated user.
+                                    # 
+                            :p refreshToken
+                                :string 
+                                #
+                                    # *
+                                    # * A Firebase Auth refresh token for the authenticated user.
+                                    # 
+                                #
+                                    # *
+                                    # * The number of seconds in which the ID token expires.
+                                    # 
+                            :p expiresIn
+                                :string 
+                                #
+                                    # *
+                                    # * The number of seconds in which the ID token expires.
+                                    # 
+                                #
+                                    # *
+                                    # * The uid of the authenticated user.
+                                    # 
+                            :p localId
+                                :string 
+                                #
+                                    # *
+                                    # * The uid of the authenticated user.
+                                    # 
+                                #
+                                    # *
+                                    # * Whether the email is for an existing account.
+                                    # 
+                            :p registered
+                                :boolean 
+                                #
+                                    # *
+                                    # * Whether the email is for an existing account.
+                                    # 
+        # https://firebase.google.com/docs/reference/rest/auth#section-sign-in-email-password
+    export 
+        const signInWithPassword
+            async=> 
+                param body
+                    :{ 
+                        :p email
+                            :string 
+                        :p password
+                            :string 
+                        :p returnSecureToken
+                            :literal true
+                param restConfig
+                    :{ 
+                        :p apiKey
+                            :string 
+                        :p domain
+                            :string 
+                const response
+                    :ref SignInWithPasswordResponse
+                    =
+                        await 
+                            _ fetch
+                                `lit 
+                                    + 
+                                    :! restConfig
+                                        . domain
+                                    + /v1/accounts:signInWithPassword?key=
+                                    :! restConfig
+                                        . apiKey
+                                    + 
+                                { 
+                                    @ method "POST"
+                                    { headers
+                                        @ "Content-Type" "application/json"
+                                    @ body JSON.stringify(body)
+                return response.json()

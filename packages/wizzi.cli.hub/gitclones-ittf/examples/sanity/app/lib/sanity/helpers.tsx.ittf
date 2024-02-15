@@ -1,0 +1,45 @@
+module
+    import 
+        @ PortableText
+            as PortableTextBase
+        from "@portabletext/react"
+    import imageUrlBuilder from "@sanity/image-url"
+    :import-type 
+        @ SanityImageSource
+        from "@sanity/image-url/lib/types/types"
+    :import-type 
+        @ ComponentProps
+        @ FunctionComponent
+        from "react"
+    import 
+        @ config
+        from "./config"
+    export 
+        const urlFor
+            => 
+                param source
+                    :ref SanityImageSource
+                _ imageUrlBuilder(config).image(source)
+    :type PortableTextBaseProps
+        :ref ComponentProps
+            :param 
+                :typeof PortableTextBase
+    :type PortableTextProps
+        :ref Pick
+            :param 
+                :ref PortableTextBaseProps
+            :param 
+                :literal "value"
+    export 
+        const PortableText
+            :ref FunctionComponent
+                :param 
+                    :ref PortableTextProps
+            =
+                => 
+                    { 
+                        @ value
+                            = []
+                    < PortableTextBase 
+                        @ {...config}
+                        @ value {value}

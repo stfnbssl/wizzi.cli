@@ -1,52 +1,24 @@
 {
     $include v08/env/vars
     
-    name "js.express"
+    name "meta1"
     version "0.0.1"
-    description "Javascript express app"
+    description "meta1"
     { author
         name "Stefano Bassoli"
         email "stfn.bssl@gmail.com"
     
     { App
-        name "js.express"
-        title ""
-        isLocal false
-        isProduction false
-        port ""
-        useSsl false
-        siteUrl ""
-        baseUrl ""
-        siteUrlLocal ""
-        baseUrlLocal ""
-        apiVersion ""
-        { constants
-            { preview
-                minWidth 700
-        [ Components
+        name "ReactJsWebpackApp"
+        title "React js webpack App"
     
     { Styles
     
     { Build
         [ features
-        [ examples
         $include code.json
-        
-        $include jsExpress.json
-        
-        $include jsExpressFeatureConfig.json
-        
-        $include jsExpressStyles.json
-        
-        $include jsExpressUtils.json
-        
-        $include jsdbmongodb.json
-        
+        $include webpack.json
+        $include react.json
+        $include commonsBabel.json
         { utils
-            useAxios true
-            useStringifySafe true
-            useParseUrl true
-            useQueryString true
-            useNanoId true
-            useNodeCache true
-            useDiffMatchPatch true
+            useLeaflet true

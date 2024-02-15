@@ -1,0 +1,679 @@
+module
+    :import-type 
+        @ LinksFunction
+        @ LoaderArgs
+        @ MetaFunction
+        from "@remix-run/node"
+    import 
+        @ json
+        @ redirect
+        from "@remix-run/node"
+    import 
+        @ Form
+        @ Outlet
+        @ useFetcher
+        @ useLoaderData
+        @ useTransition
+        from "@remix-run/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ getProject
+        @ getUsers
+        from "~/db.server"
+    import stylesUrl from "~/dist/styles/routes/dashboard/projects/$projectId/index.css"
+    :import-type 
+        @ UserSecure
+        from "~/models"
+    import 
+        @ requireUser
+        from "~/session.server"
+    import 
+        @ Avatar
+        from "~/ui/avatar"
+    import 
+        @ Button
+        from "~/ui/button"
+    import 
+        @ Dialog
+        @ DialogCloseButton
+        from "~/ui/dialog"
+    import 
+        @ DropdownMenu
+        @ DropdownMenuOptionsButton
+        @ DropdownMenuList
+        @ DropdownMenuItem
+        @ DropdownMenuPopover
+        from "~/ui/dropdown-menu"
+    import 
+        @ Field
+        @ FieldError
+        @ FieldProvider
+        @ Label
+        @ Textarea
+        from "~/ui/form"
+    import 
+        @ IconAdd
+        from "~/ui/icons"
+    import 
+        @ Link
+        from "~/ui/link"
+    import 
+        @ MaxContainer
+        from "~/ui/max-container"
+    import 
+        @ MemberSearch
+        @ MemberSearchCombobox
+        @ MemberSearchHiddenField
+        @ MemberSearchSelections
+        from "~/ui/member-search"
+    import 
+        @ Note
+        from "~/ui/note"
+    import 
+        @ Heading
+        @ Section
+        from "~/ui/section-heading"
+    import 
+        @ ShadowBox
+        from "~/ui/shadow-box"
+    export 
+        const links
+            :ref LinksFunction
+            =
+                => 
+                    [ 
+                        { 
+                            @ rel "stylesheet"
+                            @ href stylesUrl
+    export 
+        const meta
+            :ref MetaFunction
+            =
+                => 
+                    { 
+                        @ data
+                    return 
+                        { 
+                            @ title
+                                `lit 
+                                    + 
+                                    iif data.project
+                                        then data.project.name?.trim?.()
+                                        else "Project Overview"
+                                    + &nbsp;| PM Camp
+    export 
+        const loader
+            async=> 
+                { 
+                    @ params
+                    @ request
+                    :ref LoaderArgs
+                const 
+                    { 
+                        @ passwordHash
+                        ... user
+                    =
+                        await 
+                            _ requireUser
+                                @ request
+                                { 
+                                    @ redirect "/sign-in"
+                const projectId
+                    @expr params.projectId
+                        :as 
+                            :string 
+                const [project, allUsers]
+                    await 
+                        _ Promise.all
+                            [ 
+                                @ getProject(projectId)
+                                @ getUsers()
+                if !project
+                    throw redirect("/dashboard")
+                return 
+                    _ json
+                        { 
+                            @ project
+                            @ user
+                            @ allUsers
+    export-default 
+        function ProjectRoute
+            const 
+                { 
+                    @ project
+                    @ allUsers
+                    @ user
+                =
+                    _ useLoaderData
+                        :param 
+                            :typeof loader
+            const actionData
+                :ref ActionData
+                =
+                    { 
+            const 
+                { 
+                    @ fieldErrors
+                =
+                    || 
+                        + actionData
+                        { 
+            const [showTeamDialog, setShowTeamDialog] = React.useState(false)
+            const [showEditDialog, setShowEditDialog] = React.useState(false)
+                # TODO: Move to loader
+            const selectableUsers
+                _ React.useMemo
+                    => 
+                        return 
+                            _ allUsers.filter
+                                => 
+                                    param u
+                                    set u.id !== user.id
+                    [ 
+                        @ allUsers
+                        @ user.id
+                # TODO: Move to loader
+                # Ok, so there's a bit of data setup/manipulation here that is probably a bit
+                # confusing. There are two forms on this route that write data via the form
+                # action but they are intended to show two different ways to handle UI in
+                # Remix. In one example (the Edit form), the data doesn't change until after
+                # the user submits the form, and the UI waits for the form submission to
+                # complete before the form's modal is dismissed and the view is updated. This
+                # is how a lot of folks deal with these kinds of mutations without Remix, and
+                # this shows how you could still do that here if you wanted to in some cases!
+                # 
+                # In the other form (the Members update form) we use another approach to
+                # update the UI instantly (optimistically). This is handled by updating local
+                # state in our component to reflect what the user sees in real time while the
+                # submission is triggered by the changing state. Once the submission is
+                # complete, we switch back to the real values from the server in our UI.
+                # Remix handles race conditions under the hood so we don't have to worry
+                # about janky UI. If the submission fails for some reason, we render our
+                # error boundary instead.
+                # 
+                # See https://remix.run/guides/optimistic-ui
+                # TODO: Consider sending to a separate route
+                # TODO: Try catching potential error and sending data back via the fetcher
+            const membersFetcher = useFetcher()
+                # Ok, so there's a bit of data setup/manipulation here that is probably a bit
+                # confusing. There are two forms on this route that write data via the form
+                # action but they are intended to show two different ways to handle UI in
+                # Remix. In one example (the Edit form), the data doesn't change until after
+                # the user submits the form, and the UI waits for the form submission to
+                # complete before the form's modal is dismissed and the view is updated. This
+                # is how a lot of folks deal with these kinds of mutations without Remix, and
+                # this shows how you could still do that here if you wanted to in some cases!
+                # 
+                # In the other form (the Members update form) we use another approach to
+                # update the UI instantly (optimistically). This is handled by updating local
+                # state in our component to reflect what the user sees in real time while the
+                # submission is triggered by the changing state. Once the submission is
+                # complete, we switch back to the real values from the server in our UI.
+                # Remix handles race conditions under the hood so we don't have to worry
+                # about janky UI. If the submission fails for some reason, we render our
+                # error boundary instead.
+                # 
+                # See https://remix.run/guides/optimistic-ui
+                # TODO: Consider sending to a separate route
+                # TODO: Try catching potential error and sending data back via the fetcher
+            const membersFormRef
+                _ React.useRef
+                    :param 
+                        :ref HTMLFormElement
+                    @ null
+            const [optimisticMembers, setOptimisticSelectedMembers] = React.useState(project.members)
+                # Submit the membersFetcher form any time the optimistic member state
+                # is updated.
+            const initialRender = React.useRef(true)
+                # Submit the membersFetcher form any time the optimistic member state
+                # is updated.
+            _ React.useEffect
+                => 
+                    if initialRender.current
+                        set initialRender.current = false
+                        return 
+                    _ membersFetcher.submit(membersFormRef.current)
+                [ 
+                    @ membersFetcher
+                    @ optimisticMembers
+            const deleteFetcher = useFetcher()
+            const deleteFormRef
+                _ React.useRef
+                    :param 
+                        :ref HTMLFormElement
+                    @ null
+                # Edit form stuff
+                # TODO: Get correct state from action
+            const transition = useTransition()
+                # Edit form stuff
+                # TODO: Get correct state from action
+            _ React.useEffect
+                => 
+                    if transition.state === "idle"
+                        _ setShowEditDialog(false)
+                [ 
+                    @ transition.state
+                # In our member selection combobox we exclude the current user so they can't
+                # accidentally remove themselves on the project. We handle this on the server
+                # as well, but no use in showing something in the UI if it won't work!
+                # TODO: Stick this into the loader!
+            const projectMembers = project.members
+                # In our member selection combobox we exclude the current user so they can't
+                # accidentally remove themselves on the project. We handle this on the server
+                # as well, but no use in showing something in the UI if it won't work!
+                # TODO: Stick this into the loader!
+            const [membersExcludingSelf, memberIds]
+                _ React.useMemo
+                    => 
+                        const excludingSelf
+                            :typeof projectMembers
+                            = []
+                        const userIds
+                            :ref Array
+                                :param 
+                                    :[] 
+                                        :ref UserSecure
+                                        :literal "id"
+                            = []
+                        for 
+                            left
+                                const member
+                            of projectMembers
+                            _ userIds.push(member.id)
+                            if member.id !== user.id
+                                _ excludingSelf.push(member)
+                        return 
+                            @expr
+                                [ 
+                                    @ excludingSelf
+                                    @ userIds
+                                :as 
+                                    :ref const
+                    [ 
+                        @ projectMembers
+                        @ user.id
+            const [optimisticMembersExcludingSelf, optimisticMemberIds]
+                _ React.useMemo
+                    => 
+                        const excludingSelf
+                            :typeof optimisticMembers
+                            = []
+                        const userIds
+                            :ref Array
+                                :param 
+                                    :[] 
+                                        :ref UserSecure
+                                        :literal "id"
+                            = []
+                        for 
+                            left
+                                const member
+                            of optimisticMembers
+                            _ userIds.push(member.id)
+                            if member.id !== user.id
+                                _ excludingSelf.push(member)
+                        return 
+                            @expr
+                                [ 
+                                    @ excludingSelf
+                                    @ userIds
+                                :as 
+                                    :ref const
+                    [ 
+                        @ optimisticMembers
+                        @ user.id
+            return 
+                < Layout 
+                    @ heading {project.name}
+                    @ description {project.description}
+                    @ memberList
+                        < React.Fragment
+                            _ 
+                                ( 
+                                    iif membersFetcher.submission
+                                        then optimisticMembers
+                                        else project.members
+                                ._ map
+                                    => 
+                                        param member
+                                        param i
+                                        return 
+                                            < Avatar 
+                                                @ size "xl"
+                                                @ key {member.id}
+                                                @ className "project-index__member"
+                                                @ {...member}
+                                                    # @ts-ignore
+                                                @ style
+                                                    { 
+                                                        @ "--n" i
+                                                    # @ts-ignore
+                            button 
+                                @ type "button"
+                                @ className "project-index__member-add"
+                                @ onClick
+                                    => 
+                                        _ setShowTeamDialog(true)
+                                @ aria-label "Update Team Members"
+                                @ title "Update Team Members"
+                                < IconAdd 
+                                    @ aria-hidden
+                    @ optionsPanel
+                        < DropdownMenu 
+                            @ id "project-options-menu"
+                            < DropdownMenuOptionsButton 
+                                @ aria-label "Project Options"
+                                @ size {8}
+                            < DropdownMenuPopover 
+                                < DropdownMenuList 
+                                    < DropdownMenuItem 
+                                        @ className "project-index__options-menu-item"
+                                        @ onSelect
+                                            => 
+                                                _ setShowEditDialog(true)
+                                        + Edit project details
+                                    < DropdownMenuItem 
+                                        @ variant "danger"
+                                        @ className "project-index__options-menu-item project-index__options-menu-item--delete"
+                                        @ onSelect
+                                            => 
+                                                const confirmed = window.confirm("Are you sure? This will also delete all todo lists associated with this project.")
+                                                if confirmed
+                                                    _ deleteFetcher.submit(deleteFormRef.current)
+                                        + Delete project
+                    @ main
+                        div 
+                            @ className "project-index__flexer"
+                            div 
+                                < Heading 
+                                    @ className "project-index__section-heading"
+                                    + Todo Lists
+                                < Section 
+                                    @ as "div"
+                                    @ className "project-index__todolists"
+                                    iif project.todoLists.length > 0
+                                        then
+                                            < React.Fragment 
+                                                _ project.todoLists.map
+                                                    => 
+                                                        param list
+                                                        return 
+                                                            article 
+                                                                @ key {list.id}
+                                                                @ className "project-index__todolist"
+                                                                < Link 
+                                                                    @ to
+                                                                        `lit 
+                                                                            + list/
+                                                                            @ list.id
+                                                                            + 
+                                                                    @ aria-label
+                                                                        `lit 
+                                                                            + Todo List:&nbsp;
+                                                                            @ list.name
+                                                                            + 
+                                                                    @ className "project-index__todolist-link"
+                                                                    < ShadowBox 
+                                                                        @ className "project-index__todolist-box"
+                                                                        span 
+                                                                            @ className "project-index__todolist-name"
+                                                                            + {list.name}
+                                                div 
+                                                    < Link 
+                                                        @ to
+                                                            `lit 
+                                                                + ../todo-lists/new?project=
+                                                                @ project.id
+                                                                + 
+                                                        @ className "project-index__list-block-link project-index__create-link"
+                                                        span 
+                                                            + Create a new list
+                                        else
+                                            div 
+                                                p 
+                                                    + No todo lists for this project yet.
+                                                    + {" "}
+                                                    < Link 
+                                                        @ to
+                                                            `lit 
+                                                                + ../todo-lists/new?project=
+                                                                @ project.id
+                                                                + 
+                                                        + Create a new list.
+                            < Outlet 
+                    < Dialog 
+                        @ aria-label "Team Member Selection"
+                        @ isOpen {showTeamDialog}
+                        @ onDismiss
+                            => 
+                                _ setShowTeamDialog(false)
+                        @ allowPinchZoom
+                        < DialogCloseButton 
+                        div 
+                            @ className "project-index__member-form-wrapper"
+                            < membersFetcher.Form 
+                                @ ref {membersFormRef}
+                                @ method "post"
+                                < FieldProvider 
+                                    @ name "members-combobox"
+                                    @ id "edit-project-members"
+                                    @ error {fieldErrors?.members}
+                                    < Label 
+                                        + Members
+                                    < MemberSearch 
+                                        @ users {selectableUsers}
+                                        @ selection
+                                            iif membersFetcher.submission
+                                                then optimisticMembersExcludingSelf
+                                                else membersExcludingSelf
+                                        @ onSelectionChange {setOptimisticSelectedMembers}
+                                        < MemberSearchCombobox 
+                                        input 
+                                            @ type "hidden"
+                                            @ name "members"
+                                            @ value {JSON.stringify(optimisticMemberIds)}
+                                        input 
+                                            @ type "hidden"
+                                            @ name "currentMembers"
+                                            @ value {JSON.stringify(memberIds)}
+                                        div 
+                                            @ className "member-selection-wrapper flex flex-wrap gap-2"
+                                            < MemberSearchSelections 
+                                    < FieldError 
+                            < Note 
+                                p 
+                                    + Updating members in this dialog will send a request to the server&lf;              on each change to the autocomplete field. Notice optimistic&lf;              updates in the background UI as you make changes!
+                    < Dialog 
+                        @ aria-label "Edit Project"
+                        @ isOpen {showEditDialog}
+                        @ onDismiss
+                            => 
+                                _ setShowEditDialog(false)
+                        @ allowPinchZoom
+                        < DialogCloseButton 
+                        div 
+                            @ className "project-index__edit-form-wrapper"
+                            < Form 
+                                @ method "post"
+                                div 
+                                    @ className "project-index__edit-form-inner"
+                                    < FieldProvider 
+                                        @ name "name"
+                                        @ id "edit-project-name"
+                                        @ error {fieldErrors?.name}
+                                        < Label 
+                                            + Name
+                                        < Field 
+                                            @ type "text"
+                                            @ defaultValue
+                                                iif actionData && actionData.fields
+                                                    then actionData.fields.name
+                                                    else project.name
+                                        < FieldError 
+                                    < FieldProvider 
+                                        @ name "description"
+                                        @ id "edit-project-description"
+                                        @ error {fieldErrors?.description}
+                                        @ required
+                                        < Label 
+                                            + Description
+                                        < Textarea 
+                                            @ defaultValue
+                                                iif actionData && actionData.fields
+                                                    then actionData.fields.description
+                                                    else project.description || ""
+                                            @ placeholder "Add a description"
+                                        < FieldError 
+                                    < FieldProvider 
+                                        @ name "members-combobox"
+                                        @ id "edit-project-members"
+                                        @ error {fieldErrors?.members}
+                                        < Label 
+                                            + Members
+                                        < MemberSearch 
+                                            @ users {selectableUsers}
+                                            @ initialSelection {membersExcludingSelf}
+                                            < MemberSearchCombobox 
+                                            < MemberSearchHiddenField 
+                                                @ name "members"
+                                            input 
+                                                @ type "hidden"
+                                                @ name "currentMembers"
+                                                @ value {JSON.stringify(memberIds)}
+                                            div 
+                                                @ className "member-selection-wrapper flex flex-wrap gap-2"
+                                                < MemberSearchSelections 
+                                        < FieldError 
+                                    < Button 
+                                        + Submit Changes
+                            < Note 
+                                p 
+                                    + Updating data in this dialog will only send a request to the&lf;              server once the form is submitted. Notice the UI in the background&lf;              does not update as you make changes.
+                    < deleteFetcher.Form 
+                        @ hidden
+                        @ action "delete"
+                        @ method "post"
+                        @ replace
+                        @ ref {deleteFormRef}
+                        button 
+                            + Delete project
+    export 
+        function ErrorBoundary
+            { 
+                @ error
+                :{ 
+                    :p error
+                        :ref Error
+            _ console.error(error)
+            return 
+                < Layout 
+                    @ heading "Oh no!"
+                    @ description "Something went wrong! Go back and try again later."
+    function Layout
+        { 
+            @ children
+            @ optionsPanel
+            @ heading
+            @ description
+            @ memberList
+            @ main
+            :ref React.PropsWithChildren
+                :param 
+                    :{ 
+                        :p heading
+                            :union 
+                                :ref React.ReactNode
+                                :string 
+                        :p optionsPanel
+                            :optional 
+                            :ref React.ReactNode
+                        :p description
+                            :optional 
+                            :ref React.ReactNode
+                        :p memberList
+                            :optional 
+                            :ref React.ReactNode
+                        :p main
+                            :optional 
+                            :ref React.ReactNode
+        return 
+            < MaxContainer 
+                @ className "project-index"
+                { 
+                    iif optionsPanel
+                        then
+                            aside 
+                                @ className "project-index__options-panel"
+                                + {optionsPanel}
+                        else null
+                div 
+                    @ className "project-index__header"
+                    div 
+                        @ className "project-index__header-inner"
+                        < Heading 
+                            @ level {1}
+                            @ className "project-index__heading"
+                            + {heading}
+                        { 
+                            iif description
+                                then
+                                    p 
+                                        + {description}
+                                else null
+                        { 
+                            iif memberList
+                                then
+                                    div 
+                                        @ className "project-index__member-list"
+                                        + {memberList}
+                                else null
+                { 
+                    iif main
+                        then
+                            section 
+                                @ className "project-index__section project-index__section--lists"
+                                + {main}
+                        else null
+                + {children}
+    :type ActionData
+        :{ 
+            :p formError
+                :optional 
+                :string 
+            :p fieldErrors
+                :optional 
+                :ref FieldErrors
+            :p fields
+                :optional 
+                :ref Fields
+    :type FieldErrors
+        :ref Record
+            :param 
+                :ref TextFields
+            :param 
+                :union 
+                    :string 
+                    :undefined 
+                    :null 
+    :type TextFields
+        :union 
+            :literal "name"
+            :literal "description"
+            :literal "members"
+    :type Fields
+        :intersect 
+            :ref Record
+                :param 
+                    :union 
+                        :literal "name"
+                        :literal "description"
+                :param string
+            :{ 
+                :p members
+                    :[ 
+                        :string 
+                :p currentMembers
+                    :[ 
+                        :string 

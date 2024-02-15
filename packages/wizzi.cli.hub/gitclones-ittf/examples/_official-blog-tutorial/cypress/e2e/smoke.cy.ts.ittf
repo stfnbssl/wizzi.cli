@@ -1,0 +1,103 @@
+module
+    import 
+        @ faker
+        from "@faker-js/faker"
+    _ describe
+        @ "smoke tests"
+        => 
+            _ afterEach
+                => 
+                    _ cy.cleanupUser()
+            _ it
+                @ "should allow you to register and login"
+                => 
+                    const loginForm
+                        { 
+                            @ email
+                                `lit 
+                                    + 
+                                    _ faker.internet.userName()
+                                    + @example.com
+                            @ password faker.internet.password()
+                    _ cy.then
+                        => 
+                            (
+                                { 
+                                    @ email loginForm.email
+                        ._ as
+                            @ "user"
+                    _ cy.visitAndCheck("/")
+                    _ cy.findByRole
+                        @ "link"
+                        { 
+                            @ name /sign up/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "textbox"
+                        { 
+                            @ name /email/i
+                        ._ type
+                            @expr loginForm.email
+                    _ cy.findByLabelText(/password/i).type(loginForm.password)
+                    _ cy.findByRole
+                        @ "button"
+                        { 
+                            @ name /create account/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "link"
+                        { 
+                            @ name /notes/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "button"
+                        { 
+                            @ name /logout/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "link"
+                        { 
+                            @ name /log in/i
+            _ it
+                @ "should allow you to make a note"
+                => 
+                    const testNote
+                        { 
+                            @ title faker.lorem.words(1)
+                            @ body faker.lorem.sentences(1)
+                    _ cy.login()
+                    _ cy.visitAndCheck("/")
+                    _ cy.findByRole
+                        @ "link"
+                        { 
+                            @ name /notes/i
+                        ._ click
+                    _ cy.findByText("No notes yet")
+                    _ cy.findByRole
+                        @ "link"
+                        { 
+                            @ name /\+ new note/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "textbox"
+                        { 
+                            @ name /title/i
+                        ._ type
+                            @expr testNote.title
+                    _ cy.findByRole
+                        @ "textbox"
+                        { 
+                            @ name /body/i
+                        ._ type
+                            @expr testNote.body
+                    _ cy.findByRole
+                        @ "button"
+                        { 
+                            @ name /save/i
+                        ._ click
+                    _ cy.findByRole
+                        @ "button"
+                        { 
+                            @ name /delete/i
+                        ._ click
+                    _ cy.findByText("No notes yet")

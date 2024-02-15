@@ -1,0 +1,11 @@
+module
+    kind react
+    const 
+        { 
+            @ createCoreService
+        = require("@strapi/strapi").factories
+        #
+            # *
+            # * post service.
+            # 
+    set module.exports = createCoreService("api::post.post")

@@ -1,7 +1,8 @@
 /*
-    artifact generator: C:\My\wizzi\stfnbssl\wizzi\packages\wizzi-js\lib\artifacts\ts\module\gen\main.js
-    package: wizzi-js@0.7.13
+    artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
+    package: wizzi.plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi\src\features\github\api\repo.ts.ittf
+    utc time: Fri, 02 Feb 2024 10:28:40 GMT
 */
 import fetch from 'node-fetch';
 import path from 'path';
@@ -224,7 +225,6 @@ export async function cloneBranch(repo: GithubRepoOptions, branch: string = 'mas
                             }
                             
                          });
-                    console.log(repo, dir, __filename);
                     let files = wizzifs.getFiles(dir, {
                         deep: true, 
                         documentContent: true
