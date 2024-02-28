@@ -7,30 +7,18 @@
         p The Wizzi command line interface (CLI) performs basic functionality, 
             \b such as executing a Wizzi Production, 
             \b creating a Wizzi Package based on a templated Meta Production,
-            \b wizzifying an existent artifact or a folder of artifacts.
+            \b wizzifying an existent artifact or a folder of artifacts,
+            \b meta wizzifying an existent wizzi package
 
-        p The Wizzi CLI (`wizzi-cli`) is packaged as an executable that can be used globally. 
-            \b The Wizzi CLI is available via [npm](https://www.npmjs.com/) and should be installed globally 
+        p The Wizzi CLI is packaged as an executable that can be used globally. 
+            \b Is available via [npm](https://www.npmjs.com/) and should be installed globally 
             \b by running
         code sh
             + npm install -g wizzi-cli
 
-        p Run `wz --help` for full help.
+        p Run `wz help` for full help.
 
         h2 CLI Commands
-        $*
-        ul
-            li 
-                a generate
-                    href #generate
-            li 
-                a create
-                    href #create
-            li 
-                a fy
-                    href #fy
-        *$
-
         $foreach cmd in wzCtx.Commands
             h2 "${cmd.name}"
             $if cmd.desc
@@ -50,12 +38,13 @@
                                 td ${opt.value}
                                     br
                                     $foreach hint in opt.hints
-                                        + &nbsp;&nbsp; |- ${hint}
+                                        + |- ${hint}
             $foreach line in cmd.lines
                 p ${line}
 
 
 
+        $*
         h3 `generate`
         p Executes a Wizzi Production described in a wizzi.config[.configname].js file.
         p The config file is searched in the current folder and its parents.
@@ -78,7 +67,7 @@
             li wizzi plugin
             li ...
         *$
-        
+        $*
         h3 `fy`
         p Executes the 'wizzifying' of a file or folder (for example creates a .js.ittf
             \b document from a .js file). 
@@ -96,3 +85,4 @@
                 tr
                     td --dest|-d <filepath|folderpath>
                     td The destination file or folder path
+        *$

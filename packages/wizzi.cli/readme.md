@@ -16,14 +16,14 @@ on [Twitter](https://twitter.com/wizziteam) and [Facebook](https://www.facebook.
 npm install -g wizzi-cli
 ```
 # wizzi-cli
-The Wizzi command line interface (CLI) performs basic functionality, such as executing a Wizzi Production, creating a Wizzi Package based on a templated Meta Production, wizzifying an existent artifact or a folder of artifacts.
+The Wizzi command line interface (CLI) performs basic functionality, such as executing a Wizzi Production, creating a Wizzi Package based on a templated Meta Production, wizzifying an existent artifact or a folder of artifacts, meta wizzifying an existent wizzi package
 
-The Wizzi CLI (`wizzi-cli`) is packaged as an executable that can be used globally. The Wizzi CLI is available via [npm](https://www.npmjs.com/) and should be installed globally by running
+The Wizzi CLI is packaged as an executable that can be used globally. Is available via [npm](https://www.npmjs.com/) and should be installed globally by running
 
 ```sh
 npm install -g wizzi-cli
 ```
-Run `wz --help` for full help.
+Run `wz help` for full help.
 
 ## CLI Commands
 ## "main"
@@ -47,7 +47,7 @@ wz [noarguments | configname] | [command <options>]
 <td>configname</td>
 <td>execute a wizzi production using 'wizzi.config.<configname>.js' config file
 
-`&nbsp;&nbsp; |- The config file is searched in the current and up folders`
+`|- The config file is searched in the current and up folders`
 </tr>
 </tbody>
 </table>
@@ -84,13 +84,13 @@ wz job <jobname> --config <file>
 <td>jobname</td>
 <td>the name of the job
 
-`&nbsp;&nbsp; |- Is simply the display name for the job`
+`|- Is simply the display name for the job`
 </tr>
 <tr>
 <td>[--config | -c] <configname></td>
 <td>the name of the job configuration file: <configname>.config.js
 
-`&nbsp;&nbsp; |- The config file is searched in the current and up folders`
+`|- The config file is searched in the current and up folders`
 </tr>
 </tbody>
 </table>
@@ -121,9 +121,9 @@ wz fy --source <file|folder> --dest <file|folder> --config <file>
 <td>[--config | -c] <file></td>
 <td>a config file for extra plugins
 
-`&nbsp;&nbsp; |- A wizzi plugin can optionaly contain a wizzifier for its language schema.`
-`&nbsp;&nbsp; |- Basic wizzifiers are included in the Wizzi CLI.`
-`&nbsp;&nbsp; |- You can add extra plugins using a config file of the same format as for the 'wz' command.`
+`|- A wizzi plugin can optionaly contain a wizzifier for its language schema.`
+`|- Basic wizzifiers are included in the Wizzi CLI.`
+`|- You can add extra plugins using a config file of the same format as for the 'wz' command.`
 </tr>
 </tbody>
 </table>
@@ -144,7 +144,7 @@ wz meta <metaname>
 <td>metaname</td>
 <td>the name of the meta definition file: wizzi.meta.config.<metaname>.js
 
-`&nbsp;&nbsp; |- The config file is searched in the current and up folders`
+`|- The config file is searched in the current and up folders`
 </tr>
 </tbody>
 </table>
@@ -175,36 +175,6 @@ wz metify --source <folder> --dest <folder> [--compact $<compactOption>]
 <td>[--compact | -p]</td>
 <td>semicolon separated list of folders that you prefer 'metamanaged' by their parents
 
-</tr>
-</tbody>
-</table>
-
-### `generate`
-Executes a Wizzi Production described in a wizzi.config[.configname].js file.
-
-The config file is searched in the current folder and its parents.
-
-```sh
-wz [configname]
-```
-### `fy`
-Executes the 'wizzifying' of a file or folder (for example creates a .js.ittf document from a .js file).
-
-```sh
-wz fy --source <filepath|folderpath> --dest <filepath|folderpath>
-```
-
-<table>
-<thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
-<tbody>
-<tr>
-<td>--source|-s <filepath|folderpath></td>
-<td>The source file or folder path</td>
-</tr>
-<tr>
-<td>--dest|-d <filepath|folderpath></td>
-<td>The destination file or folder path</td>
 </tr>
 </tbody>
 </table>
