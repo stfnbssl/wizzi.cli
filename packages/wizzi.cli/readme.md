@@ -23,44 +23,109 @@ The Wizzi CLI (`wizzi-cli`) is packaged as an executable that can be used global
 ```sh
 npm install -g wizzi-cli
 ```
-Run `wizzi --help` for full help.
+Run `wz --help` for full help.
 
 ## CLI Commands
-    * [generate](#generate)
-    
-    * [create](#create)
-    
-    * [fy](#fy)
-    
+### main
+wz [noarguments | configname] | [command <options>]
+
+ |- Executes the wizzi job defined in a configuration file
+
+noarguments ......... executes generation using wizzi.config.js
+
+configname .......... executes generation using wizzi.config.<configname>.js
+
+ |- The wizzi.config.<configname>.js file is searched in the current and up folders
+
+
+
+commands:
+
+ job ................. executes a wizzi job
+
+ fy .................. wizzify a file or folder
+
+ meta ................ executes a meta generation
+
+ metify .............. executes the 'metafication' of a wizzi production
+
+ version ............. show package version
+
+ help ................ show help menu for a command
+
+ |- Try: wz help [command]
+
+### job
+wz job <jobname> <options>
+
+ |- Executes the wizzi job defined in a configuration file
+
+jobname .... the name of the job definition file: <jobname>.wfjob.ittf
+
+ |- Is simply the display name for the job, has no effect
+
+options:
+
+ [--config | -c] <configname> ...... the name of the job configuration file: <configname>.config.js
+
+ |- The <configname>.config.js file is searched in the current and up folders
+
+### fy
+wz fy <options>
+
+ |- Executes the 'wizzifycation' of a file or folder
+
+options:
+
+ [--source | -s] <file | folder> .... the source file or folder
+
+ [--dest | -d] <file | folder> ...... the destination file or folder
+
+ [--config | -c] <file> ............. a config file for extra plugins
+
+ |- A wizzi plugin can optionaly contain a wizzifier for its language schema.
+
+ |- Basic wizzifiers are included in the Wizzi CLI.
+
+ |- You can add extra plugins with a config file of the same format as for the 'wz' command.
+
+### meta
+wz meta <metaname>
+
+ |- Executes a wizzi meta production
+
+options:
+
+ metaname .... the name of the meta definition file: wizzi.meta.config.<metaname>.js
+
+ |- The wizzi.meta.config.<metaname>.js file is searched in the current and up folders
+
+### metify
+wz metify <options>
+
+ |- Executes the 'metification' of a wizzi folder
+
+options:
+
+[--source | -s] <folder> ............................ the source file or folder
+
+[--dest | -d] <folder> .............................. the destination file or folder
+
+[--compact | -c] <subfolder[,subfolder[,...]]> ...... folders 'metamanaged' by their parents
+
 ### `generate`
 Executes a Wizzi Production described in a wizzi.config[.configname].js file.
 
 The config file is searched in the current folder and its parents.
 
 ```sh
-wizzi [configname]
+wz [configname]
 ```
-### `create`
-Executes a Wizzi Meta Production creating a new Wizzi Package for a type of Wizzi production.
-
-```sh
-wizzi create
-```
-An 'inquirer' dialog asks for the production type and other available options.
-
-    * pure js 
-    * webpack 
-    * webpack + react 
-    * webpack + react + material-ui 
-    * gatsby 
-    * express 
-    * wizzi plugin 
-    * ... 
 ### `fy`
 Executes the 'wizzifying' of a file or folder (for example creates a .js.ittf document from a .js file).
 
 ```sh
-wizzi fy --source <filepath|folderpath> --dest <filepath|folderpath>
+wz fy --source <filepath|folderpath> --dest <filepath|folderpath>
 ```
 
 <table>

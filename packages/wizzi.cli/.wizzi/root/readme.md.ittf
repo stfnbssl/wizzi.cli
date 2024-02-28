@@ -15,9 +15,10 @@
         code sh
             + npm install -g wizzi-cli
 
-        p Run `wizzi --help` for full help.
+        p Run `wz --help` for full help.
 
         h2 CLI Commands
+        $*
         ul
             li 
                 a generate
@@ -28,14 +29,20 @@
             li 
                 a fy
                     href #fy
+        *$
 
+        $foreach cmd in wzCtx.Commands
+            h3 ${cmd.name}
+            $foreach line in cmd.lines
+                p ${line}
 
         h3 `generate`
         p Executes a Wizzi Production described in a wizzi.config[.configname].js file.
         p The config file is searched in the current folder and its parents.
         code sh
-            + wizzi [configname]
+            + wz [configname]
         
+        $*
         h3 `create`
         p Executes a Wizzi Meta Production creating a new Wizzi Package for a type of Wizzi production.
         code sh
@@ -50,12 +57,13 @@
             li express
             li wizzi plugin
             li ...
+        *$
         
         h3 `fy`
         p Executes the 'wizzifying' of a file or folder (for example creates a .js.ittf
             \b document from a .js file). 
         code sh
-            + wizzi fy --source <filepath|folderpath> --dest <filepath|folderpath>
+            + wz fy --source <filepath|folderpath> --dest <filepath|folderpath>
 
         table
             thead
