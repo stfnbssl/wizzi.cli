@@ -6,8 +6,21 @@
 			$foreach cmd in wzCtx.Commands
 				@ ${cmd.name}
 					[
-						$foreach line in cmd.lines
-							@ "${line}"
+						$if cmd.desc
+							@ "${cmd.desc}"
+							@ ""
+						@ "${cmd.cmd}"
+						@ ""
+						$if _.isArray(cmd.options) && cmd.options.length > 0
+							@ "options:"
+							$foreach opt in cmd.options
+								@ " ${opt.name} : ${opt.value}"
+								$foreach hint in opt.hints
+									@ "  |- ${hint}"
+						$if cmd.lines.length > 0
+							@ ""
+							$foreach line in cmd.lines
+								@ "${line}"
 						@ ""
 						@ ""
 						._ join('\n')
@@ -112,6 +125,6 @@
 			log 'help.subCmd', subCmd
 			warn ''
 			warn '---------------------------'
-			warn 'Command:', subCmd
+			warn 'Command:', subCmd || 'wz'
 			warn '---------------------------'
 			success menus[subCmd] || menus.main

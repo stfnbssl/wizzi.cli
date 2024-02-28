@@ -39,68 +39,68 @@
             pluginsBaseFolder "C:/My/wizzi/stfnbssl/wizzi.plugins/packages"
 
     [ Commands
-        command("main", 
-            \b wz [noarguments | configname] | [command <options>],
-            \b Executes the wizzi job defined in a configuration file
-            "noarguments ......... executes generation using wizzi.config.js"
-            "configname .......... executes generation using wizzi.config.<configname>.js"
-            "    |- The wizzi.config.<configname>.js file is searched in the current and up folders"
-            ""
-            "commands:"
-            $*
-            "  create .............. setup wizzi for the current project"
-            *$
-            "  job ................. executes a wizzi job"
-            "  fy .................. wizzify a file or folder"
-            "  meta ................ executes a meta generation"
-            "  metify .............. executes the 'metafication' of a wizzi production"
-            "  version ............. show package version"
-            "  help ................ show help menu for a command"
-            "    |- Try: wz help [command]"
+        command(main, 
+            \b wz [noarguments | configname] | [command {options}],
+            \b Execute a wizzi package production (default) or a specified command
+            options()
+                option( noarguments, execute a wizzi production using the 'wizzi.config.js' config file
+                option( configname, execute a wizzi production using 'wizzi.config.{configname}.js' config file
+                    hint( The config file is searched in the current and up folders
+            $append lines
+                "commands:"
+                $*
+                "  create .............. setup wizzi for the current project"
+                *$
+                "  job ................. execute a wizzi job"
+                "  fy .................. wizzify a file or folder"
+                "  meta ................ execute a wizzi meta production"
+                "  metify .............. execute the 'metafication' of a wizzi production"
+                "  version ............. show package version"
+                "  help ................ show help menu for a command"
+                "   |- Try: wz help [command]"
         $*
         command("create", 
-            \b wz create <options>,
+            \b wz create {options},
             \b Creates a starter wizzi package
-            ""
-            "[--kind | -k] <kindname> ... the project kind <kindname>"
-            ""
-            "valid kindnames:"
-            "  webpack"
-            "  express"
-            "  plugin"
-					._ join('\n')
-		*$
+            options()
+                option( [--kind | -k] {kindname}, the project kind {kindname}
+                    hint( valid kindnames:
+                    hint( webpack
+                    hint( express
+                    hint( plugin
+        *$
+        
         command(job, 
-            \b wz job <jobname> <options>,
-            \b Executes the wizzi job defined in a configuration file
-            "jobname .... the name of the job definition file: <jobname>.wfjob.ittf"
-            "  |- Is simply the display name for the job, has no effect"
-            "options:"
-            "  [--config | -c] <configname> ...... the name of the job configuration file: <configname>.config.js"
-            "    |- The <configname>.config.js file is searched in the current and up folders"
+            \b wz job {jobname} {options},
+            \b Execute the wizzi job defined in a configuration file
+            options()
+                option( jobname, the name of the job
+                    hint( Is simply the display name for the job, has no effect
+                option( [--config | -c] {configname}, the name of the job configuration file: {configname}.config.js
+                    hint( The config file is searched in the current and up folders
 
         command(fy, 
-            \b wz fy <options>,
-            \b Executes the 'wizzifycation' of a file or folder
-            "options:"
-            "  [--source | -s] <file | folder> .... the source file or folder"
-            "  [--dest | -d] <file | folder> ...... the destination file or folder"
-            "  [--config | -c] <file> ............. a config file for extra plugins"
-            "      |- A wizzi plugin can optionaly contain a wizzifier for its language schema."
-            "      |- Basic wizzifiers are included in the Wizzi CLI."
-            "      |- You can add extra plugins with a config file of the same format as for the 'wz' command."
+            \b wz fy {options},
+            \b Execute the 'wizzifycation' of a file or folder
+            options()
+                option( [--source | -s] {file | folder}, the source file or folder
+                option( [--dest | -d] {file | folder}, the destination file or folder
+                option( [--config | -c] {file}, a config file for extra plugins
+                    hint( A wizzi plugin can optionaly contain a wizzifier for its language schema.
+                    hint( Basic wizzifiers are included in the Wizzi CLI.
+                    hint( You can add extra plugins using a config file of the same format as for the 'wz' command.
 
         command(meta, 
-            \b wz meta <metaname>,
-            \b Executes a wizzi meta production
-            "options:"
-            "  metaname .... the name of the meta definition file: wizzi.meta.config.<metaname>.js"
-            "    |- The wizzi.meta.config.<metaname>.js file is searched in the current and up folders"            
+            \b wz meta {metaname},
+            \b Execute a wizzi meta production
+            options()
+                option( metaname, the name of the meta definition file: wizzi.meta.config.{metaname}.js
+                    hint( The config file is searched in the current and up folders            
 
         command(metify, 
-            \b wz metify <options>,
-            \b Executes the 'metification' of a wizzi folder, so that you can parametrize the whole package structure
-            "options:"
-            "[--source | -s] <folder> ............................ the source file or folder"
-            "[--dest | -d] <folder> .............................. the destination file or folder"
-            "[--compact | -c] <subfolder[,subfolder[,...]]> ...... folders 'metamanaged' by their parents"
+            \b wz metify {options},
+            \b Execute the 'metification' of a wizzi folder, so that you can parametrize the whole package structure
+            options()
+                option( [--source | -s] {folder}, the source file or folder
+                option( [--dest | -d] {folder}, the destination file or folder
+                option( [--compact | -c] {subfolder[,subfolder[,...]]}, folders 'metamanaged' by their parents

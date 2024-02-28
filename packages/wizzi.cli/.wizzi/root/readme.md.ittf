@@ -33,8 +33,26 @@
 
         $foreach cmd in wzCtx.Commands
             h3 ${cmd.name}
+            $if cmd.desc
+                p ${cmd.desc}
+            code sh
+                + ${cmd.cmd}
+            $if _.isArray(cmd.options) && cmd.options.length > 0
+                table
+                    thead
+                        th Argument
+                        th Description                                                                                                                                                                                                                             |
+                    tbody
+                        $foreach opt in cmd.options
+                            tr
+                                td ${opt.name}
+                                td ${opt.value}
+                                    $foreach hint in opt.hints
+                                        + &nbsp;&nbsp; |- ${hint}
             $foreach line in cmd.lines
                 p ${line}
+
+
 
         h3 `generate`
         p Executes a Wizzi Production described in a wizzi.config[.configname].js file.
