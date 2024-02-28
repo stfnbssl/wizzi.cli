@@ -1,0 +1,5 @@
+$group
+    $include data
+    $file wizziStarters/cli/index.js.ittf.ittf
+       module
+           ${'$'}include wizziStarters/wizziStarters/cli/index.js

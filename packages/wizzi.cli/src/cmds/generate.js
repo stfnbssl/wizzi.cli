@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generate.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:08 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 const path = require('path');
@@ -12,8 +12,17 @@ const async = require('async');
 const chalk = require('chalk');
 const wizzi = require('@wizzi/factory');
 const config = require('../utils/config');
+const commons = require('./commons');
+
+const kCommandName = "main";
+
 module.exports = (name) => {
 
+    
+    const checker = new commons.commandChecker(kCommandName);
+    
+    const currentDir = process.cwd();
+    
     let configPath = config.getPath(name);
     if (!configPath) {
         console.error(`config file "wizzi.config.' + (name ? name + '.' : '') + 'js" not found`);

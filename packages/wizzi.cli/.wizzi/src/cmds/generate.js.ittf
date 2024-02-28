@@ -8,10 +8,19 @@
     const chalk = require('chalk')
 	const wizzi = require('@wizzi/factory')
     const config = require('../utils/config')
-
+    const commons = require('./commons')
+    +
+    const kCommandName = "main"
+    +
 	set module.exports
 		=>
 			param name
+
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
+			const currentDir = process.cwd()
+			+
 
 			let configPath = config.getPath(name)
 			if !configPath

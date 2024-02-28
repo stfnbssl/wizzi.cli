@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\root\index.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:07 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 const path = require('path');
@@ -18,7 +18,7 @@ module.exports = () => {
 ;
 const args = minimist(process.argv.slice(2));
 console.log('args', args, __filename);
-let cmd = args._[0] || 'generate';
+let cmd = args._[0] || !args.s && !args.source && 'generate';
 if (args.version || args.v) {
     cmd = 'version';
 }
@@ -43,7 +43,6 @@ switch (cmd) {
             else {
                 error(`To wizzify a github repo you need to export an accessToken property from a "wizzi.config.env.js" file.`);
                 error(`The "wizzi.config.env.js" file is searched in the current folder and upward in parent folders.`);
-                return ;
             }
         }
         else {
@@ -72,13 +71,18 @@ switch (cmd) {
         break;
     }
     default: {
-        var configPath = config.getPath(cmd);
-        if (configPath) {
-            require('./src/cmds/generate')(cmd);
+        if (args.source || args.s) {
+            require('./src/cmds/generatePath')(args);
         }
         else {
-            error(`"${cmd}" is not a valid command!`);
-            error(`try wizzi help`, true);
+            var configPath = config.getPath(cmd);
+            if (configPath) {
+                require('./src/cmds/generate')(cmd);
+            }
+            else {
+                error(`"${cmd}" is not a valid command!`);
+                error(`try wizzi help`, true);
+            }
         }
         break;
     }

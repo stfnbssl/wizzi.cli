@@ -17,7 +17,7 @@
     
     log 'args', args
 
-    let cmd = args._[0] || 'generate'
+    let cmd = args._[0] || !args.s && !args.source && 'generate'
 
     if args.version || args.v
         set cmd = 'version'
@@ -42,7 +42,6 @@
                 else
                     _ error(`To wizzify a github repo you need to export an accessToken property from a "wizzi.config.env.js" file.`)
                     _ error(`The "wizzi.config.env.js" file is searched in the current folder and upward in parent folders.`)
-                    return
             else
                 _ require('./src/cmds/fy')(args)
             break
@@ -62,10 +61,13 @@
             _ require('./src/cmds/version')(args)
             break
         default
-            var configPath = config.getPath(cmd)
-            if configPath
-                _ require('./src/cmds/generate')(cmd)
+            if args.source || args.s
+                _ require('./src/cmds/generatePath')(args)
             else
-                _ error(`"${cmd}" is not a valid command!`)
-                _ error(`try wizzi help`, true)
+                var configPath = config.getPath(cmd)
+                if configPath
+                    _ require('./src/cmds/generate')(cmd)
+                else
+                    _ error(`"${cmd}" is not a valid command!`)
+                    _ error(`try wizzi help`, true)
             break

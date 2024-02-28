@@ -18,6 +18,9 @@
 		node ">=8"
 	preferGlobal true
     { scripts
+		metify:starters "node index metify -s ittf\metificables\wizziStarters -d ittf\metas\def"
+		job:basic "node index job -c ittf\jobs\basic.job"
+		wizzify:folder "node index fy -s ittf\wizzificables -d ittf\wizzified"
 	{ bin
 		wz "bin/wz.js"
 	{ dependencies
@@ -29,5 +32,5 @@
 		minimist "^1.2.0"
         memfs "latest"
         node-fetch "^2.0.0"
-        @wizzi/factory "latest"
-        @wizzi/utils "latest"
+        @wizzi/factory "^0.8.12"
+        @wizzi/utils "^0.8.6"

@@ -3,17 +3,76 @@ module
 
     const path = require('path')
 	const wizziUtils = require('@wizzi/utils')
+    const commons = require('./commons')
     const vfile = wizziUtils.vfile
     const verify = wizziUtils.verify
+    const meta = wizziUtils.meta
     var file = vfile()
-
+    +
+    const kCommandName = "metify"
+    +
 	set module.exports
 		=>
 			param args
-            const sourceFolder = args.s || args.source
-            const destFolder = args.d || args.dest || args.o || args.output
-            const complex = args.c || args.complex
-            const production = args.p || args.production || "<production>"
+            let sourceFolder = args.s || args.source
+            let destFolder = args.d || args.dest || args.o || args.output
+            let compressFolders = args.c || args.compress
+            let metaProductionName = args.n || args.name
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
+            _ checker.checkFolder
+                @ sourceFolder
+                @ 'sourceFolder'
+            _ checker.checkFolder
+                @ destFolder
+                @ 'destFolder'
+            set compressFolders
+                _ checkCompressFolders
+                    @ checker
+                    @ compressFolders
+            +
+            if checker.isValid()
+                set metaProductionName = metaProductionName || path.basename(sourceFolder)
+                _ checker.usingOption
+                    @ 'metaProductionName: ' + metaProductionName
+
+            if !checker.checkOut()
+                return
+            
+            _ meta.metify
+                @ checker.sourceFolder
+                @ checker.sourceFolder $$ rootFolder
+                @ metaProductionName
+                {
+                    @ destFolder checker.destFolder
+                    @ compressFolders compressFolders                   
+                a_cb_no_err( result )
+                    if err
+                        error err
+                    else
+                        success ''
+                        success ''
+                        success 'Metafication done, see', checker.destFolder, 'folder'
+                        success ''
+                        success ''
+
+    function checkCompressFolders
+        param checker
+        param compressFolders
+        if verify.isEmpty(compressFolders)
+            return []
+        let retval
+        try
+            set retval = compressFolders.split(';')
+        catch err
+            return
+                _ checker.optionError
+                    @ 'Transforming the compress option into an array has given an error: ' + err.message
+        _ checker.usingOption
+            @ 'compress folders: ' + retval.join(',')
+        return retval
+    $*
             if complex
                 _ metifyComplex
                     @ sourceFolder
@@ -23,6 +82,8 @@ module
                 _ metifySimple
                     @ sourceFolder
                     @ destFolder
+
+
 
     function metifySimple
         param sourceFolder
@@ -222,7 +283,7 @@ module
                 set seenLineChar = true
                 set multiLineCommentOn = true
             elif ch == '$' && chPrev == '*'
-                log '*$', 'multiLineCommentOn', multiLineCommentOn
+                log '*', '$', 'multiLineCommentOn', multiLineCommentOn
                 if multiLineCommentOn
                     _ sb.push(ch)
                     _ sb.push("{'$'}")
@@ -261,3 +322,4 @@ module
     function normalize
         param filePath
         return verify.replaceAll(filePath, '\\', '/')
+        *$

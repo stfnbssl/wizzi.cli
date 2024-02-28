@@ -1,0 +1,7 @@
+$group
+    $file wizziStarters/cli/data/contexts/metaCtx.json.ittf.ittf
+       {
+           ${'$'}include wizziStarters/wizziStarters/cli/data/contexts/metaCtx.json
+    $file wizziStarters/cli/data/contexts/wzCtx.json.ittf.ittf
+       {
+           ${'$'}include wizziStarters/wizziStarters/cli/data/contexts/wzCtx.json

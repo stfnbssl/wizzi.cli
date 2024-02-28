@@ -28,10 +28,10 @@ Run `wz help` for full help.
 ## CLI Commands
 ## "main"
 
-<p>*Execute a wizzi package production (default) or a specified command*</p>
+<p>*Execute a wizzi package production (default) or a single artifact or single folder production or a specified command*</p>
 
 ```sh
-wz [noarguments | configname] | [command <options>]
+wz [noarguments | configname | --source <file|folder> --dest <file|folder> -ctx <file>[-ctx <file>]...] --config <file>| [command <options>]
 ```
 
 <table>
@@ -40,14 +40,31 @@ wz [noarguments | configname] | [command <options>]
 <tbody>
 <tr>
 <td>noarguments</td>
-<td>execute a wizzi production using the 'wizzi.config.js' config file
+<td>execute a wizzi production using the 'wizzi.config.js' default config file
 
 </tr>
 <tr>
 <td>configname</td>
-<td>execute a wizzi production using 'wizzi.config.<configname>.js' config file
+<td>execute a wizzi production using the 'wizzi.config.<configname>.js' config file
 
-`|- The config file is searched in the current and up folders`
+`|- The config file is searched in the current and upwards in parent folders`
+</tr>
+<tr>
+<td>[--source | -s] <file | folder></td>
+<td>execute the wizzi production of a single file or folder using optionaly one or more context data files (json or yaml
+
+</tr>
+<tr>
+<td>[--dest | -d] <file | folder></td>
+<td>the destination file or folder of the production. A source folder requires a destination folder.
+
+</tr>
+<tr>
+<td>[--config | -c] <file></td>
+<td>the path to the optional generation configuration file: <file>.config.js
+
+`|- Basic plugins are included in the Wizzi CLI.`
+`|- You can add extra plugins using a config file of the same format as for the 'wz' command.`
 </tr>
 </tbody>
 </table>
@@ -66,14 +83,14 @@ commands:
 
  help ................ show help menu for a command
 
- |- Try: wz help [command]
+ |- Try: wz help [command] to see each command options
 
 ## "job"
 
 <p>*Execute the wizzi job defined in a configuration file*</p>
 
 ```sh
-wz job <jobname> --config <file>
+wz job --config <file>
 ```
 
 <table>
@@ -81,16 +98,10 @@ wz job <jobname> --config <file>
 <th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
-<td>jobname</td>
-<td>the name of the job
-
-`|- Is simply the display name for the job`
-</tr>
-<tr>
 <td>[--config | -c] <configname></td>
 <td>the name of the job configuration file: <configname>.config.js
 
-`|- The config file is searched in the current and up folders`
+`|- The config file is searched in the current folder`
 </tr>
 </tbody>
 </table>
@@ -133,7 +144,7 @@ wz fy --source <file|folder> --dest <file|folder> --config <file>
 <p>*Execute a wizzi meta production*</p>
 
 ```sh
-wz meta <metaname>
+wz meta [<metaname> | --config <filepath>
 ```
 
 <table>
@@ -142,19 +153,25 @@ wz meta <metaname>
 <tbody>
 <tr>
 <td>metaname</td>
-<td>the name of the meta definition file: wizzi.meta.config.<metaname>.js
+<td>the name of the meta production config file: wizzi.meta.config.<metaname>.js
 
-`|- The config file is searched in the current and up folders`
+`|- The config file is searched in the current (cwd) and upwards in parent folders`
+</tr>
+<tr>
+<td>config</td>
+<td>the path of the meta production config file: <filepath>.config.js
+
+`|- The config file`
 </tr>
 </tbody>
 </table>
 
 ## "metify"
 
-<p>*Execute the 'metification' of a wizzi folder*</p>
+<p>*Execute the 'metafication' of a wizzi folder*</p>
 
 ```sh
-wz metify --source <folder> --dest <folder> [--compact $<compactOption>]
+wz metify --source <folder> --dest <folder> [--name <name>] [--compress <subfolder[;subfolder[;...]]>>]
 ```
 
 <table>
@@ -172,7 +189,12 @@ wz metify --source <folder> --dest <folder> [--compact $<compactOption>]
 
 </tr>
 <tr>
-<td>[--compact | -p]</td>
+<td>[--name | -n]</td>
+<td>the name to assign to the created meta production
+
+</tr>
+<tr>
+<td>[--compress | -c]</td>
 <td>semicolon separated list of folders that you prefer 'metamanaged' by their parents
 
 </tr>

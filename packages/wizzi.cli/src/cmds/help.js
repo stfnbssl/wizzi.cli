@@ -2,19 +2,24 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\help.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:08 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 const menus = {
     main: [
-        "Execute a wizzi package production (default) or a specified command", 
+        "Execute a wizzi package production (default) or a single artifact or single folder production or a specified command", 
         "", 
-        "wz [noarguments | configname] | [command <options>]", 
+        "wz [noarguments | configname | --source <file|folder> --dest <file|folder> -ctx <file>[-ctx <file>]...] --config <file>| [command <options>]", 
         "", 
         "options:", 
-        " noarguments : execute a wizzi production using the 'wizzi.config.js' config file", 
-        " configname : execute a wizzi production using 'wizzi.config.<configname>.js' config file", 
-        "  |- The config file is searched in the current and up folders", 
+        " noarguments : execute a wizzi production using the 'wizzi.config.js' default config file", 
+        " configname : execute a wizzi production using the 'wizzi.config.<configname>.js' config file", 
+        "  |- The config file is searched in the current and upwards in parent folders", 
+        " [--source | -s] <file | folder> : execute the wizzi production of a single file or folder using optionaly one or more context data files (json or yaml", 
+        " [--dest | -d] <file | folder> : the destination file or folder of the production. A source folder requires a destination folder.", 
+        " [--config | -c] <file> : the path to the optional generation configuration file: <file>.config.js", 
+        "  |- Basic plugins are included in the Wizzi CLI.", 
+        "  |- You can add extra plugins using a config file of the same format as for the 'wz' command.", 
         "", 
         "commands:", 
         " job ................. execute a wizzi job", 
@@ -23,20 +28,18 @@ const menus = {
         " metify .............. execute the 'metafication' of a wizzi production", 
         " version ............. show package version", 
         " help ................ show help menu for a command", 
-        " |- Try: wz help [command]", 
+        " |- Try: wz help [command] to see each command options", 
         "", 
         ""
     ].join('\n'), 
     job: [
         "Execute the wizzi job defined in a configuration file", 
         "", 
-        "wz job <jobname> --config <file>", 
+        "wz job --config <file>", 
         "", 
         "options:", 
-        " jobname : the name of the job", 
-        "  |- Is simply the display name for the job", 
         " [--config | -c] <configname> : the name of the job configuration file: <configname>.config.js", 
-        "  |- The config file is searched in the current and up folders", 
+        "  |- The config file is searched in the current folder", 
         "", 
         ""
     ].join('\n'), 
@@ -58,23 +61,26 @@ const menus = {
     meta: [
         "Execute a wizzi meta production", 
         "", 
-        "wz meta <metaname>", 
+        "wz meta [<metaname> | --config <filepath>", 
         "", 
         "options:", 
-        " metaname : the name of the meta definition file: wizzi.meta.config.<metaname>.js", 
-        "  |- The config file is searched in the current and up folders", 
+        " metaname : the name of the meta production config file: wizzi.meta.config.<metaname>.js", 
+        "  |- The config file is searched in the current (cwd) and upwards in parent folders", 
+        " config : the path of the meta production config file: <filepath>.config.js", 
+        "  |- The config file", 
         "", 
         ""
     ].join('\n'), 
     metify: [
-        "Execute the 'metification' of a wizzi folder", 
+        "Execute the 'metafication' of a wizzi folder", 
         "", 
-        "wz metify --source <folder> --dest <folder> [--compact $<compactOption>]", 
+        "wz metify --source <folder> --dest <folder> [--name <name>] [--compress <subfolder[;subfolder[;...]]>>]", 
         "", 
         "options:", 
         " [--source | -s] : the source file or folder", 
         " [--dest | -d] : the destination file or folder", 
-        " [--compact | -p] : semicolon separated list of folders that you prefer 'metamanaged' by their parents", 
+        " [--name | -n] : the name to assign to the created meta production", 
+        " [--compress | -c] : semicolon separated list of folders that you prefer 'metamanaged' by their parents", 
         "", 
         ""
     ].join('\n')

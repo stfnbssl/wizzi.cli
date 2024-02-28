@@ -10,10 +10,10 @@ module
             @ getPath
                 =>
                     param name
-                    param isMeta
+                    param kind
 
                     var configFilename
-                    if isMeta
+                    if kind == 'meta'
                         set configFilename = name ? 'wizzi.meta.config.' + name + '.js' : 'wizzi.meta.config.js'
                     else
                         set configFilename = name ? 'wizzi.config.' + name + '.js' : 'wizzi.config.js'

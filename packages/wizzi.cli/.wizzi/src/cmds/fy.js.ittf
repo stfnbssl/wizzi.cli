@@ -8,16 +8,23 @@
 	const file = wizziUtils.file
     const vfile = wizziUtils.vfile
     const help = require('./help')
+    const commons = require('./commons')
     const factory = require('../factory')
     const github = require('../features/github')
     var _wf = null
-
+    +
+    const kCommandName = "fy"
+    +
 	set module.exports
 		=>
 			param args
             param accessToken
 
             log 'fy.accessToken', accessToken, args.git
+
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
 
 			if args.git
                 _ wizzifyGitRepo
@@ -29,76 +36,79 @@
 
             let currentDir = process.cwd()
 
-			let source = args.source || args.s
-			let dest = args.dest || args.d
+			let sourcePath = args.source || args.s
+			let destPath = args.dest || args.d
 
-			log 'fy.source.dest', source, dest
+			# loog 'fy.sourcePath.destPath', sourcePath, destPath
 
-			var sourcePath, destPath, sourceIsFolder
-            if source && source.length > 0
-                if verify.isAbsolutePath(source)
-                    set sourcePath = source
-                else
-                    set sourcePath = path.join(currentDir, source)
-                if !file.exists(sourcePath)
-                    error 'Invalid options for `fy` command.'
-                    error 'Source path not found', source
-                    _ help({_:['help', 'fy']})
-                    return       
-                set sourceIsFolder = file.isDirectory(sourcePath)
-				if dest && dest.length > 0
-                    if verify.isAbsolutePath(dest)
-                        set destPath = dest
-                    else
-					    set destPath = path.join(currentDir, dest)
-                if !file.exists(path.dirname(destPath))
-                    error 'Invalid options for `fy` command.'
-                    error 'Destination path dirname not found', dest
-                    _ help({_:['help', 'fy']})
-                    return       
-                if file.isFile(destPath) && sourceIsFolder
-                    error 'Invalid options for `fy` command.'
-                    error 'Source path is a folder, destination path cannot be a filename', dest
-                    _ help({_:['help', 'fy']})
-                    return       
-                if file.isDirectory(destPath) && !sourceIsFolder
-                    set destPath
-                        _ path.join
-                            @ destPath
-                            @ path.basename(sourcePath) + '.ittf'
-                if sourceIsFolder
-                    log 'ok. source && dest are folders', args
-                    _ wizzifyFolder
-                        @ sourcePath
+            _ checker.checkFile
+                @ sourcePath
+                @ 'sourcePath'
+
+            _ checker.checkFile
+                @ destPath
+                @ 'destPath'
+
+            if !checker.checkOut()
+                return
+
+            # log 'source is folder', checker.sourcePath_is_folder
+            # log 'dest is folder', checker.destPath_is_folder
+
+            if checker.sourcePath_is_folder && !checker.destPath_is_folder 
+                _ checker.optionError
+                    @ 'Source path is a folder, destination path cannot be a filename: ' + checker.destPath
+                return
+                    _ checker.checkOut
+            
+            if !checker.sourcePath_is_folder && checker.destPath_is_folder 
+                # At this point this cannot be invalid
+                _ checker.checkFile
+                    _ path.join
                         @ destPath
-                        @ args.f || args.from || null
-                        @ args.t || args.to || null
-                        a_cb_throw( result )
-                            log 'Done. Wizzify folder.'
+                        @ path.basename(sourcePath) + '.ittf'
+                    @ 'destPath'
+                    {
+                        @ parentFolderMustExist true
+
+            if checker.sourcePath_is_folder
+                log 'ok. source && dest are folders', args
+                _ wizzifyFolder
+                    @ checker.sourcePath
+                    @ checker.destPath
+                    @ args.f || args.from || null
+                    @ args.t || args.to || null
+                    a_cb_throw( result )
+                        success ''
+                        success ''
+                        success 'Wizzification done, see', checker.destPath + ' folder'
+                        success ''
+                        success ''
+            else
+                log 'ok. source && dest are files'
+                var extension = path.extname(sourcePath)
+                var schema
+                set extension = extension.substr(1)
+                if extension.toLowerCase() === 'vue'
+                    set source = '<vue>' + source + '</vue>'
+                    set schema = 'html'
+                    set isVue = true
+                elif extension.toLowerCase() === 'tsx'
+                    set schema = 'ts'
+                elif extension.toLowerCase() === 'jsx'
+                    set schema = 'js'
+                    set extension = 'js'
                 else
-					log 'ok. source && dest are files'
-                    var extension = path.extname(sourcePath)
-                    var schema
-                    set extension = extension.substr(1)
-                    if extension.toLowerCase() === 'vue'
-                        set source = '<vue>' + source + '</vue>'
-                        set schema = 'html'
-                        set isVue = true
-                    elif extension.toLowerCase() === 'tsx'
-                        set schema = 'ts'
-                    elif extension.toLowerCase() === 'jsx'
-                        set schema = 'js'
-                        set extension = 'js'
-                    else
-                        set schema = extension
-                    _ wizzifyFile
-                        @ sourcePath
-                        @ destPath
-                        a_cb_throw()
-                            log 'Done. Wizzify file.'
-			else
-				error 'Invalid options for `fy` command.'
-				_ help({_:['help', 'fy']})
+                    set schema = extension
+                _ wizzifyFile
+                    @ checker.sourcePath
+                    @ checker.destPath
+                    a_cb_throw()
+                        success ''
+                        success ''
+                        success 'Wizzification done, see', checker.destPath + ' file'
+                        success ''
+                        success ''
 
     function wizzifyGitRepo
         param args

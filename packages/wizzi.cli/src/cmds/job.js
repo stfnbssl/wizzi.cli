@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\job.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:08 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 const path = require('path');
@@ -12,39 +12,51 @@ const async = require('async');
 const chalk = require('chalk');
 const wizzi = require('@wizzi/factory');
 const config = require('../utils/config');
+const commons = require('./commons');
+
+const kCommandName = "job";
+
 module.exports = (args) => {
 
-    const name = args._[1];
-    const configRelPath = args.c || args.config;
-    let currentDir = process.cwd();
-    let configPath = path.join(currentDir, configRelPath + '.config.js');
-    const configInstance = require(configPath);
-    console.log('wizzi-cli.job.configInstance', configInstance, __filename);
-    const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname;
-    if (!configInstance.pluginsBaseFolder) {
-        console.log(chalk.red('wizzi-cli.job - pluginsBaseFolder not set'))
-        console.log(chalk.red('wizzi-cli.job - pluginsBaseFolder defaulted to ' + x_pluginsBaseFolder))
+    
+    const checker = new commons.commandChecker(kCommandName);
+    
+    const currentDir = process.cwd();
+    
+    checker.checkNotEmpty(args.c || args.config, 'configRelPath')
+    if (checker.isValid()) {
+        checker.checkFile(path.join(currentDir, checker.configRelPath + '.config.js'), 'configPath')
     }
-    var x_pluginsItems = [];
-    if (configInstance.plugins && configInstance.plugins.length > 0) {
-        x_pluginsItems = configInstance.plugins;
+    let configInstance;
+    if (checker.isValid()) {
+        configInstance = require(checker.configPath);
     }
     else {
-        chalk.red('wizzi.cli.job - plugins not found in wizzi.config')
-        chalk.red('generation failed')
+        return checker.checkOut();
+    }
+    checker.checkNotEmpty(configInstance.wfjobName, 'wfjobName')
+    checker.checkFile(configInstance.wfjobPath, 'wfjobPath')
+    checker.checkNotEmpty(configInstance.pluginsBaseFolder, 'pluginsBaseFolder', {
+        message: "in config file " + checker.configPath
+     })
+    checker.checkArrayNotEmpty(configInstance.plugins, 'pluginsItems', {
+        message: "in config file " + checker.configPath
+     })
+    
+    if (!checker.checkOut()) {
         return ;
     }
-    let wfjobPath = path.join(currentDir, name + '.wfjob.ittf');
+    
     wizzi.executeWizziJob({
         storeKind: 'filesystem', 
         config: {
             wfBaseFolder: __dirname, 
-            plugins: x_pluginsItems, 
-            pluginsBaseFolder: x_pluginsBaseFolder
+            plugins: checker.pluginsItems, 
+            pluginsBaseFolder: checker.pluginsBaseFolder
          }, 
         job: {
-            name: name, 
-            ittfDocumentUri: wfjobPath, 
+            name: checker.wfjobName, 
+            ittfDocumentUri: checker.wfjobPath, 
             productionOptions: wizzi.productionOptions({
                 indentSpaces: 4, 
                 basedir: __dirname, 
@@ -56,11 +68,22 @@ module.exports = (args) => {
                      }
                  }
              }), 
-            globalContext: configInstance.globalContext
+            globalContext: configInstance.globalContext || {}
          }
      }, function(err) {
         if (err) {
-            return wizzi.printWizziJobError(configInstance.wfjobName, err);
+            console.log("[31m%s[0m", "");
+            console.log("[31m%s[0m", "");
+            wizzi.printWizziJobError(configInstance.wfjobName, err);
+            console.log("[31m%s[0m", "");
+            console.log("[31m%s[0m", "");
+        }
+        else {
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", 'Job execution done');
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", "");
         }
     })
 }

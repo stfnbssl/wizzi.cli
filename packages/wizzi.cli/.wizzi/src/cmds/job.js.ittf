@@ -8,55 +8,63 @@
     const chalk = require('chalk')
 	const wizzi = require('@wizzi/factory')
     const config = require('../utils/config')
-
+	const commons = require('./commons')
+    +
+    const kCommandName = "job"
+    +
 	set module.exports
 		=>
 			param args
-
-            const name = args._[1]
-            const configRelPath = args.c || args.config
-
-			let currentDir = process.cwd()
-            let configPath
-                _ path.join
-                    @ currentDir
-                    @ configRelPath + '.config.js'
-			const configInstance = require(configPath)
-			log 'wizzi-cli.job.configInstance', configInstance
-            const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
-            if !configInstance.pluginsBaseFolder
-                _ console.log
-                    _ chalk.red
-                        @ 'wizzi-cli.job - pluginsBaseFolder not set'
-                _ console.log
-                    _ chalk.red
-                        @ 'wizzi-cli.job - pluginsBaseFolder defaulted to ' + x_pluginsBaseFolder
-
-            var x_pluginsItems = []
-            if configInstance.plugins && configInstance.plugins.length > 0
-                set x_pluginsItems = configInstance.plugins
-            else
-                _ chalk.red
-                    @ 'wizzi.cli.job - plugins not found in wizzi.config'
-                _ chalk.red
-                    @ 'generation failed'
-                return
-
-            let wfjobPath
-                _ path.join
-                    @ currentDir
-                    @ name + '.wfjob.ittf'
-
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
+			const currentDir = process.cwd()
+			+
+			_ checker.checkNotEmpty
+				@ args.c || args.config
+				@ 'configRelPath'
+			if checker.isValid()
+				_ checker.checkFile
+					_ path.join
+						@ currentDir
+						@ checker.configRelPath + '.config.js'
+					@ 'configPath'
+			let configInstance
+			if checker.isValid()
+				set configInstance = require(checker.configPath)
+			else
+				return
+					_ checker.checkOut()
+			_ checker.checkNotEmpty
+				@ configInstance.wfjobName
+				@ 'wfjobName'
+			_ checker.checkFile
+				@ configInstance.wfjobPath
+				@ 'wfjobPath'
+			_ checker.checkNotEmpty
+				@ configInstance.pluginsBaseFolder
+				@ 'pluginsBaseFolder'
+				{
+					@ message "in config file " + checker.configPath
+			_ checker.checkArrayNotEmpty
+				@ configInstance.plugins
+				@ 'pluginsItems'
+				{
+					@ message "in config file " + checker.configPath
+			+
+			if !checker.checkOut()
+				return
+			+
             _ wizzi.executeWizziJob
 				{ 
 					@ storeKind 'filesystem'
 					{ config
 						@ wfBaseFolder __dirname
-						@ plugins x_pluginsItems
-                        @ pluginsBaseFolder x_pluginsBaseFolder
+						@ plugins checker.pluginsItems
+                        @ pluginsBaseFolder checker.pluginsBaseFolder
 					{ job
-						@ name name
-						@ ittfDocumentUri wfjobPath
+						@ name checker.wfjobName
+						@ ittfDocumentUri checker.wfjobPath
 						@ productionOptions
 							_ wizzi.productionOptions
 								{ 
@@ -67,9 +75,18 @@
 										@ dumpsBaseFolder path.join(__dirname, '_dumps')
 										{ mTreeBuildupJsWizziScript
 											@ dump false
-						@ globalContext configInstance.globalContext
+						@ globalContext configInstance.globalContext || {}
 				function 
 					param err
 					if err
-						return
-							_ wizzi.printWizziJobError(configInstance.wfjobName, err)
+						error ""
+						error ""
+						_ wizzi.printWizziJobError(configInstance.wfjobName, err)
+						error ""
+						error ""
+					else
+						success "" 
+						success "" 
+						success 'Job execution done'
+						success "" 
+						success "" 

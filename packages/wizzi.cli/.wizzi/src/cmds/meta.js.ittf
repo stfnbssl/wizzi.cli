@@ -11,82 +11,101 @@
     const verify = wizziUtils.verify
     const config = require('../utils/config')
     const help = require('./help')
+    const commons = require('./commons')
     const factory = require('../factory')
+    +
+    const kCommandName = "meta"
     +
 	set module.exports
 		=>
 			param args
 
             const name = args._[1]
+            const configPath = args.c || args.config
 
-			let configPath = config.getPath(name, true)
-			if !configPath
-				_ console.error(`meta config file "wizzi.meta.config.${(name ? name + '.' : '')}js" not found`)
-				return
-
-			const configInstance = require(configPath)
-			log 'wizzi.cli.meta.metaConfigInstance', configInstance
-            const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname
-            if !configInstance.pluginsBaseFolder
-                _ console.log
-                    _ chalk.red
-                        @ 'wizzi.cli.meta - pluginsBaseFolder not set'
-                _ console.log
-                    _ chalk.red
-                        @ 'meta generation failed'
-
-            var x_pluginsItems = []
-            if configInstance.plugins && configInstance.plugins.length > 0
-                set x_pluginsItems = configInstance.plugins
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
+            if verify.isEmpty(name)
+                _ checker.checkNotEmpty
+                    @ configPath
+                    @ 'configPath'
+                    {
+                        @ message 'Meta name is also missing'
+                _ checker.checkFile
+                    @ checker.configPath
+                    @ 'configPath'
             else
-                _ chalk.red
-                    @ 'wizzi.cli.meta - plugins not found in wizzi.meta.config'
-                _ chalk.red
-                    @ 'meta generation failed'
+                # do this to inform checker of the parameter
+                _ checker.checkNotEmpty
+                    @ name
+                    @ 'metaName'
+            if checker.metaName
+                _ checker.checkNotEmpty
+                    @ config.getPath(name, 'meta')
+                    @ 'configPath'
+                    {
+                        @ message 'The config file for the meta production named "' + name + '" has not be found'
+            if !checker.isValid()
                 return
+                    _ checker.checkOut
+			+
+            const configInstance = require(checker.configPath)
+            +
+			# loog 'wizzi.cli.meta.metaConfigInstance', configInstance
+			_ checker.checkNotEmpty
+				@ configInstance.pluginsBaseFolder
+				@ 'pluginsBaseFolder'
+				{
+					@ message "in config file " + checker.configPath
+			_ checker.checkArrayNotEmpty
+				@ configInstance.plugins
+				@ 'pluginsItems'
+				{
+					@ message "in config file " + checker.configPath
+			_ checker.checkNotEmpty
+				@ configInstance.metaPluginsBaseFolder
+				@ 'metaPluginsBaseFolder'
+				{
+					@ message "in config file " + checker.configPath
+			_ checker.checkArrayNotEmpty
+				@ configInstance.metaPlugins
+				@ 'metaPluginsItems'
+				{
+					@ message "in config file " + checker.configPath
+            _ checker.checkFile
+                @ configInstance.metaCtxPath
+                {
+                    @ message 'Meta context path'
 
-            const x_metaPluginsBaseFolder = configInstance.metaPluginsBaseFolder || __dirname
-            if !configInstance.metaPluginsBaseFolder
-                _ console.log
-                    _ chalk.red
-                        @ 'wizzi.cli.meta - metaPluginsBaseFolder not set'
-                _ console.log
-                    _ chalk.red
-                        @ 'meta generation failed'
-
-            var x_metaPluginsItems = []
-            if configInstance.plugins && configInstance.metaPlugins.length > 0
-                set x_metaPluginsItems = configInstance.metaPlugins
-            else
-                _ chalk.red
-                    @ 'wizzi.cli.meta - meta plugins not found in wizzi.meta.config'
-                _ chalk.red
-                    @ 'meta generation failed'
+            if !checker.checkOut()
                 return
-
-            if !file.exists(configInstance.metaCtxPath)
-                error 'Invalid options for `meta` command.'
-                error 'Meta context path not found', configInstance.metaCtxPath
-                _ help({_:['help', 'meta']})
-                return     
 
             _ generateMeta
                 @ configInstance.metaCtxPath
                 @ configInstance.destPath
                 {
-                    @ items x_pluginsItems
-                    @ pluginsBaseFolder x_pluginsBaseFolder
+                    @ items checker.pluginsItems
+                    @ pluginsBaseFolder checker.pluginsBaseFolder
                 {
-                    @ items x_metaPluginsItems
-                    @ metaPluginsBaseFolder x_metaPluginsBaseFolder
+                    @ items checker.metaPluginsItems
+                    @ metaPluginsBaseFolder checker.metaPluginsBaseFolder
                 @ configInstance.globalContext
                 =>
                     param err
                     param result
-                    if err
-                        throw err
-                        error err
-
+					if err
+						error ""
+						error ""
+						error err
+						error ""
+						error ""
+					else
+						success "" 
+						success "" 
+						success 'Meta production execution done'
+						success "" 
+						success "" 
     
     function generateMeta
         param metaCtxPath
@@ -116,10 +135,10 @@
                                 param err
                                 param wizziPackiFiles
                                 if err
-                                    throw err
                                     error err
+                                    throw err
                                     return
-                                log 'wizzi.cli.meta.result.wizziPackiFiles.keys', Object.keys(wizziPackiFiles)
+                                # loog 'wizzi.cli.meta.result.wizziPackiFiles.keys', Object.keys(wizziPackiFiles)
                                 _ metaCtx.__wz_fsc.dumpDebugObjects
                                     {
                                         @ kind 'packi'

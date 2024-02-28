@@ -1,0 +1,4 @@
+$group
+    $file wizziStarters/cli/data/templates/index.html.ittf.ittf
+       html
+           ${'$'}include wizziStarters/wizziStarters/cli/data/templates/index.html

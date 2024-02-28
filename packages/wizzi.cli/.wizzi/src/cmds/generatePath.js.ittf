@@ -1,0 +1,143 @@
+﻿module
+	kind es6
+
+	const path = require('path')
+	const util = require('util')
+	const fs = require('fs')
+	const async = require('async')
+    const chalk = require('chalk')
+	const wizzi = require('@wizzi/factory')
+    const config = require('../utils/config')
+    const factory = require('../factory')
+    const commons = require('./commons')
+    +
+    const kCommandName = "main"
+    +
+	set module.exports
+		=>
+			param args
+
+            +
+            const checker = new commons.commandChecker(kCommandName)
+            +
+			const currentDir = process.cwd()
+			+
+			let sourcePath = args.source || args.s
+			let destPath = args.dest || args.d
+            +
+            let configInstance = null
+            +
+            _ checker.checkFile
+                @ sourcePath
+                @ 'sourcePath'
+            
+            _ checker.checkFile
+                @ destPath
+                @ 'destPath'
+
+            if args.config || args.c
+                _ checker.checkFile
+					_ path.join
+						@ currentDir
+						@ (args.config || args.c) + '.config.js'
+                    @ "configPath"
+                if checker.isValid()
+                    set configInstance = require(checker.configPath)
+                else
+                    return
+                        _ checker.checkOut()
+                +
+                _ checker.checkNotEmpty
+                    @ configInstance.pluginsBaseFolder
+                    @ 'pluginsBaseFolder'
+                    {
+                        @ message "in config file " + checker.configPath
+                _ checker.checkArrayNotEmpty
+                    @ configInstance.plugins
+                    @ 'pluginsItems'
+                    {
+                        @ message "in config file " + checker.configPath
+
+            if !checker.checkOut()
+                return
+
+            if checker.sourcePath_is_folder && !checker.destPath_is_folder 
+                _ checker.optionError
+                    @ 'Source path is a folder, destination path cannot be a filename: ' + checker.destPath
+                return
+                    _ checker.checkOut
+            
+            if !checker.sourcePath_is_folder && checker.destPath_is_folder 
+                # At this point this cannot be invalid
+                _ checker.checkFile
+                    _ path.join
+                        @ destPath
+                        @ path.basename(sourcePath).substr(0, path.basename(sourcePath).length - 5)
+                    @ 'destPath'
+                    {
+                        @ parentFolderMustExist true
+
+            _ factory.createWizziFactory
+                { $$ globalContext
+                {
+                    [ plugins checker.pluginsItems || factory.getDefaultPlugins()
+                    @ pluginsBaseFolder checker.pluginsBaseFolder || factory.getDefaultPluginsBaseFolder()
+                a_cb_throw( wf )
+                    if checker.sourcePath_is_folder
+                        _ wf.generateFolderArtifacts
+                            @ checker.sourcePath
+                            {
+                                { modelRequestContext
+                                    @ mTreeBuildupContext context || {}
+                                { artifactRequestContext
+                            {
+                                @ destFolder checker.destPath
+                            a_cb_throw( result )
+                                success ''
+                                success ''
+                                success 'Folder artifacts generation done, see', checker.destPath + ' file'
+                                success ''
+                                success ''
+                    else
+                        _ wf.loadModelAndGenerateArtifact
+                            @ checker.sourcePath
+                            {
+                                { modelRequestContext
+                                    @ mTreeBuildupContext context || {}
+                                { artifactRequestContext
+                            @ null $$ artifactName
+                            a_cb_throw()
+                                success ''
+                                success ''
+                                success 'Single artifact generation done, see', checker.destPath + ' file'
+                                success ''
+                                success ''
+
+            return 
+
+            _ wizzi.executeWizziJob
+				{ 
+					@ storeKind 'filesystem'
+					{ config
+						@ wfBaseFolder __dirname
+						@ plugins x_pluginsItems
+                        @ pluginsBaseFolder x_pluginsBaseFolder
+					{ job
+						@ name configInstance.wfjobName
+						@ ittfDocumentUri configInstance.wfjobPath
+						@ productionOptions
+							_ wizzi.productionOptions
+								{ 
+									@ indentSpaces 4
+									@ basedir __dirname
+									@ verbose 2
+									{ dumps
+										@ dumpsBaseFolder path.join(__dirname, '_dumps')
+										{ mTreeBuildupJsWizziScript
+											@ dump false
+						@ globalContext configInstance.globalContext
+				function 
+					param err
+					if err
+						return
+							_ wizzi.printWizziJobError(configInstance.wfjobName, err)

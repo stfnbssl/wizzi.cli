@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\meta.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:08 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 
@@ -16,63 +16,79 @@ const file = wizziUtils.file;
 const verify = wizziUtils.verify;
 const config = require('../utils/config');
 const help = require('./help');
+const commons = require('./commons');
 const factory = require('../factory');
+
+const kCommandName = "meta";
 
 module.exports = (args) => {
 
     const name = args._[1];
-    let configPath = config.getPath(name, true);
-    if (!configPath) {
-        console.error(`meta config file "wizzi.meta.config.${(name ? name + '.' : '')}js" not found`);
-        return ;
+    const configPath = args.c || args.config;
+    
+    const checker = new commons.commandChecker(kCommandName);
+    
+    if (verify.isEmpty(name)) {
+        checker.checkNotEmpty(configPath, 'configPath', {
+            message: 'Meta name is also missing'
+         })
+        checker.checkFile(checker.configPath, 'configPath')
     }
-    const configInstance = require(configPath);
-    console.log('wizzi.cli.meta.metaConfigInstance', configInstance, __filename);
-    const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname;
-    if (!configInstance.pluginsBaseFolder) {
-        console.log(chalk.red('wizzi.cli.meta - pluginsBaseFolder not set'))
-        console.log(chalk.red('meta generation failed'))
-    }
-    var x_pluginsItems = [];
-    if (configInstance.plugins && configInstance.plugins.length > 0) {
-        x_pluginsItems = configInstance.plugins;
-    }
+    // do this to inform checker of the parameter
     else {
-        chalk.red('wizzi.cli.meta - plugins not found in wizzi.meta.config')
-        chalk.red('meta generation failed')
-        return ;
+        checker.checkNotEmpty(name, 'metaName')
     }
-    const x_metaPluginsBaseFolder = configInstance.metaPluginsBaseFolder || __dirname;
-    if (!configInstance.metaPluginsBaseFolder) {
-        console.log(chalk.red('wizzi.cli.meta - metaPluginsBaseFolder not set'))
-        console.log(chalk.red('meta generation failed'))
+    if (checker.metaName) {
+        checker.checkNotEmpty(config.getPath(name, 'meta'), 'configPath', {
+            message: 'The config file for the meta production named "' + name + '" has not be found'
+         })
     }
-    var x_metaPluginsItems = [];
-    if (configInstance.plugins && configInstance.metaPlugins.length > 0) {
-        x_metaPluginsItems = configInstance.metaPlugins;
+    if (!checker.isValid()) {
+        return checker.checkOut();
     }
-    else {
-        chalk.red('wizzi.cli.meta - meta plugins not found in wizzi.meta.config')
-        chalk.red('meta generation failed')
-        return ;
-    }
-    if (!file.exists(configInstance.metaCtxPath)) {
-        console.log("[31m%s[0m", 'Invalid options for `meta` command.');
-        console.log("[31m%s[0m", 'Meta context path not found', configInstance.metaCtxPath);
-        help({_:['help', 'meta']});
+    
+    const configInstance = require(checker.configPath);
+    
+    // loog 'wizzi.cli.meta.metaConfigInstance', configInstance
+    checker.checkNotEmpty(configInstance.pluginsBaseFolder, 'pluginsBaseFolder', {
+        message: "in config file " + checker.configPath
+     })
+    checker.checkArrayNotEmpty(configInstance.plugins, 'pluginsItems', {
+        message: "in config file " + checker.configPath
+     })
+    checker.checkNotEmpty(configInstance.metaPluginsBaseFolder, 'metaPluginsBaseFolder', {
+        message: "in config file " + checker.configPath
+     })
+    checker.checkArrayNotEmpty(configInstance.metaPlugins, 'metaPluginsItems', {
+        message: "in config file " + checker.configPath
+     })
+    checker.checkFile(configInstance.metaCtxPath, {
+        message: 'Meta context path'
+     })
+    if (!checker.checkOut()) {
         return ;
     }
     generateMeta(configInstance.metaCtxPath, configInstance.destPath, {
-        items: x_pluginsItems, 
-        pluginsBaseFolder: x_pluginsBaseFolder
+        items: checker.pluginsItems, 
+        pluginsBaseFolder: checker.pluginsBaseFolder
      }, {
-        items: x_metaPluginsItems, 
-        metaPluginsBaseFolder: x_metaPluginsBaseFolder
+        items: checker.metaPluginsItems, 
+        metaPluginsBaseFolder: checker.metaPluginsBaseFolder
      }, configInstance.globalContext, (err, result) => {
     
         if (err) {
-            throw err;
+            console.log("[31m%s[0m", "");
+            console.log("[31m%s[0m", "");
             console.log("[31m%s[0m", err);
+            console.log("[31m%s[0m", "");
+            console.log("[31m%s[0m", "");
+        }
+        else {
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", 'Meta production execution done');
+            console.log("[32m%s[0m", "");
+            console.log("[32m%s[0m", "");
         }
     }
     )
@@ -100,11 +116,11 @@ function generateMeta(metaCtxPath, destPath, pluginsInfo, metaPluginsInfo, globa
              }, (err, wizziPackiFiles) => {
             
                 if (err) {
-                    throw err;
                     console.log("[31m%s[0m", err);
+                    throw err;
                     return ;
                 }
-                console.log('wizzi.cli.meta.result.wizziPackiFiles.keys', Object.keys(wizziPackiFiles), __filename);
+                // loog 'wizzi.cli.meta.result.wizziPackiFiles.keys', Object.keys(wizziPackiFiles)
                 metaCtx.__wz_fsc.dumpDebugObjects({
                     kind: 'packi', 
                     destFolder: path.join(__dirname, 'dumps', 'packi')

@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\fy.js.ittf
-    utc time: Wed, 28 Feb 2024 08:45:08 GMT
+    utc time: Wed, 28 Feb 2024 20:31:32 GMT
 */
 'use strict';
 const path = require('path');
@@ -12,12 +12,19 @@ const verify = wizziUtils.verify;
 const file = wizziUtils.file;
 const vfile = wizziUtils.vfile;
 const help = require('./help');
+const commons = require('./commons');
 const factory = require('../factory');
 const github = require('../features/github');
 var _wf = null;
+
+const kCommandName = "fy";
+
 module.exports = (args, accessToken) => {
 
     console.log('fy.accessToken', accessToken, args.git, __filename);
+    
+    const checker = new commons.commandChecker(kCommandName);
+    
     if (args.git) {
         wizzifyGitRepo(args, accessToken, (err, result) => {
         
@@ -31,94 +38,76 @@ module.exports = (args, accessToken) => {
         return ;
     }
     let currentDir = process.cwd();
-    let source = args.source || args.s;
-    let dest = args.dest || args.d;
-    console.log('fy.source.dest', source, dest, __filename);
-    var sourcePath, destPath, sourceIsFolder;
-    if (source && source.length > 0) {
-        if (verify.isAbsolutePath(source)) {
-            sourcePath = source;
-        }
-        else {
-            sourcePath = path.join(currentDir, source);
-        }
-        if (!file.exists(sourcePath)) {
-            console.log("[31m%s[0m", 'Invalid options for `fy` command.');
-            console.log("[31m%s[0m", 'Source path not found', source);
-            help({_:['help', 'fy']});
-            return ;
-        }
-        sourceIsFolder = file.isDirectory(sourcePath);
-        if (dest && dest.length > 0) {
-            if (verify.isAbsolutePath(dest)) {
-                destPath = dest;
+    let sourcePath = args.source || args.s;
+    let destPath = args.dest || args.d;
+    // loog 'fy.sourcePath.destPath', sourcePath, destPath
+    checker.checkFile(sourcePath, 'sourcePath')
+    checker.checkFile(destPath, 'destPath')
+    if (!checker.checkOut()) {
+        return ;
+    }
+    // log 'source is folder', checker.sourcePath_is_folder
+    // log 'dest is folder', checker.destPath_is_folder
+    if (checker.sourcePath_is_folder && !checker.destPath_is_folder) {
+        checker.optionError('Source path is a folder, destination path cannot be a filename: ' + checker.destPath)
+        return checker.checkOut();
+    }
+    
+    // At this point this cannot be invalid
+    if (!checker.sourcePath_is_folder && checker.destPath_is_folder) {
+        checker.checkFile(path.join(destPath, path.basename(sourcePath) + '.ittf'), 'destPath', {
+            parentFolderMustExist: true
+         })
+    }
+    if (checker.sourcePath_is_folder) {
+        console.log('ok. source && dest are folders', args, __filename);
+        wizzifyFolder(checker.sourcePath, checker.destPath, args.f || args.from || null, args.t || args.to || null, (err, result) => {
+        
+            if (err) {
+                console.log("[31m%s[0m", 'err', err);
+                throw new Error(err.message);
             }
-            else {
-                destPath = path.join(currentDir, dest);
-            }
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", 'Wizzification done, see', checker.destPath + ' folder');
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", '');
         }
-        if (!file.exists(path.dirname(destPath))) {
-            console.log("[31m%s[0m", 'Invalid options for `fy` command.');
-            console.log("[31m%s[0m", 'Destination path dirname not found', dest);
-            help({_:['help', 'fy']});
-            return ;
-        }
-        if (file.isFile(destPath) && sourceIsFolder) {
-            console.log("[31m%s[0m", 'Invalid options for `fy` command.');
-            console.log("[31m%s[0m", 'Source path is a folder, destination path cannot be a filename', dest);
-            help({_:['help', 'fy']});
-            return ;
-        }
-        if (file.isDirectory(destPath) && !sourceIsFolder) {
-            destPath = path.join(destPath, path.basename(sourcePath) + '.ittf')
-            ;
-        }
-        if (sourceIsFolder) {
-            console.log('ok. source && dest are folders', args, __filename);
-            wizzifyFolder(sourcePath, destPath, args.f || args.from || null, args.t || args.to || null, (err, result) => {
-            
-                if (err) {
-                    console.log("[31m%s[0m", 'err', err);
-                    throw new Error(err.message);
-                }
-                console.log('Done. Wizzify folder.', __filename);
-            }
-            )
-        }
-        else {
-            console.log('ok. source && dest are files', __filename);
-            var extension = path.extname(sourcePath);
-            var schema;
-            extension = extension.substr(1);
-            if (extension.toLowerCase() === 'vue') {
-                source = '<vue>' + source + '</vue>';
-                schema = 'html';
-                isVue = true;
-            }
-            else if (extension.toLowerCase() === 'tsx') {
-                schema = 'ts';
-            }
-            else if (extension.toLowerCase() === 'jsx') {
-                schema = 'js';
-                extension = 'js';
-            }
-            else {
-                schema = extension;
-            }
-            wizzifyFile(sourcePath, destPath, (err, notUsed) => {
-            
-                if (err) {
-                    console.log("[31m%s[0m", 'err', err);
-                    throw new Error(err.message);
-                }
-                console.log('Done. Wizzify file.', __filename);
-            }
-            )
-        }
+        )
     }
     else {
-        console.log("[31m%s[0m", 'Invalid options for `fy` command.');
-        help({_:['help', 'fy']});
+        console.log('ok. source && dest are files', __filename);
+        var extension = path.extname(sourcePath);
+        var schema;
+        extension = extension.substr(1);
+        if (extension.toLowerCase() === 'vue') {
+            source = '<vue>' + source + '</vue>';
+            schema = 'html';
+            isVue = true;
+        }
+        else if (extension.toLowerCase() === 'tsx') {
+            schema = 'ts';
+        }
+        else if (extension.toLowerCase() === 'jsx') {
+            schema = 'js';
+            extension = 'js';
+        }
+        else {
+            schema = extension;
+        }
+        wizzifyFile(checker.sourcePath, checker.destPath, (err, notUsed) => {
+        
+            if (err) {
+                console.log("[31m%s[0m", 'err', err);
+                throw new Error(err.message);
+            }
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", 'Wizzification done, see', checker.destPath + ' file');
+            console.log("[32m%s[0m", '');
+            console.log("[32m%s[0m", '');
+        }
+        )
     }
 }
 ;

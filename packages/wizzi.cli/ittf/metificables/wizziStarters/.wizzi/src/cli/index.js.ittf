@@ -1,0 +1,29 @@
+module
+    kind es6
+    
+    const path = require('path')
+    const fs = require('fs')
+    const wizzi = require('@wizzi/factory')
+    +
+    _ loadContexts
+    +
+    function loadContexts
+        const contextsFolder
+            _ path.join
+                @ __dirname
+                @ 'data'
+                @ 'contexts'
+        set filenames
+            _ fs.readdirSync
+                @ contextsFolder
+        log 'loadContexts.filenames', filenames
+        
+        set fileObjs =
+            _ fs.readdirSync
+                @ contextsFolder
+                { 
+                    @ withFileTypes true
+        _ fileObjs.forEach
+            => 
+                param file
+                log file
