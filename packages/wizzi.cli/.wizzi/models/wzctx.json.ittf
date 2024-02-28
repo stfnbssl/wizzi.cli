@@ -99,7 +99,6 @@
 
         $ var compactOption = "subfolder[;subfolder[;...]]}"
         command(metify, 
-            \b wz metify {options},
             \b wz metify --source {folder} --dest {folder} [--compact ${compactOption}],
             \b Execute the 'metification' of a wizzi folder, so that you can parametrize the whole package structure
             options()

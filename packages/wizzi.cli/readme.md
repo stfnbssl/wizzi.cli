@@ -138,8 +138,8 @@ wz meta {metaname}
 </table>
 
 ## "metify"
-*wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]*```sh
-wz metify {options}
+*Execute the 'metification' of a wizzi folder*```sh
+wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]
 ```
 
 <table>
