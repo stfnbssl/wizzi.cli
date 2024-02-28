@@ -27,8 +27,11 @@ Run `wz --help` for full help.
 
 ## CLI Commands
 ## "main"
-*Execute a wizzi package production (default) or a specified command*```sh
-wz [noarguments | configname] | [command {options}]
+
+<p>*Execute a wizzi package production (default) or a specified command*</p>
+
+```sh
+wz [noarguments | configname] | [command <options>]
 ```
 
 <table>
@@ -42,7 +45,7 @@ wz [noarguments | configname] | [command {options}]
 </tr>
 <tr>
 <td>configname</td>
-<td>execute a wizzi production using 'wizzi.config.{configname}.js' config file
+<td>execute a wizzi production using 'wizzi.config.<configname>.js' config file
 
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
@@ -66,8 +69,11 @@ commands:
  |- Try: wz help [command]
 
 ## "job"
-*Execute the wizzi job defined in a configuration file*```sh
-wz job {jobname} --config {file}
+
+<p>*Execute the wizzi job defined in a configuration file*</p>
+
+```sh
+wz job <jobname> --config <file>
 ```
 
 <table>
@@ -81,8 +87,8 @@ wz job {jobname} --config {file}
 `&nbsp;&nbsp; |- Is simply the display name for the job`
 </tr>
 <tr>
-<td>[--config | -c] {configname}</td>
-<td>the name of the job configuration file: {configname}.config.js
+<td>[--config | -c] <configname></td>
+<td>the name of the job configuration file: <configname>.config.js
 
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
@@ -90,8 +96,11 @@ wz job {jobname} --config {file}
 </table>
 
 ## "fy"
-*Execute the 'wizzifycation' of a file or folder*```sh
-wz fy --source {file|folder} --dest {file|folder} --config {file}
+
+<p>*Execute the 'wizzifycation' of a file or folder*</p>
+
+```sh
+wz fy --source <file|folder> --dest <file|folder> --config <file>
 ```
 
 <table>
@@ -99,17 +108,17 @@ wz fy --source {file|folder} --dest {file|folder} --config {file}
 <th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
-<td>[--source | -s] {file | folder}</td>
+<td>[--source | -s] <file | folder></td>
 <td>the source file or folder
 
 </tr>
 <tr>
-<td>[--dest | -d] {file | folder}</td>
+<td>[--dest | -d] <file | folder></td>
 <td>the destination file or folder
 
 </tr>
 <tr>
-<td>[--config | -c] {file}</td>
+<td>[--config | -c] <file></td>
 <td>a config file for extra plugins
 
 `&nbsp;&nbsp; |- A wizzi plugin can optionaly contain a wizzifier for its language schema.`
@@ -120,8 +129,11 @@ wz fy --source {file|folder} --dest {file|folder} --config {file}
 </table>
 
 ## "meta"
-*Execute a wizzi meta production*```sh
-wz meta {metaname}
+
+<p>*Execute a wizzi meta production*</p>
+
+```sh
+wz meta <metaname>
 ```
 
 <table>
@@ -130,7 +142,7 @@ wz meta {metaname}
 <tbody>
 <tr>
 <td>metaname</td>
-<td>the name of the meta definition file: wizzi.meta.config.{metaname}.js
+<td>the name of the meta definition file: wizzi.meta.config.<metaname>.js
 
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
@@ -138,8 +150,11 @@ wz meta {metaname}
 </table>
 
 ## "metify"
-*Execute the 'metification' of a wizzi folder*```sh
-wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]
+
+<p>*Execute the 'metification' of a wizzi folder*</p>
+
+```sh
+wz metify --source <folder> --dest <folder> [--compact $<compactOption>]
 ```
 
 <table>

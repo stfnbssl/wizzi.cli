@@ -2,18 +2,18 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\help.js.ittf
-    utc time: Wed, 28 Feb 2024 08:33:56 GMT
+    utc time: Wed, 28 Feb 2024 08:39:57 GMT
 */
 'use strict';
 const menus = {
     main: [
         "Execute a wizzi package production (default) or a specified command", 
         "", 
-        "wz [noarguments | configname] | [command {options}]", 
+        "wz [noarguments | configname] | [command <options>]", 
         "", 
         "options:", 
         " noarguments : execute a wizzi production using the 'wizzi.config.js' config file", 
-        " configname : execute a wizzi production using 'wizzi.config.{configname}.js' config file", 
+        " configname : execute a wizzi production using 'wizzi.config.<configname>.js' config file", 
         "  |- The config file is searched in the current and up folders", 
         "", 
         "commands:", 
@@ -30,12 +30,12 @@ const menus = {
     job: [
         "Execute the wizzi job defined in a configuration file", 
         "", 
-        "wz job {jobname} --config {file}", 
+        "wz job <jobname> --config <file>", 
         "", 
         "options:", 
         " jobname : the name of the job", 
         "  |- Is simply the display name for the job", 
-        " [--config | -c] {configname} : the name of the job configuration file: {configname}.config.js", 
+        " [--config | -c] <configname> : the name of the job configuration file: <configname>.config.js", 
         "  |- The config file is searched in the current and up folders", 
         "", 
         ""
@@ -43,12 +43,12 @@ const menus = {
     fy: [
         "Execute the 'wizzifycation' of a file or folder", 
         "", 
-        "wz fy --source {file|folder} --dest {file|folder} --config {file}", 
+        "wz fy --source <file|folder> --dest <file|folder> --config <file>", 
         "", 
         "options:", 
-        " [--source | -s] {file | folder} : the source file or folder", 
-        " [--dest | -d] {file | folder} : the destination file or folder", 
-        " [--config | -c] {file} : a config file for extra plugins", 
+        " [--source | -s] <file | folder> : the source file or folder", 
+        " [--dest | -d] <file | folder> : the destination file or folder", 
+        " [--config | -c] <file> : a config file for extra plugins", 
         "  |- A wizzi plugin can optionaly contain a wizzifier for its language schema.", 
         "  |- Basic wizzifiers are included in the Wizzi CLI.", 
         "  |- You can add extra plugins using a config file of the same format as for the 'wz' command.", 
@@ -58,10 +58,10 @@ const menus = {
     meta: [
         "Execute a wizzi meta production", 
         "", 
-        "wz meta {metaname}", 
+        "wz meta <metaname>", 
         "", 
         "options:", 
-        " metaname : the name of the meta definition file: wizzi.meta.config.{metaname}.js", 
+        " metaname : the name of the meta definition file: wizzi.meta.config.<metaname>.js", 
         "  |- The config file is searched in the current and up folders", 
         "", 
         ""
@@ -69,7 +69,7 @@ const menus = {
     metify: [
         "Execute the 'metification' of a wizzi folder", 
         "", 
-        "wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]", 
+        "wz metify --source <folder> --dest <folder> [--compact $<compactOption>]", 
         "", 
         "options:", 
         " [--source | -s] : the source file or folder", 

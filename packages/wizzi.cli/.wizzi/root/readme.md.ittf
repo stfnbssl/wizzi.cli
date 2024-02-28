@@ -34,7 +34,8 @@
         $foreach cmd in wzCtx.Commands
             h2 "${cmd.name}"
             $if cmd.desc
-                i ${cmd.desc}
+                p
+                    i ${cmd.desc}
             code sh
                 + ${cmd.cmd}
             $if _.isArray(cmd.options) && cmd.options.length > 0
