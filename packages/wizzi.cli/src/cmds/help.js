@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\help.js.ittf
-    utc time: Wed, 28 Feb 2024 08:12:51 GMT
+    utc time: Wed, 28 Feb 2024 08:31:27 GMT
 */
 'use strict';
 const menus = {
@@ -30,7 +30,7 @@ const menus = {
     job: [
         "Execute the wizzi job defined in a configuration file", 
         "", 
-        "wz job {jobname} {options}", 
+        "wz job {jobname} --config {file}", 
         "", 
         "options:", 
         " jobname : the name of the job", 
@@ -43,7 +43,7 @@ const menus = {
     fy: [
         "Execute the 'wizzifycation' of a file or folder", 
         "", 
-        "wz fy {options}", 
+        "wz fy --source {file|folder} --dest {file|folder} --config {file}", 
         "", 
         "options:", 
         " [--source | -s] {file | folder} : the source file or folder", 
@@ -67,14 +67,14 @@ const menus = {
         ""
     ].join('\n'), 
     metify: [
-        "Execute the 'metification' of a wizzi folder", 
+        "wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]", 
         "", 
         "wz metify {options}", 
         "", 
         "options:", 
-        " [--source | -s] {folder} : the source file or folder", 
-        " [--dest | -d] {folder} : the destination file or folder", 
-        " [--compact | -c] {subfolder[ : subfolder[", 
+        " [--source | -s] : the source file or folder", 
+        " [--dest | -d] : the destination file or folder", 
+        " [--compact | -p] : semicolon separated list of folders that you prefer 'metamanaged' by their parents", 
         "", 
         ""
     ].join('\n')

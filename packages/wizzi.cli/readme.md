@@ -26,24 +26,24 @@ npm install -g wizzi-cli
 Run `wz --help` for full help.
 
 ## CLI Commands
-### main
-Execute a wizzi package production (default) or a specified command
-
-```sh
+## "main"
+*Execute a wizzi package production (default) or a specified command*```sh
 wz [noarguments | configname] | [command {options}]
 ```
 
 <table>
 <thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
+<th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
 <td>noarguments</td>
-<td>execute a wizzi production using the 'wizzi.config.js' config file</td>
+<td>execute a wizzi production using the 'wizzi.config.js' config file
+
 </tr>
 <tr>
 <td>configname</td>
 <td>execute a wizzi production using 'wizzi.config.{configname}.js' config file
+
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
 </tbody>
@@ -65,52 +65,53 @@ commands:
 
  |- Try: wz help [command]
 
-### job
-Execute the wizzi job defined in a configuration file
-
-```sh
-wz job {jobname} {options}
+## "job"
+*Execute the wizzi job defined in a configuration file*```sh
+wz job {jobname} --config {file}
 ```
 
 <table>
 <thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
+<th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
 <td>jobname</td>
 <td>the name of the job
+
 `&nbsp;&nbsp; |- Is simply the display name for the job`
 </tr>
 <tr>
 <td>[--config | -c] {configname}</td>
 <td>the name of the job configuration file: {configname}.config.js
+
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
 </tbody>
 </table>
 
-### fy
-Execute the 'wizzifycation' of a file or folder
-
-```sh
-wz fy {options}
+## "fy"
+*Execute the 'wizzifycation' of a file or folder*```sh
+wz fy --source {file|folder} --dest {file|folder} --config {file}
 ```
 
 <table>
 <thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
+<th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
 <td>[--source | -s] {file | folder}</td>
-<td>the source file or folder</td>
+<td>the source file or folder
+
 </tr>
 <tr>
 <td>[--dest | -d] {file | folder}</td>
-<td>the destination file or folder</td>
+<td>the destination file or folder
+
 </tr>
 <tr>
 <td>[--config | -c] {file}</td>
 <td>a config file for extra plugins
+
 `&nbsp;&nbsp; |- A wizzi plugin can optionaly contain a wizzifier for its language schema.`
 `&nbsp;&nbsp; |- Basic wizzifiers are included in the Wizzi CLI.`
 `&nbsp;&nbsp; |- You can add extra plugins using a config file of the same format as for the 'wz' command.`
@@ -118,47 +119,47 @@ wz fy {options}
 </tbody>
 </table>
 
-### meta
-Execute a wizzi meta production
-
-```sh
+## "meta"
+*Execute a wizzi meta production*```sh
 wz meta {metaname}
 ```
 
 <table>
 <thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
+<th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
 <td>metaname</td>
 <td>the name of the meta definition file: wizzi.meta.config.{metaname}.js
+
 `&nbsp;&nbsp; |- The config file is searched in the current and up folders`
 </tr>
 </tbody>
 </table>
 
-### metify
-Execute the 'metification' of a wizzi folder
-
-```sh
+## "metify"
+*wz metify --source {folder} --dest {folder} [--compact subfolder[;subfolder[;...]]}]*```sh
 wz metify {options}
 ```
 
 <table>
 <thead>
-<th>Argument<th>Description                                                                                                                                                                                                                             |</thead>
+<th>Argument<th>Description                                                                                                                                                                                                                         |</thead>
 <tbody>
 <tr>
-<td>[--source | -s] {folder}</td>
-<td>the source file or folder</td>
+<td>[--source | -s]</td>
+<td>the source file or folder
+
 </tr>
 <tr>
-<td>[--dest | -d] {folder}</td>
-<td>the destination file or folder</td>
+<td>[--dest | -d]</td>
+<td>the destination file or folder
+
 </tr>
 <tr>
-<td>[--compact | -c] {subfolder[</td>
-<td>subfolder[</td>
+<td>[--compact | -p]</td>
+<td>semicolon separated list of folders that you prefer 'metamanaged' by their parents
+
 </tr>
 </tbody>
 </table>

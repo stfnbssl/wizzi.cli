@@ -32,21 +32,22 @@
         *$
 
         $foreach cmd in wzCtx.Commands
-            h3 ${cmd.name}
+            h2 "${cmd.name}"
             $if cmd.desc
-                p ${cmd.desc}
+                i ${cmd.desc}
             code sh
                 + ${cmd.cmd}
             $if _.isArray(cmd.options) && cmd.options.length > 0
                 table
                     thead
                         th Argument
-                        th Description                                                                                                                                                                                                                             |
+                        th Description                                                                                                                                                                                                                         |
                     tbody
                         $foreach opt in cmd.options
                             tr
                                 td ${opt.name}
                                 td ${opt.value}
+                                    br
                                     $foreach hint in opt.hints
                                         + &nbsp;&nbsp; |- ${hint}
             $foreach line in cmd.lines
