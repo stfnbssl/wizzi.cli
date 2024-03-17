@@ -1,0 +1,79 @@
+module
+    import 
+        @ createPath
+        from "@remix-run/router"
+    _ describe
+        @ "createPath"
+        => 
+            _ describe
+                @ "given only a pathname"
+                => 
+                    _ it
+                        @ "returns the pathname unchanged"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                            _ expect(path).toBe("https://google.com")
+            _ describe
+                @ "given a pathname and a search param"
+                => 
+                    _ it
+                        @ "returns the constructed pathname"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                                        @ search "?something=cool"
+                            _ expect(path).toBe("https://google.com?something=cool")
+            _ describe
+                @ "given a pathname and a search param without ?"
+                => 
+                    _ it
+                        @ "returns the constructed pathname"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                                        @ search "something=cool"
+                            _ expect(path).toBe("https://google.com?something=cool")
+            _ describe
+                @ "given a pathname and a hash param"
+                => 
+                    _ it
+                        @ "returns the constructed pathname"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                                        @ hash "#section-1"
+                            _ expect(path).toBe("https://google.com#section-1")
+            _ describe
+                @ "given a pathname and a hash param without #"
+                => 
+                    _ it
+                        @ "returns the constructed pathname"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                                        @ hash "section-1"
+                            _ expect(path).toBe("https://google.com#section-1")
+            _ describe
+                @ "given a full location object"
+                => 
+                    _ it
+                        @ "returns the constructed pathname"
+                        => 
+                            let path
+                                _ createPath
+                                    { 
+                                        @ pathname "https://google.com"
+                                        @ search "something=cool"
+                                        @ hash "#section-1"
+                            _ expect(path).toBe("https://google.com?something=cool#section-1")

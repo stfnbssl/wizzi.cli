@@ -1,0 +1,62 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ useLocation
+        from "react-router"
+    _ describe
+        @ "<Router>"
+        => 
+            let consoleError
+                :ref jest.SpyInstance
+            _ beforeEach
+                => 
+                    set consoleError =
+                        _ jest.spyOn(console, "error").mockImplementation
+                            => 
+            _ afterEach
+                => 
+                    _ consoleError.mockRestore()
+            _ it
+                @ "throws if another <Router> is already in context"
+                => 
+                    _ expect
+                        => 
+                            _ TestRenderer.create
+                                < MemoryRouter 
+                                    < MemoryRouter 
+                        ._ toThrow
+                            @ /cannot render a <Router> inside another <Router>/
+                    _ expect(consoleError).toHaveBeenCalledTimes(1)
+            _ it
+                @ "memoizes the current location"
+                => 
+                    let location1
+                    function CaptureLocation1
+                        set location1 = useLocation()
+                        return null
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        < CaptureLocation1 
+                    _ expect(location1).toBeDefined()
+                    let location2
+                    function CaptureLocation2
+                        set location2 = useLocation()
+                        return null
+                    _ TestRenderer.act
+                        => 
+                            _ renderer.update
+                                < MemoryRouter 
+                                    < CaptureLocation2 
+                    _ expect(location2).toBeDefined()
+                    _ expect(location1).toBe(location2)

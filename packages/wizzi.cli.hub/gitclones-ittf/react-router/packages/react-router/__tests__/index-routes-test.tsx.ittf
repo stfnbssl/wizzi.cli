@@ -1,0 +1,30 @@
+module
+    import 
+        @ matchRoutes
+        from "react-router"
+    _ describe
+        @ "index route matching"
+        => 
+            _ it
+                @ "throws when the index route has children"
+                => 
+                    _ expect
+                        => 
+                            _ matchRoutes
+                                [ 
+                                    { 
+                                        @ path "/users"
+                                        [ children
+                                            { 
+                                                @ index true
+                                                [ children
+                                                    { 
+                                                        @ path "not-valid"
+                                                # This config is not valid because index routes cannot have children
+                                                # @ts-expect-error
+                                            { 
+                                                @ path ":id"
+                                @ "/users/mj"
+                        ._ toThrowErrorMatchingInlineSnapshot
+                            `lit 
+                                + "Index routes must not have child routes. Please remove all child routes from route path "/users/"."

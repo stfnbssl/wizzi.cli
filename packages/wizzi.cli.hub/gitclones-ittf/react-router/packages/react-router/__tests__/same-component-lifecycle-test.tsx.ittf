@@ -1,0 +1,78 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "when the same component is mounted by two different routes"
+        => 
+            _ it
+                @ "mounts only once"
+                => 
+                    let mountCount = 0
+                    class Home
+                        super React.Component
+                        m componentDidMount
+                            set mountCount += 1
+                        m render
+                            return 
+                                h1 
+                                    + Home
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "another-home"
+                                                @ element
+                                                    < Home 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(mountCount).toBe(1)
+                    _ TestRenderer.act
+                        => 
+                            _ renderer.update
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/another-home"
+                                    < Routes 
+                                        < Route 
+                                            @ path "home"
+                                            @ element
+                                                < Home 
+                                        < Route 
+                                            @ path "another-home"
+                                            @ element
+                                                < Home 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(mountCount).toBe(1)

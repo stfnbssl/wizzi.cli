@@ -1,0 +1,110 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom/client"
+    import 
+        @ act
+        from "react-dom/test-utils"
+    import 
+        @ BrowserRouter
+        @ Routes
+        @ Route
+        @ useNavigate
+        @ useParams
+        from "react-router-dom"
+    _ describe
+        @ "navigate with params"
+        => 
+            let node
+                :ref HTMLDivElement
+            _ beforeEach
+                => 
+                    _ global.history.pushState
+                        { 
+                        @ ""
+                        @ "/"
+                    set node = document.createElement("div")
+                    _ document.body.appendChild(node)
+            _ afterEach
+                => 
+                    _ document.body.removeChild(node)
+                    set node =
+                        :! null
+            _ describe
+                @ "when navigate params are not already encoded"
+                => 
+                    _ it
+                        @ "correctly encodes the param in the URL and decodes the param when it is used"
+                        => 
+                            function Start
+                                let navigate = useNavigate()
+                                _ React.useEffect
+                                    => 
+                                        _ navigate("/blog/react router")
+                                return null
+                            function Blog
+                                let params = useParams()
+                                return 
+                                    h1 
+                                        + Blog:
+                                        + {params.slug}
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < BrowserRouter 
+                                            < Routes 
+                                                < Route 
+                                                    @ path "/"
+                                                    @ element
+                                                        < Start 
+                                                < Route 
+                                                    @ path "blog/:slug"
+                                                    @ element
+                                                        < Blog 
+                            _ expect(window.location.pathname).toEqual("/blog/react%20router")
+                            _ expect(node.innerHTML).toMatch(/react router/)
+            _ describe
+                @ "when navigate params are encoded using +"
+                => 
+                    _ it
+                        @ "does not alter the param encoding in the URL and decodes the param when it is used"
+                        => 
+                            function Start
+                                let navigate = useNavigate()
+                                _ React.useEffect
+                                    => 
+                                        _ navigate("/blog/react+router")
+                                return null
+                            function Blog
+                                let params = useParams()
+                                return 
+                                    h1 
+                                        + Blog:
+                                        + {params.slug}
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < BrowserRouter 
+                                            < Routes 
+                                                < Route 
+                                                    @ path "/"
+                                                    @ element
+                                                        < Start 
+                                                < Route 
+                                                    @ path "blog/:slug"
+                                                    @ element
+                                                        < Blog 
+                                # Need to add the + back for JSDom, but normal browsers leave
+                                # the + in the URL pathname. Should probably report this as a
+                                # bug in JSDom...
+                            let pathname = window.location.pathname.replace(/%20/g, "+")
+                                # Need to add the + back for JSDom, but normal browsers leave
+                                # the + in the URL pathname. Should probably report this as a
+                                # bug in JSDom...
+                            _ expect(pathname).toEqual("/blog/react+router")
+                                # Note decodeURIComponent doesn't decode +
+                            _ expect(node.innerHTML).toMatch(/react\+router/)
+                                # Note decodeURIComponent doesn't decode +

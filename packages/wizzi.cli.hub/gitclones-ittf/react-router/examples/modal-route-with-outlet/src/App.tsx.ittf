@@ -1,0 +1,183 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Outlet
+        @ Link
+        @ useNavigate
+        @ useParams
+        @ RouterProvider
+        @ createBrowserRouter
+        from "react-router-dom"
+    import 
+        @ Dialog
+        from "@reach/dialog"
+    import "@reach/dialog/styles.css"
+    import 
+        @ IMAGES
+        @ getImageById
+        from "./images"
+    const router
+        _ createBrowserRouter
+            [ 
+                { 
+                    @ path "/"
+                    @ Component Layout
+                    [ children
+                        { 
+                            @ path "/"
+                            @ Component Home
+                        { 
+                            @ path "gallery"
+                            @ Component Gallery
+                            [ children
+                                { 
+                                    @ path "img/:id"
+                                    @ Component ImageView
+    export-default 
+        function App
+            return 
+                < RouterProvider 
+                    @ router {router}
+    export 
+        function Layout
+            return 
+                div 
+                    h1 
+                        + Outlet Modal Example
+                    p 
+                        + This is a modal example using createBrowserRouter that drives modal&lf;        displays through URL segments. The modal is a child route of its parent&lf;        and renders in the Outlet.
+                    div 
+                        nav 
+                            ul 
+                                li 
+                                    < Link 
+                                        @ to "/"
+                                        + Home
+                                li 
+                                    < Link 
+                                        @ to "/gallery"
+                                        + Gallery
+                        hr 
+                    < Outlet 
+    export 
+        function Home
+            return 
+                div 
+                    h2 
+                        + Home
+                    p 
+                        + Click over to the
+                        < Link 
+                            @ to "/gallery"
+                            + Gallery
+                        + route to see the&lf;        modal in action
+                    < Outlet 
+    export 
+        function Gallery
+            return 
+                div 
+                    @ style
+                        { 
+                            @ padding "0 24px"
+                    h2 
+                        + Gallery
+                    p 
+                        + Click on an image, you'll notice that you still see this route behind&lf;        the modal. The URL will also change as its a child route of
+                        + {" "}
+                        pre 
+                            @ style
+                                { 
+                                    @ display "inline"
+                            + /gallery
+                        + {" "}
+                    div 
+                        @ style
+                            { 
+                                @ display "grid"
+                                @ gridTemplateColumns "repeat(auto-fit, minmax(200px, 1fr))"
+                                @ gap "24px"
+                        { 
+                            _ IMAGES.map
+                                => 
+                                    param image
+                                    < Link 
+                                        @ key {image.id}
+                                        @ to
+                                            `lit 
+                                                + img/
+                                                @ image.id
+                                                + 
+                                        img 
+                                            @ width {200}
+                                            @ height {200}
+                                            @ style
+                                                { 
+                                                    @ width "100%"
+                                                    @ aspectRatio "1 / 1"
+                                                    @ height "auto"
+                                                    @ borderRadius "8px"
+                                            @ src {image.src}
+                                            @ alt {image.title}
+                        < Outlet 
+    export 
+        function ImageView
+            let navigate = useNavigate()
+            let 
+                { 
+                    @ id
+                =
+                    _ useParams
+                        :param 
+                            :literal "id"
+            let image = getImageById(Number(id))
+            let buttonRef
+                _ React.useRef
+                    :param 
+                        :ref HTMLButtonElement
+                    @ null
+            function onDismiss
+                _ navigate(-1)
+            if !image
+                throw 
+                    new Error
+                        `lit 
+                            + No image found with id:&nbsp;
+                            @ id
+                            + 
+            return 
+                < Dialog 
+                    @ aria-labelledby "label"
+                    @ onDismiss {onDismiss}
+                    @ initialFocusRef {buttonRef}
+                    div 
+                        @ style
+                            { 
+                                @ display "grid"
+                                @ justifyContent "center"
+                                @ padding "8px 8px"
+                        h1 
+                            @ id "label"
+                            @ style
+                                { 
+                                    @ margin 0
+                            + {image.title}
+                        img 
+                            @ style
+                                { 
+                                    @ margin "16px 0"
+                                    @ borderRadius "8px"
+                                    @ width "100%"
+                                    @ height "auto"
+                            @ width {400}
+                            @ height {400}
+                            @ src {image.src}
+                            @ alt ""
+                        button 
+                            @ style
+                                { 
+                                    @ display "block"
+                            @ ref {buttonRef}
+                            @ onClick {onDismiss}
+                            + Close

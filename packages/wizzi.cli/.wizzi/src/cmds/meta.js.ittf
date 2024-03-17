@@ -2,9 +2,6 @@
 	kind es6
     +
 	const path = require('path')
-	const util = require('util')
-	const async = require('async')
-    const chalk = require('chalk')
 	const wizzi = require('@wizzi/factory')
 	const wizziUtils = require('wizzi-utils')
 	const file = wizziUtils.file

@@ -1,0 +1,251 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ Location
+        @ To
+        from "history"
+    import 
+        @ Action
+        @ createPath
+        @ parsePath
+        from "history"
+        # Get useHistory from react-router-dom v5 (peer dep).
+        # @ts-expect-error
+    import 
+        @ useHistory
+        @ Route
+            as RouteV5
+        from "react-router-dom"
+        # Get useHistory from react-router-dom v5 (peer dep).
+        # @ts-expect-error
+        # We are a wrapper around react-router-dom v6, so bring it in
+        # and bundle it because an app can't have two versions of
+        # react-router-dom in its package.json.
+    import 
+        @ Router
+        @ Routes
+        @ Route
+        from "../react-router-dom"
+        # We are a wrapper around react-router-dom v6, so bring it in
+        # and bundle it because an app can't have two versions of
+        # react-router-dom in its package.json.
+        # v5 isn't in TypeScript, they'll also lose the @types/react-router with this
+        # but not worried about that for now.
+    export 
+        function CompatRoute
+            param props
+                :any 
+            let 
+                { 
+                    @ location
+                    @ path
+                = props
+            if !props.exact
+                set path += "/*"
+            return 
+                < Routes 
+                    @ location {location}
+                    < Route 
+                        @ path {path}
+                        @ element
+                            < RouteV5 
+                                @ {...props}
+        # v5 isn't in TypeScript, they'll also lose the @types/react-router with this
+        # but not worried about that for now.
+        # Copied with 💜 from https://github.com/bvaughn/react-resizable-panels/blob/main/packages/react-resizable-panels/src/hooks/useIsomorphicEffect.ts
+    const canUseEffectHooks = !!(typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined")
+        # Copied with 💜 from https://github.com/bvaughn/react-resizable-panels/blob/main/packages/react-resizable-panels/src/hooks/useIsomorphicEffect.ts
+    const useIsomorphicLayoutEffect
+        iif canUseEffectHooks
+            then React.useLayoutEffect
+            else
+                => 
+    export 
+        function CompatRouter
+            { 
+                @ children
+                :{ 
+                    :p children
+                        :ref React.ReactNode
+            let history = useHistory()
+            let [state, setState]
+                _ React.useState
+                    => 
+                        (
+                            { 
+                                @ location history.location
+                                @ action history.action
+            _ useIsomorphicLayoutEffect
+                => 
+                    _ history.listen
+                        => 
+                            param location
+                                :ref Location
+                            param action
+                                :ref Action
+                            _ setState
+                                { 
+                                    @ location
+                                    @ action
+                [ 
+                    @ history
+            return 
+                < Router 
+                    @ navigationType {state.action}
+                    @ location {state.location}
+                    @ navigator {history}
+                    < Routes 
+                        < Route 
+                            @ path "*"
+                            @ element {children}
+    export 
+        :interface StaticRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p location
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+    const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i
+        #
+            # *
+            # * A `<Router>` that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 
+    export 
+        function StaticRouter
+            { 
+                @ basename
+                @ children
+                @ location
+                    = "/"
+                :ref StaticRouterProps
+            if typeof locationProp === "string"
+                set locationProp = parsePath(locationProp)
+            let action = Action.Pop
+            let location
+                :ref Location
+                =
+                    { 
+                        @ pathname locationProp.pathname || "/"
+                        @ search locationProp.search || ""
+                        @ hash locationProp.hash || ""
+                        @ state locationProp.state || null
+                        @ key locationProp.key || "default"
+            let staticNavigator
+                { 
+                    m createHref
+                        param to
+                            :ref To
+                        return 
+                            iif typeof to === "string"
+                                then to
+                                else createPath(to)
+                    m encodeLocation
+                        param to
+                            :ref To
+                        let href
+                            iif typeof to === "string"
+                                then to
+                                else createPath(to)
+                            # Treating this as a full URL will strip any trailing spaces so we need to
+                            # pre-encode them since they might be part of a matching splat param from
+                            # an ancestor route
+                        set href = href.replace(/ $/, "%20")
+                            # Treating this as a full URL will strip any trailing spaces so we need to
+                            # pre-encode them since they might be part of a matching splat param from
+                            # an ancestor route
+                        let encoded
+                            iif ABSOLUTE_URL_REGEX.test(href)
+                                then new URL(href)
+                                else new URL(href, "http://localhost")
+                        return 
+                            { 
+                                @ pathname encoded.pathname
+                                @ search encoded.search
+                                @ hash encoded.hash
+                    m push
+                        param to
+                            :ref To
+                        throw 
+                            new Error
+                                op+ 
+                                    op+ 
+                                        `lit 
+                                            + You cannot use navigator.push() on the server because it is a stateless&nbsp;
+                                        `lit 
+                                            + environment. This error was probably triggered when you did a&nbsp;
+                                    `lit 
+                                        + \`navigate(
+                                        _ JSON.stringify(to)
+                                        + )\` somewhere in your app.
+                    m replace
+                        param to
+                            :ref To
+                        throw 
+                            new Error
+                                op+ 
+                                    op+ 
+                                        op+ 
+                                            `lit 
+                                                + You cannot use navigator.replace() on the server because it is a stateless&nbsp;
+                                            `lit 
+                                                + environment. This error was probably triggered when you did a&nbsp;
+                                        `lit 
+                                            + \`navigate(
+                                            _ JSON.stringify(to)
+                                            + , { replace: true })\` somewhere&nbsp;
+                                    `lit 
+                                        + in your app.
+                    m go
+                        param delta
+                            :number 
+                        throw 
+                            new Error
+                                op+ 
+                                    op+ 
+                                        `lit 
+                                            + You cannot use navigator.go() on the server because it is a stateless&nbsp;
+                                        `lit 
+                                            + environment. This error was probably triggered when you did a&nbsp;
+                                    `lit 
+                                        + \`navigate(
+                                        @ delta
+                                        + )\` somewhere in your app.
+                    m back
+                        throw 
+                            new Error
+                                op+ 
+                                    `lit 
+                                        + You cannot use navigator.back() on the server because it is a stateless&nbsp;
+                                    `lit 
+                                        + environment.
+                    m forward
+                        throw 
+                            new Error
+                                op+ 
+                                    `lit 
+                                        + You cannot use navigator.forward() on the server because it is a stateless&nbsp;
+                                    `lit 
+                                        + environment.
+            return 
+                < Router 
+                    @ basename {basename}
+                    @ children {children}
+                    @ location {location}
+                    @ navigationType {action}
+                    @ navigator {staticNavigator}
+                    @ static {true}
+        #
+            # *
+            # * A `<Router>` that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 

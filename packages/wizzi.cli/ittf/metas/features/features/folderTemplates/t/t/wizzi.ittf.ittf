@@ -1,0 +1,28 @@
+$group
+    $include api
+    $include controllers
+
+    $
+        var items = [
+        ]
+
+    $foreach item in items
+        $file features/wizzi/t/${item}.ittf.ittf
+            ${'$'}{'$'}group
+                ${'$'}include features/wizzi/tfolder/${item}
+
+    $file features/wizzi/factory.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/factory.ts
+    $file features/wizzi/index.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/index.ts
+    $file features/wizzi/maps.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/maps.ts
+    $file features/wizzi/productions.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/productions.ts
+    $file features/wizzi/types.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/types.ts

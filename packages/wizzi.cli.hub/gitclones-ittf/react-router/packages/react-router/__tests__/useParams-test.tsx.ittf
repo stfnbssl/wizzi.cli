@@ -1,0 +1,278 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Outlet
+        @ Routes
+        @ Route
+        @ useParams
+        from "react-router"
+    function ShowParams
+        return 
+            pre 
+                + {JSON.stringify(useParams())}
+    _ describe
+        @ "useParams"
+        => 
+            _ describe
+                @ "when the route isn't matched"
+                => 
+                    _ it
+                        @ "returns an empty object"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the path has no params"
+                => 
+                    _ it
+                        @ "returns an empty object"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the path has some params"
+                => 
+                    _ it
+                        @ "returns an object of the URL params"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/blog/react-router"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/blog/:slug"
+                                                        @ element
+                                                            < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"slug":"react-router"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "a child route"
+                        => 
+                            _ it
+                                @ "returns a combined hash of the parent and child params"
+                                => 
+                                    function UserDashboard
+                                        return 
+                                            div 
+                                                h1 
+                                                    + User Dashboard
+                                                < Outlet 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/users/mjackson/courses/react-router"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "users/:username"
+                                                                @ element
+                                                                    < UserDashboard 
+                                                                < Route 
+                                                                    @ path "courses/:course"
+                                                                    @ element
+                                                                        < ShowParams 
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             User Dashboard&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <pre>&lf;
+                                            + &nbsp;             {"username":"mjackson","course":"react-router"}&lf;
+                                            + &nbsp;           </pre>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "when the path has percent-encoded params"
+                => 
+                    _ it
+                        @ "returns an object of the decoded params"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/blog/react%20router"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/blog/:slug"
+                                                        @ element
+                                                            < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"slug":"react router"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the path has a + character"
+                => 
+                    _ it
+                        @ "returns an object of the decoded params"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/blog/react+router+is%20awesome"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/blog/:slug"
+                                                        @ element
+                                                            < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"slug":"react+router+is awesome"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the path has a malformed param"
+                => 
+                    let consoleWarn
+                        :ref jest.SpyInstance
+                            :param 
+                                :ref ReturnType
+                                    :param 
+                                        :typeof console.warn
+                            :param 
+                                :ref Parameters
+                                    :param 
+                                        :typeof console.warn
+                    _ beforeEach
+                        => 
+                            set consoleWarn =
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                    _ afterEach
+                        => 
+                            _ consoleWarn.mockRestore()
+                    _ it
+                        @ "returns the raw value and warns"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/blog/react%2router"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/blog/:slug"
+                                                        @ element
+                                                            < ShowParams 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"slug":"react%2router"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                            _ expect(consoleWarn).toHaveBeenCalledWith(expect.stringMatching("malformed URL segment"))
+            _ describe
+                @ "when the params match in a child route"
+                => 
+                    _ it
+                        @ "renders params in the parent"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/blog/react-router"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/blog"
+                                                        @ element
+                                                            < ShowParams 
+                                                        < Route 
+                                                            @ path ":slug"
+                                                            @ element {null}
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"slug":"react-router"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;

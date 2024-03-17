@@ -1,0 +1,385 @@
+module
+    import 
+        @ generatePath
+        from "react-router"
+    _ describe
+        @ "generatePath"
+        => 
+            _ describe
+                @ "with no params"
+                => 
+                    _ it
+                        @ "returns the unmodified path"
+                        => 
+                            _ expect(generatePath("/")).toBe("/")
+                            _ expect(generatePath("/courses")).toBe("/courses")
+            _ describe
+                @ "with params"
+                => 
+                    _ it
+                        @ "returns the path without those params interpolated"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:id"
+                                    { 
+                                        @ id "routing"
+                                ._ toBe
+                                    @ "/courses/routing"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:id/student/:studentId"
+                                    { 
+                                        @ id "routing"
+                                        @ studentId "matt"
+                                ._ toBe
+                                    @ "/courses/routing/student/matt"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/*"
+                                    { 
+                                        @ "*" "routing/grades"
+                                ._ toBe
+                                    @ "/courses/routing/grades"
+                            _ expect
+                                _ generatePath
+                                    @ "*"
+                                    { 
+                                        @ "*" "routing/grades"
+                                ._ toBe
+                                    @ "routing/grades"
+                            _ expect
+                                _ generatePath
+                                    @ "/*"
+                                    { 
+                                ._ toBe
+                                    @ "/"
+                    _ it
+                        @ "handles * in parameter values"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:name"
+                                    { 
+                                        @ name "foo*"
+                                ._ toBe
+                                    @ "/courses/foo*"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:name"
+                                    { 
+                                        @ name "*foo"
+                                ._ toBe
+                                    @ "/courses/*foo"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:name"
+                                    { 
+                                        @ name "*f*oo*"
+                                ._ toBe
+                                    @ "/courses/*f*oo*"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:name"
+                                    { 
+                                        @ name "foo*"
+                                        @ "*" "splat_should_not_be_added"
+                                ._ toBe
+                                    @ "/courses/foo*"
+                    _ it
+                        @ "handles a 0 parameter"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:id"
+                                    { 
+                                        @ id 0
+                                ._ toBe
+                                    @ "/courses/0"
+                                # @ts-expect-error
+                                # incorrect usage but worked in 6.3.0 so keep it to avoid the regression
+                                # @ts-expect-error
+                                # incorrect usage but worked in 6.3.0 so keep it to avoid the regression
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/*"
+                                    { 
+                                        @ "*" 0
+                                ._ toBe
+                                    @ "/courses/0"
+                                # @ts-expect-error
+                                # incorrect usage but worked in 6.3.0 so keep it to avoid the regression
+                    _ it
+                        @ "handles dashes in dynamic params"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/:foo-bar"
+                                    { 
+                                        @ "foo-bar" "baz"
+                                ._ toBe
+                                    @ "/courses/baz"
+            _ describe
+                @ "with extraneous params"
+                => 
+                    _ it
+                        @ "ignores them"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/"
+                                    { 
+                                        @ course "routing"
+                                ._ toBe
+                                    @ "/"
+                            _ expect
+                                _ generatePath
+                                    @ "/courses"
+                                    { 
+                                        @ course "routing"
+                                ._ toBe
+                                    @ "/courses"
+            _ describe
+                @ "with missing params"
+                => 
+                    _ it
+                        @ "throws an error"
+                        => 
+                            _ expect
+                                => 
+                                    _ generatePath
+                                        @ "/:lang/login"
+                                        { 
+                                ._ toThrow
+                                    @ /Missing ":lang" param/
+            _ describe
+                @ "with a missing splat"
+                => 
+                    _ it
+                        @ "omits the splat and trims the trailing slash"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/courses/*"
+                                    { 
+                                ._ toBe
+                                    @ "/courses"
+            _ describe
+                @ "with optional params"
+                => 
+                    _ it
+                        @ "adds optional dynamic params where appropriate"
+                        => 
+                            let path = "/:one?/:two?/:three?"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ one "uno"
+                                ._ toBe
+                                    @ "/uno"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ one "uno"
+                                        @ two "dos"
+                                ._ toBe
+                                    @ "/uno/dos"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ one "uno"
+                                        @ two "dos"
+                                        @ three "tres"
+                                ._ toBe
+                                    @ "/uno/dos/tres"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ one "uno"
+                                        @ three "tres"
+                                ._ toBe
+                                    @ "/uno/tres"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ two "dos"
+                                ._ toBe
+                                    @ "/dos"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ two "dos"
+                                        @ three "tres"
+                                ._ toBe
+                                    @ "/dos/tres"
+                    _ it
+                        @ "strips optional aspects of static segments"
+                        => 
+                            _ expect
+                                _ generatePath
+                                    @ "/one?/two?/:three?"
+                                    { 
+                                ._ toBe
+                                    @ "/one/two"
+                            _ expect
+                                _ generatePath
+                                    @ "/one?/two?/:three?"
+                                    { 
+                                        @ three "tres"
+                                ._ toBe
+                                    @ "/one/two/tres"
+                    _ it
+                        @ "handles intermixed segments"
+                        => 
+                            let path = "/one?/:two?/three/:four/*"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ four "cuatro"
+                                ._ toBe
+                                    @ "/one/three/cuatro"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ two "dos"
+                                        @ four "cuatro"
+                                ._ toBe
+                                    @ "/one/dos/three/cuatro"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ two "dos"
+                                        @ four "cuatro"
+                                        @ "*" "splat"
+                                ._ toBe
+                                    @ "/one/dos/three/cuatro/splat"
+                            _ expect
+                                _ generatePath
+                                    @ path
+                                    { 
+                                        @ two "dos"
+                                        @ four "cuatro"
+                                        @ "*" "splat/and/then/some"
+                                ._ toBe
+                                    @ "/one/dos/three/cuatro/splat/and/then/some"
+            _ it
+                @ "throws only on on missing named parameters, but not missing splat params"
+                => 
+                    _ expect
+                        => 
+                            _ generatePath(":foo")
+                        ._ toThrow
+                    _ expect
+                        => 
+                            _ generatePath("/:foo")
+                        ._ toThrow
+                    _ expect
+                        => 
+                            _ generatePath("*")
+                        . not
+                        ._ toThrow
+                    _ expect
+                        => 
+                            _ generatePath("/*")
+                        . not
+                        ._ toThrow
+            _ it
+                @ "only interpolates and does not add slashes"
+                => 
+                    let consoleWarn
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    _ expect(generatePath("*")).toBe("")
+                    _ expect(generatePath("/*")).toBe("/")
+                    _ expect(generatePath("foo*")).toBe("foo")
+                    _ expect(generatePath("/foo*")).toBe("/foo")
+                    _ expect
+                        _ generatePath
+                            @ ":foo"
+                            { 
+                                @ foo "bar"
+                        ._ toBe
+                            @ "bar"
+                    _ expect
+                        _ generatePath
+                            @ "/:foo"
+                            { 
+                                @ foo "bar"
+                        ._ toBe
+                            @ "/bar"
+                    _ expect
+                        _ generatePath
+                            @ "*"
+                            { 
+                                @ "*" "bar"
+                        ._ toBe
+                            @ "bar"
+                    _ expect
+                        _ generatePath
+                            @ "/*"
+                            { 
+                                @ "*" "bar"
+                        ._ toBe
+                            @ "/bar"
+                        # No support for partial dynamic params
+                    _ expect
+                        _ generatePath
+                            @ "foo:bar"
+                            { 
+                                @ bar "baz"
+                        ._ toBe
+                            @ "foo:bar"
+                        # No support for partial dynamic params
+                    _ expect
+                        _ generatePath
+                            @ "/foo:bar"
+                            { 
+                                @ bar "baz"
+                        ._ toBe
+                            @ "/foo:bar"
+                        # Partial splats are treated as independent path segments
+                    _ expect
+                        _ generatePath
+                            @ "foo*"
+                            { 
+                                @ "*" "bar"
+                        ._ toBe
+                            @ "foo/bar"
+                        # Partial splats are treated as independent path segments
+                    _ expect
+                        _ generatePath
+                            @ "/foo*"
+                            { 
+                                @ "*" "bar"
+                        ._ toBe
+                            @ "/foo/bar"
+                        # Ensure we warn on partial splat usages
+                    _ expect(consoleWarn.mock.calls).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "foo*" will be treated as if it were "foo/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "foo/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "/foo*" will be treated as if it were "/foo/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "/foo/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "foo*" will be treated as if it were "foo/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "foo/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "/foo*" will be treated as if it were "/foo/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "/foo/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # Ensure we warn on partial splat usages
+                    _ consoleWarn.mockRestore()

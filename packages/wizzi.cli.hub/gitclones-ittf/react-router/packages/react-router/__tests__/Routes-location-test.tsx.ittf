@@ -1,0 +1,99 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Route
+        @ Routes
+        @ useParams
+        from "react-router"
+    _ describe
+        @ "<Routes> with a location"
+        => 
+            function Home
+                return 
+                    h1 
+                        + Home
+            function User
+                let 
+                    { 
+                        @ userId
+                    = useParams()
+                return 
+                    div 
+                        h1 
+                            + User:
+                            + {userId}
+            _ it
+                @ "matches when the location is overridden"
+                => 
+                    let location
+                        { 
+                            @ pathname "/home"
+                            @ search ""
+                            @ hash ""
+                            @ state null
+                            @ key "r9qntrej"
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/users/michael"
+                                        < Routes 
+                                            @ location {location}
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "users/:userId"
+                                                @ element
+                                                    < User 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;    <h1>&lf;
+                            + &nbsp;      Home&lf;
+                            + &nbsp;    </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "matches when the location is not overridden"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/users/michael"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "users/:userId"
+                                                @ element
+                                                    < User 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         User:&nbsp;&lf;
+                            + &nbsp;         michael&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;

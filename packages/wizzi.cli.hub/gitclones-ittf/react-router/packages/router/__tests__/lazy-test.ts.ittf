@@ -1,0 +1,1596 @@
+module
+    import 
+        @ createMemoryHistory
+        @ createRouter
+        @ createStaticHandler
+        @ json
+        from "../index"
+        #
+            # eslint-disable jest/valid-title
+    :import-type 
+        @ TestRouteObject
+        from "./utils/data-router-setup"
+    import 
+        @ cleanup
+        @ createDeferred
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        @ createRequest
+        @ findRouteById
+        @ invariant
+        @ tick
+        from "./utils/utils"
+    _ describe
+        @ "lazily loaded route modules"
+        => 
+            _ beforeEach
+                => 
+                    _ jest.spyOn(console, "warn").mockImplementation
+                        => 
+                # Detect any failures inside the router navigate code
+            _ afterEach
+                => 
+                    _ cleanup()
+                        # @ts-ignore
+                    _ console.warn.mockReset()
+                        # @ts-ignore
+                # Detect any failures inside the router navigate code
+            const LAZY_ROUTES
+                :[ 
+                    :ref TestRouteObject
+                =
+                    [ 
+                        { 
+                            @ id "root"
+                            @ path "/"
+                            [ children
+                                { 
+                                    @ id "lazy"
+                                    @ path "/lazy"
+                                    @ lazy true
+            _ describe
+                @ "initialization"
+                => 
+                    _ it
+                        @ "fetches lazy route modules on router initialization"
+                        async=> 
+                            let dfd = createDeferred()
+                            let router
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    => 
+                                                        +
+                                                            @expr dfd.promise
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/lazy"
+                            _ expect(router.state.initialized).toBe(false)
+                            _ router.initialize()
+                            let route
+                                { 
+                                    @ Component
+                                        => 
+                                            + null
+                            await 
+                                _ dfd.resolve(route)
+                            _ expect(router.state.location.pathname).toBe("/lazy")
+                            _ expect(router.state.navigation.state).toBe("idle")
+                            _ expect(router.state.initialized).toBe(true)
+                            _ expect(router.state.matches[0].route).toMatchObject(route)
+                    _ it
+                        @ "fetches lazy route modules and executes loaders on router initialization"
+                        async=> 
+                            let dfd = createDeferred()
+                            let router
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    => 
+                                                        +
+                                                            @expr dfd.promise
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/lazy"
+                            _ expect(router.state.initialized).toBe(false)
+                            _ router.initialize()
+                            let loaderDfd = createDeferred()
+                            let route
+                                { 
+                                    @ Component
+                                        => 
+                                            + null
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr loaderDfd.promise
+                            await 
+                                _ dfd.resolve(route)
+                            _ expect(router.state.initialized).toBe(false)
+                            await 
+                                _ loaderDfd.resolve("LOADER")
+                            _ expect(router.state.location.pathname).toBe("/lazy")
+                            _ expect(router.state.navigation.state).toBe("idle")
+                            _ expect(router.state.initialized).toBe(true)
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ "0" "LOADER"
+                            _ expect(router.state.matches[0].route).toMatchObject(route)
+                    _ it
+                        @ "fetches lazy route modules and executes loaders with v7_partialHydration enabled"
+                        async=> 
+                            let dfd = createDeferred()
+                            let router
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    => 
+                                                        +
+                                                            @expr dfd.promise
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/lazy"
+                                        { future
+                                            @ v7_partialHydration true
+                            _ expect(router.state.initialized).toBe(false)
+                            _ router.initialize()
+                            let loaderDfd = createDeferred()
+                            let route
+                                { 
+                                    @ Component
+                                        => 
+                                            + null
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr loaderDfd.promise
+                            await 
+                                _ dfd.resolve(route)
+                            _ expect(router.state.initialized).toBe(false)
+                            await 
+                                _ loaderDfd.resolve("LOADER")
+                            _ expect(router.state.location.pathname).toBe("/lazy")
+                            _ expect(router.state.navigation.state).toBe("idle")
+                            _ expect(router.state.initialized).toBe(true)
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ "0" "LOADER"
+                            _ expect(router.state.matches[0].route).toMatchObject(route)
+            _ describe
+                @ "happy path"
+                => 
+                    _ it
+                        @ "fetches lazy route modules on loading navigation"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            let dfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr dfd.promise
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ dfd.resolve("LAZY LOADER")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "LAZY LOADER"
+                    _ it
+                        @ "fetches lazy route modules on submission navigation"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            let actionDfd = createDeferred()
+                            let loaderDfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ action
+                                        => 
+                                            +
+                                                @expr actionDfd.promise
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr loaderDfd.promise
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ actionDfd.resolve("LAZY ACTION")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "LAZY ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ loaderDfd.resolve("LAZY LOADER")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "LAZY ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "LAZY LOADER"
+                    _ it
+                        @ "fetches lazy route modules on fetcher.load"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            let loaderDfd = createDeferred()
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr loaderDfd.promise
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            await 
+                                _ loaderDfd.resolve("LAZY LOADER")
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("idle")
+                            _ expect(t.router.state.fetchers.get(key)?.data).toBe("LAZY LOADER")
+                    _ it
+                        @ "fetches lazy route modules on fetcher.submit"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch
+                                        @ "/lazy"
+                                        @ key
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            let actionDfd = createDeferred()
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action
+                                            => 
+                                                +
+                                                    @expr actionDfd.promise
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            await 
+                                _ actionDfd.resolve("LAZY ACTION")
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("idle")
+                            _ expect(t.router.state.fetchers.get(key)?.data).toBe("LAZY ACTION")
+                    _ it
+                        @ "fetches lazy route modules on staticHandler.query()"
+                        async=> 
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            { 
+                                                                m loader
+                                                                    async
+                                                                    return 
+                                                                        _ json
+                                                                            { 
+                                                                                @ value "LAZY LOADER"
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.loaderData).toEqual
+                                { 
+                                    { lazy
+                                        @ value "LAZY LOADER"
+                    _ it
+                        @ "fetches lazy route modules on staticHandler.queryRoute()"
+                        async=> 
+                            let 
+                                { 
+                                    @ queryRoute
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            { 
+                                                                m loader
+                                                                    async
+                                                                    return 
+                                                                        _ json
+                                                                            { 
+                                                                                @ value "LAZY LOADER"
+                            let response
+                                await 
+                                    _ queryRoute(createRequest("/lazy"))
+                            let data
+                                await 
+                                    _ response.json()
+                            _ expect(data).toEqual
+                                { 
+                                    @ value "LAZY LOADER"
+            _ describe
+                @ "statically defined fields"
+                => 
+                    _ it
+                        @ "prefers statically defined loader over lazily defined loader"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ loader true
+                                                @ lazy true
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                                # Execute in parallel
+                            _ expect(A.loaders.lazy.stub).toHaveBeenCalled()
+                                # Execute in parallel
+                            _ expect(A.lazy.lazy.stub).toHaveBeenCalled()
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY LOADER"
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStub
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ A.loaders.lazy.resolve("STATIC LOADER")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "STATIC LOADER"
+                            let lazyRoute = findRouteById(t.router.routes, "lazy")
+                            _ expect(lazyRoute.lazy).toBeUndefined()
+                            _ expect(lazyRoute.loader).toEqual(expect.any(Function))
+                            _ expect(lazyRoute.loader).not.toBe(lazyLoaderStub)
+                            _ expect(lazyLoaderStub).not.toHaveBeenCalled()
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "loader" defined but its lazy function is also returning a value for this property. The lazy route property "loader" will be ignored."
+                            _ consoleWarn.mockReset()
+                    _ it
+                        @ "prefers statically defined action over lazily loaded action"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ action true
+                                                @ lazy true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                                # Execute in parallel
+                            _ expect(A.actions.lazy.stub).toHaveBeenCalled()
+                                # Execute in parallel
+                            _ expect(A.lazy.lazy.stub).toHaveBeenCalled()
+                            let lazyActionStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY ACTION"
+                            let loaderDfd = createDeferred()
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStub
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr loaderDfd.promise
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ A.actions.lazy.resolve("STATIC ACTION")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "STATIC ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ loaderDfd.resolve("LAZY LOADER")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "STATIC ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "LAZY LOADER"
+                            let lazyRoute = findRouteById(t.router.routes, "lazy")
+                            _ expect(lazyRoute.lazy).toBeUndefined()
+                            _ expect(lazyRoute.action).toEqual(expect.any(Function))
+                            _ expect(lazyRoute.action).not.toBe(lazyActionStub)
+                            _ expect(lazyActionStub).not.toHaveBeenCalled()
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "action" defined but its lazy function is also returning a value for this property. The lazy route property "action" will be ignored."
+                            _ consoleWarn.mockReset()
+                    _ it
+                        @ "prefers statically defined action/loader over lazily defined action/loader"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ action true
+                                                @ loader true
+                                                @ lazy true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            let lazyActionStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY ACTION"
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY LOADER"
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStub
+                                        @ loader lazyLoaderStub
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ A.actions.lazy.resolve("STATIC ACTION")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "STATIC ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ A.loaders.lazy.resolve("STATIC LOADER")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "STATIC ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "STATIC LOADER"
+                            let lazyRoute = findRouteById(t.router.routes, "lazy")
+                            _ expect(lazyRoute.lazy).toBeUndefined()
+                            _ expect(lazyRoute.action).toEqual(expect.any(Function))
+                            _ expect(lazyRoute.loader).toEqual(expect.any(Function))
+                            _ expect(lazyRoute.action).not.toBe(lazyActionStub)
+                            _ expect(lazyRoute.loader).not.toBe(lazyLoaderStub)
+                            _ expect(lazyActionStub).not.toHaveBeenCalled()
+                            _ expect(lazyLoaderStub).not.toHaveBeenCalled()
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(2)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "action" defined but its lazy function is also returning a value for this property. The lazy route property "action" will be ignored."
+                            _ expect(consoleWarn.mock.calls[1][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "loader" defined but its lazy function is also returning a value for this property. The lazy route property "loader" will be ignored."
+                            _ consoleWarn.mockReset()
+                    _ it
+                        @ "prefers statically defined loader over lazily defined loader (staticHandler.query)"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    async=> 
+                                        await 
+                                            _ tick()
+                                        return 
+                                            _ json
+                                                { 
+                                                    @ value "LAZY LOADER"
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ loader
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            _ json
+                                                                { 
+                                                                    @ value "STATIC LOADER"
+                                                @ lazy
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            { 
+                                                                @ loader lazyLoaderStub
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.loaderData).toEqual
+                                { 
+                                    { lazy
+                                        @ value "STATIC LOADER"
+                            _ expect(lazyLoaderStub).not.toHaveBeenCalled()
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "loader" defined but its lazy function is also returning a value for this property. The lazy route property "loader" will be ignored."
+                            _ consoleWarn.mockReset()
+                    _ it
+                        @ "prefers statically defined loader over lazily defined loader (staticHandler.queryRoute)"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    async=> 
+                                        await 
+                                            _ tick()
+                                        return 
+                                            _ json
+                                                { 
+                                                    @ value "LAZY LOADER"
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ loader
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            _ json
+                                                                { 
+                                                                    @ value "STATIC LOADER"
+                                                @ lazy
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            { 
+                                                                @ loader lazyLoaderStub
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.loaderData).toEqual
+                                { 
+                                    { lazy
+                                        @ value "STATIC LOADER"
+                            _ expect(lazyLoaderStub).not.toHaveBeenCalled()
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatchInlineSnapshot
+                                `lit 
+                                    + "Route "lazy" has a static property "loader" defined but its lazy function is also returning a value for this property. The lazy route property "loader" will be ignored."
+                            _ consoleWarn.mockReset()
+                    _ it
+                        @ "handles errors thrown from static loaders before lazy has completed"
+                        async=> 
+                            let consoleWarn = jest.spyOn(console, "warn")
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ id "lazy"
+                                                        @ path "lazy"
+                                                        @ loader true
+                                                        @ lazy true
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            await 
+                                _ A.loaders.lazy.reject("STATIC LOADER ERROR")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                                # We shouldn't bubble the loader error until after this resolves
+                                # so we know if it has a boundary or not
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ hasErrorBoundary true
+                                # We shouldn't bubble the loader error until after this resolves
+                                # so we know if it has a boundary or not
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ lazy "STATIC LOADER ERROR"
+                            _ consoleWarn.mockReset()
+            _ describe
+                @ "interruptions"
+                => 
+                    _ it
+                        @ "runs lazily loaded route loader even if lazy() is interrupted"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ t.navigate("/")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY LOADER"
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStub
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(lazyLoaderStub).toHaveBeenCalledTimes(1)
+                                # Ensure the lazy route object update still happened
+                            let lazyRoute = findRouteById(t.router.routes, "lazy")
+                                # Ensure the lazy route object update still happened
+                            _ expect(lazyRoute.lazy).toBeUndefined()
+                            _ expect(lazyRoute.loader).toBe(lazyLoaderStub)
+                    _ it
+                        @ "runs lazily loaded route action even if lazy() is interrupted"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ t.navigate("/")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            let lazyActionStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY ACTION"
+                            let lazyLoaderStub
+                                _ jest.fn
+                                    => 
+                                        + "LAZY LOADER"
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStub
+                                        @ loader lazyLoaderStub
+                            let lazyRoute = findRouteById(t.router.routes, "lazy")
+                            _ expect(lazyActionStub).toHaveBeenCalledTimes(1)
+                            _ expect(lazyLoaderStub).not.toHaveBeenCalled()
+                            _ expect(lazyRoute.lazy).toBeUndefined()
+                            _ expect(lazyRoute.action).toBe(lazyActionStub)
+                            _ expect(lazyRoute.loader).toBe(lazyLoaderStub)
+                    _ it
+                        @ "runs lazily loaded route loader on fetcher.load() even if lazy() is interrupted"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            let B
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                                # Resolve B's lazy route first
+                            let loaderDfdB = createDeferred()
+                                # Resolve B's lazy route first
+                            let lazyloaderStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdB.promise
+                            await 
+                                _ B.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyloaderStubB
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                                # Resolve A's lazy route after B
+                            let loaderDfdA = createDeferred()
+                                # Resolve A's lazy route after B
+                            let lazyLoaderStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdA.promise
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStubA
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            await 
+                                _ loaderDfdA.resolve("LAZY LOADER A")
+                            await 
+                                _ loaderDfdB.resolve("LAZY LOADER B")
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("idle")
+                            _ expect(t.router.state.fetchers.get(key)?.data).toBe("LAZY LOADER B")
+                            _ expect(lazyLoaderStubA).not.toHaveBeenCalled()
+                            _ expect(lazyloaderStubB).toHaveBeenCalledTimes(2)
+                    _ it
+                        @ "runs lazily loaded route action on fetcher.submit() even if lazy() is interrupted"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch
+                                        @ "/lazy"
+                                        @ key
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            let B
+                                await 
+                                    _ t.fetch
+                                        @ "/lazy"
+                                        @ key
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                                # Resolve B's lazy route first
+                            let actionDfdB = createDeferred()
+                                # Resolve B's lazy route first
+                            let lazyActionStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr actionDfdB.promise
+                            await 
+                                _ B.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStubB
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                                # Resolve A's lazy route after B
+                            let actionDfdA = createDeferred()
+                                # Resolve A's lazy route after B
+                            let lazyActionStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr actionDfdA.promise
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStubA
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            await 
+                                _ actionDfdA.resolve("LAZY ACTION A")
+                            await 
+                                _ actionDfdB.resolve("LAZY ACTION B")
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("idle")
+                            _ expect(t.router.state.fetchers.get(key)?.data).toBe("LAZY ACTION B")
+                            _ expect(lazyActionStubA).not.toHaveBeenCalled()
+                            _ expect(lazyActionStubB).toHaveBeenCalledTimes(2)
+                    _ it
+                        @ "uses the first-resolved lazy() execution on repeated loading navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            let B
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                                # Resolve B's lazy route first
+                            let loaderDfdB = createDeferred()
+                                # Resolve B's lazy route first
+                            let lazyLoaderStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdB.promise
+                            await 
+                                _ B.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStubB
+                                # Resolve A's lazy route after B
+                            let loaderDfdA = createDeferred()
+                                # Resolve A's lazy route after B
+                            let lazyLoaderStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdA.promise
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStubA
+                            await 
+                                _ loaderDfdA.resolve("LAZY LOADER A")
+                            await 
+                                _ loaderDfdB.resolve("LAZY LOADER B")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "LAZY LOADER B"
+                            _ expect(lazyLoaderStubA).not.toHaveBeenCalled()
+                            _ expect(lazyLoaderStubB).toHaveBeenCalledTimes(2)
+                    _ it
+                        @ "uses the first-resolved lazy() execution on repeated submission navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                                # Resolve B's lazy route first
+                            let loaderDfdB = createDeferred()
+                                # Resolve B's lazy route first
+                            let actionDfdB = createDeferred()
+                            let lazyLoaderStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdB.promise
+                            let lazyActionStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr actionDfdB.promise
+                            await 
+                                _ B.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStubB
+                                        @ loader lazyLoaderStubB
+                                # Resolve A's lazy route after B
+                            let loaderDfdA = createDeferred()
+                                # Resolve A's lazy route after B
+                            let actionDfdA = createDeferred()
+                            let lazyLoaderStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdA.promise
+                            let lazyActionStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr actionDfdA.promise
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action lazyActionStubA
+                                        @ loader lazyLoaderStubA
+                            await 
+                                _ actionDfdA.resolve("LAZY ACTION A")
+                            await 
+                                _ loaderDfdA.resolve("LAZY LOADER A")
+                            await 
+                                _ actionDfdB.resolve("LAZY ACTION B")
+                            await 
+                                _ loaderDfdB.resolve("LAZY LOADER B")
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ lazy "LAZY ACTION B"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ lazy "LAZY LOADER B"
+                            _ expect(lazyActionStubA).not.toHaveBeenCalled()
+                            _ expect(lazyLoaderStubA).not.toHaveBeenCalled()
+                            _ expect(lazyActionStubB).toHaveBeenCalledTimes(2)
+                            _ expect(lazyLoaderStubB).toHaveBeenCalledTimes(1)
+                    _ it
+                        @ "uses the first-resolved lazy() execution on repeated fetcher.load calls"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            let B
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                                # Resolve B's lazy route first
+                            let loaderDfdB = createDeferred()
+                                # Resolve B's lazy route first
+                            let lazyLoaderStubB
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdB.promise
+                            await 
+                                _ B.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStubB
+                                # Resolve A's lazy route after B
+                            let loaderDfdA = createDeferred()
+                                # Resolve A's lazy route after B
+                            let lazyLoaderStubA
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfdA.promise
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader lazyLoaderStubA
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            await 
+                                _ loaderDfdA.resolve("LAZY LOADER A")
+                            await 
+                                _ loaderDfdB.resolve("LAZY LOADER B")
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("idle")
+                            _ expect(t.router.state.fetchers.get(key)?.data).toBe("LAZY LOADER B")
+                            _ expect(lazyLoaderStubA).not.toHaveBeenCalled()
+                            _ expect(lazyLoaderStubB).toHaveBeenCalledTimes(2)
+            _ describe
+                @ "errors"
+                => 
+                    _ it
+                        @ "handles errors when failing to load lazy route modules on initialization"
+                        async=> 
+                            let dfd = createDeferred()
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/lazy"
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ hasErrorBoundary true
+                                                [ children
+                                                    { 
+                                                        @ id "lazy"
+                                                        @ path "lazy"
+                                                        @ lazy
+                                                            => 
+                                                                +
+                                                                    @expr dfd.promise
+                                                            # @ts-expect-error
+                                    ._ initialize
+                            _ expect(router.state.initialized).toBe(false)
+                            _ dfd.reject(Error("LAZY FUNCTION ERROR"))
+                            await 
+                                _ tick()
+                            _ expect(router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                            _ expect(router.state.initialized).toBe(true)
+                    _ it
+                        @ "handles errors when failing to load lazy route modules on loading navigation"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ A.lazy.lazy.reject(Error("LAZY FUNCTION ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                    _ it
+                        @ "handles loader errors from lazy route modules when the route has an error boundary"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            let dfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr dfd.promise
+                                    @ hasErrorBoundary true
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ dfd.reject(Error("LAZY LOADER ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ lazy new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "bubbles loader errors from in lazy route modules when the route does not specify an error boundary"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            let dfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr dfd.promise
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ dfd.reject(Error("LAZY LOADER ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "bubbles loader errors from lazy route modules when the route specifies hasErrorBoundary:false"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/lazy")
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            let dfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ loader
+                                        => 
+                                            +
+                                                @expr dfd.promise
+                                    @ hasErrorBoundary false
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ dfd.reject(Error("LAZY LOADER ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "handles errors when failing to load lazy route modules on submission navigation"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ A.lazy.lazy.reject(Error("LAZY FUNCTION ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                    _ it
+                        @ "handles action errors from lazy route modules on submission navigation"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            let actionDfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ action
+                                        => 
+                                            +
+                                                @expr actionDfd.promise
+                                    @ hasErrorBoundary true
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ actionDfd.reject(Error("LAZY ACTION ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ lazy new Error("LAZY ACTION ERROR")
+                    _ it
+                        @ "bubbles action errors from lazy route modules when the route specifies hasErrorBoundary:false"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/lazy"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            let actionDfd = createDeferred()
+                            _ A.lazy.lazy.resolve
+                                { 
+                                    @ action
+                                        => 
+                                            +
+                                                @expr actionDfd.promise
+                                    @ hasErrorBoundary false
+                            _ expect(t.router.state.location.pathname).toBe("/")
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ actionDfd.reject(Error("LAZY ACTION ERROR"))
+                            _ expect(t.router.state.location.pathname).toBe("/lazy")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY ACTION ERROR")
+                    _ it
+                        @ "handles errors when failing to load lazy route modules on fetcher.load"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            await 
+                                _ A.lazy.lazy.reject(Error("LAZY FUNCTION ERROR"))
+                            _ expect(t.router.state.fetchers.get(key)).toBeUndefined()
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                    _ it
+                        @ "handles loader errors in lazy route modules on fetcher.load"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch("/lazy", key)
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            let loaderDfd = createDeferred()
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr loaderDfd.promise
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                            await 
+                                _ loaderDfd.reject(Error("LAZY LOADER ERROR"))
+                            _ expect(t.router.state.fetchers.get(key)).toBeUndefined()
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "handles errors when failing to load lazy route modules on fetcher.submit"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch
+                                        @ "/lazy"
+                                        @ key
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            await 
+                                _ A.lazy.lazy.reject(Error("LAZY FUNCTION ERROR"))
+                            _ expect(t.router.state.fetchers.get(key)).toBeUndefined()
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                    _ it
+                        @ "handles action errors in lazy route modules on fetcher.submit"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes LAZY_ROUTES
+                            let key = "key"
+                            let A
+                                await 
+                                    _ t.fetch
+                                        @ "/lazy"
+                                        @ key
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            let actionDfd = createDeferred()
+                            await 
+                                _ A.lazy.lazy.resolve
+                                    { 
+                                        @ action
+                                            => 
+                                                +
+                                                    @expr actionDfd.promise
+                            _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                            await 
+                                _ actionDfd.reject(Error("LAZY ACTION ERROR"))
+                            await 
+                                _ tick()
+                            _ expect(t.router.state.fetchers.get(key)).toBeUndefined()
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY ACTION ERROR")
+                    _ it
+                        @ "throws when failing to load lazy route modules on staticHandler.query()"
+                        async=> 
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ id "lazy"
+                                                        @ path "/lazy"
+                                                        @ lazy
+                                                            async=> 
+                                                                throw new Error("LAZY FUNCTION ERROR")
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY FUNCTION ERROR")
+                    _ it
+                        @ "handles loader errors from lazy route modules on staticHandler.query()"
+                        async=> 
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ id "lazy"
+                                                        @ path "/lazy"
+                                                        @ lazy
+                                                            async=> 
+                                                                await 
+                                                                    _ tick()
+                                                                return 
+                                                                    { 
+                                                                        m loader
+                                                                            async
+                                                                            throw new Error("LAZY LOADER ERROR")
+                                                                        @ hasErrorBoundary true
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.loaderData).toEqual
+                                { 
+                                    @ root null
+                            _ expect(context.errors).toEqual
+                                { 
+                                    @ lazy new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "bubbles loader errors from lazy route modules on staticHandler.query() when hasErrorBoundary is resolved as false"
+                        async=> 
+                            let 
+                                { 
+                                    @ query
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ id "lazy"
+                                                        @ path "/lazy"
+                                                        @ lazy
+                                                            async=> 
+                                                                await 
+                                                                    _ tick()
+                                                                return 
+                                                                    { 
+                                                                        m loader
+                                                                            async
+                                                                            throw new Error("LAZY LOADER ERROR")
+                                                                        @ hasErrorBoundary false
+                            let context
+                                await 
+                                    _ query(createRequest("/lazy"))
+                            _ invariant(!(context instanceof Response), "Expected a StaticContext instance")
+                            _ expect(context.loaderData).toEqual
+                                { 
+                                    @ root null
+                            _ expect(context.errors).toEqual
+                                { 
+                                    @ root new Error("LAZY LOADER ERROR")
+                    _ it
+                        @ "throws when failing to load lazy route modules on staticHandler.queryRoute()"
+                        async=> 
+                            let 
+                                { 
+                                    @ queryRoute
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    async=> 
+                                                        throw new Error("LAZY FUNCTION ERROR")
+                            let err
+                            try 
+                                await 
+                                    _ queryRoute(createRequest("/lazy"))
+                            catch _err
+                                set err = _err
+                            _ expect(err?.message).toBe("LAZY FUNCTION ERROR")
+                    _ it
+                        @ "handles loader errors in lazy route modules on staticHandler.queryRoute()"
+                        async=> 
+                            let 
+                                { 
+                                    @ queryRoute
+                                =
+                                    _ createStaticHandler
+                                        [ 
+                                            { 
+                                                @ id "lazy"
+                                                @ path "/lazy"
+                                                @ lazy
+                                                    async=> 
+                                                        await 
+                                                            _ tick()
+                                                        return 
+                                                            { 
+                                                                m loader
+                                                                    async
+                                                                    throw new Error("LAZY LOADER ERROR")
+                            let err
+                            try 
+                                await 
+                                    _ queryRoute(createRequest("/lazy"))
+                            catch _err
+                                set err = _err
+                            _ expect(err?.message).toBe("LAZY LOADER ERROR")

@@ -1,0 +1,25 @@
+module
+    import 
+        @ useLoaderData
+        from "react-router-dom"
+    export 
+        async-function loader
+            await 
+                new Promise
+                    => 
+                        param r
+                        _ setTimeout(r, 500)
+            return "I came from the About.tsx loader function!"
+    export 
+        function Component
+            let data
+                _ useLoaderData()
+                    :as 
+                        :string 
+            return 
+                div 
+                    h2 
+                        + About
+                    p 
+                        + {data}
+    set Component.displayName = "AboutPage"

@@ -1,0 +1,151 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Outlet
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "Descendant <Routes>"
+        => 
+            let consoleWarn
+                :ref jest.SpyInstance
+                    :param void
+                    :param any
+            _ beforeEach
+                => 
+                    set consoleWarn = jest.spyOn(console, "warn").mockImplementation()
+            _ afterEach
+                => 
+                    _ consoleWarn.mockRestore()
+            _ describe
+                @ "when the parent route path does not have a trailing *"
+                => 
+                    _ it
+                        @ "warns once when you visit the parent route"
+                        => 
+                            function ReactCourses
+                                return 
+                                    div 
+                                        h1 
+                                            + React
+                                        < Routes 
+                                            < Route 
+                                                @ path "react-fundamentals"
+                                                @ element
+                                                    h1 
+                                                        + React Fundamentals
+                                            < Route 
+                                                @ path "advanced-react"
+                                                @ element
+                                                    h1 
+                                                        + Advanced React
+                            function Courses
+                                return 
+                                    div 
+                                        h1 
+                                            + Courses
+                                        < Outlet 
+                            _ TestRenderer.act
+                                => 
+                                    _ TestRenderer.create
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/courses/react"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "courses"
+                                                    @ element
+                                                        < Courses 
+                                                    < Route 
+                                                        @ path "react"
+                                                        @ element
+                                                            < ReactCourses 
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatch
+                                `lit 
+                                    + You rendered descendant <Routes> (or called \`useRoutes()\`) at "/courses/react" (under <Route path="react">) but the parent route path has no trailing "*". This means if you navigate deeper, the parent won't match anymore and therefore the child routes will never render.&lf;
+                                    + &lf;
+                                    + Please change the parent <Route path="react"> to <Route path="react/*">.
+            _ describe
+                @ "when the parent route path does not have a trailing * and is the root"
+                => 
+                    _ it
+                        @ "warns once when you visit the parent route and only shows a hint like *"
+                        => 
+                            function ReactCourses
+                                return 
+                                    div 
+                                        h1 
+                                            + React
+                                        < Routes 
+                                            < Route 
+                                                @ path "/react-fundamentals"
+                                                @ element
+                                                    h1 
+                                                        + React Fundamentals
+                            _ TestRenderer.act
+                                => 
+                                    _ TestRenderer.create
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "/"
+                                                    @ element
+                                                        < ReactCourses 
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn.mock.calls[0][0]).toMatch
+                                `lit 
+                                    + You rendered descendant <Routes> (or called \`useRoutes()\`) at "/" (under <Route path="/">) but the parent route path has no trailing "*". This means if you navigate deeper, the parent won't match anymore and therefore the child routes will never render.&lf;
+                                    + &lf;
+                                    + Please change the parent <Route path="/"> to <Route path="*">.
+            _ describe
+                @ "when the parent route has a trailing *"
+                => 
+                    _ it
+                        @ "does not warn when you visit the parent route"
+                        => 
+                            function ReactCourses
+                                return 
+                                    div 
+                                        h1 
+                                            + React
+                                        < Routes 
+                                            < Route 
+                                                @ path "react-fundamentals"
+                                                @ element
+                                                    h1 
+                                                        + React Fundamentals
+                            function Courses
+                                return 
+                                    div 
+                                        h1 
+                                            + Courses
+                                        < Outlet 
+                            _ TestRenderer.act
+                                => 
+                                    _ TestRenderer.create
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/courses/react"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "courses"
+                                                    @ element
+                                                        < Courses 
+                                                    < Route 
+                                                        @ path "react/*"
+                                                        @ element
+                                                            < ReactCourses 
+                            _ expect(consoleWarn).not.toHaveBeenCalled()

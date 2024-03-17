@@ -1,0 +1,243 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ unstable_Blocker
+            as Blocker
+        @ unstable_BlockerFunction
+            as BlockerFunction
+        from "react-router-dom"
+    import 
+        @ useActionData
+        from "react-router-dom"
+    import 
+        @ createBrowserRouter
+        @ createRoutesFromElements
+        @ Form
+        @ json
+        @ Link
+        @ Outlet
+        @ Route
+        @ RouterProvider
+        @ useBlocker
+        @ useLocation
+        from "react-router-dom"
+    let router
+        _ createBrowserRouter
+            _ createRoutesFromElements
+                < Route 
+                    @ path "/"
+                    @ element
+                        < Layout 
+                    < Route 
+                        @ index
+                        @ element
+                            h2 
+                                + Index
+                    < Route 
+                        @ path "one"
+                        @ element
+                            h2 
+                                + One
+                    < Route 
+                        @ path "two"
+                        @ element
+                            h2 
+                                + Two
+                    < Route 
+                        @ path "three"
+                        @ action
+                            => 
+                                _ json
+                                    { 
+                                        @ ok true
+                        @ element
+                            < React.Fragment
+                                h2 
+                                    + Three
+                                < ImportantForm 
+                    < Route 
+                        @ path "four"
+                        @ element
+                            h2 
+                                + Four
+                    < Route 
+                        @ path "five"
+                        @ element
+                            h2 
+                                + Five
+    if import.meta.hot
+        _ import.meta.hot.dispose
+            => 
+                _ router.dispose()
+    export-default 
+        function App
+            return 
+                < RouterProvider 
+                    @ router {router}
+    function Layout
+        let [historyIndex, setHistoryIndex] = React.useState(window.history.state?.idx)
+        let location = useLocation()
+            # Expose the underlying history index in the UI for debugging
+        _ React.useEffect
+            => 
+                _ setHistoryIndex(window.history.state?.idx)
+            [ 
+                @ location
+            # Expose the underlying history index in the UI for debugging
+            # Give us meaningful document titles for popping back/forward more than 1 entry
+        _ React.useEffect
+            => 
+                set document.title = location.pathname
+            [ 
+                @ location
+            # Give us meaningful document titles for popping back/forward more than 1 entry
+        return 
+            < React.Fragment
+                h1 
+                    + Navigation Blocking Example
+                nav 
+                    < Link 
+                        @ to "/"
+                        + Index
+                    < Link 
+                        @ to "/one"
+                        + One
+                    < Link 
+                        @ to "/two"
+                        + Two
+                    < Link 
+                        @ to "/three"
+                        + Three (Form with blocker)
+                    < Link 
+                        @ to "/four"
+                        + Four
+                    < Link 
+                        @ to "/five"
+                        + Five
+                p 
+                    + Current location (index):
+                    + {location.pathname}
+                    + (
+                    + {historyIndex}
+                    + )
+                < Outlet 
+    function ImportantForm
+        let actionData
+            _ useActionData()
+                :as 
+                    :union 
+                        :{ 
+                            :p ok
+                                :boolean 
+                        :undefined 
+        let [value, setValue] = React.useState("")
+            # Allow the submission navigation to the same route to go through
+        let shouldBlock
+            _ React.useCallback
+                :param 
+                    :ref BlockerFunction
+                => 
+                    { 
+                        @ currentLocation
+                        @ nextLocation
+                    @expr value !== "" && currentLocation.pathname !== nextLocation.pathname
+                [ 
+                    @ value
+            # Allow the submission navigation to the same route to go through
+        let blocker = useBlocker(shouldBlock)
+            # Clean the input after a successful submission
+        _ React.useEffect
+            => 
+                if actionData?.ok
+                    _ setValue("")
+            [ 
+                @ actionData
+            # Clean the input after a successful submission
+            # Reset the blocker if the user cleans the form
+        _ React.useEffect
+            => 
+                if blocker.state === "blocked" && value === ""
+                    _ blocker.reset()
+            [ 
+                @ blocker
+                @ value
+            # Reset the blocker if the user cleans the form
+        return 
+            < React.Fragment
+                p 
+                    + Is the form dirty?
+                    + {" "}
+                    { 
+                        iif value !== ""
+                            then
+                                span 
+                                    @ style
+                                        { 
+                                            @ color "red"
+                                    + Yes
+                            else
+                                span 
+                                    @ style
+                                        { 
+                                            @ color "green"
+                                    + No
+                < Form 
+                    @ method "post"
+                    label 
+                        + Enter some important data:
+                        input 
+                            @ name "data"
+                            @ value {value}
+                            @ onChange
+                                => 
+                                    param e
+                                    _ setValue(e.target.value)
+                    button 
+                        @ type "submit"
+                        + Save
+                { 
+                    iif blocker
+                        then
+                            < ConfirmNavigation 
+                                @ blocker {blocker}
+                        else null
+    function ConfirmNavigation
+        { 
+            @ blocker
+            :{ 
+                :p blocker
+                    :ref Blocker
+        if blocker.state === "blocked"
+            return 
+                < React.Fragment
+                    p 
+                        @ style
+                            { 
+                                @ color "red"
+                        + Blocked the last navigation to
+                        + {blocker.location.pathname}
+                    button 
+                        @ onClick
+                            => 
+                                _ blocker.proceed?.()
+                        + Let me through
+                    button 
+                        @ onClick
+                            => 
+                                _ blocker.reset?.()
+                        + Keep me here
+        if blocker.state === "proceeding"
+            return 
+                p 
+                    @ style
+                        { 
+                            @ color "orange"
+                    + Proceeding through blocked navigation
+        return 
+            p 
+                @ style
+                    { 
+                        @ color "green"
+                + Blocker is currently unblocked

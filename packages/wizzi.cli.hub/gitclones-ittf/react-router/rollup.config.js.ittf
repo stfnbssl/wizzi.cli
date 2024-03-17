@@ -1,0 +1,36 @@
+module
+    kind react
+    const fs = require("fs")
+    const path = require("path")
+    set module.exports =
+        function rollup
+            param options
+            return 
+                [ 
+                    @ "router"
+                    @ "react-router"
+                    @ "react-router-dom"
+                    @ "react-router-dom-v5-compat"
+                    @ "react-router-native"
+                    ._ flatMap
+                        => 
+                            param dir
+                            let configPath = path.join("packages", dir, "rollup.config.js")
+                                # if (dir !== "router") return null;
+                            try 
+                                _ fs.readFileSync(configPath)
+                            catch e
+                                return null
+                            let packageBuild
+                                _ require
+                                    `lit 
+                                        + .
+                                        @ path.sep
+                                        + 
+                                        @ configPath
+                                        + 
+                            return packageBuild(options)
+                    ._ filter
+                        => 
+                            param p
+                            + p

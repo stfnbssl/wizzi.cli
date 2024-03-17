@@ -1,0 +1,67 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ Link
+        from "react-router-dom"
+    import 
+        @ StaticRouter
+        from "react-router-dom/server"
+    _ describe
+        @ "A <Link> in a <StaticRouter>"
+        => 
+            _ describe
+                @ "with a string"
+                => 
+                    _ it
+                        @ "uses the right href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < StaticRouter 
+                                                @ location "/"
+                                                < Link 
+                                                    @ to "mjackson"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/mjackson")
+                    _ it
+                        @ "uses the right href with a basename"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < StaticRouter 
+                                                @ location "/base"
+                                                @ basename "/base"
+                                                < Link 
+                                                    @ to "mjackson"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/base/mjackson")
+            _ describe
+                @ "with an object"
+                => 
+                    _ it
+                        @ "uses the right href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < StaticRouter 
+                                                @ location "/"
+                                                < Link 
+                                                    @ to
+                                                        { 
+                                                            @ pathname "/mjackson"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/mjackson")

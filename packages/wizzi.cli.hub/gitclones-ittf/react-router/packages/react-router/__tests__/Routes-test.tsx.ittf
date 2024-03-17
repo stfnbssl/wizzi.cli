@@ -1,0 +1,221 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "<Routes>"
+        => 
+            let consoleWarn
+                :ref jest.SpyInstance
+            let consoleError
+                :ref jest.SpyInstance
+            _ beforeEach
+                => 
+                    set consoleWarn =
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    set consoleError =
+                        _ jest.spyOn(console, "error").mockImplementation
+                            => 
+            _ afterEach
+                => 
+                    _ consoleWarn.mockRestore()
+                    _ consoleError.mockRestore()
+            _ it
+                @ "renders null and issues a warning when no routes match the URL"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        < Routes 
+                    _ expect(renderer.toJSON()).toBeNull()
+                    _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                    _ expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining("No routes matched location"))
+            _ it
+                @ "renders the first route that matches the URL"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "does not render a 2nd route that also matches the URL"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    h1 
+                                                        + Dashboard
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "renders with non-element children"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                                            + {false}
+                                            + {undefined}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "renders with React.Fragment children"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/admin"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                                            < React.Fragment 
+                                                < Route 
+                                                    @ path "admin"
+                                                    @ element
+                                                        h1 
+                                                            + Admin
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Admin&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "throws if some <CustomRoute> is passed as a child of <Routes>"
+                => 
+                    const CustomRoute
+                        => 
+                            param args
+                                :any 
+                            < Route 
+                    _ expect
+                        => 
+                            _ TestRenderer.create
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/admin"
+                                    < Routes 
+                                        < Route 
+                                            @ path "/"
+                                            @ element
+                                                h1 
+                                                    + Home
+                                        < CustomRoute 
+                                            @ path "admin"
+                                            @ element
+                                                h1 
+                                                    + Admin
+                        ._ toThrow
+                            @ /children of <Routes> must be a <Route>/
+                    _ expect(consoleError).toHaveBeenCalledTimes(1)
+            _ it
+                @ "throws if a regular element (ex: <div>) is passed as a child of <Routes>"
+                => 
+                    _ expect
+                        => 
+                            _ TestRenderer.create
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/admin"
+                                    < Routes 
+                                        < Route 
+                                            @ path "/"
+                                            @ element
+                                                h1 
+                                                    + Home
+                                        div 
+                                            @ 
+                                                ( 
+                                                    @expr
+                                                        { 
+                                                            @ path "admin"
+                                                            @ element
+                                                                h1 
+                                                                    + Admin
+                                                        :as 
+                                                            :any 
+                        ._ toThrow
+                            @ /children of <Routes> must be a <Route>/
+                    _ expect(consoleError).toHaveBeenCalledTimes(1)

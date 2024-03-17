@@ -1,0 +1,50 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        from "react-router-dom"
+    _ describe
+        @ "GH Issue #8127"
+        => 
+            _ it
+                @ "works"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/availability"
+                                        < Routes 
+                                            < Route 
+                                                @ path "*"
+                                                @ element
+                                                    < Routes 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                h1 
+                                                                    + sub splat
+                                                        < Route 
+                                                            @ path "availability"
+                                                            @ element
+                                                                h1 
+                                                                    + availability
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       availability&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;

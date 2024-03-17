@@ -1,0 +1,186 @@
+module
+    kind react
+    const fsp = require("fs").promises
+    const path = require("path")
+    const 
+        { 
+            @ execSync
+        = require("child_process")
+    const jsonfile = require("jsonfile")
+    const Confirm = require("prompt-confirm")
+    const 
+        { 
+            @ ROOT_DIR
+            @ EXAMPLES_DIR
+        = require("./constants")
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string} [directory]
+            # * @returns {string}
+            # 
+    function packageJson
+        param packageName
+        param directory
+        return path.join(ROOT_DIR, directory, packageName, "package.json")
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string} [directory]
+            # * @returns {string}
+            # 
+        #
+            # *
+            # * @param {string} packageName
+            # * @returns {Promise<string | undefined>}
+            # 
+    async-function getPackageVersion
+        param packageName
+        let file = packageJson(packageName, "packages")
+        let json
+            await 
+                _ jsonfile.readFile(file)
+        return json.version
+        #
+            # *
+            # * @param {string} packageName
+            # * @returns {Promise<string | undefined>}
+            # 
+        #
+            # *
+            # * @returns {void}
+            # 
+    function ensureCleanWorkingDirectory
+        let status
+            _ execSync
+                `lit 
+                    + git status --porcelain
+                ._ toString
+                ._ trim
+        let lines = status.split("\n")
+        _ invariant
+            _ lines.every
+                => 
+                    param line
+                    @expr line === "" || line.startsWith("?")
+            @ "Working directory is not clean. Please commit or stash your changes."
+        #
+            # *
+            # * @returns {void}
+            # 
+        #
+            # *
+            # * @param {string} question
+            # * @returns {Promise<string | boolean>}
+            # 
+    async-function prompt
+        param question
+        let confirm = new Confirm(question)
+        let answer
+            await 
+                _ confirm.run()
+        return answer
+        #
+            # *
+            # * @param {string} question
+            # * @returns {Promise<string | boolean>}
+            # 
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {(json: import('type-fest').PackageJson) => any} transform
+            # 
+    async-function updatePackageConfig
+        param packageName
+        param transform
+        let file = packageJson(packageName, "packages")
+        let json
+            await 
+                _ jsonfile.readFile(file)
+        _ transform(json)
+        await 
+            _ jsonfile.writeFile
+                @ file
+                @ json
+                { 
+                    @ spaces 2
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {(json: import('type-fest').PackageJson) => any} transform
+            # 
+        #
+            # *
+            # * @param {string} example
+            # * @param {(json: import('type-fest').PackageJson) => any} transform
+            # 
+    async-function updateExamplesPackageConfig
+        param example
+        param transform
+        let file = path.join(EXAMPLES_DIR, example, "package.json")
+        if 
+            test
+                op! 
+                    await 
+                        _ fileExists(file)
+            return 
+        let json
+            await 
+                _ jsonfile.readFile(file)
+        _ transform(json)
+        await 
+            _ jsonfile.writeFile
+                @ file
+                @ json
+                { 
+                    @ spaces 2
+        #
+            # *
+            # * @param {string} example
+            # * @param {(json: import('type-fest').PackageJson) => any} transform
+            # 
+        #
+            # *
+            # * @param {string} filePath
+            # * @returns {Promise<boolean>}
+            # 
+    async-function fileExists
+        param filePath
+        try 
+            await 
+                _ fsp.stat(filePath)
+            return true
+        catch _
+            return false
+        #
+            # *
+            # * @param {string} filePath
+            # * @returns {Promise<boolean>}
+            # 
+        #
+            # *
+            # * @param {*} cond
+            # * @param {string} message
+            # * @returns {asserts cond}
+            # 
+    function invariant
+        param cond
+        param message
+        if !cond
+            throw new Error(message)
+        #
+            # *
+            # * @param {*} cond
+            # * @param {string} message
+            # * @returns {asserts cond}
+            # 
+    set module.exports =
+        { 
+            @ fileExists
+            @ packageJson
+            @ getPackageVersion
+            @ ensureCleanWorkingDirectory
+            @ invariant
+            @ prompt
+            @ updatePackageConfig
+            @ updateExamplesPackageConfig

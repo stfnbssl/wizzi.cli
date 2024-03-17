@@ -1,0 +1,272 @@
+module
+    import 
+        @ JSDOM
+        from "jsdom"
+    import 
+        as React
+        from "react"
+    import 
+        @ render
+        @ fireEvent
+        @ screen
+        from "@testing-library/react"
+    import "@testing-library/jest-dom"
+    import 
+        @ Link
+        @ Outlet
+        @ RouterProvider
+        @ ScrollRestoration
+        @ createBrowserRouter
+        from "react-router-dom"
+    import getHtml from "../../react-router/__tests__/utils/getHtml"
+    _ describe
+        `lit 
+            + ScrollRestoration
+        => 
+            _ it
+                @ "restores the scroll position for a page when re-visited"
+                => 
+                    const consoleWarnMock
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let testWindow = getWindowImpl("/base")
+                    const mockScroll = jest.fn()
+                    set window.scrollTo = mockScroll
+                    let router
+                        _ createBrowserRouter
+                            [ 
+                                { 
+                                    @ path "/"
+                                    m Component
+                                        return 
+                                            < React.Fragment
+                                                < Outlet 
+                                                < ScrollRestoration 
+                                                    @ getKey
+                                                        => 
+                                                            param location
+                                                            set "test1-" + location.pathname
+                                    @ children testPages
+                            { 
+                                @ basename "/base"
+                                @ window testWindow
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < RouterProvider 
+                                    @ router {router}
+                    _ expect(getHtml(container)).toMatch("On page 1")
+                        # simulate scrolling
+                    _ Object.defineProperty
+                        @ window
+                        @ "scrollY"
+                        { 
+                            @ writable true
+                            @ value 100
+                        # simulate scrolling
+                        # leave page
+                    _ window.dispatchEvent(Event("pagehide"))
+                        # leave page
+                    _ fireEvent.click(screen.getByText("Go to page 2"))
+                    _ expect(getHtml(container)).toMatch("On page 2")
+                        # return to page
+                    _ window.dispatchEvent(Event("pagehide"))
+                        # return to page
+                    _ fireEvent.click(screen.getByText("Go to page 1"))
+                    _ expect(getHtml(container)).toMatch("On page 1")
+                        # check scroll activity
+                    _ expect(mockScroll.mock.calls).toEqual
+                        [ 
+                            [ 
+                                @ 0
+                                @ 0
+                            [ 
+                                @ 0
+                                @ 0
+                            [ 
+                                @ 0
+                                @ 100
+                                # restored
+                        # check scroll activity
+                    _ expect(consoleWarnMock).not.toHaveBeenCalled()
+                    _ consoleWarnMock.mockRestore()
+            _ it
+                @ "removes the basename from the location provided to getKey"
+                => 
+                    let getKey
+                        _ jest.fn
+                            => 
+                                + "mykey"
+                    let testWindow = getWindowImpl("/base")
+                    set window.scrollTo =
+                        => 
+                    let router
+                        _ createBrowserRouter
+                            [ 
+                                { 
+                                    @ path "/"
+                                    m Component
+                                        return 
+                                            < React.Fragment
+                                                < Outlet 
+                                                < ScrollRestoration 
+                                                    @ getKey {getKey}
+                                    [ children
+                                        { 
+                                            @ index true
+                                            m Component
+                                                return 
+                                                    < Link 
+                                                        @ to "/page"
+                                                        + /page
+                                        { 
+                                            @ path "page"
+                                            m Component
+                                                return 
+                                                    h1 
+                                                        + Page
+                            { 
+                                @ basename "/base"
+                                @ window testWindow
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < RouterProvider 
+                                    @ router {router}
+                    _ expect(getKey.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    _ expect(getKey.mock.calls[0][0].pathname).toBe("/")
+                        # @ts-expect-error
+                        # restore
+                    _ expect(getHtml(container)).toMatch("/page")
+                        # restore
+                    _ fireEvent.click(screen.getByText("/page"))
+                    _ expect(getHtml(container)).toMatch("Page")
+                    _ expect(getKey.mock.calls.length).toBe(3)
+                        # @ts-expect-error
+                    _ expect(getKey.mock.calls[1][0].pathname).toBe("/")
+                        # @ts-expect-error
+                        # save
+                        # @ts-expect-error
+                    _ expect(getKey.mock.calls[2][0].pathname).toBe("/page")
+                        # save
+                        # @ts-expect-error
+                        # restore
+            _ it
+                @ "fails gracefully if sessionStorage is not available"
+                => 
+                    const consoleWarnMock
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let testWindow = getWindowImpl("/base")
+                    const mockScroll = jest.fn()
+                    set window.scrollTo = mockScroll
+                    _ jest.spyOn(window, "sessionStorage", "get").mockImplementation
+                        => 
+                            throw new Error("denied")
+                    let router
+                        _ createBrowserRouter
+                            [ 
+                                { 
+                                    @ path "/"
+                                    m Component
+                                        return 
+                                            < React.Fragment
+                                                < Outlet 
+                                                < ScrollRestoration 
+                                                    @ getKey
+                                                        => 
+                                                            param location
+                                                            set "test2-" + location.pathname
+                                    @ children testPages
+                            { 
+                                @ basename "/base"
+                                @ window testWindow
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < RouterProvider 
+                                    @ router {router}
+                    _ expect(getHtml(container)).toMatch("On page 1")
+                        # simulate scrolling
+                    _ Object.defineProperty
+                        @ window
+                        @ "scrollY"
+                        { 
+                            @ writable true
+                            @ value 100
+                        # simulate scrolling
+                        # leave page
+                    _ window.dispatchEvent(Event("pagehide"))
+                        # leave page
+                    _ fireEvent.click(screen.getByText("Go to page 2"))
+                    _ expect(getHtml(container)).toMatch("On page 2")
+                        # return to page
+                    _ window.dispatchEvent(Event("pagehide"))
+                        # return to page
+                    _ fireEvent.click(screen.getByText("Go to page 1"))
+                    _ expect(getHtml(container)).toMatch("On page 1")
+                        # check scroll activity
+                    _ expect(mockScroll.mock.calls).toEqual
+                        [ 
+                            [ 
+                                @ 0
+                                @ 0
+                            [ 
+                                @ 0
+                                @ 0
+                            [ 
+                                @ 0
+                                @ 100
+                                # restored (still possible because the user hasn't left the page)
+                        # check scroll activity
+                    _ expect(consoleWarnMock).toHaveBeenCalledWith(expect.stringContaining("Failed to save scroll positions in sessionStorage"))
+                    _ consoleWarnMock.mockRestore()
+    const testPages
+        [ 
+            { 
+                @ index true
+                m Component
+                    return 
+                        p 
+                            + On page 1
+                            br 
+                            < Link 
+                                @ to "/page"
+                                + Go to page 2
+            { 
+                @ path "page"
+                m Component
+                    return 
+                        p 
+                            + On page 2
+                            br 
+                            < Link 
+                                @ to "/"
+                                + Go to page 1
+    function getWindowImpl
+        param initialUrl
+            :string 
+        :return
+            :ref Window
+        const dom
+            new JSDOM
+                `lit 
+                    + <!DOCTYPE html>
+                { 
+                    @ url "http://localhost/"
+            # Need to use our own custom DOM in order to get a working history
+        _ dom.window.history.replaceState(null, "", initialUrl)
+        return 
+            @expr
+                @expr dom.window
+                    :as 
+                        :unknown 
+                :as 
+                    :ref Window

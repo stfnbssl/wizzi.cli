@@ -1,0 +1,69 @@
+module
+    import 
+        @ Outlet
+        @ Link
+        @ useLoaderData
+        from "react-router-dom"
+    export 
+        function DashboardLayout
+            return 
+                div 
+                    nav 
+                        ul 
+                            li 
+                                < Link 
+                                    @ to "/dashboard"
+                                    + Dashboard Home
+                            li 
+                                < Link 
+                                    @ to "/dashboard/messages"
+                                    + Messages
+                    hr 
+                    < Outlet 
+    export 
+        function DashboardIndex
+            return 
+                div 
+                    h2 
+                        + Dashboard Index
+    :interface MessagesData
+        :p messages
+            :[ 
+                :string 
+    export 
+        async-function dashboardMessagesLoader
+            await 
+                new Promise
+                    => 
+                        param r
+                        _ setTimeout(r, 500)
+            return 
+                @expr
+                    { 
+                        [ messages
+                            @ "Message 1 from Dashboard.tsx loader"
+                            @ "Message 2 from Dashboard.tsx loader"
+                            @ "Message 3 from Dashboard.tsx loader"
+                    :as 
+                        :ref MessagesData
+    export 
+        function DashboardMessages
+            let 
+                { 
+                    @ messages
+                =
+                    _ useLoaderData()
+                        :as 
+                            :ref MessagesData
+            return 
+                div 
+                    h2 
+                        + Messages
+                    ul 
+                        { 
+                            _ messages.map
+                                => 
+                                    param m
+                                    li 
+                                        @ key {m}
+                                        + {m}

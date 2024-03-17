@@ -1,0 +1,96 @@
+module
+    :import-type 
+        @ RouteObject
+        from "react-router"
+    import 
+        @ matchRoutes
+        from "react-router"
+    function pickPaths
+        param routes
+            :[ 
+                :ref RouteObject
+        param pathname
+            :string 
+        :return
+            :union 
+                :[ 
+                    :string 
+                :null 
+        let matches = matchRoutes(routes, pathname)
+        return 
+            && 
+                + matches
+                _ matches.map
+                    => 
+                        param match
+                        @expr match.route.path || ""
+    _ describe
+        @ "absolute path matching"
+        => 
+            _ it
+                @ "matches a nested route with an absolute path"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/users"
+                                [ children
+                                    { 
+                                        @ index true
+                                    { 
+                                        @ path "add"
+                                    { 
+                                        @ path "remove"
+                                    { 
+                                        @ path "/users/:id"
+                    _ expect(pickPaths(routes, "/users")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ""
+                    _ expect(pickPaths(routes, "/users/add")).toEqual
+                        [ 
+                            @ "/users"
+                            @ "add"
+                    _ expect(pickPaths(routes, "/users/remove")).toEqual
+                        [ 
+                            @ "/users"
+                            @ "remove"
+                    _ expect(pickPaths(routes, "/users/123")).toEqual
+                        [ 
+                            @ "/users"
+                            @ "/users/:id"
+            _ it
+                @ "matches a nested splat route with an absolute path"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/users"
+                                [ children
+                                    { 
+                                        @ path "/users/*"
+                    _ expect(pickPaths(routes, "/users")).toEqual
+                        [ 
+                            @ "/users"
+                    _ expect(pickPaths(routes, "/users/not-found")).toEqual
+                        [ 
+                            @ "/users"
+                            @ "/users/*"
+            _ it
+                @ "throws when the nested path does not begin with its parent path"
+                => 
+                    _ expect
+                        => 
+                            _ matchRoutes
+                                [ 
+                                    { 
+                                        @ path "/users"
+                                        [ children
+                                            { 
+                                                @ path ":id"
+                                            { 
+                                                @ path "/not/users"
+                                                # This one should throw because it doesn't begin with /users
+                                @ "/users/123"
+                        ._ toThrow
+                            @ "absolute child route path must start"

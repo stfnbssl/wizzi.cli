@@ -1,0 +1,636 @@
+module
+    :import-type 
+        @ Router
+        from "../index"
+    import 
+        @ createMemoryHistory
+        @ createRouter
+        from "../index"
+    const LOADER_LATENCY_MS = 100
+    const routes
+        [ 
+            { 
+                @ path "/"
+            { 
+                @ path "/about"
+                @ loader
+                    => 
+                        _ sleep(LOADER_LATENCY_MS)
+            { 
+                @ path "/contact"
+            { 
+                @ path "/help"
+    _ describe
+        @ "navigation blocking"
+        => 
+            let router
+                :ref Router
+            _ it
+                @ "initializes an 'unblocked' blocker"
+                => 
+                    set router =
+                        _ createRouter
+                            { 
+                                @ history
+                                    _ createMemoryHistory
+                                        { 
+                                            [ initialEntries
+                                                @ "/"
+                                            @ initialIndex 0
+                                @ routes
+                    _ router.initialize()
+                    let fn
+                        => 
+                            + true
+                    _ router.getBlocker("KEY", fn)
+                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                        { 
+                            @ state "unblocked"
+                            @ proceed undefined
+                            @ reset undefined
+                            @ location undefined
+            _ describe
+                @ "on history push"
+                => 
+                    let initialEntries
+                        [ 
+                            @ "/"
+                            @ "/about"
+                    let initialIndex = 0
+                    _ beforeEach
+                        => 
+                            set router =
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    @ initialEntries
+                                                    @ initialIndex
+                                        @ routes
+                            _ router.initialize()
+                    _ describe
+                        @ "blocker returns false"
+                        => 
+                            let fn
+                                => 
+                                    + false
+                            _ it
+                                @ "navigates"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ expect(router.state.location.pathname).toBe("/about")
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate("/about")
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                    _ describe
+                        @ "blocker returns true"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "does not navigate"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ expect(router.state.location.pathname).toBe(initialEntries[initialIndex])
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate("/about")
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation promise resolves"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                    _ describe
+                        @ "proceeds from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "gets a 'proceeding' blocker after proceeding navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "proceeding"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets an 'unblocked' blocker after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "navigates after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.state.location.pathname).toBe("/about")
+                    _ describe
+                        @ "resets from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "gets an 'unblocked' blocker after resetting navigation"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "stays at current location after resetting"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    let pathnameBeforeNavigation = router.state.location.pathname
+                                    await 
+                                        _ router.navigate("/about")
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    _ expect(router.state.location.pathname).toBe(pathnameBeforeNavigation)
+            _ describe
+                @ "on history replace"
+                => 
+                    let initialEntries
+                        [ 
+                            @ "/"
+                            @ "/about"
+                    let initialIndex = 0
+                    _ beforeEach
+                        => 
+                            set router =
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    @ initialEntries
+                                                    @ initialIndex
+                                        @ routes
+                            _ router.initialize()
+                    _ describe
+                        @ "blocker returns false"
+                        => 
+                            let fn
+                                => 
+                                    + false
+                            _ it
+                                @ "navigates"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ expect(router.state.location.pathname).toBe("/about")
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate
+                                        @ "/about"
+                                        { 
+                                            @ replace true
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                    _ describe
+                        @ "blocker returns true"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "does not navigate"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ expect(router.state.location.pathname).toBe(initialEntries[initialIndex])
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate
+                                        @ "/about"
+                                        { 
+                                            @ replace true
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation promise resolves"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                    _ describe
+                        @ "proceeds from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "gets a 'proceeding' blocker after proceeding navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "proceeding"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets an 'unblocked' blocker after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "navigates after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.state.location.pathname).toBe("/about")
+                            _ it
+                                @ "replaces the current history entry after proceeding completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    let historyLengthBeforeNavigation = window.history.length
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(window.history.length).toBe(historyLengthBeforeNavigation)
+                    _ describe
+                        @ "resets from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "gets an 'unblocked' blocker after resetting navigation"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "stays at current location after resetting"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    let pathnameBeforeNavigation = router.state.location.pathname
+                                    await 
+                                        _ router.navigate
+                                            @ "/about"
+                                            { 
+                                                @ replace true
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    _ expect(router.state.location.pathname).toBe(pathnameBeforeNavigation)
+            _ describe
+                @ "on history pop"
+                => 
+                    let initialEntries
+                        [ 
+                            @ "/"
+                            @ "/about"
+                            @ "/contact"
+                            @ "/help"
+                    let initialIndex = 1
+                    _ beforeEach
+                        => 
+                            set router =
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    @ initialEntries
+                                                    @ initialIndex
+                                        @ routes
+                            _ router.initialize()
+                    _ describe
+                        @ "blocker returns false"
+                        => 
+                            let fn
+                                => 
+                                    + false
+                            _ it
+                                @ "navigates"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ expect(router.state.location.pathname).toBe(initialEntries[initialIndex - 1])
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate(-1)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "gets an 'unblocked' blocker after navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                    _ describe
+                        @ "blocker returns true"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "does not navigate"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ expect(router.state.location.pathname).toBe(initialEntries[initialIndex])
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    _ router.navigate(-1)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets a 'blocked' blocker after navigation promise resolves"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "blocked"
+                                            @ proceed expect.any(Function)
+                                            @ reset expect.any(Function)
+                                            @ location expect.any(Object)
+                    _ describe
+                        @ "proceeds from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                                # we want to navigate so that `/about` is the previous entry in the
+                                # stack here since it has a loader that won't resolve immediately
+                            let initialEntries
+                                [ 
+                                    @ "/"
+                                    @ "/about"
+                                    @ "/contact"
+                                # we want to navigate so that `/about` is the previous entry in the
+                                # stack here since it has a loader that won't resolve immediately
+                            let initialIndex = 2
+                            _ beforeEach
+                                => 
+                                    set router =
+                                        _ createRouter
+                                            { 
+                                                @ history
+                                                    _ createMemoryHistory
+                                                        { 
+                                                            @ initialEntries
+                                                            @ initialIndex
+                                                @ routes
+                                    _ router.initialize()
+                            _ it
+                                @ "gets a 'proceeding' blocker after proceeding navigation starts"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "proceeding"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location expect.any(Object)
+                            _ it
+                                @ "gets an 'unblocked' blocker after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "navigates after proceeding navigation completes"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ router.getBlocker("KEY", fn).proceed?.()
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                    _ expect(router.state.location.pathname).toBe("/about")
+                    _ describe
+                        @ "resets from blocked state"
+                        => 
+                            let fn
+                                => 
+                                    + true
+                            _ it
+                                @ "gets an 'unblocked' blocker after resetting navigation"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                    _ expect(router.getBlocker("KEY", fn)).toEqual
+                                        { 
+                                            @ state "unblocked"
+                                            @ proceed undefined
+                                            @ reset undefined
+                                            @ location undefined
+                            _ it
+                                @ "stays at current location after resetting"
+                                async=> 
+                                    _ router.getBlocker("KEY", fn)
+                                    let pathnameBeforeNavigation = router.state.location.pathname
+                                    await 
+                                        _ router.navigate(-1)
+                                    _ router.getBlocker("KEY", fn).reset?.()
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    await 
+                                        _ sleep(LOADER_LATENCY_MS)
+                                        # wait for '/about' loader so we catch failure if navigation proceeds
+                                    _ expect(router.state.location.pathname).toBe(pathnameBeforeNavigation)
+    function sleep
+        param n
+            :number 
+            = 500
+        return 
+            new Promise
+                :param void
+                => 
+                    param r
+                    _ setTimeout(r, n)

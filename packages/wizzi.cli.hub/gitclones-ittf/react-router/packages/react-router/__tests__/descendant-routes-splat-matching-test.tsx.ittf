@@ -1,0 +1,278 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Outlet
+        @ Routes
+        @ Route
+        @ useParams
+        from "react-router"
+    :import-type 
+        @ InitialEntry
+        from "@remix-run/router"
+    _ describe
+        @ "Descendant <Routes> splat matching"
+        => 
+            _ describe
+                @ "when the parent route path ends with /*"
+                => 
+                    _ it
+                        @ "works"
+                        => 
+                            function ReactCourses
+                                return 
+                                    div 
+                                        h1 
+                                            + React
+                                        < Routes 
+                                            < Route 
+                                                @ path "react-fundamentals"
+                                                @ element
+                                                    h1 
+                                                        + React Fundamentals
+                            function Courses
+                                return 
+                                    div 
+                                        h1 
+                                            + Courses
+                                        < Outlet 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses/react/react-fundamentals"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses"
+                                                        @ element
+                                                            < Courses 
+                                                        < Route 
+                                                            @ path "react/*"
+                                                            @ element
+                                                                < ReactCourses 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Courses&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             React&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             React Fundamentals&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "works with paths beginning with special characters"
+                        => 
+                            function PrintParams
+                                return 
+                                    p 
+                                        + The params are
+                                        + {JSON.stringify(useParams())}
+                            function ReactCourses
+                                return 
+                                    div 
+                                        h1 
+                                            + React
+                                        < Routes 
+                                            < Route 
+                                                @ path ":splat"
+                                                @ element
+                                                    div 
+                                                        h1 
+                                                            + React Fundamentals
+                                                        < PrintParams 
+                            function Courses
+                                return 
+                                    div 
+                                        h1 
+                                            + Courses
+                                        < Outlet 
+                            function renderNestedSplatRoute
+                                param initialEntries
+                                    :[ 
+                                        :ref InitialEntry
+                                let renderer
+                                    :ref TestRenderer.ReactTestRenderer
+                                _ TestRenderer.act
+                                    => 
+                                        set renderer =
+                                            _ TestRenderer.create
+                                                < MemoryRouter 
+                                                    @ initialEntries {initialEntries}
+                                                    < Routes 
+                                                        < Route 
+                                                            @ path "courses"
+                                                            @ element
+                                                                < Courses 
+                                                            < Route 
+                                                                @ path "react/*"
+                                                                @ element
+                                                                    < ReactCourses 
+                                return renderer
+                            _ it
+                                @ "allows `-` to appear at the beginning"
+                                => 
+                                    let renderer
+                                        _ renderNestedSplatRoute
+                                            [ 
+                                                @ "/courses/react/-react-fundamentals"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Courses&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <div>&lf;
+                                            + &nbsp;             <h1>&lf;
+                                            + &nbsp;               React&lf;
+                                            + &nbsp;             </h1>&lf;
+                                            + &nbsp;             <div>&lf;
+                                            + &nbsp;               <h1>&lf;
+                                            + &nbsp;                 React Fundamentals&lf;
+                                            + &nbsp;               </h1>&lf;
+                                            + &nbsp;               <p>&lf;
+                                            + &nbsp;                 The params are&nbsp;&lf;
+                                            + &nbsp;                 {"*":"-react-fundamentals","splat":"-react-fundamentals"}&lf;
+                                            + &nbsp;               </p>&lf;
+                                            + &nbsp;             </div>&lf;
+                                            + &nbsp;           </div>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;
+                            _ it
+                                @ "allows `.` to appear at the beginning"
+                                => 
+                                    let renderer
+                                        _ renderNestedSplatRoute
+                                            [ 
+                                                @ "/courses/react/.react-fundamentals"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Courses&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <div>&lf;
+                                            + &nbsp;             <h1>&lf;
+                                            + &nbsp;               React&lf;
+                                            + &nbsp;             </h1>&lf;
+                                            + &nbsp;             <div>&lf;
+                                            + &nbsp;               <h1>&lf;
+                                            + &nbsp;                 React Fundamentals&lf;
+                                            + &nbsp;               </h1>&lf;
+                                            + &nbsp;               <p>&lf;
+                                            + &nbsp;                 The params are&nbsp;&lf;
+                                            + &nbsp;                 {"*":".react-fundamentals","splat":".react-fundamentals"}&lf;
+                                            + &nbsp;               </p>&lf;
+                                            + &nbsp;             </div>&lf;
+                                            + &nbsp;           </div>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;
+                            _ it
+                                @ "allows `~` to appear at the beginning"
+                                => 
+                                    let renderer
+                                        _ renderNestedSplatRoute
+                                            [ 
+                                                @ "/courses/react/~react-fundamentals"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Courses&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <div>&lf;
+                                            + &nbsp;             <h1>&lf;
+                                            + &nbsp;               React&lf;
+                                            + &nbsp;             </h1>&lf;
+                                            + &nbsp;             <div>&lf;
+                                            + &nbsp;               <h1>&lf;
+                                            + &nbsp;                 React Fundamentals&lf;
+                                            + &nbsp;               </h1>&lf;
+                                            + &nbsp;               <p>&lf;
+                                            + &nbsp;                 The params are&nbsp;&lf;
+                                            + &nbsp;                 {"*":"~react-fundamentals","splat":"~react-fundamentals"}&lf;
+                                            + &nbsp;               </p>&lf;
+                                            + &nbsp;             </div>&lf;
+                                            + &nbsp;           </div>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;
+                            _ it
+                                @ "allows `@` to appear at the beginning"
+                                => 
+                                    let renderer
+                                        _ renderNestedSplatRoute
+                                            [ 
+                                                @ "/courses/react/@react-fundamentals"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Courses&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <div>&lf;
+                                            + &nbsp;             <h1>&lf;
+                                            + &nbsp;               React&lf;
+                                            + &nbsp;             </h1>&lf;
+                                            + &nbsp;             <div>&lf;
+                                            + &nbsp;               <h1>&lf;
+                                            + &nbsp;                 React Fundamentals&lf;
+                                            + &nbsp;               </h1>&lf;
+                                            + &nbsp;               <p>&lf;
+                                            + &nbsp;                 The params are&nbsp;&lf;
+                                            + &nbsp;                 {"*":"@react-fundamentals","splat":"@react-fundamentals"}&lf;
+                                            + &nbsp;               </p>&lf;
+                                            + &nbsp;             </div>&lf;
+                                            + &nbsp;           </div>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;
+                            _ it
+                                @ "allows url-encoded entities to appear at the beginning"
+                                => 
+                                    let renderer
+                                        _ renderNestedSplatRoute
+                                            [ 
+                                                @ "/courses/react/%20react-fundamentals"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <div>&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Courses&lf;
+                                            + &nbsp;           </h1>&lf;
+                                            + &nbsp;           <div>&lf;
+                                            + &nbsp;             <h1>&lf;
+                                            + &nbsp;               React&lf;
+                                            + &nbsp;             </h1>&lf;
+                                            + &nbsp;             <div>&lf;
+                                            + &nbsp;               <h1>&lf;
+                                            + &nbsp;                 React Fundamentals&lf;
+                                            + &nbsp;               </h1>&lf;
+                                            + &nbsp;               <p>&lf;
+                                            + &nbsp;                 The params are&nbsp;&lf;
+                                            + &nbsp;                 {"*":" react-fundamentals","splat":" react-fundamentals"}&lf;
+                                            + &nbsp;               </p>&lf;
+                                            + &nbsp;             </div>&lf;
+                                            + &nbsp;           </div>&lf;
+                                            + &nbsp;         </div>&lf;
+                                            + &nbsp;      &nbsp;

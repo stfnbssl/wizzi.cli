@@ -1,0 +1,184 @@
+module
+    import 
+        @ JSDOM
+        from "jsdom"
+        #
+            # eslint-disable jest/expect-expect
+    :import-type 
+        @ BrowserHistory
+        from "@remix-run/router"
+    import 
+        @ createBrowserHistory
+        from "@remix-run/router"
+    import InitialLocationDefaultKey from "./TestSequences/InitialLocationDefaultKey"
+    import Listen from "./TestSequences/Listen"
+    import PushNewLocation from "./TestSequences/PushNewLocation"
+    import PushSamePath from "./TestSequences/PushSamePath"
+    import PushState from "./TestSequences/PushState"
+    import PushStateInvalid from "./TestSequences/PushStateInvalid"
+    import PushMissingPathname from "./TestSequences/PushMissingPathname"
+    import PushRelativePathname from "./TestSequences/PushRelativePathname"
+    import ReplaceNewLocation from "./TestSequences/ReplaceNewLocation"
+    import ReplaceSamePath from "./TestSequences/ReplaceSamePath"
+    import ReplaceState from "./TestSequences/ReplaceState"
+    import EncodedReservedCharacters from "./TestSequences/EncodedReservedCharacters"
+    import GoBack from "./TestSequences/GoBack"
+    import GoForward from "./TestSequences/GoForward"
+    import ListenPopOnly from "./TestSequences/ListenPopOnly"
+    _ describe
+        @ "a browser history"
+        => 
+            let history
+                :ref BrowserHistory
+            let dom
+                :ref JSDOM
+            _ beforeEach
+                => 
+                    set dom =
+                        new JSDOM
+                            `lit 
+                                + <!DOCTYPE html><p>History Example</p>
+                            { 
+                                @ url "https://example.org/"
+                        # Need to use our own custom DOM in order to get a working history
+                    _ dom.window.history.replaceState(null, "", "/")
+                    set history =
+                        _ createBrowserHistory
+                            { 
+                                @ window
+                                    @expr
+                                        @expr dom.window
+                                            :as 
+                                                :unknown 
+                                        :as 
+                                            :ref Window
+            _ it
+                @ "knows how to create hrefs from location objects"
+                => 
+                    const href
+                        _ history.createHref
+                            { 
+                                @ pathname "/the/path"
+                                @ search "?the=query"
+                                @ hash "#the-hash"
+                    _ expect(href).toEqual("/the/path?the=query#the-hash")
+            _ it
+                @ "knows how to create hrefs from strings"
+                => 
+                    const href = history.createHref("/the/path?the=query#the-hash")
+                    _ expect(href).toEqual("/the/path?the=query#the-hash")
+            _ it
+                @ "does not encode the generated path"
+                => 
+                    const encodedHref
+                        _ history.createHref
+                            { 
+                                @ pathname "/%23abc"
+                    _ expect(encodedHref).toEqual("/%23abc")
+                    const unencodedHref
+                        _ history.createHref
+                            { 
+                                @ pathname "/#abc"
+                    _ expect(unencodedHref).toEqual("/#abc")
+            _ describe
+                @ "listen"
+                => 
+                    _ it
+                        @ "does not immediately call listeners"
+                        => 
+                            _ Listen(history)
+                    _ it
+                        @ "calls listeners only for POP actions"
+                        => 
+                            _ ListenPopOnly(history)
+            _ describe
+                @ "the initial location"
+                => 
+                    _ it
+                        @ 'has the "default" key'
+                        => 
+                            _ InitialLocationDefaultKey(history)
+            _ describe
+                @ "push a new path"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        => 
+                            _ PushNewLocation(history)
+            _ describe
+                @ "push the same path"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        async=> 
+                            await 
+                                _ PushSamePath(history)
+            _ describe
+                @ "push state"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        => 
+                            _ PushState(history)
+                    _ it
+                        @ "re-throws when using non-serializable state"
+                        => 
+                            _ PushStateInvalid(history, dom.window)
+            _ describe
+                @ "push with no pathname"
+                => 
+                    _ it
+                        @ "reuses the current location pathname"
+                        => 
+                            _ PushMissingPathname(history)
+            _ describe
+                @ "push with a relative pathname"
+                => 
+                    _ it
+                        @ "normalizes the pathname relative to the current location"
+                        => 
+                            _ PushRelativePathname(history)
+            _ describe
+                @ "replace a new path"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        => 
+                            _ ReplaceNewLocation(history)
+            _ describe
+                @ "replace the same path"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        => 
+                            _ ReplaceSamePath(history)
+            _ describe
+                @ "replace state"
+                => 
+                    _ it
+                        @ "calls change listeners with the new location"
+                        => 
+                            _ ReplaceState(history)
+            _ describe
+                @ "location created with encoded/unencoded reserved characters"
+                => 
+                    _ it
+                        @ "produces different location objects"
+                        => 
+                            _ EncodedReservedCharacters(history)
+            _ describe
+                @ "back"
+                => 
+                    _ it
+                        @ "calls change listeners with the previous location"
+                        async=> 
+                            await 
+                                _ GoBack(history)
+            _ describe
+                @ "forward"
+                => 
+                    _ it
+                        @ "calls change listeners with the next location"
+                        async=> 
+                            await 
+                                _ GoForward(history)

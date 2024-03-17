@@ -1,0 +1,296 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ Outlet
+        from "react-router"
+    _ describe
+        @ "A layout route"
+        => 
+            _ it
+                @ "does not match when none of its children do"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ element
+                                                    div 
+                                                        h1 
+                                                            + Layout
+                                                        < Outlet 
+                                                < Route 
+                                                    @ path "/home"
+                                                    @ element
+                                                        h1 
+                                                            + Home
+                                            < Route 
+                                                @ index
+                                                @ element
+                                                    h1 
+                                                        + Index
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Index&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "allows routes starting with `@`"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/@splat"
+                                        < Routes 
+                                            < Route 
+                                                @ element
+                                                    div 
+                                                        h1 
+                                                            + Layout
+                                                        < Outlet 
+                                                < Route 
+                                                    @ path "*"
+                                                    @ element
+                                                        div 
+                                                            h1 
+                                                                + Splat
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Layout&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;       <div>&lf;
+                            + &nbsp;         <h1>&lf;
+                            + &nbsp;           Splat&lf;
+                            + &nbsp;         </h1>&lf;
+                            + &nbsp;       </div>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            _ describe
+                @ "matches when a nested splat route begins with a special character"
+                => 
+                    _ it
+                        @ "allows routes starting with `-`"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/-splat"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            div 
+                                                                h1 
+                                                                    + Layout
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                div 
+                                                                    h1 
+                                                                        + Splat
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Layout&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             Splat&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "allows routes starting with `~`"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/~splat"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            div 
+                                                                h1 
+                                                                    + Layout
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                div 
+                                                                    h1 
+                                                                        + Splat
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Layout&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             Splat&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "allows routes starting with `_`"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/_splat"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            div 
+                                                                h1 
+                                                                    + Layout
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                div 
+                                                                    h1 
+                                                                        + Splat
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Layout&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             Splat&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "allows routes starting with `.`"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/.splat"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            div 
+                                                                h1 
+                                                                    + Layout
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                div 
+                                                                    h1 
+                                                                        + Splat
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Layout&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             Splat&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "allows routes starting with url-encoded entities"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/%20splat"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            div 
+                                                                h1 
+                                                                    + Layout
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                div 
+                                                                    h1 
+                                                                        + Splat
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Layout&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           <h1>&lf;
+                                    + &nbsp;             Splat&lf;
+                                    + &nbsp;           </h1>&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;

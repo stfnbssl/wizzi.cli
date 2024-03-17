@@ -1,0 +1,51 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useParams
+        from "react-router"
+    _ describe
+        @ "Decoding params"
+        => 
+            _ it
+                @ "works"
+                => 
+                    function Content
+                        return 
+                            p 
+                                + The params are
+                                + {JSON.stringify(useParams())}
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/content/%2F"
+                                        < Routes 
+                                            < Route 
+                                                @ path "content/*"
+                                                @ element
+                                                    < Routes 
+                                                        < Route 
+                                                            @ path ":id"
+                                                            @ element
+                                                                < Content 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <p>&lf;
+                            + &nbsp;       The params are&nbsp;&lf;
+                            + &nbsp;       {"*":"/","id":"/"}&lf;
+                            + &nbsp;     </p>&lf;
+                            + &nbsp;  &nbsp;

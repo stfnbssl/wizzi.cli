@@ -1,0 +1,684 @@
+module
+    :import-type 
+        @ LoaderFunction
+        @ Router
+        from "../index"
+    import 
+        @ IDLE_NAVIGATION
+        @ createMemoryHistory
+        @ createRouter
+        from "../index"
+    import 
+        @ deferredData
+        @ trackedPromise
+        @ urlMatch
+        from "./utils/custom-matchers"
+    import 
+        @ createDeferred
+        from "./utils/data-router-setup"
+    import 
+        @ tick
+        from "./utils/utils"
+    :interface CustomMatchers
+        :< R
+        :m urlMatch
+            param url
+                :string 
+        :m trackedPromise
+            :ref R
+            param data
+                :any 
+                :optional 
+            param error
+                :any 
+                :optional 
+            param aborted
+                :boolean 
+                :optional 
+        :m deferredData
+            :ref R
+            param done
+                :boolean 
+            param status
+                :number 
+                :optional 
+            param headers
+                :ref Record
+                    :param string
+                    :param string
+                :optional 
+    :declare 
+        :module global
+            :module jest
+                :interface Expect
+                    :extends CustomMatchers
+                :interface Matchers
+                    :< R
+                    :extends CustomMatchers
+                        :param 
+                            :ref R
+                :interface InverseAsymmetricMatchers
+                    :extends CustomMatchers
+    _ expect.extend
+        { 
+            @ deferredData
+            @ trackedPromise
+            @ urlMatch
+    let router
+        :ref Router
+        # Detect any failures inside the router navigate code
+    _ afterEach
+        => 
+            _ router.dispose()
+        # Detect any failures inside the router navigate code
+    _ describe
+        @ "future.v7_partialHydration"
+        => 
+            _ describe
+                @ "when set to false (default behavior)"
+                => 
+                    _ it
+                        @ "starts with initialized=true when no loaders exist without hydrationData"
+                        async=> 
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                        @ history createMemoryHistory()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    [ matches
+                                        { 
+                                            @ pathname "/"
+                                            { route
+                                                @ id "root"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "starts with initialized=false when loaders exist without hydrationData"
+                        async=> 
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ loader
+                                                    => 
+                                                        _ Promise.resolve("LOADER DATA")
+                                        @ history createMemoryHistory()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                    [ matches
+                                        { 
+                                            @ pathname "/"
+                                            { route
+                                                @ id "root"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "idle"
+                            _ router.initialize()
+                            await 
+                                _ tick()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                    [ matches
+                                        { 
+                                            @ pathname "/"
+                                            { route
+                                                @ id "root"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "starts with initialized=true when loaders exist with full hydrationData"
+                        async=> 
+                            let spy = jest.fn()
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ loader spy
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "LOADER DATA"
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                    [ matches
+                                        { 
+                                            @ pathname "/"
+                                            { route
+                                                @ id "root"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                            _ expect(spy).not.toHaveBeenCalled()
+                    _ it
+                        @ "starts with initialized=true when loaders exist with full hydrationData (+actions/errors)"
+                        async=> 
+                            let spy = jest.fn()
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ hasErrorBoundary true
+                                                @ loader spy
+                                                @ action spy
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "LOADER DATA"
+                                            { actionData
+                                                @ root "ACTION DATA"
+                                            { errors
+                                                @ root new Error("lol")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                    { actionData
+                                        @ root "ACTION DATA"
+                                    { errors
+                                        @ root new Error("lol")
+                                    [ matches
+                                        { 
+                                            @ pathname "/"
+                                            { route
+                                                @ id "root"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                            _ expect(spy).not.toHaveBeenCalled()
+                        # This is needed because we can't detect valid "I have a loader" routes
+                        # in Remix since all routes have a loader to fetch JS bundles but may not
+                        # actually provide any loaderData
+                    _ it
+                        @ "starts with initialized=true when loaders exist with partial hydration data"
+                        async=> 
+                            let parentSpy = jest.fn()
+                            let childSpy = jest.fn()
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                                        { hydrationData
+                                            { loaderData
+                                                @ "0" "PARENT DATA"
+                            _ router.initialize()
+                            _ expect(parentSpy.mock.calls.length).toBe(0)
+                            _ expect(childSpy.mock.calls.length).toBe(0)
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ path "/"
+                                        { 
+                                            { route
+                                                @ path "child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ "0" "PARENT DATA"
+                            _ router.dispose()
+                        # This is needed because we can't detect valid "I have a loader" routes
+                        # in Remix since all routes have a loader to fetch JS bundles but may not
+                        # actually provide any loaderData
+                    _ it
+                        @ "does not kick off initial data load if errors exist"
+                        async=> 
+                            let consoleWarnSpy
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                            let parentDfd = createDeferred()
+                            let parentSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr parentDfd.promise
+                            let childDfd = createDeferred()
+                            let childSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr childDfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                                        { hydrationData
+                                            { errors
+                                                @ "0" "PARENT ERROR"
+                                            { loaderData
+                                                @ "0-0" "CHILD_DATA"
+                            _ router.initialize()
+                            _ expect(consoleWarnSpy).not.toHaveBeenCalled()
+                            _ expect(parentSpy).not.toHaveBeenCalled()
+                            _ expect(childSpy).not.toHaveBeenCalled()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ path "/"
+                                        { 
+                                            { route
+                                                @ path "child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { errors
+                                        @ "0" "PARENT ERROR"
+                                    { loaderData
+                                        @ "0-0" "CHILD_DATA"
+                            _ router.dispose()
+                            _ consoleWarnSpy.mockReset()
+            _ describe
+                @ "when set to true"
+                => 
+                    _ it
+                        @ "starts with initialized=false, runs unhydrated loaders with partial hydrationData"
+                        async=> 
+                            let spy = jest.fn()
+                            let shouldRevalidateSpy
+                                _ jest.fn
+                                    => 
+                                        param args
+                                        +
+                                            @expr args.defaultShouldRevalidate
+                            let dfd = createDeferred()
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ loader spy
+                                                @ shouldRevalidate shouldRevalidateSpy
+                                                [ children
+                                                    { 
+                                                        @ id "index"
+                                                        @ index true
+                                                        @ loader
+                                                            => 
+                                                                +
+                                                                    @expr dfd.promise
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "LOADER DATA"
+                                                    # No loaderData provided for index route
+                                        { future
+                                            @ v7_partialHydration true
+                            let subscriberSpy = jest.fn()
+                            _ router.subscribe(subscriberSpy)
+                                # Start with initialized:false
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "idle"
+                                # Start with initialized:false
+                                # Initialize/kick off data loads due to partial hydrationData
+                            _ router.initialize()
+                                # Initialize/kick off data loads due to partial hydrationData
+                            await 
+                                _ dfd.resolve("INDEX DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                        @ index "INDEX DATA"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                                # Root was not re-called
+                            _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+                                # Root was not re-called
+                            _ expect(spy).not.toHaveBeenCalled()
+                                # Ensure we don't go into a navigating state during initial calls of
+                                # the loaders
+                            _ expect(subscriberSpy).toHaveBeenCalledTimes(1)
+                                # Ensure we don't go into a navigating state during initial calls of
+                                # the loaders
+                            _ expect(subscriberSpy.mock.calls[0][0]).toMatchObject
+                                { 
+                                    { loaderData
+                                        @ index "INDEX DATA"
+                                        @ root "LOADER DATA"
+                                    @ navigation IDLE_NAVIGATION
+                    _ it
+                        @ "starts with initialized=false, runs hydrated loaders when loader.hydrate=true"
+                        async=> 
+                            let spy = jest.fn()
+                            let shouldRevalidateSpy
+                                _ jest.fn
+                                    => 
+                                        param args
+                                        +
+                                            @expr args.defaultShouldRevalidate
+                            let dfd = createDeferred()
+                            let indexLoader
+                                :ref LoaderFunction
+                                =
+                                    => 
+                                        +
+                                            @expr dfd.promise
+                            set indexLoader.hydrate = true
+                            set router =
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ loader spy
+                                                @ shouldRevalidate shouldRevalidateSpy
+                                                [ children
+                                                    { 
+                                                        @ id "index"
+                                                        @ index true
+                                                        @ loader indexLoader
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "LOADER DATA"
+                                                @ index "INDEX INITIAL"
+                                        { future
+                                            @ v7_partialHydration true
+                            let subscriberSpy = jest.fn()
+                            _ router.subscribe(subscriberSpy)
+                                # Start with initialized:false
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                        @ index "INDEX INITIAL"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "idle"
+                                # Start with initialized:false
+                                # Initialize/kick off data loads due to partial hydrationData
+                            _ router.initialize()
+                                # Initialize/kick off data loads due to partial hydrationData
+                            await 
+                                _ dfd.resolve("INDEX UPDATED")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { loaderData
+                                        @ root "LOADER DATA"
+                                        @ index "INDEX UPDATED"
+                                    @ initialized true
+                                    { navigation
+                                        @ state "idle"
+                                # Root was not re-called
+                            _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+                                # Root was not re-called
+                            _ expect(spy).not.toHaveBeenCalled()
+                                # Ensure we don't go into a navigating state during initial calls of
+                                # the loaders
+                            _ expect(subscriberSpy).toHaveBeenCalledTimes(1)
+                                # Ensure we don't go into a navigating state during initial calls of
+                                # the loaders
+                            _ expect(subscriberSpy.mock.calls[0][0]).toMatchObject
+                                { 
+                                    { loaderData
+                                        @ index "INDEX UPDATED"
+                                        @ root "LOADER DATA"
+                                    @ navigation IDLE_NAVIGATION
+                    _ it
+                        @ "does not kick off initial data load if errors exist (parent error)"
+                        async=> 
+                            let consoleWarnSpy
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                            let parentDfd = createDeferred()
+                            let parentSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr parentDfd.promise
+                            let childDfd = createDeferred()
+                            let childSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr childDfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                                        { future
+                                            @ v7_partialHydration true
+                                        { hydrationData
+                                            { errors
+                                                @ "0" "PARENT ERROR"
+                                            { loaderData
+                                                @ "0-0" "CHILD_DATA"
+                            _ router.initialize()
+                            _ expect(consoleWarnSpy).not.toHaveBeenCalled()
+                            _ expect(parentSpy).not.toHaveBeenCalled()
+                            _ expect(childSpy).not.toHaveBeenCalled()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ path "/"
+                                        { 
+                                            { route
+                                                @ path "child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { errors
+                                        @ "0" "PARENT ERROR"
+                                    { loaderData
+                                        @ "0-0" "CHILD_DATA"
+                            _ router.dispose()
+                            _ consoleWarnSpy.mockReset()
+                    _ it
+                        @ "does not kick off initial data load if errors exist (bubbled child error)"
+                        async=> 
+                            let consoleWarnSpy
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                            let parentDfd = createDeferred()
+                            let parentSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr parentDfd.promise
+                            let childDfd = createDeferred()
+                            let childSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr childDfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                                        { future
+                                            @ v7_partialHydration true
+                                        { hydrationData
+                                            { errors
+                                                @ "0" "CHILD ERROR"
+                                            { loaderData
+                                                @ "0" "PARENT DATA"
+                            _ router.initialize()
+                            _ expect(consoleWarnSpy).not.toHaveBeenCalled()
+                            _ expect(parentSpy).not.toHaveBeenCalled()
+                            _ expect(childSpy).not.toHaveBeenCalled()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ path "/"
+                                        { 
+                                            { route
+                                                @ path "child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { errors
+                                        @ "0" "CHILD ERROR"
+                                    { loaderData
+                                        @ "0" "PARENT DATA"
+                            _ router.dispose()
+                            _ consoleWarnSpy.mockReset()
+            _ it
+                @ "does not kick off initial data load for routes that don't have loaders"
+                async=> 
+                    let consoleWarnSpy
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let parentDfd = createDeferred()
+                    let parentSpy
+                        _ jest.fn
+                            => 
+                                +
+                                    @expr parentDfd.promise
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                    _ createMemoryHistory
+                                        { 
+                                            [ initialEntries
+                                                @ "/child"
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ loader parentSpy
+                                        [ children
+                                            { 
+                                                @ path "child"
+                                { future
+                                    @ v7_partialHydration true
+                                { hydrationData
+                                    { loaderData
+                                        @ "0" "PARENT DATA"
+                    _ expect(router.state).toMatchObject
+                        { 
+                            @ initialized true
+                                # already initialized so calling initialize() won't kick off loaders
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ "0" "PARENT DATA"
+                    _ router.dispose()
+                    _ consoleWarnSpy.mockReset()

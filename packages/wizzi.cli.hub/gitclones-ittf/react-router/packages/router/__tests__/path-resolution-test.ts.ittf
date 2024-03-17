@@ -1,0 +1,586 @@
+module
+    import 
+        @ createMemoryHistory
+        @ createPath
+        from "../history"
+    import 
+        @ createRouter
+        from "../router"
+    import 
+        @ cleanup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    _ describe
+        @ "path resolution"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ describe
+                @ "routing to self"
+                => 
+                    function assertRoutingToSelf
+                        param fooChildren
+                        param expectedPath
+                        param expectIndex
+                        const getRouter
+                            => 
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ path "foo"
+                                                        @ children fooChildren
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/foo/bar?a=1#hash"
+                                    ._ initialize
+                            # Null should preserve the search/hash
+                        let router = getRouter()
+                            # Null should preserve the search/hash
+                        _ router.navigate
+                            @ null
+                            { 
+                                @ fromRouteId "activeRoute"
+                        _ expect(createPath(router.state.location)).toBe
+                            op+ 
+                                + expectedPath
+                                ( 
+                                    iif expectIndex
+                                        then "?index&a=1#hash"
+                                        else "?a=1#hash"
+                        _ router.dispose()
+                            # "." and "" should not preserve the search and hash
+                        set router = getRouter()
+                            # "." and "" should not preserve the search and hash
+                        _ router.navigate
+                            @ "."
+                            { 
+                                @ fromRouteId "activeRoute"
+                        _ expect(createPath(router.state.location)).toBe
+                            op+ 
+                                + expectedPath
+                                ( 
+                                    iif expectIndex
+                                        then "?index"
+                                        else ""
+                        _ router.dispose()
+                        set router = getRouter()
+                        _ router.navigate
+                            @ ""
+                            { 
+                                @ fromRouteId "activeRoute"
+                        _ expect(createPath(router.state.location)).toBe
+                            op+ 
+                                + expectedPath
+                                ( 
+                                    iif expectIndex
+                                        then "?index"
+                                        else ""
+                        _ router.dispose()
+                        # Utility that accepts children of /foo routes and executes the same
+                        # routing tests starting at /foo/bar/?a=b#hash
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a static route"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                @ "/foo/bar"
+                                @ false
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a layout route"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ index true
+                                @ "/foo/bar"
+                                @ false
+                    _ it
+                        @ "from an index route"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ id "activeRoute"
+                                                @ index true
+                                @ "/foo/bar"
+                                @ true
+                    _ it
+                        @ "from an index route with a path"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        @ index true
+                                @ "/foo/bar"
+                                @ true
+                    _ it
+                        @ "from a dynamic param route"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path ":param"
+                                @ "/foo/bar"
+                                @ false
+                    _ it
+                        @ "from a splat route"
+                        => 
+                            _ assertRoutingToSelf
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "*"
+                                @ "/foo"
+                                @ false
+                        #
+                            # eslint-enable jest/expect-expect
+            _ describe
+                @ "routing to parent"
+                => 
+                    function assertRoutingToParent
+                        param fooChildren
+                        let router
+                            _ createRouter
+                                { 
+                                    [ routes
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ path "foo"
+                                                    @ children fooChildren
+                                    @ history
+                                        _ createMemoryHistory
+                                            { 
+                                                [ initialEntries
+                                                    @ "/foo/bar?a=1#hash"
+                                ._ initialize
+                            # Null should preserve the search/hash
+                        _ router.navigate
+                            @ ".."
+                            { 
+                                @ fromRouteId "activeRoute"
+                            # Null should preserve the search/hash
+                        _ expect(createPath(router.state.location)).toBe("/foo")
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a static route"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a layout route"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ index true
+                    _ it
+                        @ "from an index route"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ id "activeRoute"
+                                                @ index true
+                    _ it
+                        @ "from an index route with a path"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        @ index true
+                    _ it
+                        @ "from a dynamic param route"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path ":param"
+                    _ it
+                        @ "from a splat route"
+                        => 
+                            _ assertRoutingToParent
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "*"
+                        #
+                            # eslint-enable jest/expect-expect
+            _ describe
+                @ "routing to sibling"
+                => 
+                    function assertRoutingToSibling
+                        param fooChildren
+                        let router
+                            _ createRouter
+                                { 
+                                    [ routes
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ path "foo"
+                                                    [ children
+                                                        @ ...fooChildren
+                                                        { 
+                                                            @ path "bar-sibling"
+                                    @ history
+                                        _ createMemoryHistory
+                                            { 
+                                                [ initialEntries
+                                                    @ "/foo/bar?a=1#hash"
+                                ._ initialize
+                            # Null should preserve the search/hash
+                        _ router.navigate
+                            @ "../bar-sibling"
+                            { 
+                                @ fromRouteId "activeRoute"
+                            # Null should preserve the search/hash
+                        _ expect(createPath(router.state.location)).toBe("/foo/bar-sibling")
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a static route"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a layout route"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ index true
+                    _ it
+                        @ "from an index route"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ id "activeRoute"
+                                                @ index true
+                    _ it
+                        @ "from an index route with a path"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        @ index true
+                    _ it
+                        @ "from a dynamic param route"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path ":param"
+                    _ it
+                        @ "from a splat route"
+                        => 
+                            _ assertRoutingToSibling
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "*"
+                        #
+                            # eslint-enable jest/expect-expect
+            _ describe
+                @ "routing to child"
+                => 
+                    function assertRoutingToChild
+                        param fooChildren
+                        const getRouter
+                            => 
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ path "foo"
+                                                        [ children
+                                                            @ ...fooChildren
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/foo/bar?a=1#hash"
+                                    ._ initialize
+                        let router = getRouter()
+                        _ router.navigate
+                            @ "baz"
+                            { 
+                                @ fromRouteId "activeRoute"
+                        _ expect(createPath(router.state.location)).toBe("/foo/bar/baz")
+                        _ router.dispose()
+                        set router = getRouter()
+                        _ router.navigate
+                            @ "./baz"
+                            { 
+                                @ fromRouteId "activeRoute"
+                        _ expect(createPath(router.state.location)).toBe("/foo/bar/baz")
+                        _ router.dispose()
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a static route"
+                        => 
+                            _ assertRoutingToChild
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ path "baz"
+                        #
+                            # eslint-disable jest/expect-expect
+                    _ it
+                        @ "from a layout route"
+                        => 
+                            _ assertRoutingToChild
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path "bar"
+                                        [ children
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ path "baz"
+                    _ it
+                        @ "from a dynamic param route"
+                        => 
+                            _ assertRoutingToChild
+                                [ 
+                                    { 
+                                        @ id "activeRoute"
+                                        @ path ":param"
+                                        [ children
+                                            { 
+                                                @ path "baz"
+                        #
+                            # eslint-enable jest/expect-expect
+            _ it
+                @ "resolves relative routes when using relative:path"
+                => 
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/a/b/c/d/e/f"
+                    let routes
+                        [ 
+                            { 
+                                @ id "a"
+                                @ path "/a"
+                                [ children
+                                    { 
+                                        @ id "bc"
+                                        @ path "b/c"
+                                        [ children
+                                            { 
+                                                @ id "de"
+                                                @ path "d/e"
+                                                [ children
+                                                    { 
+                                                        @ id "f"
+                                                        @ path "f"
+                        # Navigating without relative:path
+                    let router
+                        _ createRouter
+                            { 
+                                @ routes
+                                @ history
+                            ._ initialize
+                        # Navigating without relative:path
+                    _ router.navigate("..")
+                    _ expect(router.state.location.pathname).toBe("/a/b/c/d/e")
+                    _ router.navigate("/a/b/c/d/e/f")
+                    _ router.navigate("../..")
+                    _ expect(router.state.location.pathname).toBe("/a/b/c")
+                    _ router.navigate("/a/b/c/d/e/f")
+                        # Navigating with relative:path
+                    _ router.navigate
+                        @ ".."
+                        { 
+                            @ relative "path"
+                        # Navigating with relative:path
+                    _ expect(router.state.location.pathname).toBe("/a/b/c/d/e")
+                    _ router.navigate("/a/b/c/d/e/f")
+                    _ router.navigate
+                        @ "../.."
+                        { 
+                            @ relative "path"
+                    _ expect(router.state.location.pathname).toBe("/a/b/c/d")
+                    _ router.navigate("/a/b/c/d/e/f")
+                        # Navigating with relative:path from mid-route-hierarchy
+                    _ router.navigate
+                        @ ".."
+                        { 
+                            @ relative "path"
+                            @ fromRouteId "f"
+                        # Navigating with relative:path from mid-route-hierarchy
+                    _ expect(router.state.location.pathname).toBe("/a/b/c/d/e")
+                    _ router.navigate("/a/b/c/d/e/f")
+                    _ router.navigate
+                        @ "../.."
+                        { 
+                            @ relative "path"
+                            @ fromRouteId "de"
+                    _ expect(router.state.location.pathname).toBe("/a/b/c")
+                    _ router.navigate("/a/b/c/d/e/f")
+                    _ router.navigate
+                        @ "../.."
+                        { 
+                            @ relative "path"
+                            @ fromRouteId "bc"
+                    _ expect(router.state.location.pathname).toBe("/a")
+                    _ router.navigate("/a/b/c/d/e/f")
+                        # Go up farther than # of URL segments
+                    _ router.navigate
+                        @ "../../../../../../../../.."
+                        { 
+                            @ relative "path"
+                            @ fromRouteId "f"
+                        # Go up farther than # of URL segments
+                    _ expect(router.state.location.pathname).toBe("/")
+                    _ router.navigate("/a/b/c/d/e/f")
+                    _ router.dispose()
+            _ it
+                @ "should not append ?index to get submission navigations to self from index route"
+                => 
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        [ children
+                                            { 
+                                                @ path "path"
+                                                [ children
+                                                    { 
+                                                        @ id "activeRouteId"
+                                                        @ index true
+                                @ history
+                                    _ createMemoryHistory
+                                        { 
+                                            [ initialEntries
+                                                @ "/path"
+                            ._ initialize
+                    _ router.navigate
+                        @ null
+                        { 
+                            @ fromRouteId "activeRouteId"
+                            @ formData
+                                _ createFormData
+                                    { 
+                    _ expect(createPath(router.state.location)).toBe("/path")
+                    _ expect(router.state.matches[2].route.index).toBe(true)
+                    _ router.navigate
+                        @ "."
+                        { 
+                            @ fromRouteId "activeRouteId"
+                            @ formData
+                                _ createFormData
+                                    { 
+                    _ expect(createPath(router.state.location)).toBe("/path")
+                    _ expect(router.state.matches[2].route.index).toBe(true)
+                    _ router.navigate
+                        @ ""
+                        { 
+                            @ fromRouteId "activeRouteId"
+                            @ formData
+                                _ createFormData
+                                    { 
+                    _ expect(createPath(router.state.location)).toBe("/path")
+                    _ expect(router.state.matches[2].route.index).toBe(true)
+            _ it
+                @ "handles pathless relative routing when a basename is present"
+                => 
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/path"
+                                { future
+                                    @ v7_prependBasename true
+                                @ history
+                                    _ createMemoryHistory
+                                        { 
+                                            [ initialEntries
+                                                @ "/base/path"
+                                @ basename "/base"
+                            ._ initialize
+                    _ expect(createPath(router.state.location)).toBe("/base/path")
+                    _ expect(router.state.matches[0].route.path).toBe("/path")
+                    _ router.navigate(".?a=1")
+                    _ expect(createPath(router.state.location)).toBe("/base/path?a=1")
+                    _ expect(router.state.matches[0].route.path).toBe("/path")
+                    _ router.navigate("?b=2")
+                    _ expect(createPath(router.state.location)).toBe("/base/path?b=2")
+                    _ expect(router.state.matches[0].route.path).toBe("/path")
+                    _ router.navigate("/path?c=3")
+                    _ expect(createPath(router.state.location)).toBe("/base/path?c=3")
+                    _ expect(router.state.matches[0].route.path).toBe("/path")

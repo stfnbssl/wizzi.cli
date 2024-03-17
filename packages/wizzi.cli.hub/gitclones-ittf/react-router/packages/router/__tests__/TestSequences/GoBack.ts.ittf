@@ -1,0 +1,52 @@
+module
+    :import-type 
+        @ History
+        from "../../history"
+    export-default 
+        async-function GoBack
+            param history
+                :ref History
+            let spy
+                :ref jest.SpyInstance
+                = jest.fn()
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/"
+            _ history.push("/home")
+            _ expect(history.action).toEqual("PUSH")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"
+            _ expect(spy).not.toHaveBeenCalled()
+                # JSDom doesn't fire the listener synchronously :(
+            let promise
+                new Promise
+                    => 
+                        param resolve
+                        let unlisten
+                            _ history.listen
+                                => 
+                                    param ...args
+                                    _ spy(...args)
+                                        # @ts-expect-error
+                                    _ unlisten()
+                                    _ resolve(null)
+                # JSDom doesn't fire the listener synchronously :(
+            _ history.go(-1)
+            await 
+                @id promise
+            _ expect(history.action).toEqual("POP")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/"
+            _ expect(spy).toHaveBeenCalledWith
+                { 
+                    @ action "POP"
+                    @ delta expect.any(Number)
+                    { location
+                        @ hash ""
+                        @ key expect.any(String)
+                        @ pathname "/"
+                        @ search ""
+                        @ state null
+            _ expect(spy.mock.calls.length).toBe(1)

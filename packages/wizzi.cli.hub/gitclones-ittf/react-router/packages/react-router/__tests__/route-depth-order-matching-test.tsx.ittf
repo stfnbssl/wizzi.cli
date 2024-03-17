@@ -1,0 +1,163 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Outlet
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "nested routes with no path"
+        => 
+            _ it
+                @ "matches them depth-first"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ element
+                                                    < First 
+                                                < Route 
+                                                    @ element
+                                                        < Second 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Third 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       First&nbsp;&lf;
+                            + &nbsp;       <div>&lf;
+                            + &nbsp;         Second&nbsp;&lf;
+                            + &nbsp;         <div>&lf;
+                            + &nbsp;           Third&lf;
+                            + &nbsp;         </div>&lf;
+                            + &nbsp;       </div>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            function First
+                return 
+                    div 
+                        + First
+                        < Outlet 
+            function Second
+                return 
+                    div 
+                        + Second
+                        < Outlet 
+            function Third
+                return 
+                    div 
+                        + Third
+    _ describe
+        @ "nested /"
+        => 
+            _ it
+                @ "matches them depth-first"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    < First 
+                                                < Route 
+                                                    @ path "/"
+                                                    @ element
+                                                        < Second 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Third 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       First&nbsp;&lf;
+                            + &nbsp;       <div>&lf;
+                            + &nbsp;         Second&nbsp;&lf;
+                            + &nbsp;         <div>&lf;
+                            + &nbsp;           Third&lf;
+                            + &nbsp;         </div>&lf;
+                            + &nbsp;       </div>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            function First
+                return 
+                    div 
+                        + First
+                        < Outlet 
+            function Second
+                return 
+                    div 
+                        + Second
+                        < Outlet 
+            function Third
+                return 
+                    div 
+                        + Third
+    _ describe
+        @ "routes with identical paths"
+        => 
+            _ it
+                @ "matches them in order"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/home"
+                                                @ element
+                                                    < First 
+                                            < Route 
+                                                @ path "/home"
+                                                @ element
+                                                    < Second 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       First&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            function First
+                return 
+                    div 
+                        + First
+            function Second
+                return 
+                    div 
+                        + Second

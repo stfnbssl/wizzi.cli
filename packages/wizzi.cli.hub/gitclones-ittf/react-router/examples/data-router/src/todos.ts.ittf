@@ -1,0 +1,85 @@
+module
+    export 
+        :interface Todos
+            :index 
+                :string 
+                param key
+                    :string 
+    const TODOS_KEY = "todos"
+    export 
+        const uuid
+            => 
+                _ Math.random().toString(36).substr(2, 9)
+    export 
+        function saveTodos
+            param todos
+                :ref Todos
+            :return
+                :void 
+            return localStorage.setItem(TODOS_KEY, JSON.stringify(todos))
+    function initializeTodos
+        :return
+            :ref Todos
+        let todos
+            :ref Todos
+            =
+                _ new Array(10).fill(null).reduce
+                    => 
+                        param acc
+                        param _
+                        param index
+                        _ Object.assign
+                            @ acc
+                            { 
+                                @ [uuid()]
+                                    `lit 
+                                        + Seeded Todo #
+                                        @ index + 1
+                                        + 
+                    { 
+        _ saveTodos(todos)
+        return todos
+    export 
+        function getTodos
+            :return
+                :ref Todos
+            let todos
+                :union 
+                    :ref Todos
+                    :null 
+                = null
+            try 
+                set todos = JSON.parse(localStorage.getItem(TODOS_KEY))
+                    # @ts-expect-error OK to throw here since we're catching
+            catch e
+            if !todos
+                set todos = initializeTodos()
+            return todos
+    export 
+        function addTodo
+            param todo
+                :string 
+            :return
+                :void 
+            let newTodos
+                { 
+                    @ ...getTodos()
+            set newTodos[uuid()] = todo
+            _ saveTodos(newTodos)
+    export 
+        function deleteTodo
+            param id
+                :string 
+            :return
+                :void 
+            let newTodos
+                { 
+                    @ ...getTodos()
+            delete newTodos[id]
+            _ saveTodos(newTodos)
+    export 
+        function resetTodos
+            :return
+                :void 
+            _ localStorage.removeItem(TODOS_KEY)
+            _ initializeTodos()

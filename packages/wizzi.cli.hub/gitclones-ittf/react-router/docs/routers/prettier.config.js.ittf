@@ -1,0 +1,10 @@
+module
+    kind react
+    set module.exports =
+        { 
+            @ ...require("../prettier.config")
+            @ printWidth 60
+        #
+            # *
+            # * @type {import('prettier').Options}
+            # 

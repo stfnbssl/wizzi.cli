@@ -1,0 +1,16 @@
+html 
+    lang en
+    head 
+        meta 
+            charset UTF-8
+        meta 
+            name viewport
+            content width=device-width, initial-scale=1.0
+        @title React Router - Data Router SSR Example
+        link 
+            rel stylesheet
+            href /src/index.css
+    body 
+        div 
+            id app
+        js /src/entry.client.tsx

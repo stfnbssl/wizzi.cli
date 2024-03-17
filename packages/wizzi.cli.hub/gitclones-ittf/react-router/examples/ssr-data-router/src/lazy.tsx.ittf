@@ -1,0 +1,37 @@
+module
+    import 
+        @ useLoaderData
+        from "react-router-dom"
+    :interface LazyLoaderData
+        :p date
+            :string 
+    export 
+        const loader
+            async=> 
+                :return
+                    :ref Promise
+                        :param 
+                            :ref LazyLoaderData
+                await 
+                    new Promise
+                        => 
+                            param r
+                            _ setTimeout(r, 500)
+                return 
+                    { 
+                        @ date new Date().toISOString()
+    function LazyPage
+        let data
+            _ useLoaderData()
+                :as 
+                    :ref LazyLoaderData
+        return 
+            < React.Fragment
+                h2 
+                    + Lazy Route
+                p 
+                    + Date from loader:
+                    + {data.date}
+    export 
+        const element
+            < LazyPage 

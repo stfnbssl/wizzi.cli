@@ -1,0 +1,1178 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ BrowserRouter
+        @ HashRouter
+        @ Link
+        @ MemoryRouter
+        @ Outlet
+        @ Route
+        @ RouterProvider
+        @ Routes
+        @ createBrowserRouter
+        @ createHashRouter
+        from "react-router-dom"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    _ describe
+        @ "<Link> href"
+        => 
+            _ describe
+                @ "in a static route"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "/about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/about")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to ".."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < React.Fragment
+                                                                    < Link 
+                                                                        @ to "../../about"
+                                                                    # 
+                                                                        # traverse past the root
+                                                                    < Link 
+                                                                        @ to "../../../about"
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+                    _ test
+                        @ '<Link to="https://remix.run"> is treated as external link'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "https://remix.run"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("https://remix.run")
+                    _ test
+                        @ '<Link to="//remix.run"> is treated as external link'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "//remix.run"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("//remix.run")
+                    _ test
+                        @ '<Link to="mailto:remix@example.com"> is treated as external link'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "mailto:remix@example.com"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("mailto:remix@example.com")
+                    _ test
+                        @ '<Link to="web+remix://somepath"> is treated as external link'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "web+remix://somepath"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("web+remix://somepath")
+                    _ test
+                        @ '<Link to="http://localhost/inbox"> is treated as an absolute link'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "http://localhost/inbox"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("http://localhost/inbox")
+                    _ test
+                        @ "<Link to=\"{ search: 'key=value'\"> is handled with the current pathname"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to
+                                                                        { 
+                                                                            @ search "key=value"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages?key=value")
+                    _ test
+                        @ "<Link to=\"{ hash: 'hash'\"> is handled with the current pathname"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to
+                                                                        { 
+                                                                            @ hash "hash"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages#hash")
+            _ describe
+                @ "in a dynamic route"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/:id"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "/about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/about")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/:id"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages/abc")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/:id"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to ".."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/:id"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "../../about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/about")
+            _ describe
+                @ "in an index route"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "/home"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/home")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent route (ignoring the index route)'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < Link 
+                                                                    @ to ".."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < React.Fragment
+                                                                    < Link 
+                                                                        @ to "../../about"
+                                                                    # 
+                                                                        # traverse past the root
+                                                                    < Link 
+                                                                        @ to "../../../about"
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+            _ describe
+                @ "in a layout route"
+                => 
+                    function MessagesLayout
+                        { 
+                            @ link
+                            :{ 
+                                :p link
+                                    :ref React.ReactElement
+                        return 
+                            div 
+                                + {link}
+                                < Outlet 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ element
+                                                                < MessagesLayout 
+                                                                    @ link
+                                                                        < Link 
+                                                                            @ to "/home"
+                                                            < Route 
+                                                                @ path "messages"
+                                                                @ element
+                                                                    h1 
+                                                                        + Messages
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/home")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ element
+                                                                < MessagesLayout 
+                                                                    @ link
+                                                                        < Link 
+                                                                            @ to "."
+                                                            < Route 
+                                                                @ path "messages"
+                                                                @ element
+                                                                    h1 
+                                                                        + Messages
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent route (ignoring the pathless route)'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ element
+                                                                < MessagesLayout 
+                                                                    @ link
+                                                                        < Link 
+                                                                            @ to ".."
+                                                            < Route 
+                                                                @ path "messages"
+                                                                @ element
+                                                                    h1 
+                                                                        + Messages
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ element
+                                                                < MessagesLayout 
+                                                                    @ link
+                                                                        < React.Fragment
+                                                                            < Link 
+                                                                                @ to "../../about"
+                                                                            # 
+                                                                                # traverse past the root
+                                                                            < Link 
+                                                                                @ to "../../../about"
+                                                            < Route 
+                                                                @ path "messages"
+                                                                @ element
+                                                                    h1 
+                                                                        + Messages
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+            _ describe
+                @ "in a splat route"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/123"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/*"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "/about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/about")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/*"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/*"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to ".."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ "<Link to> pointing to a sibling route resolves relative to its parent route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/abc"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/*"
+                                                            @ element
+                                                                < Link 
+                                                                    @ to "../messages/def"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages/def")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages/*"
+                                                            @ element
+                                                                < React.Fragment
+                                                                    < Link 
+                                                                        @ to "../../about"
+                                                                    # 
+                                                                        # traverse past the root
+                                                                    < Link 
+                                                                        @ to "../../../about"
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+            _ describe
+                @ "under a <Router basename>"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the basename"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "/about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/app/about")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/app/inbox")
+                    _ test
+                        @ '<Link to=".."> with no parent route resolves relative to the basename'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "../about"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/app/about")
+            _ describe
+                @ "in a descendant <Routes>"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/auth/login"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "auth/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "login"
+                                                                    @ element
+                                                                        < Link 
+                                                                            @ to "/auth/forgot-password"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/auth/forgot-password")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/auth/login"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "auth/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "login"
+                                                                    @ element
+                                                                        < Link 
+                                                                            @ to "."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/auth/login")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the ancestor route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/auth/login"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "auth/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "login"
+                                                                    @ element
+                                                                        < Link 
+                                                                            @ to ".."
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/auth")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than ancestor routes resolves relative to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/auth/login"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "auth/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "login"
+                                                                    @ element
+                                                                        < React.Fragment
+                                                                            < Link 
+                                                                                @ to "../../about"
+                                                                            # 
+                                                                                # traverse past the root
+                                                                            < Link 
+                                                                                @ to "../../../about"
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+            _ describe
+                @ "when using relative=path"
+                => 
+                    _ test
+                        @ "absolute <Link to> resolves relative to the root URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "/about"
+                                                                @ relative "path"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/about")
+                    _ test
+                        @ '<Link to="."> resolves relative to the current route'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "."
+                                                                @ relative "path"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox")
+                    _ test
+                        @ '<Link to=".."> resolves relative to the parent URL segment'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                    < Route 
+                                                        @ path "inbox/messages"
+                                                    < Route 
+                                                        @ path "inbox/messages/:id"
+                                                        @ element
+                                                            < Link 
+                                                                @ to ".."
+                                                                @ relative "path"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/inbox/messages")
+                    _ test
+                        @ '<Link to=".."> with more .. segments than parent routes resolves to the root URL'
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/inbox/messages"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "inbox"
+                                                        < Route 
+                                                            @ path "messages"
+                                                            @ element
+                                                                < React.Fragment
+                                                                    < Link 
+                                                                        @ to "../../about"
+                                                                        @ relative "path"
+                                                                    # 
+                                                                        # traverse past the root
+                                                                    < Link 
+                                                                        @ to "../../../about"
+                                                                        @ relative "path"
+                            _ expect
+                                _ renderer.root.findAllByType("a").map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.href
+                                ._ toEqual
+                                    [ 
+                                        @ "/about"
+                                        @ "/about"
+            _ describe
+                @ "when using a browser router"
+                => 
+                    _ it
+                        @ "renders proper <a href> for BrowserRouter"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < BrowserRouter 
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "/path?search=value#hash"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/path?search=value#hash")
+                    _ it
+                        @ "renders proper <a href> for createBrowserRouter"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    let router
+                                        _ createBrowserRouter
+                                            [ 
+                                                { 
+                                                    @ path "/"
+                                                    @ element
+                                                        < Link 
+                                                            @ to "/path?search=value#hash"
+                                                            + Link
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < RouterProvider 
+                                                @ router {router}
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("/path?search=value#hash")
+            _ describe
+                @ "when using a hash router"
+                => 
+                    _ it
+                        @ "renders proper <a href> for HashRouter"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < HashRouter 
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Link 
+                                                                @ to "/path?search=value#hash"
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("#/path?search=value#hash")
+                    _ it
+                        @ "renders proper <a href> for createHashRouter"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    let router
+                                        _ createHashRouter
+                                            [ 
+                                                { 
+                                                    @ path "/"
+                                                    @ element
+                                                        < Link 
+                                                            @ to "/path?search=value#hash"
+                                                            + Link
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < RouterProvider 
+                                                @ router {router}
+                            _ expect(renderer.root.findByType("a").props.href).toEqual("#/path?search=value#hash")
+            _ test
+                @ "fails gracefully on invalid `to` values"
+                => 
+                    let warnSpy
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    < Link 
+                                                        @ to "//"
+                    _ expect(renderer.root.findByType("a").props.href).toEqual("//")
+                    _ expect(warnSpy).toHaveBeenCalledWith('<Link to="//"> contains an invalid URL which will probably break when clicked - please update to a valid URL path.')
+                    _ warnSpy.mockRestore()
+            _ test
+                @ "renders fine when used outside a route context"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        < Link 
+                                            @ to "route"
+                                            + Route
+                                        < Link 
+                                            @ to "path"
+                                            @ relative "path"
+                                            + Path
+                    let anchors = renderer.root.findAllByType("a")
+                    _ expect
+                        _ anchors.map
+                            => 
+                                param a
+                                (
+                                    { 
+                                        @ href a.props.href
+                                        @ text a.children
+                        ._ toMatchInlineSnapshot
+                            `lit 
+                                + &lf;
+                                + &nbsp;     [&lf;
+                                + &nbsp;       {&lf;
+                                + &nbsp;         "href": "/route",&lf;
+                                + &nbsp;         "text": [&lf;
+                                + &nbsp;           "Route",&lf;
+                                + &nbsp;         ],&lf;
+                                + &nbsp;       },&lf;
+                                + &nbsp;       {&lf;
+                                + &nbsp;         "href": "/path",&lf;
+                                + &nbsp;         "text": [&lf;
+                                + &nbsp;           "Path",&lf;
+                                + &nbsp;         ],&lf;
+                                + &nbsp;       },&lf;
+                                + &nbsp;     ]&lf;
+                                + &nbsp;  &nbsp;

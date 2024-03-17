@@ -1,0 +1,1619 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ Blocker
+        @ BlockerFunction
+        @ Location
+        @ ParamParseKey
+        @ Params
+        @ Path
+        @ PathMatch
+        @ PathPattern
+        @ RelativeRoutingType
+        @ Router
+            as RemixRouter
+        @ RevalidationState
+        @ To
+        @ UIMatch
+        from "@remix-run/router"
+    import 
+        @ IDLE_BLOCKER
+        @ Action
+            as NavigationType
+        @ UNSAFE_convertRouteMatchToUiMatch
+            as convertRouteMatchToUiMatch
+        @ UNSAFE_getResolveToMatches
+            as getResolveToMatches
+        @ UNSAFE_invariant
+            as invariant
+        @ isRouteErrorResponse
+        @ joinPaths
+        @ matchPath
+        @ matchRoutes
+        @ parsePath
+        @ resolveTo
+        @ stripBasename
+        @ UNSAFE_warning
+            as warning
+        from "@remix-run/router"
+    :import-type 
+        @ DataRouteMatch
+        @ NavigateOptions
+        @ RouteContextObject
+        @ RouteMatch
+        @ RouteObject
+        from "./context"
+    import 
+        @ AwaitContext
+        @ DataRouterContext
+        @ DataRouterStateContext
+        @ LocationContext
+        @ NavigationContext
+        @ RouteContext
+        @ RouteErrorContext
+        from "./context"
+        #
+            # *
+            # * Returns the full href for the given "to" value. This is useful for building
+            # * custom links that are also accessible and preserve right-click behavior.
+            # *
+            # * @see https://reactrouter.com/hooks/use-href
+            # 
+    export 
+        function useHref
+            param to
+                :ref To
+            param 
+                @ relative
+                :{ 
+                    :p relative
+                        :optional 
+                        :ref RelativeRoutingType
+                = 
+            :return
+                :string 
+            _ invariant
+                _ useInRouterContext()
+                `lit 
+                    + useHref() may be used only in the context of a <Router> component.
+                    # TODO: This error is probably because they somehow have 2 versions of the
+                    # router loaded. We can help them understand how to avoid that.
+            let 
+                { 
+                    @ basename
+                    @ navigator
+                = React.useContext(NavigationContext)
+            let 
+                { 
+                    @ hash
+                    @ pathname
+                    @ search
+                =
+                    _ useResolvedPath
+                        @ to
+                        { 
+                            @ relative
+            let joinedPathname = pathname
+                # If we're operating within a basename, prepend it to the pathname prior
+                # to creating the href.  If this is a root navigation, then just use the raw
+                # basename which allows the basename to have full control over the presence
+                # of a trailing slash on root links
+            if basename !== "/"
+                set joinedPathname =
+                    iif pathname === "/"
+                        then basename
+                        else
+                            _ joinPaths
+                                [ 
+                                    @ basename
+                                    @ pathname
+            return 
+                _ navigator.createHref
+                    { 
+                        @ pathname joinedPathname
+                        @ search
+                        @ hash
+        #
+            # *
+            # * Returns the full href for the given "to" value. This is useful for building
+            # * custom links that are also accessible and preserve right-click behavior.
+            # *
+            # * @see https://reactrouter.com/hooks/use-href
+            # 
+        #
+            # *
+            # * Returns true if this component is a descendant of a `<Router>`.
+            # *
+            # * @see https://reactrouter.com/hooks/use-in-router-context
+            # 
+    export 
+        function useInRouterContext
+            :return
+                :boolean 
+            return React.useContext(LocationContext) != null
+        #
+            # *
+            # * Returns true if this component is a descendant of a `<Router>`.
+            # *
+            # * @see https://reactrouter.com/hooks/use-in-router-context
+            # 
+        #
+            # *
+            # * Returns the current location object, which represents the current URL in web
+            # * browsers.
+            # *
+            # * Note: If you're using this it may mean you're doing some of your own
+            # * "routing" in your app, and we'd like to know what your use case is. We may
+            # * be able to provide something higher-level to better suit your needs.
+            # *
+            # * @see https://reactrouter.com/hooks/use-location
+            # 
+    export 
+        function useLocation
+            :return
+                :ref Location
+            _ invariant
+                _ useInRouterContext()
+                `lit 
+                    + useLocation() may be used only in the context of a <Router> component.
+                    # TODO: This error is probably because they somehow have 2 versions of the
+                    # router loaded. We can help them understand how to avoid that.
+            return React.useContext(LocationContext).location
+        #
+            # *
+            # * Returns the current location object, which represents the current URL in web
+            # * browsers.
+            # *
+            # * Note: If you're using this it may mean you're doing some of your own
+            # * "routing" in your app, and we'd like to know what your use case is. We may
+            # * be able to provide something higher-level to better suit your needs.
+            # *
+            # * @see https://reactrouter.com/hooks/use-location
+            # 
+        #
+            # *
+            # * Returns the current navigation action which describes how the router came to
+            # * the current location, either by a pop, push, or replace on the history stack.
+            # *
+            # * @see https://reactrouter.com/hooks/use-navigation-type
+            # 
+    export 
+        function useNavigationType
+            :return
+                :ref NavigationType
+            return React.useContext(LocationContext).navigationType
+        #
+            # *
+            # * Returns the current navigation action which describes how the router came to
+            # * the current location, either by a pop, push, or replace on the history stack.
+            # *
+            # * @see https://reactrouter.com/hooks/use-navigation-type
+            # 
+        #
+            # *
+            # * Returns a PathMatch object if the given pattern matches the current URL.
+            # * This is useful for components that need to know "active" state, e.g.
+            # * `<NavLink>`.
+            # *
+            # * @see https://reactrouter.com/hooks/use-match
+            # 
+    export 
+        function useMatch
+            :< ParamKey
+                :ref ParamParseKey
+                    :param 
+                        :ref Path
+            :< Path
+                :string 
+            param pattern
+                :union 
+                    :ref PathPattern
+                        :param 
+                            :ref Path
+                    :ref Path
+            :return
+                :union 
+                    :ref PathMatch
+                        :param 
+                            :ref ParamKey
+                    :null 
+            _ invariant
+                _ useInRouterContext()
+                `lit 
+                    + useMatch() may be used only in the context of a <Router> component.
+                    # TODO: This error is probably because they somehow have 2 versions of the
+                    # router loaded. We can help them understand how to avoid that.
+            let 
+                { 
+                    @ pathname
+                = useLocation()
+            return 
+                _ React.useMemo
+                    => 
+                        _ matchPath
+                            :param 
+                                :ref ParamKey
+                            :param 
+                                :ref Path
+                            @ pattern
+                            @ pathname
+                    [ 
+                        @ pathname
+                        @ pattern
+        #
+            # *
+            # * Returns a PathMatch object if the given pattern matches the current URL.
+            # * This is useful for components that need to know "active" state, e.g.
+            # * `<NavLink>`.
+            # *
+            # * @see https://reactrouter.com/hooks/use-match
+            # 
+        #
+            # *
+            # * The interface for the navigate() function returned from useNavigate().
+            # 
+    export 
+        :interface NavigateFunction
+            :call 
+                :void 
+                param to
+                    :ref To
+                param options
+                    :ref NavigateOptions
+                    :optional 
+            :call 
+                :void 
+                param delta
+                    :number 
+        #
+            # *
+            # * The interface for the navigate() function returned from useNavigate().
+            # 
+    const navigateEffectWarning
+        op+ 
+            `lit 
+                + You should call navigate() in a React.useEffect(), not when&nbsp;
+            `lit 
+                + your component is first rendered.
+        # Mute warnings for calls to useNavigate in SSR environments
+    function useIsomorphicLayoutEffect
+        param cb
+            :[] 
+                :ref Parameters
+                    :param 
+                        :typeof React.useLayoutEffect
+                :literal 0
+        let isStatic = React.useContext(NavigationContext).static
+        if !isStatic
+            _ React.useLayoutEffect(cb)
+        # Mute warnings for calls to useNavigate in SSR environments
+        #
+            # *
+            # * Returns an imperative method for changing the location. Used by `<Link>`s, but
+            # * may also be used by other elements to change the location.
+            # *
+            # * @see https://reactrouter.com/hooks/use-navigate
+            # 
+    export 
+        function useNavigate
+            :return
+                :ref NavigateFunction
+            let 
+                { 
+                    @ isDataRoute
+                = React.useContext(RouteContext)
+                # Conditional usage is OK here because the usage of a data router is static
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+            return 
+                iif isDataRoute
+                    then useNavigateStable()
+                    else useNavigateUnstable()
+                # Conditional usage is OK here because the usage of a data router is static
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+        #
+            # *
+            # * Returns an imperative method for changing the location. Used by `<Link>`s, but
+            # * may also be used by other elements to change the location.
+            # *
+            # * @see https://reactrouter.com/hooks/use-navigate
+            # 
+    function useNavigateUnstable
+        :return
+            :ref NavigateFunction
+        _ invariant
+            _ useInRouterContext()
+            `lit 
+                + useNavigate() may be used only in the context of a <Router> component.
+                # TODO: This error is probably because they somehow have 2 versions of the
+                # router loaded. We can help them understand how to avoid that.
+        let dataRouterContext = React.useContext(DataRouterContext)
+        let 
+            { 
+                @ basename
+                @ future
+                @ navigator
+            = React.useContext(NavigationContext)
+        let 
+            { 
+                @ matches
+            = React.useContext(RouteContext)
+        let 
+            { 
+                @ pathname locationPathname
+            = useLocation()
+        let routePathnamesJson = JSON.stringify(getResolveToMatches(matches, future.v7_relativeSplatPath))
+        let activeRef = React.useRef(false)
+        _ useIsomorphicLayoutEffect
+            => 
+                set activeRef.current = true
+        let navigate
+            :ref NavigateFunction
+            =
+                _ React.useCallback
+                    => 
+                        param to
+                            :union 
+                                :ref To
+                                :number 
+                        param options
+                            :ref NavigateOptions
+                            = 
+                                { 
+                        _ warning(activeRef.current, navigateEffectWarning)
+                            # Short circuit here since if this happens on first render the navigate
+                            # is useless because we haven't wired up our history listener yet
+                        if !activeRef.current
+                            return 
+                        if typeof to === "number"
+                            _ navigator.go(to)
+                            return 
+                        let path = resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, options.relative === "path")
+                            # If we're operating within a basename, prepend it to the pathname prior
+                            # to handing off to history (but only if we're not in a data router,
+                            # otherwise it'll prepend the basename inside of the router).
+                            # If this is a root navigation, then we navigate to the raw basename
+                            # which allows the basename to have full control over the presence of a
+                            # trailing slash on root links
+                        if dataRouterContext == null && basename !== "/"
+                            set path.pathname =
+                                iif path.pathname === "/"
+                                    then basename
+                                    else
+                                        _ joinPaths
+                                            [ 
+                                                @ basename
+                                                @ path.pathname
+                        _ 
+                            iif !!options.replace
+                                then navigator.replace
+                                else navigator.push
+                            (
+                                @ path
+                                @expr options.state
+                                @ options
+                    [ 
+                        @ basename
+                        @ navigator
+                        @ routePathnamesJson
+                        @ locationPathname
+                        @ dataRouterContext
+        return navigate
+    const OutletContext
+        _ React.createContext
+            :param unknown
+            @ null
+        #
+            # *
+            # * Returns the context (if provided) for the child route at this level of the route
+            # * hierarchy.
+            # * @see https://reactrouter.com/hooks/use-outlet-context
+            # 
+    export 
+        function useOutletContext
+            :< Context
+            :return
+                :ref Context
+            return 
+                _ React.useContext(OutletContext)
+                    :as 
+                        :ref Context
+        #
+            # *
+            # * Returns the context (if provided) for the child route at this level of the route
+            # * hierarchy.
+            # * @see https://reactrouter.com/hooks/use-outlet-context
+            # 
+        #
+            # *
+            # * Returns the element for the child route at this level of the route
+            # * hierarchy. Used internally by `<Outlet>` to render child routes.
+            # *
+            # * @see https://reactrouter.com/hooks/use-outlet
+            # 
+    export 
+        function useOutlet
+            param context
+                :unknown 
+                :optional 
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            let outlet = React.useContext(RouteContext).outlet
+            if outlet
+                return 
+                    < OutletContext.Provider 
+                        @ value {context}
+                        + {outlet}
+            return outlet
+        #
+            # *
+            # * Returns the element for the child route at this level of the route
+            # * hierarchy. Used internally by `<Outlet>` to render child routes.
+            # *
+            # * @see https://reactrouter.com/hooks/use-outlet
+            # 
+        #
+            # *
+            # * Returns an object of key/value pairs of the dynamic params from the current
+            # * URL that were matched by the route path.
+            # *
+            # * @see https://reactrouter.com/hooks/use-params
+            # 
+    export 
+        function useParams
+            :< ParamsOrKey
+                :union 
+                    :string 
+                    :ref Record
+                        :param string
+                        :param 
+                            :union 
+                                :string 
+                                :undefined 
+            :return
+                :ref Readonly
+                    :param 
+                        :iif 
+                            :check 
+                                :tuple 
+                                    :ref ParamsOrKey
+                            :extends 
+                                :tuple 
+                                    :string 
+                            :then 
+                                :ref Params
+                                    :param 
+                                        :ref ParamsOrKey
+                            :else 
+                                :ref Partial
+                                    :param 
+                                        :ref ParamsOrKey
+            let 
+                { 
+                    @ matches
+                = React.useContext(RouteContext)
+            let routeMatch = matches[matches.length - 1]
+            return 
+                iif routeMatch
+                    then
+                        ( 
+                            @expr routeMatch.params
+                                :as 
+                                    :any 
+                    else
+                        { 
+        #
+            # *
+            # * Returns an object of key/value pairs of the dynamic params from the current
+            # * URL that were matched by the route path.
+            # *
+            # * @see https://reactrouter.com/hooks/use-params
+            # 
+        #
+            # *
+            # * Resolves the pathname of the given `to` value against the current location.
+            # *
+            # * @see https://reactrouter.com/hooks/use-resolved-path
+            # 
+    export 
+        function useResolvedPath
+            param to
+                :ref To
+            param 
+                @ relative
+                :{ 
+                    :p relative
+                        :optional 
+                        :ref RelativeRoutingType
+                = 
+            :return
+                :ref Path
+            let 
+                { 
+                    @ future
+                = React.useContext(NavigationContext)
+            let 
+                { 
+                    @ matches
+                = React.useContext(RouteContext)
+            let 
+                { 
+                    @ pathname locationPathname
+                = useLocation()
+            let routePathnamesJson = JSON.stringify(getResolveToMatches(matches, future.v7_relativeSplatPath))
+            return 
+                _ React.useMemo
+                    => 
+                        _ resolveTo(to, JSON.parse(routePathnamesJson), locationPathname, relative === "path")
+                    [ 
+                        @ to
+                        @ routePathnamesJson
+                        @ locationPathname
+                        @ relative
+        #
+            # *
+            # * Resolves the pathname of the given `to` value against the current location.
+            # *
+            # * @see https://reactrouter.com/hooks/use-resolved-path
+            # 
+        #
+            # *
+            # * Returns the element of the route that matched the current location, prepared
+            # * with the correct context to render the remainder of the route tree. Route
+            # * elements in the tree must render an `<Outlet>` to render their child route's
+            # * element.
+            # *
+            # * @see https://reactrouter.com/hooks/use-routes
+            # 
+    export 
+        function useRoutes
+            param routes
+                :[ 
+                    :ref RouteObject
+            param locationArg
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+                :optional 
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            return useRoutesImpl(routes, locationArg)
+        #
+            # *
+            # * Returns the element of the route that matched the current location, prepared
+            # * with the correct context to render the remainder of the route tree. Route
+            # * elements in the tree must render an `<Outlet>` to render their child route's
+            # * element.
+            # *
+            # * @see https://reactrouter.com/hooks/use-routes
+            # 
+        # Internal implementation with accept optional param for RouterProvider usage
+    export 
+        function useRoutesImpl
+            param routes
+                :[ 
+                    :ref RouteObject
+            param locationArg
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+                :optional 
+            param dataRouterState
+                :[] 
+                    :ref RemixRouter
+                    :literal "state"
+                :optional 
+            param future
+                :[] 
+                    :ref RemixRouter
+                    :literal "future"
+                :optional 
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            _ invariant
+                _ useInRouterContext()
+                `lit 
+                    + useRoutes() may be used only in the context of a <Router> component.
+                    # TODO: This error is probably because they somehow have 2 versions of the
+                    # router loaded. We can help them understand how to avoid that.
+            let 
+                { 
+                    @ navigator
+                = React.useContext(NavigationContext)
+            let 
+                { 
+                    @ matches parentMatches
+                = React.useContext(RouteContext)
+            let routeMatch = parentMatches[parentMatches.length - 1]
+            let parentParams
+                iif routeMatch
+                    then routeMatch.params
+                    else
+                        { 
+            let parentPathname
+                iif routeMatch
+                    then routeMatch.pathname
+                    else "/"
+            let parentPathnameBase
+                iif routeMatch
+                    then routeMatch.pathnameBase
+                    else "/"
+            let parentRoute = routeMatch && routeMatch.route
+            if __DEV__
+                let parentPath = (parentRoute && parentRoute.path) || ""
+                    # You won't get a warning about 2 different <Routes> under a <Route>
+                    # without a trailing *, but this is a best-effort warning anyway since we
+                    # cannot even give the warning unless they land at the parent route.
+                    # 
+                    # Example:
+                    # 
+                    # <Routes>
+                    # {/* This route path MUST end with /* because otherwise
+                    # it will never match /blog/post/123 */}
+                    # <Route path="blog" element={<Blog />} />
+                    # <Route path="blog/feed" element={<BlogFeed />} />
+                    # </Routes>
+                    # 
+                    # function Blog() {
+                    # return (
+                    # <Routes>
+                    # <Route path="post/:id" element={<Post />} />
+                    # </Routes>
+                    # );
+                    # }
+                _ warningOnce
+                    @ parentPathname
+                    @expr !parentRoute || parentPath.endsWith("*")
+                    op+ 
+                        op+ 
+                            op+ 
+                                op+ 
+                                    op+ 
+                                        op+ 
+                                            `lit 
+                                                + You rendered descendant <Routes> (or called \`useRoutes()\`) at&nbsp;
+                                            `lit 
+                                                + "
+                                                @ parentPathname
+                                                + " (under <Route path="
+                                                @ parentPath
+                                                + ">) but the&nbsp;
+                                        `lit 
+                                            + parent route path has no trailing "*". This means if you navigate&nbsp;
+                                    `lit 
+                                        + deeper, the parent won't match anymore and therefore the child&nbsp;
+                                `lit 
+                                    + routes will never render.\n\n
+                            `lit 
+                                + Please change the parent <Route path="
+                                @ parentPath
+                                + "> to <Route&nbsp;
+                        `lit 
+                            + path="
+                            iif parentPath === "/"
+                                then "*"
+                                else
+                                    `lit 
+                                        + 
+                                        @ parentPath
+                                        + /*
+                            + ">.
+            let locationFromContext = useLocation()
+            let location
+            if locationArg
+                let parsedLocationArg
+                    iif typeof locationArg === "string"
+                        then parsePath(locationArg)
+                        else locationArg
+                _ invariant
+                    @expr parentPathnameBase === "/" || parsedLocationArg.pathname?.startsWith?.(parentPathnameBase)
+                    op+ 
+                        op+ 
+                            op+ 
+                                `lit 
+                                    + When overriding the location using \`<Routes location>\` or \`useRoutes(routes, location)\`,&nbsp;
+                                `lit 
+                                    + the location pathname must begin with the portion of the URL pathname that was&nbsp;
+                            `lit 
+                                + matched by all parent routes. The current pathname base is "
+                                @ parentPathnameBase
+                                + "&nbsp;
+                        `lit 
+                            + but pathname "
+                            @ parsedLocationArg.pathname
+                            + " was given in the \`location\` prop.
+                set location = parsedLocationArg
+            else
+                set location = locationFromContext
+            let pathname = location.pathname || "/"
+            let remainingPathname = pathname
+            if parentPathnameBase !== "/"
+                let parentSegments = parentPathnameBase.replace(/^\//, "").split("/")
+                    # Determine the remaining pathname by removing the # of URL segments the
+                    # parentPathnameBase has, instead of removing based on character count.
+                    # This is because we can't guarantee that incoming/outgoing encodings/
+                    # decodings will match exactly.
+                    # We decode paths before matching on a per-segment basis with
+                    # decodeURIComponent(), but we re-encode pathnames via `new URL()` so they
+                    # match what `window.location.pathname` would reflect.  Those don't 100%
+                    # align when it comes to encoded URI characters such as % and &.
+                    # 
+                    # So we may end up with:
+                    # pathname:           "/descendant/a%25b/match"
+                    # parentPathnameBase: "/descendant/a%b"
+                    # 
+                    # And the direct substring removal approach won't work :/
+                let segments = pathname.replace(/^\//, "").split("/")
+                set remainingPathname = "/" + segments.slice(parentSegments.length).join("/")
+            let matches
+                _ matchRoutes
+                    @ routes
+                    { 
+                        @ pathname remainingPathname
+            if __DEV__
+                _ warning
+                    @expr parentRoute || matches != null
+                    `lit 
+                        + No routes matched location "
+                        @ location.pathname
+                        + 
+                        @ location.search
+                        + 
+                        @ location.hash
+                        + "&nbsp;
+                _ warning
+                    @expr matches == null || matches[matches.length - 1].route.element !== undefined || matches[matches.length - 1].route.Component !== undefined || matches[matches.length - 1].route.lazy !== undefined
+                    op+ 
+                        op+ 
+                            `lit 
+                                + Matched leaf route at location "
+                                @ location.pathname
+                                + 
+                                @ location.search
+                                + 
+                                @ location.hash
+                                + "&nbsp;
+                            `lit 
+                                + does not have an element or Component. This means it will render an <Outlet /> with a&nbsp;
+                        `lit 
+                            + null value by default resulting in an "empty" page.
+            let renderedMatches
+                _ _renderMatches
+                    && 
+                        + matches
+                        _ matches.map
+                            => 
+                                param match
+                                _ Object.assign
+                                    { 
+                                    @ match
+                                    { 
+                                        @ params
+                                            _ Object.assign
+                                                { 
+                                                @ parentParams
+                                                @expr match.params
+                                        @ pathname
+                                            _ joinPaths
+                                                [ 
+                                                    @ parentPathnameBase
+                                                    iif navigator.encodeLocation
+                                                        then navigator.encodeLocation(match.pathname).pathname
+                                                        else match.pathname
+                                                        # Re-encode pathnames that were decoded inside matchRoutes
+                                        @ pathnameBase
+                                            iif match.pathnameBase === "/"
+                                                then parentPathnameBase
+                                                else
+                                                    _ joinPaths
+                                                        [ 
+                                                            @ parentPathnameBase
+                                                            iif navigator.encodeLocation
+                                                                then navigator.encodeLocation(match.pathnameBase).pathname
+                                                                else match.pathnameBase
+                                                                # Re-encode pathnames that were decoded inside matchRoutes
+                    @ parentMatches
+                    @ dataRouterState
+                    @ future
+                # When a user passes in a `locationArg`, the associated routes need to
+                # be wrapped in a new `LocationContext.Provider` in order for `useLocation`
+                # to use the scoped location instead of the global location.
+            if locationArg && renderedMatches
+                return 
+                    < LocationContext.Provider 
+                        @ value
+                            { 
+                                { location
+                                    @ pathname "/"
+                                    @ search ""
+                                    @ hash ""
+                                    @ state null
+                                    @ key "default"
+                                    @ ...location
+                                @ navigationType NavigationType.Pop
+                        + {renderedMatches}
+            return renderedMatches
+        # Internal implementation with accept optional param for RouterProvider usage
+    function DefaultErrorComponent
+        let error = useRouteError()
+        let message
+            iif isRouteErrorResponse(error)
+                then
+                    `lit 
+                        + 
+                        @ error.status
+                        + &nbsp;
+                        @ error.statusText
+                        + 
+                else
+                    iif error instanceof Error
+                        then error.message
+                        else JSON.stringify(error)
+        let stack
+            iif error instanceof Error
+                then error.stack
+                else null
+        let lightgrey = "rgba(200,200,200, 0.5)"
+        let preStyles
+            { 
+                @ padding "0.5rem"
+                @ backgroundColor lightgrey
+        let codeStyles
+            { 
+                @ padding "2px 4px"
+                @ backgroundColor lightgrey
+        let devInfo = null
+        if __DEV__
+            _ console.error("Error handled by React Router default ErrorBoundary:", error)
+            set devInfo =
+                < React.Fragment
+                    p 
+                        + 💿 Hey developer 👋
+                    p 
+                        + You can provide a way better UX than this when your app throws errors&lf;          by providing your own
+                        code 
+                            @ style {codeStyles}
+                            + ErrorBoundary
+                        + or
+                        + {" "}
+                        code 
+                            @ style {codeStyles}
+                            + errorElement
+                        + prop on your route.
+        return 
+            < React.Fragment
+                h2 
+                    + Unexpected Application Error!
+                h3 
+                    @ style
+                        { 
+                            @ fontStyle "italic"
+                    + {message}
+                { 
+                    iif stack
+                        then
+                            pre 
+                                @ style {preStyles}
+                                + {stack}
+                        else null
+                + {devInfo}
+    const defaultErrorElement
+        < DefaultErrorComponent 
+    :type RenderErrorBoundaryProps
+        :ref React.PropsWithChildren
+            :param 
+                :{ 
+                    :p location
+                        :ref Location
+                    :p revalidation
+                        :ref RevalidationState
+                    :p error
+                        :any 
+                    :p component
+                        :ref React.ReactNode
+                    :p routeContext
+                        :ref RouteContextObject
+    :type RenderErrorBoundaryState
+        :{ 
+            :p location
+                :ref Location
+            :p revalidation
+                :ref RevalidationState
+            :p error
+                :any 
+    export 
+        class RenderErrorBoundary
+            super React.Component
+                :param 
+                    :ref RenderErrorBoundaryProps
+                :param 
+                    :ref RenderErrorBoundaryState
+            ctor 
+                param props
+                    :ref RenderErrorBoundaryProps
+                _ super(props)
+                set this.state =
+                    { 
+                        @ location props.location
+                        @ revalidation props.revalidation
+                        @ error props.error
+            m getDerivedStateFromError
+                static
+                param error
+                    :any 
+                return 
+                    { 
+                        @ error
+            m getDerivedStateFromProps
+                static
+                param props
+                    :ref RenderErrorBoundaryProps
+                param state
+                    :ref RenderErrorBoundaryState
+                if state.location !== props.location || (state.revalidation !== "idle" && props.revalidation === "idle")
+                    return 
+                        { 
+                            @ error props.error
+                            @ location props.location
+                            @ revalidation props.revalidation
+                return 
+                    { 
+                        @ error
+                            iif props.error !== undefined
+                                then props.error
+                                else state.error
+                        @ location state.location
+                        @ revalidation props.revalidation || state.revalidation
+                    # If we're not changing locations, preserve the location but still surface
+                    # any new errors that may come through. We retain the existing error, we do
+                    # this because the error provided from the app state may be cleared without
+                    # the location changing.
+            m componentDidCatch
+                param error
+                    :any 
+                param errorInfo
+                    :any 
+                _ console.error("React Router caught the following error during render", error, errorInfo)
+            m render
+                return 
+                    iif this.state.error !== undefined
+                        then
+                            < RouteContext.Provider 
+                                @ value {this.props.routeContext}
+                                < RouteErrorContext.Provider 
+                                    @ value {this.state.error}
+                                    @ children {this.props.component}
+                        else this.props.children
+    :interface RenderedRouteProps
+        :p routeContext
+            :ref RouteContextObject
+        :p match
+            :ref RouteMatch
+                :param string
+                :param 
+                    :ref RouteObject
+        :p children
+            :union 
+                :ref React.ReactNode
+                :null 
+    function RenderedRoute
+        { 
+            @ routeContext
+            @ match
+            @ children
+            :ref RenderedRouteProps
+        let dataRouterContext = React.useContext(DataRouterContext)
+            # Track how deep we got in our render pass to emulate SSR componentDidCatch
+            # in a DataStaticRouter
+        if dataRouterContext && dataRouterContext.static && dataRouterContext.staticContext && (match.route.errorElement || match.route.ErrorBoundary)
+            set dataRouterContext.staticContext._deepestRenderedBoundaryId = match.route.id
+        return 
+            < RouteContext.Provider 
+                @ value {routeContext}
+                + {children}
+    export 
+        function _renderMatches
+            param matches
+                :union 
+                    :[ 
+                        :ref RouteMatch
+                    :null 
+            param parentMatches
+                :[ 
+                    :ref RouteMatch
+                = 
+            param dataRouterState
+                :union 
+                    :[] 
+                        :ref RemixRouter
+                        :literal "state"
+                    :null 
+                = null
+            param future
+                :union 
+                    :[] 
+                        :ref RemixRouter
+                        :literal "future"
+                    :null 
+                = null
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            if matches == null
+                if dataRouterState?.errors
+                    set matches =
+                        @expr dataRouterState.matches
+                            :as 
+                                :[ 
+                                    :ref DataRouteMatch
+                        # Don't bail if we have data router errors so we can render them in the
+                        # boundary.  Use the pre-matched (or shimmed) matches
+                else
+                    return null
+            let renderedMatches = matches
+                # If we have data errors, trim matches to the highest error boundary
+            let errors = dataRouterState?.errors
+                # If we have data errors, trim matches to the highest error boundary
+            if errors != null
+                let errorIndex
+                    _ renderedMatches.findIndex
+                        => 
+                            param m
+                            @expr m.route.id && errors?[m.route.id]
+                _ invariant
+                    set errorIndex >= 0
+                    `lit 
+                        + Could not find a matching route for errors on route IDs:&nbsp;
+                        _ Object.keys(errors).join(",")
+                        + 
+                set renderedMatches = renderedMatches.slice(0, Math.min(renderedMatches.length, errorIndex + 1))
+            let renderFallback = false
+                # If we're in a partial hydration mode, detect if we need to render down to
+                # a given HydrateFallback while we load the rest of the hydration data
+            let fallbackIndex = -1
+            if dataRouterState && future && future.v7_partialHydration
+                for let i = 0; i < renderedMatches.length; i++
+                    let match = renderedMatches[i]
+                        # Track the deepest fallback up until the first route without data
+                    if match.route.HydrateFallback || match.route.hydrateFallbackElement
+                        set fallbackIndex = i
+                    if match.route.id
+                        let 
+                            { 
+                                @ loaderData
+                                @ errors
+                            = dataRouterState
+                        let needsToRunLoader = match.route.loader && loaderData[match.route.id] === undefined && (!errors || errors[match.route.id] === undefined)
+                        if match.route.lazy || needsToRunLoader
+                            set renderFallback = true
+                                # We found the first route that's not ready to render (waiting on
+                                # lazy, or has a loader that hasn't run yet).  Flag that we need to
+                                # render a fallback and render up until the appropriate fallback
+                            if fallbackIndex >= 0
+                                set renderedMatches = renderedMatches.slice(0, fallbackIndex + 1)
+                            else
+                                set renderedMatches =
+                                    [ 
+                                        @ renderedMatches[0]
+                            break 
+            return 
+                _ renderedMatches.reduceRight
+                    => 
+                        param outlet
+                        param match
+                        param index
+                        let error
+                            :any 
+                            # Only data routers handle errors/fallbacks
+                        let shouldRenderHydrateFallback = false
+                        let errorElement
+                            :union 
+                                :ref React.ReactNode
+                                :null 
+                            = null
+                        let hydrateFallbackElement
+                            :union 
+                                :ref React.ReactNode
+                                :null 
+                            = null
+                        if dataRouterState
+                            set error =
+                                iif errors && match.route.id
+                                    then errors[match.route.id]
+                                    else undefined
+                            set errorElement = match.route.errorElement || defaultErrorElement
+                            if renderFallback
+                                if fallbackIndex < 0 && index === 0
+                                    _ warningOnce("route-fallback", false, "No `HydrateFallback` element provided to render during initial hydration")
+                                    set shouldRenderHydrateFallback = true
+                                    set hydrateFallbackElement = null
+                                else
+                                    if fallbackIndex === index
+                                        set shouldRenderHydrateFallback = true
+                                        set hydrateFallbackElement = match.route.hydrateFallbackElement || null
+                        let matches = parentMatches.concat(renderedMatches.slice(0, index + 1))
+                        let getChildren
+                            => 
+                                let children
+                                    :ref React.ReactNode
+                                if error
+                                    set children = errorElement
+                                else
+                                    if shouldRenderHydrateFallback
+                                        set children = hydrateFallbackElement
+                                    else
+                                        if match.route.Component
+                                            set children =
+                                                < match.route.Component 
+                                                # Note: This is a de-optimized path since React won't re-use the
+                                                # ReactElement since it's identity changes with each new
+                                                # React.createElement call.  We keep this so folks can use
+                                                # `<Route Component={...}>` in `<Routes>` but generally `Component`
+                                                # usage is only advised in `RouterProvider` when we can convert it to
+                                                # `element` ahead of time.
+                                        else
+                                            if match.route.element
+                                                set children = match.route.element
+                                            else
+                                                set children = outlet
+                                return 
+                                    < RenderedRoute 
+                                        @ match {match}
+                                        @ routeContext
+                                            { 
+                                                @ outlet
+                                                @ matches
+                                                @ isDataRoute dataRouterState != null
+                                        @ children {children}
+                            # Only wrap in an error boundary within data router usages when we have an
+                            # ErrorBoundary/errorElement on this route.  Otherwise let it bubble up to
+                            # an ancestor ErrorBoundary/errorElement
+                        return 
+                            iif dataRouterState && (match.route.ErrorBoundary || match.route.errorElement || index === 0)
+                                then
+                                    < RenderErrorBoundary 
+                                        @ location {dataRouterState.location}
+                                        @ revalidation {dataRouterState.revalidation}
+                                        @ component {errorElement}
+                                        @ error {error}
+                                        @ children {getChildren()}
+                                        @ routeContext
+                                            { 
+                                                @ outlet null
+                                                @ matches
+                                                @ isDataRoute true
+                                else (getChildren())
+                            # Only wrap in an error boundary within data router usages when we have an
+                            # ErrorBoundary/errorElement on this route.  Otherwise let it bubble up to
+                            # an ancestor ErrorBoundary/errorElement
+                    + null
+                        :as 
+                            :union 
+                                :ref React.ReactElement
+                                :null 
+    :enum DataRouterHook
+        @ UseBlocker "useBlocker"
+        @ UseRevalidator "useRevalidator"
+        @ UseNavigateStable "useNavigate"
+    :enum DataRouterStateHook
+        @ UseBlocker "useBlocker"
+        @ UseLoaderData "useLoaderData"
+        @ UseActionData "useActionData"
+        @ UseRouteError "useRouteError"
+        @ UseNavigation "useNavigation"
+        @ UseRouteLoaderData "useRouteLoaderData"
+        @ UseMatches "useMatches"
+        @ UseRevalidator "useRevalidator"
+        @ UseNavigateStable "useNavigate"
+        @ UseRouteId "useRouteId"
+    function getDataRouterConsoleError
+        param hookName
+            :union 
+                :ref DataRouterHook
+                :ref DataRouterStateHook
+        return 
+            `lit 
+                + 
+                @ hookName
+                + &nbsp;must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.
+    function useDataRouterContext
+        param hookName
+            :ref DataRouterHook
+        let ctx = React.useContext(DataRouterContext)
+        _ invariant(ctx, getDataRouterConsoleError(hookName))
+        return ctx
+    function useDataRouterState
+        param hookName
+            :ref DataRouterStateHook
+        let state = React.useContext(DataRouterStateContext)
+        _ invariant(state, getDataRouterConsoleError(hookName))
+        return state
+    function useRouteContext
+        param hookName
+            :ref DataRouterStateHook
+        let route = React.useContext(RouteContext)
+        _ invariant(route, getDataRouterConsoleError(hookName))
+        return route
+        # Internal version with hookName-aware debugging
+    function useCurrentRouteId
+        param hookName
+            :ref DataRouterStateHook
+        let route = useRouteContext(hookName)
+        let thisRoute = route.matches[route.matches.length - 1]
+        _ invariant
+            @expr thisRoute.route.id
+            `lit 
+                + 
+                @ hookName
+                + &nbsp;can only be used on routes that contain a unique "id"
+        return thisRoute.route.id
+        # Internal version with hookName-aware debugging
+        #
+            # *
+            # * Returns the ID for the nearest contextual route
+            # 
+    export 
+        function useRouteId
+            return useCurrentRouteId(DataRouterStateHook.UseRouteId)
+        #
+            # *
+            # * Returns the ID for the nearest contextual route
+            # 
+        #
+            # *
+            # * Returns the current navigation, defaulting to an "idle" navigation when
+            # * no navigation is in progress
+            # 
+    export 
+        function useNavigation
+            let state = useDataRouterState(DataRouterStateHook.UseNavigation)
+            return state.navigation
+        #
+            # *
+            # * Returns the current navigation, defaulting to an "idle" navigation when
+            # * no navigation is in progress
+            # 
+        #
+            # *
+            # * Returns a revalidate function for manually triggering revalidation, as well
+            # * as the current state of any manual revalidations
+            # 
+    export 
+        function useRevalidator
+            let dataRouterContext = useDataRouterContext(DataRouterHook.UseRevalidator)
+            let state = useDataRouterState(DataRouterStateHook.UseRevalidator)
+            return 
+                _ React.useMemo
+                    => 
+                        (
+                            { 
+                                @ revalidate dataRouterContext.router.revalidate
+                                @ state state.revalidation
+                    [ 
+                        @ dataRouterContext.router.revalidate
+                        @ state.revalidation
+        #
+            # *
+            # * Returns a revalidate function for manually triggering revalidation, as well
+            # * as the current state of any manual revalidations
+            # 
+        #
+            # *
+            # * Returns the active route matches, useful for accessing loaderData for
+            # * parent/child routes or the route "handle" property
+            # 
+    export 
+        function useMatches
+            :return
+                :[ 
+                    :ref UIMatch
+            let 
+                { 
+                    @ matches
+                    @ loaderData
+                = useDataRouterState(DataRouterStateHook.UseMatches)
+            return 
+                _ React.useMemo
+                    => 
+                        _ matches.map
+                            => 
+                                param m
+                                _ convertRouteMatchToUiMatch(m, loaderData)
+                    [ 
+                        @ matches
+                        @ loaderData
+        #
+            # *
+            # * Returns the active route matches, useful for accessing loaderData for
+            # * parent/child routes or the route "handle" property
+            # 
+        #
+            # *
+            # * Returns the loader data for the nearest ancestor Route loader
+            # 
+    export 
+        function useLoaderData
+            :return
+                :unknown 
+            let state = useDataRouterState(DataRouterStateHook.UseLoaderData)
+            let routeId = useCurrentRouteId(DataRouterStateHook.UseLoaderData)
+            if state.errors && state.errors[routeId] != null
+                _ console.error
+                    `lit 
+                        + You cannot \`useLoaderData\` in an errorElement (routeId:&nbsp;
+                        @ routeId
+                        + )
+                return undefined
+            return state.loaderData[routeId]
+        #
+            # *
+            # * Returns the loader data for the nearest ancestor Route loader
+            # 
+        #
+            # *
+            # * Returns the loaderData for the given routeId
+            # 
+    export 
+        function useRouteLoaderData
+            param routeId
+                :string 
+            :return
+                :unknown 
+            let state = useDataRouterState(DataRouterStateHook.UseRouteLoaderData)
+            return state.loaderData[routeId]
+        #
+            # *
+            # * Returns the loaderData for the given routeId
+            # 
+        #
+            # *
+            # * Returns the action data for the nearest ancestor Route action
+            # 
+    export 
+        function useActionData
+            :return
+                :unknown 
+            let state = useDataRouterState(DataRouterStateHook.UseActionData)
+            let routeId = useCurrentRouteId(DataRouterStateHook.UseLoaderData)
+            return 
+                iif state.actionData
+                    then state.actionData[routeId]
+                    else undefined
+        #
+            # *
+            # * Returns the action data for the nearest ancestor Route action
+            # 
+        #
+            # *
+            # * Returns the nearest ancestor Route error, which could be a loader/action
+            # * error or a render error.  This is intended to be called from your
+            # * ErrorBoundary/errorElement to display a proper error message.
+            # 
+    export 
+        function useRouteError
+            :return
+                :unknown 
+            let error = React.useContext(RouteErrorContext)
+            let state = useDataRouterState(DataRouterStateHook.UseRouteError)
+            let routeId = useCurrentRouteId(DataRouterStateHook.UseRouteError)
+                # If this was a render error, we put it in a RouteError context inside
+                # of RenderErrorBoundary
+            if error !== undefined
+                return error
+            return state.errors?[routeId]
+                # Otherwise look for errors from our data router state
+        #
+            # *
+            # * Returns the nearest ancestor Route error, which could be a loader/action
+            # * error or a render error.  This is intended to be called from your
+            # * ErrorBoundary/errorElement to display a proper error message.
+            # 
+        #
+            # *
+            # * Returns the happy-path data from the nearest ancestor `<Await />` value
+            # 
+    export 
+        function useAsyncValue
+            :return
+                :unknown 
+            let value = React.useContext(AwaitContext)
+            return value?._data
+        #
+            # *
+            # * Returns the happy-path data from the nearest ancestor `<Await />` value
+            # 
+        #
+            # *
+            # * Returns the error from the nearest ancestor `<Await />` value
+            # 
+    export 
+        function useAsyncError
+            :return
+                :unknown 
+            let value = React.useContext(AwaitContext)
+            return value?._error
+        #
+            # *
+            # * Returns the error from the nearest ancestor `<Await />` value
+            # 
+    let blockerId = 0
+        #
+            # *
+            # * Allow the application to block navigations within the SPA and present the
+            # * user a confirmation dialog to confirm the navigation.  Mostly used to avoid
+            # * using half-filled form data.  This does not handle hard-reloads or
+            # * cross-origin navigations.
+            # 
+    export 
+        function useBlocker
+            param shouldBlock
+                :union 
+                    :boolean 
+                    :ref BlockerFunction
+            :return
+                :ref Blocker
+            let 
+                { 
+                    @ router
+                    @ basename
+                = useDataRouterContext(DataRouterHook.UseBlocker)
+            let state = useDataRouterState(DataRouterStateHook.UseBlocker)
+            let [blockerKey, setBlockerKey] = React.useState("")
+            let blockerFunction
+                _ React.useCallback
+                    :param 
+                        :ref BlockerFunction
+                    => 
+                        param arg
+                        if typeof shouldBlock !== "function"
+                            return !!shouldBlock
+                        if basename === "/"
+                            return shouldBlock(arg)
+                        let 
+                            { 
+                                @ currentLocation
+                                @ nextLocation
+                                @ historyAction
+                            = arg
+                            # If they provided us a function and we've got an active basename, strip
+                            # it from the locations we expose to the user to match the behavior of
+                            # useLocation
+                        return 
+                            _ shouldBlock
+                                { 
+                                    { currentLocation
+                                        @ ...currentLocation
+                                        @ pathname stripBasename(currentLocation.pathname, basename) || currentLocation.pathname
+                                    { nextLocation
+                                        @ ...nextLocation
+                                        @ pathname stripBasename(nextLocation.pathname, basename) || nextLocation.pathname
+                                    @ historyAction
+                    [ 
+                        @ basename
+                        @ shouldBlock
+                # This effect is in charge of blocker key assignment and deletion (which is
+                # tightly coupled to the key)
+            _ React.useEffect
+                => 
+                    let key = String(++blockerId)
+                    _ setBlockerKey(key)
+                    return 
+                        => 
+                            _ router.deleteBlocker(key)
+                [ 
+                    @ router
+                # This effect is in charge of blocker key assignment and deletion (which is
+                # tightly coupled to the key)
+                # This effect handles assigning the blockerFunction.  This is to handle
+                # unstable blocker function identities, and happens only after the prior
+                # effect so we don't get an orphaned blockerFunction in the router with a
+                # key of "".  Until then we just have the IDLE_BLOCKER.
+            _ React.useEffect
+                => 
+                    if blockerKey !== ""
+                        _ router.getBlocker(blockerKey, blockerFunction)
+                [ 
+                    @ router
+                    @ blockerKey
+                    @ blockerFunction
+                # This effect handles assigning the blockerFunction.  This is to handle
+                # unstable blocker function identities, and happens only after the prior
+                # effect so we don't get an orphaned blockerFunction in the router with a
+                # key of "".  Until then we just have the IDLE_BLOCKER.
+                # Prefer the blocker from `state` not `router.state` since DataRouterContext
+                # is memoized so this ensures we update on blocker state updates
+            return 
+                iif blockerKey && state.blockers.has(blockerKey)
+                    then
+                        :! 
+                            _ state.blockers.get(blockerKey)
+                    else IDLE_BLOCKER
+                # Prefer the blocker from `state` not `router.state` since DataRouterContext
+                # is memoized so this ensures we update on blocker state updates
+        #
+            # *
+            # * Allow the application to block navigations within the SPA and present the
+            # * user a confirmation dialog to confirm the navigation.  Mostly used to avoid
+            # * using half-filled form data.  This does not handle hard-reloads or
+            # * cross-origin navigations.
+            # 
+        #
+            # *
+            # * Stable version of useNavigate that is used when we are in the context of
+            # * a RouterProvider.
+            # 
+    function useNavigateStable
+        :return
+            :ref NavigateFunction
+        let 
+            { 
+                @ router
+            = useDataRouterContext(DataRouterHook.UseNavigateStable)
+        let id = useCurrentRouteId(DataRouterStateHook.UseNavigateStable)
+        let activeRef = React.useRef(false)
+        _ useIsomorphicLayoutEffect
+            => 
+                set activeRef.current = true
+        let navigate
+            :ref NavigateFunction
+            =
+                _ React.useCallback
+                    => 
+                        param to
+                            :union 
+                                :ref To
+                                :number 
+                        param options
+                            :ref NavigateOptions
+                            = 
+                                { 
+                        _ warning(activeRef.current, navigateEffectWarning)
+                            # Short circuit here since if this happens on first render the navigate
+                            # is useless because we haven't wired up our router subscriber yet
+                        if !activeRef.current
+                            return 
+                        if typeof to === "number"
+                            _ router.navigate(to)
+                        else
+                            _ router.navigate
+                                @ to
+                                { 
+                                    @ fromRouteId id
+                                    @ ...options
+                    [ 
+                        @ router
+                        @ id
+        return navigate
+        #
+            # *
+            # * Stable version of useNavigate that is used when we are in the context of
+            # * a RouterProvider.
+            # 
+    const alreadyWarned
+        :ref Record
+            :param string
+            :param boolean
+        =
+            { 
+    function warningOnce
+        param key
+            :string 
+        param cond
+            :boolean 
+        param message
+            :string 
+        if !cond && !alreadyWarned[key]
+            set alreadyWarned[key] = true
+            _ warning(false, message)

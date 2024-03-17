@@ -1,0 +1,4 @@
+css
+    < body
+        background-color ${wzCtx.backgroundColor}
+        color ${wzCtx.color}

@@ -48,6 +48,8 @@
             _ checker.checkFile
                 @ destPath
                 @ 'destPath'
+                {
+                    @ parentFolderMustExist true
 
             if !checker.checkOut()
                 return
@@ -55,7 +57,7 @@
             # log 'source is folder', checker.sourcePath_is_folder
             # log 'dest is folder', checker.destPath_is_folder
 
-            if checker.sourcePath_is_folder && !checker.destPath_is_folder 
+            if checker.sourcePath_is_folder && !checker.destPath_is_folder && !checker.destPath_parent_only_exists
                 _ checker.optionError
                     @ 'Source path is a folder, destination path cannot be a filename: ' + checker.destPath
                 return

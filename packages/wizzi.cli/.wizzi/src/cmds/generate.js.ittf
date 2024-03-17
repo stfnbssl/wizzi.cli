@@ -15,7 +15,11 @@
 	set module.exports
 		=>
 			param name
-
+            param args
+            +
+            const legacyVersion = args.l || args.legacy
+            log "Wizzi.CLI. Generate. name: ", name || 'DEFAULT'
+            log "Wizzi.CLI. Generate. legacyVersion: ", legacyVersion || 'NONE'
             +
             const checker = new commons.commandChecker(kCommandName)
             +
@@ -84,6 +88,7 @@
                             { 
                                 @ items x_pluginsItems
                                 @ baseFolder x_pluginsBaseFolder
+                            @ legacyVersion 
 
     function generateSchemas
         param schemasToGen
@@ -91,6 +96,7 @@
 		param destPath
 		param packageName
         param plugins
+        param legacyVersion
         _ async.mapSeries
             @ schemasToGen
             function 
@@ -110,6 +116,7 @@
                             @ name schemaName
                             @ ittfDocumentUri path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wfschema.ittf')
                             @ outputPackageFolder destPath
+                        @ legacyVersion legacyVersion
                     function 
                         param err
                         param result

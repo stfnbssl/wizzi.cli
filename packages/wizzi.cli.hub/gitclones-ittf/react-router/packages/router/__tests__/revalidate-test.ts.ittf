@@ -1,0 +1,1001 @@
+module
+    import 
+        @ IDLE_NAVIGATION
+        from "../index"
+    import 
+        @ cleanup
+        @ setup
+        @ TASK_ROUTES
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    _ describe
+        @ "router.revalidate"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ it
+                @ "handles uninterrupted revalidation in an idle state (from POP)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let key = t.router.state.location.key
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ index "INDEX_DATA*"
+                    _ expect(t.router.state.location.key).toBe(key)
+                    _ expect(t.history.push).not.toHaveBeenCalled()
+                    _ expect(t.history.replace).not.toHaveBeenCalled()
+            _ it
+                @ "handles uninterrupted revalidation in an idle state (from PUSH)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate("/")
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA")
+                    await 
+                        _ N.loaders.index.resolve("INDEX_DATA")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                        # @ts-expect-error
+                    _ expect(t.history.push.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    let key = t.router.state.location.key
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ index "INDEX_DATA*"
+                    _ expect(t.router.state.location.key).toBe(key)
+                        # @ts-ignore
+                    _ expect(t.history.push.mock.calls.length).toBe(1)
+                        # @ts-ignore
+                    _ expect(t.history.replace).not.toHaveBeenCalled()
+            _ it
+                @ "handles revalidation when a hash is present"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/#hash"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let key = t.router.state.location.key
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ index "INDEX_DATA*"
+                    _ expect(t.router.state.location.hash).toBe("#hash")
+                    _ expect(t.router.state.location.key).toBe(key)
+                    _ expect(t.history.push).not.toHaveBeenCalled()
+                    _ expect(t.history.replace).not.toHaveBeenCalled()
+            _ it
+                @ "handles revalidation interrupted by a <Link> navigation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate("/tasks")
+                        # Revalidation was aborted
+                    _ expect(R.loaders.root.signal.aborted).toBe(true)
+                        # Revalidation was aborted
+                    _ expect(R.loaders.index.signal.aborted).toBe(true)
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                        # Land the revalidation calls - should no-op
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA interrupted")
+                        # Land the revalidation calls - should no-op
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA interrupted")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                        # Land the navigation calls - should update state and end the revalidation
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA*")
+                        # Land the navigation calls - should update state and end the revalidation
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+            _ it
+                @ "handles revalidation interrupted by a <Form method=get> navigation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate
+                                @ "/tasks"
+                                { 
+                                    @ formMethod "get"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                                    @ search "?key=value"
+                                @ formMethod "get"
+                                @ formData
+                                    _ createFormData
+                                        { 
+                                            @ key "value"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA interrupted")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA interrupted")
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+            _ it
+                @ "handles revalidation interrupted by a <Form method=post> navigation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate
+                                @ "/tasks"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "submitting"
+                                { location
+                                    @ pathname "/tasks"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                        # Aborted by the navigation, resolving should no-op
+                    _ expect(R.loaders.root.signal.aborted).toBe(true)
+                        # Aborted by the navigation, resolving should no-op
+                    _ expect(R.loaders.index.signal.aborted).toBe(true)
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA interrupted")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA interrupted")
+                    await 
+                        _ N.actions.tasks.resolve("TASKS_ACTION")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA"
+                            { actionData
+                                @ tasks "TASKS_ACTION"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+            _ it
+                @ "handles <Link> navigation interrupted by a revalidation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate("/tasks")
+                    _ expect(N.loaders.root.stub).not.toHaveBeenCalled()
+                    _ expect(N.loaders.tasks.stub).toHaveBeenCalled()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(R.loaders.root.stub).toHaveBeenCalled()
+                    _ expect(R.loaders.tasks.stub).toHaveBeenCalled()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA interrupted")
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.tasks.resolve("TASKS_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA*"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+            _ it
+                @ "handles <Form method=get> navigation interrupted by a revalidation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate
+                                @ "/tasks"
+                                { 
+                                    @ formMethod "get"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                        # Called due to search param changing
+                    _ expect(N.loaders.root.stub).toHaveBeenCalled()
+                        # Called due to search param changing
+                    _ expect(N.loaders.tasks.stub).toHaveBeenCalled()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                                    @ search "?key=value"
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(R.loaders.root.stub).toHaveBeenCalled()
+                    _ expect(R.loaders.tasks.stub).toHaveBeenCalled()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                                { location
+                                    @ pathname "/tasks"
+                                    @ search "?key=value"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA interrupted")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA interrupted")
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.tasks.resolve("TASKS_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA*"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+            _ it
+                @ "handles <Form method=post> navigation interrupted by a revalidation during action phase"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate
+                                @ "/tasks"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "submitting"
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "submitting"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ N.actions.tasks.resolve("TASKS_ACTION")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                            { actionData
+                                @ tasks "TASKS_ACTION"
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA interrupted")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA interrupted")
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.tasks.resolve("TASKS_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA*"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+                        # Action was not resubmitted
+                    _ expect(N.actions.tasks.stub.mock.calls.length).toBe(1)
+                        # Action was not resubmitted
+                        # This is sort of an implementation detail.  Internally we do not start
+                        # a new navigation, but our helpers return the new "loaders" from the
+                        # revalidate.  The key here is that together, loaders only got called once
+                    _ expect(N.loaders.root.stub.mock.calls.length).toBe(0)
+                        # This is sort of an implementation detail.  Internally we do not start
+                        # a new navigation, but our helpers return the new "loaders" from the
+                        # revalidate.  The key here is that together, loaders only got called once
+                    _ expect(N.loaders.tasks.stub.mock.calls.length).toBe(0)
+                    _ expect(R.loaders.root.stub.mock.calls.length).toBe(1)
+                    _ expect(R.loaders.tasks.stub.mock.calls.length).toBe(1)
+            _ it
+                @ "handles <Form method=post> navigation interrupted by a revalidation during loading phase"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate
+                                @ "/tasks"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "submitting"
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ N.actions.tasks.resolve("TASKS_ACTION")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                            { actionData
+                                @ tasks "TASKS_ACTION"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                            { actionData
+                                @ tasks "TASKS_ACTION"
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA interrupted")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA interrupted")
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ R.loaders.tasks.resolve("TASKS_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ tasks "TASKS_DATA*"
+                            { actionData
+                                @ tasks "TASKS_ACTION"
+                    _ expect(t.history.push).toHaveBeenCalledWith(t.router.state.location, t.router.state.location.state)
+                        # Action was not resubmitted
+                    _ expect(N.actions.tasks.stub.mock.calls.length).toBe(1)
+                        # Action was not resubmitted
+                        # Because we interrupted during the loading phase, all loaders got re-called
+                    _ expect(N.loaders.root.stub.mock.calls.length).toBe(1)
+                        # Because we interrupted during the loading phase, all loaders got re-called
+                    _ expect(N.loaders.tasks.stub.mock.calls.length).toBe(1)
+                    _ expect(R.loaders.root.stub.mock.calls.length).toBe(1)
+                    _ expect(R.loaders.tasks.stub.mock.calls.length).toBe(1)
+            _ it
+                @ "handles redirects returned from revalidations"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let key = t.router.state.location.key
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA*")
+                    let N
+                        await 
+                            _ R.loaders.index.redirectReturn("/tasks")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            { navigation
+                                @ state "loading"
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    _ expect(t.router.state.location.key).toBe(key)
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA redirect")
+                    await 
+                        _ N.loaders.tasks.resolve("TASKS_DATA")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/tasks"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA redirect"
+                                @ tasks "TASKS_DATA"
+                    _ expect(t.router.state.location.key).not.toBe(key)
+                    let B
+                        await 
+                            _ t.navigate(-1)
+                    await 
+                        _ B.loaders.index.resolve("INDEX_DATA 2")
+                        # PUSH on the revalidation redirect means back button takes us back to
+                        # the page that triggered the revalidation redirect
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA redirect"
+                                @ index "INDEX_DATA 2"
+                        # PUSH on the revalidation redirect means back button takes us back to
+                        # the page that triggered the revalidation redirect
+                    _ expect(t.router.state.location.key).toBe(key)
+            _ it
+                @ "handles errors from revalidations"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let key = t.router.state.location.key
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    await 
+                        _ R.loaders.root.reject("ROOT_ERROR")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root undefined
+                                @ index "INDEX_DATA*"
+                            { errors
+                                @ root "ROOT_ERROR"
+                    _ expect(t.router.state.location.key).toBe(key)
+            _ it
+                @ "leverages shouldRevalidate on revalidation routes"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                { 
+                                    @ nextUrl
+                                return nextUrl.searchParams.get("reload") === "1"
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ loader true
+                                        @ shouldRevalidate
+                                            => 
+                                                param ...args
+                                                _ shouldRevalidate(...args)
+                                        [ children
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                                @ loader true
+                                                @ shouldRevalidate
+                                                    => 
+                                                        param ...args
+                                                        _ shouldRevalidate(...args)
+                                [ initialEntries
+                                    @ "/?reload=0"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    _ expect(R.loaders.root.stub).not.toHaveBeenCalled()
+                    _ expect(R.loaders.index.stub).not.toHaveBeenCalled()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "POP"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA"
+                                @ index "INDEX_DATA"
+                    let N
+                        await 
+                            _ t.navigate("/?reload=1")
+                    await 
+                        _ N.loaders.root.resolve("ROOT_DATA*")
+                    await 
+                        _ N.loaders.index.resolve("INDEX_DATA*")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ index "INDEX_DATA*"
+                    let R2
+                        await 
+                            _ t.revalidate()
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "loading"
+                            { loaderData
+                                @ root "ROOT_DATA*"
+                                @ index "INDEX_DATA*"
+                    await 
+                        _ R2.loaders.root.resolve("ROOT_DATA**")
+                    await 
+                        _ R2.loaders.index.resolve("INDEX_DATA**")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            @ revalidation "idle"
+                            { loaderData
+                                @ root "ROOT_DATA**"
+                                @ index "INDEX_DATA**"
+            _ it
+                @ "triggers revalidation on fetcher loads"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes TASK_ROUTES
+                                [ initialEntries
+                                    @ "/"
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                    let key = "key"
+                    let F
+                        await 
+                            _ t.fetch("/", key)
+                    await 
+                        _ F.loaders.root.resolve("ROOT_DATA*")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "ROOT_DATA*"
+                    let R
+                        await 
+                            _ t.revalidate()
+                    await 
+                        _ R.loaders.root.resolve("ROOT_DATA**")
+                    await 
+                        _ R.loaders.index.resolve("INDEX_DATA")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "ROOT_DATA**"

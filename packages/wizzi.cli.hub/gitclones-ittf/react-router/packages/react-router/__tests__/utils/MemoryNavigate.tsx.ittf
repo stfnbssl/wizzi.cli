@@ -1,0 +1,77 @@
+module
+    :import-type 
+        @ FormMethod
+        from "@remix-run/router"
+    import 
+        @ joinPaths
+        from "@remix-run/router"
+    import 
+        as React
+        from "react"
+    import 
+        @ UNSAFE_DataRouterContext
+        from "react-router"
+    export-default 
+        function MemoryNavigate
+            { 
+                @ to
+                @ formMethod
+                @ formData
+                @ children
+                :{ 
+                    :p to
+                        :string 
+                    :p formMethod
+                        :optional 
+                        :ref FormMethod
+                    :p formData
+                        :optional 
+                        :ref FormData
+                    :p children
+                        :ref React.ReactNode
+            let dataRouterContext = React.useContext(UNSAFE_DataRouterContext)
+            let onClickHandler
+                _ React.useCallback
+                    async=> 
+                        param event
+                            :ref React.MouseEvent
+                        _ event.preventDefault()
+                        if formMethod && formData
+                            _ dataRouterContext?.router?.navigate?.
+                                @ to
+                                { 
+                                    @ formMethod
+                                    @ formData
+                        else
+                            _ dataRouterContext?.router?.navigate?.(to)
+                    [ 
+                        @ dataRouterContext
+                        @ to
+                        @ formMethod
+                        @ formData
+                # Only prepend the basename to the rendered href, send the non-prefixed `to`
+                # value into the router since it will prepend the basename
+            let basename = dataRouterContext?.basename
+                # Only prepend the basename to the rendered href, send the non-prefixed `to`
+                # value into the router since it will prepend the basename
+            let href = to
+            if basename && basename !== "/"
+                set href =
+                    iif to === "/"
+                        then basename
+                        else
+                            _ joinPaths
+                                [ 
+                                    @ basename
+                                    @ to
+            return 
+                iif formData
+                    then
+                        form 
+                            @ onClick {onClickHandler}
+                            @ children {children}
+                    else
+                        a 
+                            @ href {href}
+                            @ onClick {onClickHandler}
+                            @ children {children}

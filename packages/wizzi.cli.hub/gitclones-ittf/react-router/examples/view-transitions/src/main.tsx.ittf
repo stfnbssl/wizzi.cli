@@ -1,0 +1,455 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOMClient
+        from "react-dom/client"
+    import 
+        @ Await
+        @ createBrowserRouter
+        @ defer
+        @ Form
+        @ json
+        @ Link
+        @ NavLink
+        @ Outlet
+        @ RouterProvider
+        @ unstable_useViewTransitionState
+        @ useActionData
+        @ useLoaderData
+        @ useLocation
+        @ useNavigate
+        @ useNavigation
+        @ useParams
+        @ useSubmit
+        from "react-router-dom"
+    import "./index.css"
+    const images
+        [ 
+            @ "https://remix.run/blog-images/headers/the-future-is-now.jpg"
+            @ "https://remix.run/blog-images/headers/waterfall.jpg"
+            @ "https://remix.run/blog-images/headers/webpack.png"
+            @ "https://remix.run/blog-images/headers/remix-conf.jpg"
+    const router
+        _ createBrowserRouter
+            [ 
+                { 
+                    @ path "/"
+                    m Component
+                        let navigation = useNavigation()
+                        return 
+                            < React.Fragment
+                                { 
+                                    iif navigation.state !== "idle"
+                                        then
+                                            div 
+                                                @ className "is-loading"
+                                                + Loading...
+                                        else null
+                                < Nav 
+                                div 
+                                    @ className "content"
+                                    < Outlet 
+                    [ children
+                        { 
+                            @ index true
+                            m Component
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Home"
+                                    [ 
+                                return 
+                                    h1 
+                                        + Home
+                        { 
+                            @ path "loader"
+                            m loader
+                                async
+                                await 
+                                    new Promise
+                                        => 
+                                            param r
+                                            _ setTimeout(r, 1000)
+                                return 
+                                    _ json
+                                        { 
+                                            @ message "LOADER DATA"
+                            m Component
+                                let data
+                                    _ useLoaderData()
+                                        :as 
+                                            :{ 
+                                                :p message
+                                                    :string 
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Loader"
+                                    [ 
+                                return 
+                                    < React.Fragment
+                                        h1 
+                                            + Loader Page
+                                        p 
+                                            + Loader Data:
+                                            + {data.message}
+                        { 
+                            @ path "action"
+                            m action
+                                async
+                                await 
+                                    new Promise
+                                        => 
+                                            param r
+                                            _ setTimeout(r, 1000)
+                                return 
+                                    _ json
+                                        { 
+                                            @ message "ACTION DATA"
+                            m Component
+                                let data
+                                    _ useActionData()
+                                        :as 
+                                            :union 
+                                                :{ 
+                                                    :p message
+                                                        :string 
+                                                :undefined 
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Action"
+                                    [ 
+                                return 
+                                    < React.Fragment
+                                        h1 
+                                            + Action Page
+                                        p 
+                                            + Action Data:
+                                            + {data?.message}
+                        { 
+                            @ path "defer"
+                            m loader
+                                async
+                                { 
+                                    @ request
+                                return 
+                                    _ defer
+                                        { 
+                                            @ critical "CRITICAL PATH DATA"
+                                            @ lazy
+                                                new Promise
+                                                    => 
+                                                        param r
+                                                        _ setTimeout
+                                                            => 
+                                                                _ r("LAZY DATA")
+                                                            @ 1000
+                            m Component
+                                let data
+                                    _ useLoaderData()
+                                        :as 
+                                            :{ 
+                                                :p critical
+                                                    :string 
+                                                :p lazy
+                                                    :ref Promise
+                                                        :param string
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Defer"
+                                    [ 
+                                return 
+                                    < React.Fragment
+                                        h1 
+                                            + Defer
+                                        p 
+                                            + Critical Data:
+                                            + {data.critical}
+                                        < React.Suspense 
+                                            @ fallback
+                                                p 
+                                                    + Suspense boundary in the route...
+                                            @ key {useLocation().key}
+                                            < Await 
+                                                @ resolve {data.lazy}
+                                                { 
+                                                    => 
+                                                        param value
+                                                        p 
+                                                            + Lazy Data:
+                                                            + {value}
+                        { 
+                            @ path "defer-no-boundary"
+                            m loader
+                                async
+                                { 
+                                    @ request
+                                let value = new URL(request.url).searchParams.get("value") || ""
+                                return 
+                                    _ defer
+                                        { 
+                                            @ value
+                                            @ critical "CRITICAL PATH DATA - NO BOUNDARY " + value
+                                            @ lazy
+                                                new Promise
+                                                    => 
+                                                        param r
+                                                        _ setTimeout
+                                                            => 
+                                                                _ r("LAZY DATA - NO BOUNDARY " + value)
+                                                            @ 1000
+                            m Component
+                                let data
+                                    _ useLoaderData()
+                                        :as 
+                                            :{ 
+                                                :p value
+                                                    :string 
+                                                :p data
+                                                    :string 
+                                                :p critical
+                                                    :string 
+                                                :p lazy
+                                                    :ref Promise
+                                                        :param string
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Defer (No Boundary)"
+                                    [ 
+                                return 
+                                    < React.Fragment
+                                        h1 
+                                            + Defer No Boundary
+                                            + {data.value}
+                                        p 
+                                            + Critical Data:
+                                            + {data.critical}
+                                        div 
+                                            < Await 
+                                                @ resolve {data.lazy}
+                                                { 
+                                                    => 
+                                                        param value
+                                                        p 
+                                                            + Lazy Data:
+                                                            + {value}
+                        { 
+                            @ path "images"
+                            m Component
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Images"
+                                    [ 
+                                return 
+                                    div 
+                                        @ className "image-list"
+                                        h1 
+                                            + Image List
+                                        div 
+                                            { 
+                                                _ images.map
+                                                    => 
+                                                        param src
+                                                        param idx
+                                                        < NavLink 
+                                                            @ key {src}
+                                                            @ to
+                                                                `lit 
+                                                                    + /images/
+                                                                    @ idx
+                                                                    + 
+                                                            @ unstable_viewTransition
+                                                            p 
+                                                                + Image Number
+                                                                + {idx}
+                                                            img 
+                                                                @ src {src}
+                                                                @ alt
+                                                                    `lit 
+                                                                        + Img&nbsp;
+                                                                        @ idx
+                                                                        + 
+                                                            # Adds 'transitioning' class to the <a> during the transition
+                                                            # Render prop approach similar to isActive/isPending
+                                                            # <NavLink
+                                                            # key={src}
+                                                            # to={`/images/${idx}`}
+                                                            # unstable_viewTransition
+                                                            # >
+                                                            # {({ isTransitioning }) => (
+                                                            # <div className={isTransitioning ? "transitioning" : ""}>
+                                                            # <p>Image Number {idx}</p>
+                                                            # <img src={src} alt={`Img ${idx}`} />
+                                                            # </div>
+                                                            # )}
+                                                            # </NavLink>
+                                                            # Manual hook based approach
+                                                            # <NavImage key={src} src={src} idx={idx} />
+                        { 
+                            @ path "images/:id"
+                            m Component
+                                let params = useParams()
+                                _ React.useEffect
+                                    => 
+                                        set document.title = "Image " + params.id
+                                    [ 
+                                        @ params.id
+                                return 
+                                    div 
+                                        @ className
+                                            `lit 
+                                                + image-detail
+                                        h1 
+                                            + Image Number
+                                            + {params.id}
+                                        img 
+                                            @ src {images[Number(params.id)]}
+                                            @ alt
+                                                `lit 
+                                                    + 
+                                                    @ params.id
+                                                    + 
+        # eslint-disable-next-line @typescript-eslint/no-unused-vars
+    function NavImage
+        { 
+            @ src
+            @ idx
+            :{ 
+                :p src
+                    :string 
+                :p idx
+                    :number 
+        let href
+            `lit 
+                + /images/
+                @ idx
+                + 
+        let vt = unstable_useViewTransitionState(href)
+        return 
+            < React.Fragment
+                < Link 
+                    @ to {href}
+                    @ unstable_viewTransition
+                    p 
+                        @ style
+                            { 
+                                @ viewTransitionName
+                                    iif vt
+                                        then "image-title"
+                                        else ""
+                        + Image Number
+                        + {idx}
+                    img 
+                        @ src {src}
+                        @ alt
+                            `lit 
+                                + Img&nbsp;
+                                @ idx
+                                + 
+                        @ style
+                            { 
+                                @ viewTransitionName
+                                    iif vt
+                                        then "image-expand"
+                                        else ""
+        # eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const rootElement
+        _ document.getElementById("root")
+            :as 
+                :ref HTMLElement
+    _ ReactDOMClient.createRoot(rootElement).render
+        < React.StrictMode 
+            < RouterProvider 
+                @ router {router}
+                @ future
+                    { 
+                        @ v7_startTransition true
+                            # Wrap all state updates in React.startTransition()
+    function Nav
+        let navigate = useNavigate()
+        let submit = useSubmit()
+        return 
+            nav 
+                ul 
+                    li 
+                        < Link 
+                            @ to "/"
+                            @ unstable_viewTransition
+                            + Home
+                        ul 
+                            li 
+                                + The / route has no loader is should be an immediate/synchronous&lf;              transition
+                    li 
+                        < Link 
+                            @ to "/loader"
+                            @ unstable_viewTransition
+                            + Loader with delay
+                        + {" "}
+                        button 
+                            @ style
+                                { 
+                                    @ display "inline-block"
+                            @ onClick
+                                => 
+                                    _ navigate
+                                        @ "/loader"
+                                        { 
+                                            @ unstable_viewTransition true
+                            + via useNavigate
+                        ul 
+                            li 
+                                + The /loader route has a 1 second loader delay, and updates the DOM&lf;              synchronously upon completion
+                    li 
+                        < Form 
+                            @ method "post"
+                            @ action "/action"
+                            @ style
+                                { 
+                                    @ display "inline-block"
+                            @ unstable_viewTransition
+                            button 
+                                @ type "submit"
+                                @ style
+                                    { 
+                                        @ display "inline-block"
+                                + Action with delay
+                        + {" "}
+                        button 
+                            @ style
+                                { 
+                                    @ display "inline-block"
+                            @ onClick
+                                => 
+                                    _ submit
+                                        { 
+                                        { 
+                                            @ method "post"
+                                            @ action "/action"
+                                            @ unstable_viewTransition true
+                            + via useSubmit
+                        ul 
+                            li 
+                                + The /action route has a 1 second action delay, and updates the DOM&lf;              synchronously upon completion
+                    li 
+                        < Link 
+                            @ to "/images"
+                            @ unstable_viewTransition
+                            + Image Gallery Example
+                    li 
+                        < Link 
+                            @ to
+                                `lit 
+                                    + /defer
+                            @ unstable_viewTransition
+                            + Deferred Data
+                        ul 
+                            li 
+                                + The /defer route has 1s defer call that suspends and has it's own&lf;              Suspense boundary
+                    li 
+                        < Link 
+                            @ to "/defer-no-boundary"
+                            @ unstable_viewTransition
+                            + Deferred Data (without boundary)
+                        ul 
+                            li 
+                                + The /defer-no-boundary route has a 1s defer that suspends without&lf;              a Suspense boundary in the destination route. This relies on&lf;              React.startTransition to "freeze" the current UI until the&lf;              deferred data resolves

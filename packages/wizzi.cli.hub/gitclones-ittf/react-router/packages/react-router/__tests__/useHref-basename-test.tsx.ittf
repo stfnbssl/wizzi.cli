@@ -1,0 +1,502 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useHref
+        from "react-router"
+    function ShowHref
+        { 
+            @ to
+            :{ 
+                :p to
+                    :string 
+        return 
+            p 
+                + {useHref(to)}
+    _ describe
+        @ "useHref under a basename"
+        => 
+            _ describe
+                @ "to an absolute route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/admin"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "admin"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "/invoices"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app/invoices&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to a child route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/admin"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "admin"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "invoices"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app/admin/invoices&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "invoices"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/admin/invoices&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "invoices/"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/admin/invoices/&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "to a sibling route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/admin"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "admin"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "../dashboard"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app/dashboard&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../dashboard"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/dashboard&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../dashboard/"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/dashboard/&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "to a parent route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/admin"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "admin"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to ".."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to ".."
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "with a to value that has more .. segments than the current URL"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/admin"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "admin"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "../../../dashboard"
+                                # This is correct because the basename works like a chroot "jail".
+                                # Relative <Link to> values cannot "escape" into a higher level URL since
+                                # they would be linking to a URL that the <Router> cannot render. To link
+                                # to a higher URL path, use a plain <a>.
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app/dashboard&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+                                # This is correct because the basename works like a chroot "jail".
+                                # Relative <Link to> values cannot "escape" into a higher level URL since
+                                # they would be linking to a URL that the <Router> cannot render. To link
+                                # to a higher URL path, use a plain <a>.
+                    _ describe
+                        @ "and no additional segments"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../../.."
+                                        # This is correct because the basename works like a chroot "jail".
+                                        # Relative <Link to> values cannot "escape" into a higher level URL
+                                        # since they would be linking to a URL that the <Router> cannot render.
+                                        # To link to a higher URL path, use a plain <a>.
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # This is correct because the basename works like a chroot "jail".
+                                        # Relative <Link to> values cannot "escape" into a higher level URL
+                                        # since they would be linking to a URL that the <Router> cannot render.
+                                        # To link to a higher URL path, use a plain <a>.
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../../../dashboard"
+                                        # This is correct because the basename works like a chroot "jail".
+                                        # Relative <Link to> values cannot "escape" into a higher level URL
+                                        # since they would be linking to a URL that the <Router> cannot render.
+                                        # To link to a higher URL path, use a plain <a>.
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/dashboard&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # This is correct because the basename works like a chroot "jail".
+                                        # Relative <Link to> values cannot "escape" into a higher level URL
+                                        # since they would be linking to a URL that the <Router> cannot render.
+                                        # To link to a higher URL path, use a plain <a>.
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/app"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/app/admin"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "admin"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../../../dashboard/"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <p>&lf;
+                                            + &nbsp;           /app/dashboard/&lf;
+                                            + &nbsp;         </p>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "after an update"
+                => 
+                    _ it
+                        @ "does not change"
+                        => 
+                            let element
+                                < MemoryRouter 
+                                    @ basename "/app"
+                                    @ initialEntries
+                                        [ 
+                                            @ "/app/admin"
+                                    < Routes 
+                                        < Route 
+                                            @ path "admin"
+                                            @ element
+                                                < ShowHref 
+                                                    @ to "/invoices"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer = TestRenderer.create(element)
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.update(element)
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         /app/invoices&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;

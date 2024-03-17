@@ -1,0 +1,286 @@
+module
+    kind react
+    const path = require("path")
+    const babel = require("@rollup/plugin-babel").default
+    const copy = require("rollup-plugin-copy")
+    const extensions = require("rollup-plugin-extensions")
+    const prettier = require("rollup-plugin-prettier")
+    const replace = require("@rollup/plugin-replace")
+    const 
+        { 
+            @ terser
+        = require("rollup-plugin-terser")
+    const typescript = require("@rollup/plugin-typescript")
+    const 
+        { 
+            @ babelPluginReplaceVersionPlaceholder
+            @ createBanner
+            @ getBuildDirectories
+            @ validateReplacedVersion
+            @ PRETTY
+        = require("../../rollup.utils")
+    const 
+        { 
+            @ name
+            @ version
+        = require("./package.json")
+    set module.exports =
+        function rollup
+            const 
+                { 
+                    @ ROOT_DIR
+                    @ SOURCE_DIR
+                    @ OUTPUT_DIR
+                = getBuildDirectories(name)
+            const ROUTER_DOM_SOURCE = path.join(ROOT_DIR, "packages", "react-router-dom", "(index|dom).ts*")
+            const ROUTER_DOM_COPY_DEST = path.join(SOURCE_DIR, "react-router-dom")
+                # JS modules for bundlers
+            let modules
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /index.js
+                            @ format "esm"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router DOM v5 Compat", version)
+                        [ external
+                            @ "history"
+                            @ "@remix-run/router"
+                            @ "react"
+                            @ "react-dom"
+                            @ "react-router"
+                            @ "react-router-dom"
+                        [ plugins
+                            _ copy
+                                { 
+                                    [ targets
+                                        { 
+                                            @ src ROUTER_DOM_SOURCE
+                                            @ dest ROUTER_DOM_COPY_DEST
+                                    @ hook "options"
+                                        # buildStart is not soon enough to run before the typescript plugin :/
+                                    @ verbose true
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                        @ babelPluginReplaceVersionPlaceholder()
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ typescript
+                                { 
+                                    @ tsconfig path.join(__dirname, "tsconfig.json")
+                                    [ exclude
+                                        @ "__tests__"
+                                    @ noEmitOnError true
+                            _ copy
+                                { 
+                                    [ targets
+                                        { 
+                                            @ src path.join(ROOT_DIR, "LICENSE.md")
+                                            @ dest SOURCE_DIR
+                                    @ verbose true
+                            @ validateReplacedVersion()
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # JS modules for bundlers
+                # UMD modules for <script> tags and CommonJS (node)
+            let globals
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /umd/react-router-dom-v5-compat.development.js
+                            @ format "umd"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router DOM v5 Compat", version)
+                            { globals
+                                @ history "HistoryLibrary"
+                                @ "@remix-run/router" "RemixRouter"
+                                @ react "React"
+                                @ "react-router" "ReactRouter"
+                                @ "react-router-dom" "ReactRouterDOM"
+                            @ name "ReactRouterDOMv5Compat"
+                        [ external
+                            @ "history"
+                            @ "@remix-run/router"
+                            @ "react"
+                            @ "react-router"
+                            @ "react-router-dom"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                        @ babelPluginReplaceVersionPlaceholder()
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("development")
+                            @ validateReplacedVersion()
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /umd/react-router-dom-v5-compat.production.min.js
+                            @ format "umd"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router DOM v5 Compat", version)
+                            { globals
+                                @ history "HistoryLibrary"
+                                @ "@remix-run/router" "RemixRouter"
+                                @ react "React"
+                                @ "react-router" "ReactRouter"
+                                @ "react-router-dom" "ReactRouterDOM"
+                            @ name "ReactRouterDOMv5Compat"
+                        [ external
+                            @ "history"
+                            @ "@remix-run/router"
+                            @ "react"
+                            @ "react-router"
+                            @ "react-router-dom"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                        @ babelPluginReplaceVersionPlaceholder()
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("production")
+                            @ terser()
+                            @ validateReplacedVersion()
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # UMD modules for <script> tags and CommonJS (node)
+                # Node entry points
+            let node
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /node-main.js
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /main.js
+                            @ format "cjs"
+                            @ banner createBanner("React Router DOM v5 Compat", version)
+                        @ plugins
+                            _ [].concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # Node entry points
+            return 
+                [ 
+                    @ ...modules
+                    @ ...globals
+                    @ ...node
+        #
+            # *
+            # * @typedef {import('rollup').InputOptions} RollupInputOptions
+            # * @typedef {import('rollup').OutputOptions} RollupOutputOptions
+            # * @typedef {import('rollup').RollupOptions} RollupOptions
+            # * @typedef {import('rollup').Plugin} RollupPlugin
+            # 

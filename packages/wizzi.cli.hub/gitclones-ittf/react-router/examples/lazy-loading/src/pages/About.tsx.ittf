@@ -1,0 +1,7 @@
+module
+    function AboutPage
+        return 
+            div 
+                h2 
+                    + About
+    export-default AboutPage

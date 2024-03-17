@@ -1,0 +1,134 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ Outlet
+        from "react-router-dom"
+    _ describe
+        @ "greedy matching"
+        => 
+            let routes
+                < Routes 
+                    < Route 
+                        @ path "/"
+                        @ element
+                            p 
+                                + Root
+                    < Route 
+                        @ path "home"
+                        @ element
+                            div 
+                                + Home Layout
+                                < Outlet 
+                        < Route 
+                            @ index
+                            @ element
+                                p 
+                                    + Home
+                        < Route 
+                            @ path "*"
+                            @ element
+                                p 
+                                    + Home Not Found
+                    < Route 
+                        @ path "*"
+                        @ element
+                            p 
+                                + Not Found
+            _ it
+                @ "matches the root route"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        @ children {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <p>&lf;
+                            + &nbsp;       Root&lf;
+                            + &nbsp;     </p>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "matches the index route"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        @ children {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       Home Layout&nbsp;&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         Home&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ 'matches the nested "not found" route'
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home/typo"
+                                        @ children {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       Home Layout&nbsp;&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         Home Not Found&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ 'matches the "not found" route'
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/hometypo"
+                                        @ children {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <p>&lf;
+                            + &nbsp;       Not Found&lf;
+                            + &nbsp;     </p>&lf;
+                            + &nbsp;  &nbsp;

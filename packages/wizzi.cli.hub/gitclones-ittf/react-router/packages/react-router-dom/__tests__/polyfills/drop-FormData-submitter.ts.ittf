@@ -1,0 +1,12 @@
+module
+    set window.FormData =
+        class FormData
+            super window["FormData"]
+            ctor 
+                param form
+                    :ref HTMLFormElement
+                    :optional 
+                _ super(form, undefined)
+        # Drop support for the submitter parameter, as in a legacy browser. This needs
+        # to be a standalone module due to how jest requires things (i.e. we can't
+        # just do this inline in data-browser-router-legacy-formdata-test.tsx)

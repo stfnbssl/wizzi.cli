@@ -1,0 +1,968 @@
+module
+    import 
+        @ IDLE_NAVIGATION
+        from "../index"
+    :import-type 
+        @ TestRouteObject
+        from "./utils/data-router-setup"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    _ describe
+        @ "redirects"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+            let REDIRECT_ROUTES
+                :[ 
+                    :ref TestRouteObject
+                =
+                    [ 
+                        { 
+                            @ id "root"
+                            @ path "/"
+                            [ children
+                                { 
+                                    @ id "parent"
+                                    @ path "parent"
+                                    @ action true
+                                    @ loader true
+                                    [ children
+                                        { 
+                                            @ id "child"
+                                            @ path "child"
+                                            @ action true
+                                            @ loader true
+                                            [ children
+                                                { 
+                                                    @ id "index"
+                                                    @ index true
+                                                    @ action true
+                                                    @ loader true
+            _ it
+                @ "applies the basename to redirects returned from loaders"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                                @ basename "/base/name"
+                                [ initialEntries
+                                    @ "/base/name"
+                    let nav1
+                        await 
+                            _ t.navigate("/base/name/parent")
+                    let nav2
+                        await 
+                            _ nav1.loaders.parent.redirectReturn("/parent/child")
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    await 
+                        _ nav2.loaders.child.resolve("CHILD")
+                    await 
+                        _ nav2.loaders.index.resolve("INDEX")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            @ historyAction "PUSH"
+                            { location
+                                @ pathname "/base/name/parent/child"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                                @ child "CHILD"
+                                @ index "INDEX"
+                            @ errors null
+                    _ expect(t.history.action).toEqual("PUSH")
+                    _ expect(t.history.location.pathname).toEqual("/base/name/parent/child")
+            _ it
+                @ "supports relative routing in redirects (from parent navigation loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate("/parent/child")
+                    await 
+                        _ nav1.loaders.child.resolve("CHILD")
+                    await 
+                        _ nav1.loaders.index.resolve("INDEX")
+                    await 
+                        _ nav1.loaders.parent.redirectReturn("..")
+                        # No root loader so redirect lands immediately
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                            @ errors null
+                        # No root loader so redirect lands immediately
+            _ it
+                @ "supports relative routing in redirects (from child navigation loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate("/parent/child")
+                    await 
+                        _ nav1.loaders.parent.resolve("PARENT")
+                    await 
+                        _ nav1.loaders.index.resolve("INDEX")
+                    let nav2
+                        await 
+                            _ nav1.loaders.child.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT 2")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT 2"
+                            @ errors null
+            _ it
+                @ "supports relative routing in redirects (from index navigation loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate("/parent/child")
+                    await 
+                        _ nav1.loaders.parent.resolve("PARENT")
+                    await 
+                        _ nav1.loaders.child.resolve("INDEX")
+                    let nav2
+                        await 
+                            _ nav1.loaders.index.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT 2")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT 2"
+                            @ errors null
+            _ it
+                @ "supports relative routing in redirects (from parent fetch loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let fetch
+                        await 
+                            _ t.fetch("/parent", "key")
+                    await 
+                        _ fetch.loaders.parent.redirectReturn
+                            @ ".."
+                            @ undefined
+                            @ undefined
+                            [ 
+                                @ "parent"
+                        # No root loader so redirect lands immediately
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                            @ errors null
+                        # No root loader so redirect lands immediately
+                    _ expect(t.router.state.fetchers.get("key")).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data undefined
+            _ it
+                @ "supports relative routing in redirects (from child fetch loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let fetch
+                        await 
+                            _ t.fetch("/parent/child")
+                    let nav
+                        await 
+                            _ fetch.loaders.child.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "supports relative routing in redirects (from index fetch loader)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let fetch
+                        await 
+                            _ t.fetch("/parent/child?index")
+                    let nav
+                        await 
+                            _ fetch.loaders.index.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "supports . redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate("/parent")
+                    let nav2
+                        await 
+                            _ nav1.loaders.parent.redirectReturn
+                                @ "./child"
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                                    @ "child"
+                                    @ "index"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    await 
+                        _ nav2.loaders.child.resolve("CHILD")
+                    await 
+                        _ nav2.loaders.index.resolve("INDEX")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent/child"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                                @ child "CHILD"
+                                @ index "INDEX"
+                            @ errors null
+            _ it
+                @ "supports relative routing in navigation action redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let nav2
+                        await 
+                            _ nav1.actions.child.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "supports relative routing in fetch action redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.fetch
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let nav2
+                        await 
+                            _ nav1.actions.child.redirectReturn
+                                @ ".."
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "preserves query and hash in redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let nav2
+                        await 
+                            _ nav1.actions.child.redirectReturn("/parent?key=value#hash")
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                                @ search "?key=value"
+                                @ hash "#hash"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "preserves query and hash in relative redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let nav1
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let nav2
+                        await 
+                            _ nav1.actions.child.redirectReturn
+                                @ "..?key=value#hash"
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ nav2.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/parent"
+                                @ search "?key=value"
+                                @ hash "#hash"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ parent "PARENT"
+                            @ errors null
+            _ it
+                @ "processes external redirects if window is present (push)"
+                async=> 
+                    let urls
+                        [ 
+                            @ "http://remix.run/blog"
+                            @ "https://remix.run/blog"
+                            @ "//remix.run/blog"
+                            @ "app://whatever"
+                    for 
+                        left
+                            let url
+                        of urls
+                        let t
+                            _ setup
+                                { 
+                                    @ routes REDIRECT_ROUTES
+                        let A
+                            await 
+                                _ t.navigate
+                                    @ "/parent/child"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                        await 
+                            _ A.actions.child.redirectReturn(url)
+                        _ expect(t.window.location.assign).toHaveBeenCalledWith(url)
+                        _ expect(t.window.location.replace).not.toHaveBeenCalled()
+            _ it
+                @ "processes external redirects if window is present (replace)"
+                async=> 
+                    let urls
+                        [ 
+                            @ "http://remix.run/blog"
+                            @ "https://remix.run/blog"
+                            @ "//remix.run/blog"
+                            @ "app://whatever"
+                    for 
+                        left
+                            let url
+                        of urls
+                        let t
+                            _ setup
+                                { 
+                                    @ routes REDIRECT_ROUTES
+                        let A
+                            await 
+                                _ t.navigate
+                                    @ "/parent/child"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                        @ replace true
+                        await 
+                            _ A.actions.child.redirectReturn(url)
+                        _ expect(t.window.location.replace).toHaveBeenCalledWith(url)
+                        _ expect(t.window.location.assign).not.toHaveBeenCalled()
+            _ it
+                @ "processes redirects with document reload if header is present (assign)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    await 
+                        _ A.actions.child.redirectReturn
+                            @ "/redirect"
+                            @ 301
+                            { 
+                                @ "X-Remix-Reload-Document" "true"
+                    _ expect(t.window.location.assign).toHaveBeenCalledWith("/redirect")
+                    _ expect(t.window.location.replace).not.toHaveBeenCalled()
+            _ it
+                @ "processes redirects with document reload if header is present (replace)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                    @ replace true
+                    await 
+                        _ A.actions.child.redirectReturn
+                            @ "/redirect"
+                            @ 301
+                            { 
+                                @ "X-Remix-Reload-Document" "true"
+                    _ expect(t.window.location.replace).toHaveBeenCalledWith("/redirect")
+                    _ expect(t.window.location.assign).not.toHaveBeenCalled()
+            _ it
+                @ "properly handles same-origin absolute URLs"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let B
+                        await 
+                            _ A.actions.child.redirectReturn
+                                @ "http://localhost/parent"
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ B.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state.location).toMatchObject
+                        { 
+                            @ hash ""
+                            @ pathname "/parent"
+                            @ search ""
+                            { state
+                                @ _isRedirect true
+            _ it
+                @ "properly handles same-origin absolute URLs when using a basename"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                                @ basename "/base"
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/base/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let B
+                        await 
+                            _ A.actions.child.redirectReturn
+                                @ "http://localhost/base/parent"
+                                @ undefined
+                                @ undefined
+                                [ 
+                                    @ "parent"
+                    await 
+                        _ B.loaders.parent.resolve("PARENT")
+                    _ expect(t.router.state.location).toMatchObject
+                        { 
+                            @ hash ""
+                            @ pathname "/base/parent"
+                            @ search ""
+                            { state
+                                @ _isRedirect true
+            _ it
+                @ "treats same-origin absolute URLs as external if they don't match the basename"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                @ routes REDIRECT_ROUTES
+                                @ basename "/base"
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/base/parent/child"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let url = "http://localhost/not/the/same/basename"
+                    await 
+                        _ A.actions.child.redirectReturn(url)
+                    _ expect(t.window.location.assign).toHaveBeenCalledWith(url)
+                    _ expect(t.window.location.replace).not.toHaveBeenCalled()
+            _ it
+                @ "preserves action revalidation across multiple redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ initialEntries
+                                    @ "/action"
+                                [ routes
+                                    { 
+                                        @ id "action"
+                                        @ path "/action"
+                                        @ loader true
+                                        [ children
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                                @ action true
+                                                @ loader true
+                                            { 
+                                                @ id "one"
+                                                @ path "1"
+                                                @ loader true
+                                            { 
+                                                @ path "2"
+                                { hydrationData
+                                    { loaderData
+                                        @ action "ACTION 0"
+                                        @ index "INDEX"
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/action?index"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    let B
+                        await 
+                            _ A.actions.index.redirectReturn("/action/1")
+                    await 
+                        _ B.loaders.action.resolve("ACTION 1")
+                    let C
+                        await 
+                            _ B.loaders.one.redirectReturn("/action/2")
+                    await 
+                        _ C.loaders.action.resolve("ACTION 2")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/action/2"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ action "ACTION 2"
+            _ it
+                @ "preserves X-Remix-Revalidate revalidation across multiple redirects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ initialEntries
+                                    @ "/loader"
+                                [ routes
+                                    { 
+                                        @ id "loader"
+                                        @ path "/loader"
+                                        @ loader true
+                                        [ children
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                            { 
+                                                @ id "one"
+                                                @ path "1"
+                                                @ loader true
+                                            { 
+                                                @ id "two"
+                                                @ path "2"
+                                                @ loader true
+                                            { 
+                                                @ path "3"
+                                { hydrationData
+                                    { loaderData
+                                        @ loader "LOADER 0"
+                    let A
+                        await 
+                            _ t.navigate("/loader/1")
+                    let B
+                        await 
+                            _ A.loaders.one.redirectReturn
+                                @ "/loader/2"
+                                @ undefined
+                                { 
+                                    @ "X-Remix-Revalidate" "true"
+                    await 
+                        _ B.loaders.loader.resolve("LOADER 3")
+                    let C
+                        await 
+                            _ B.loaders.two.redirectReturn("/loader/3")
+                    await 
+                        _ C.loaders.loader.resolve("LOADER 3")
+                    _ expect(t.router.state).toMatchObject
+                        { 
+                            { location
+                                @ pathname "/loader/3"
+                            @ navigation IDLE_NAVIGATION
+                            { loaderData
+                                @ loader "LOADER 3"
+            _ describe
+                @ "redirect status code handling"
+                => 
+                    _ it
+                        @ "should not treat 300 as a redirect"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/parent")
+                            await 
+                                _ A.loaders.parent.redirectReturn("/idk", 300)
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { loaderData
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "should not preserve the method on 301 redirects"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Triggers a GET redirect
+                            let B
+                                await 
+                                    _ A.actions.child.redirectReturn("/parent", 301)
+                                # Triggers a GET redirect
+                            await 
+                                _ B.loaders.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { loaderData
+                                        @ parent "PARENT"
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "should not preserve the method on 302 redirects"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Triggers a GET redirect
+                            let B
+                                await 
+                                    _ A.actions.child.redirectReturn("/parent", 302)
+                                # Triggers a GET redirect
+                            await 
+                                _ B.loaders.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { loaderData
+                                        @ parent "PARENT"
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "should not preserve the method on 303 redirects"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Triggers a GET redirect
+                            let B
+                                await 
+                                    _ A.actions.child.redirectReturn("/parent", 303)
+                                # Triggers a GET redirect
+                            await 
+                                _ B.loaders.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { loaderData
+                                        @ parent "PARENT"
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "should not treat 304 as a redirect"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate("/parent")
+                            await 
+                                _ A.loaders.parent.resolve
+                                    new Response
+                                        @ null
+                                        { 
+                                            @ status 304
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { loaderData
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                    _ it
+                        @ "should preserve the method on 307 redirects"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Triggers a POST redirect
+                            let B
+                                await 
+                                    _ A.actions.child.redirectReturn("/parent", 307)
+                                # Triggers a POST redirect
+                            await 
+                                _ B.actions.parent.resolve("PARENT ACTION")
+                            await 
+                                _ B.loaders.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { actionData
+                                        @ parent "PARENT ACTION"
+                                    { loaderData
+                                        @ parent "PARENT"
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                            let request = B.actions.parent.stub.mock.calls[0][0].request
+                            _ expect(request.method).toBe("POST")
+                            let fd
+                                await 
+                                    _ request.formData()
+                            _ expect(Array.from(fd.entries())).toEqual
+                                [ 
+                                    [ 
+                                        @ "key"
+                                        @ "value"
+                    _ it
+                        @ "should preserve the method on 308 redirects"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes REDIRECT_ROUTES
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Triggers a POST redirect
+                            let B
+                                await 
+                                    _ A.actions.child.redirectReturn("/parent", 308)
+                                # Triggers a POST redirect
+                            await 
+                                _ B.actions.parent.resolve("PARENT ACTION")
+                            await 
+                                _ B.loaders.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { actionData
+                                        @ parent "PARENT ACTION"
+                                    { loaderData
+                                        @ parent "PARENT"
+                                    { location
+                                        @ pathname "/parent"
+                                    { navigation
+                                        @ state "idle"
+                            let request = B.actions.parent.stub.mock.calls[0][0].request
+                            _ expect(request.method).toBe("POST")
+                            let fd
+                                await 
+                                    _ request.formData()
+                            _ expect(Array.from(fd.entries())).toEqual
+                                [ 
+                                    [ 
+                                        @ "key"
+                                        @ "value"

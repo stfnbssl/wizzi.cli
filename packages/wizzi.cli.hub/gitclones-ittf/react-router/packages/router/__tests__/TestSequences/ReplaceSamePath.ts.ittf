@@ -1,0 +1,23 @@
+module
+    :import-type 
+        @ History
+        from "../../history"
+    export-default 
+        function ReplaceSamePath
+            param history
+                :ref History
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/"
+            _ history.replace("/home")
+            _ expect(history.action).toBe("REPLACE")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"
+            let prevLocation = history.location
+            _ history.replace("/home")
+            _ expect(history.action).toBe("REPLACE")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"
+            _ expect(history.location).not.toBe(prevLocation)

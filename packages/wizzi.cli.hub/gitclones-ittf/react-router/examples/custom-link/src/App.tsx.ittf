@@ -1,0 +1,107 @@
+module
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        @ useMatch
+        @ useResolvedPath
+        from "react-router-dom"
+    :import-type 
+        @ LinkProps
+        from "react-router-dom"
+    export-default 
+        function App
+            return 
+                div 
+                    h1 
+                        + Custom Link Example
+                    p 
+                        + This example demonstrates how to create a custom
+                        + {" "}
+                        code 
+                            + <Link>
+                        + component that knows whether or not it is&lf;        "active" using the low-level
+                        code 
+                            + useResolvedPath()
+                        + and
+                        + {" "}
+                        code 
+                            + useMatch()
+                        + hooks.
+                    < Routes 
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            < Route 
+                                @ index
+                                @ element
+                                    < Home 
+                            < Route 
+                                @ path "about"
+                                @ element
+                                    < About 
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+    function CustomLink
+        { 
+            @ children
+            @ to
+            ... props
+            :ref LinkProps
+        let resolved = useResolvedPath(to)
+        let match
+            _ useMatch
+                { 
+                    @ path resolved.pathname
+                    @ end true
+        return 
+            div 
+                < Link 
+                    @ style
+                        { 
+                            @ textDecoration
+                                iif match
+                                    then "underline"
+                                    else "none"
+                    @ to {to}
+                    @ {...props}
+                    + {children}
+                + {match && " (active)"}
+    function Layout
+        return 
+            div 
+                nav 
+                    ul 
+                        li 
+                            < CustomLink 
+                                @ to "/"
+                                + Home
+                        li 
+                            < CustomLink 
+                                @ to "/about"
+                                + About
+                hr 
+                < Outlet 
+    function Home
+        return 
+            div 
+                h1 
+                    + Home
+    function About
+        return 
+            div 
+                h1 
+                    + About
+    function NoMatch
+        return 
+            div 
+                h1 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

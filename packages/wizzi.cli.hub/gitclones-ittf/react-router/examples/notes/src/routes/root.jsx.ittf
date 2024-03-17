@@ -1,0 +1,51 @@
+module
+    kind react
+    import 
+        @ useLoaderData
+        @ Link
+        @ Outlet
+        from "react-router-dom"
+    import 
+        @ getNotes
+        from "../notes"
+    export 
+        async-function loader
+            return getNotes()
+    export-default 
+        function Root
+            const notes = useLoaderData()
+            return 
+                div 
+                    @ style
+                        { 
+                            @ display "flex"
+                    div 
+                        @ style
+                            { 
+                                @ padding "0 2rem"
+                                @ borderRight "solid 1px #ccc"
+                        h1 
+                            + Notes!
+                        p 
+                            < Link 
+                                @ to "new"
+                                + Create Note
+                        ul 
+                            { 
+                                _ notes.map
+                                    => 
+                                        param note
+                                        li 
+                                            < Link 
+                                                @ to
+                                                    `lit 
+                                                        + /note/
+                                                        @ note.id
+                                                        + 
+                                                + {note.title}
+                    div 
+                        @ style
+                            { 
+                                @ flex 1
+                                @ padding "0 2rem"
+                        < Outlet 

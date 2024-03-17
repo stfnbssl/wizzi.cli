@@ -1,0 +1,49 @@
+module
+    kind react
+    import 
+        @ useLoaderData
+        @ Form
+        @ redirect
+        from "react-router-dom"
+    import 
+        @ deleteNote
+        @ getNote
+        from "../notes"
+    export-default 
+        function Note
+            const note = useLoaderData()
+            return 
+                div 
+                    h2 
+                        + {note.title}
+                    div 
+                        + {note.content}
+                    < Form 
+                        @ method "post"
+                        @ style
+                            { 
+                                @ marginTop "2rem"
+                        button 
+                            @ type "submit"
+                            + Delete
+    export 
+        async-function loader
+            { 
+                @ params
+            const note
+                await 
+                    _ getNote(params.noteId)
+            if !note
+                throw 
+                    new Response
+                        @ ""
+                        { 
+                            @ status 404
+            return note
+    export 
+        async-function action
+            { 
+                @ params
+            await 
+                _ deleteNote(params.noteId)
+            return redirect("/new")

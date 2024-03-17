@@ -1,0 +1,13 @@
+html
+    head
+        css ./styles.css
+    body
+        h1 Hello Math
+        p 2 + 2 =
+            span &nbsp;
+            span
+                id result
+        js ./index.js
+        script
+            module
+                set document.getElementById('result').innerHTML = sum(2, 2)

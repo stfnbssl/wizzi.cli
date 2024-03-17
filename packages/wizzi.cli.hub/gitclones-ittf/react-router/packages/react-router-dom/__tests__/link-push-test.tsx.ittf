@@ -1,0 +1,371 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ Link
+        @ useNavigationType
+        from "react-router-dom"
+    function ShowNavigationType
+        return 
+            p 
+                + {useNavigationType()}
+    _ describe
+        @ "Link push and replace"
+        => 
+            _ describe
+                @ "to a different pathname, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a push"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < ShowNavigationType 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         PUSH&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to a different search string, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a push with the existing pathname"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "?name=michael"
+                                            + Michael
+                                        < ShowNavigationType 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <a&lf;
+                                    + &nbsp;           href="/home?name=michael"&lf;
+                                    + &nbsp;           onClick={[Function]}&lf;
+                                    + &nbsp;         >&lf;
+                                    + &nbsp;           Michael&lf;
+                                    + &nbsp;         </a>&lf;
+                                    + &nbsp;         <p>&lf;
+                                    + &nbsp;           PUSH&lf;
+                                    + &nbsp;         </p>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to a different hash, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a push with the existing pathname"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "#bio"
+                                            + Bio
+                                        < ShowNavigationType 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <a&lf;
+                                    + &nbsp;           href="/home#bio"&lf;
+                                    + &nbsp;           onClick={[Function]}&lf;
+                                    + &nbsp;         >&lf;
+                                    + &nbsp;           Bio&lf;
+                                    + &nbsp;         </a>&lf;
+                                    + &nbsp;         <p>&lf;
+                                    + &nbsp;           PUSH&lf;
+                                    + &nbsp;         </p>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to the same page, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a replace"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "."
+                                            + Home
+                                        < ShowNavigationType 
+                            function About
+                                return 
+                                    h1 
+                                        + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <a&lf;
+                                    + &nbsp;           href="/home"&lf;
+                                    + &nbsp;           onClick={[Function]}&lf;
+                                    + &nbsp;         >&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </a>&lf;
+                                    + &nbsp;         <p>&lf;
+                                    + &nbsp;           REPLACE&lf;
+                                    + &nbsp;         </p>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to the same page with replace={false}, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a push"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "."
+                                            @ replace {false}
+                                            + Home
+                                        < ShowNavigationType 
+                            function About
+                                return 
+                                    h1 
+                                        + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <a&lf;
+                                    + &nbsp;           href="/home"&lf;
+                                    + &nbsp;           onClick={[Function]}&lf;
+                                    + &nbsp;         >&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </a>&lf;
+                                    + &nbsp;         <p>&lf;
+                                    + &nbsp;           PUSH&lf;
+                                    + &nbsp;         </p>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "to an absolute same-origin/same-basename URL, when it is clicked"
+                => 
+                    _ it
+                        @ "performs a push"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "http://localhost/base/about"
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/base/home"
+                                                @ basename "/base"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < ShowNavigationType 
+                            let anchor = renderer.root.findByType("a")
+                            _ TestRenderer.act
+                                => 
+                                    _ anchor.props.onClick
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         PUSH&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;

@@ -1,0 +1,33 @@
+module
+    :import-type 
+        @ History
+        from "../../history"
+    export-default 
+        function EncodeReservedCharacters
+            param history
+                :ref History
+            let pathname
+                # encoded string
+            set pathname = "/view/%23abc"
+                # encoded string
+            _ history.replace(pathname)
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/view/%23abc"
+                # encoded object
+            set pathname = "/view/%23abc"
+                # encoded object
+            _ history.replace
+                { 
+                    @ pathname
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/view/%23abc"
+                # unencoded string
+            set pathname = "/view/#abc"
+                # unencoded string
+            _ history.replace(pathname)
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/view/"
+                    @ hash "#abc"

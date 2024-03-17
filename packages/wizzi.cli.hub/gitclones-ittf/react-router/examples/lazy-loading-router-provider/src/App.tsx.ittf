@@ -1,0 +1,181 @@
+module
+    import 
+        @ Outlet
+        @ Link
+        @ createBrowserRouter
+        @ RouterProvider
+        @ useNavigation
+        from "react-router-dom"
+    const router
+        _ createBrowserRouter
+            [ 
+                { 
+                    @ path "/"
+                    @ element
+                        < Layout 
+                    [ children
+                        { 
+                            @ index true
+                            @ element
+                                < Home 
+                        { 
+                            @ path "about"
+                            @ lazy
+                                => 
+                                    _ import
+                                        @ "./pages/About"
+                                # Single route in lazy file
+                        { 
+                            @ path "dashboard"
+                            m lazy
+                                async
+                                let 
+                                    { 
+                                        @ DashboardLayout
+                                    =
+                                        await 
+                                            _ import
+                                                @ "./pages/Dashboard"
+                                    # Multiple routes in lazy file
+                                return 
+                                    { 
+                                        @ Component DashboardLayout
+                            [ children
+                                { 
+                                    @ index true
+                                    m lazy
+                                        async
+                                        let 
+                                            { 
+                                                @ DashboardIndex
+                                            =
+                                                await 
+                                                    _ import
+                                                        @ "./pages/Dashboard"
+                                        return 
+                                            { 
+                                                @ Component DashboardIndex
+                                { 
+                                    @ path "messages"
+                                    m lazy
+                                        async
+                                        let 
+                                            { 
+                                                @ dashboardMessagesLoader
+                                                @ DashboardMessages
+                                            =
+                                                await 
+                                                    _ import
+                                                        @ "./pages/Dashboard"
+                                        return 
+                                            { 
+                                                @ loader dashboardMessagesLoader
+                                                @ Component DashboardMessages
+                        { 
+                            @ path "*"
+                            @ element
+                                < NoMatch 
+    export-default 
+        function App
+            return 
+                < RouterProvider 
+                    @ router {router}
+                    @ fallbackElement
+                        p 
+                            + Loading...
+    function Layout
+        let navigation = useNavigation()
+        return 
+            div 
+                h1 
+                    + Lazy Loading Example using RouterProvider
+                p 
+                    + This example demonstrates how to lazily load route definitions using
+                    + {" "}
+                    code 
+                        + route.lazy()
+                    + . To get the full effect of this demo, be sure&lf;        to open your Network tab and watch the new bundles load dynamically as&lf;        you navigate around.
+                p 
+                    + The "About" and "Dashboard" pages are not loaded until you click on the&lf;        link. When you do, the code is loaded via a dynamic
+                    + {" "}
+                    code 
+                        + import()
+                    + statement during the
+                    code 
+                        + loading
+                    + phase of&lf;        the navigation. Once the code loads, the route loader executes, and then&lf;        the element renders with the loader-provided data.
+                p 
+                    + This works for all data-loading/rendering related properties of a route,&lf;        including
+                    code 
+                        + action
+                    + ,
+                    code 
+                        + loader
+                    + ,
+                    code 
+                        + element
+                    + ,
+                    code 
+                        + errorElement
+                    + , and
+                    code 
+                        + shouldRevalidate
+                    + . You&lf;        cannot return path-matching properties from
+                    code 
+                        + lazy()
+                    + such as
+                    + {" "}
+                    code 
+                        + path
+                    + ,
+                    code 
+                        + index
+                    + ,
+                    code 
+                        + children
+                    + , and
+                    + {" "}
+                    code 
+                        + caseSensitive
+                    + .
+                div 
+                    @ style
+                        { 
+                            @ position "fixed"
+                            @ top 0
+                            @ right 0
+                    { 
+                        && 
+                            + navigation.state !== "idle"
+                            p 
+                                + Navigation in progress...
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/about"
+                                + About
+                        li 
+                            < Link 
+                                @ to "/dashboard/messages"
+                                + Messages (Dashboard)
+                hr 
+                < Outlet 
+    function Home
+        return 
+            div 
+                h2 
+                    + Home
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

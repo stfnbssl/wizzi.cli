@@ -1,0 +1,2937 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    :import-type 
+        @ RelativeRoutingType
+        @ To
+        from "react-router"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useNavigate
+        @ useLocation
+        @ createMemoryRouter
+        @ createRoutesFromElements
+        @ Outlet
+        @ RouterProvider
+        from "react-router"
+    _ describe
+        @ "useNavigate"
+        => 
+            _ it
+                @ "navigates to the new location"
+                => 
+                    function Home
+                        let navigate = useNavigate()
+                        function handleClick
+                            _ navigate("/about")
+                        return 
+                            div 
+                                h1 
+                                    + Home
+                                button 
+                                    @ onClick {handleClick}
+                                    + click me
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "about"
+                                                @ element
+                                                    h1 
+                                                        + About
+                        # @ts-expect-error
+                    let button = renderer.root.findByType("button")
+                        # @ts-expect-error
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       About&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+            _ it
+                @ "navigates to the new location when no pathname is provided"
+                => 
+                    function Home
+                        let location = useLocation()
+                        let navigate = useNavigate()
+                        return 
+                            < React.Fragment
+                                p 
+                                    + {location.pathname + location.search}
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate("?key=value")
+                                    + click me
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+                        # @ts-expect-error
+                    let button = renderer.root.findByType("button")
+                        # @ts-expect-error
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home?key=value&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+            _ it
+                @ "navigates to the new location when no pathname is provided (with a basename)"
+                => 
+                    function Home
+                        let location = useLocation()
+                        let navigate = useNavigate()
+                        return 
+                            < React.Fragment
+                                p 
+                                    + {location.pathname + location.search}
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate("?key=value")
+                                    + click me
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/basename"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/basename/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+                        # @ts-expect-error
+                    let button = renderer.root.findByType("button")
+                        # @ts-expect-error
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home?key=value&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+            _ it
+                @ "navigates to the new location with empty query string when no query string is provided"
+                => 
+                    function Home
+                        let location = useLocation()
+                        let navigate = useNavigate()
+                        return 
+                            < React.Fragment
+                                p 
+                                    + {location.pathname + location.search}
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate("/home")
+                                    + click me
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home?key=value"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home?key=value&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+                        # @ts-expect-error
+                    let button = renderer.root.findByType("button")
+                        # @ts-expect-error
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                        # @ts-expect-error
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         /home&lf;
+                            + &nbsp;       </p>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         click me&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # @ts-expect-error
+            _ it
+                @ "throws on invalid destination path objects"
+                => 
+                    function Home
+                        let navigate = useNavigate()
+                        return 
+                            div 
+                                h1 
+                                    + Home
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate
+                                                { 
+                                                    @ pathname "/about/thing?search"
+                                    + click 1
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate
+                                                { 
+                                                    @ pathname "/about/thing#hash"
+                                    + click 2
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate
+                                                { 
+                                                    @ pathname "/about/thing?search#hash"
+                                    + click 3
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate
+                                                { 
+                                                    @ pathname "/about/thing"
+                                                    @ search "?search#hash"
+                                    + click 4
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                    _ expect
+                        => 
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.root.findAllByType("button")[0].props.onClick()
+                        ._ toThrowErrorMatchingInlineSnapshot
+                            `lit 
+                                + "Cannot include a '?' character in a manually specified \`to.pathname\` field [{"pathname":"/about/thing?search"}].  Please separate it out to the \`to.search\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you."
+                    _ expect
+                        => 
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.root.findAllByType("button")[1].props.onClick()
+                        ._ toThrowErrorMatchingInlineSnapshot
+                            `lit 
+                                + "Cannot include a '#' character in a manually specified \`to.pathname\` field [{"pathname":"/about/thing#hash"}].  Please separate it out to the \`to.hash\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you."
+                    _ expect
+                        => 
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.root.findAllByType("button")[2].props.onClick()
+                        ._ toThrowErrorMatchingInlineSnapshot
+                            `lit 
+                                + "Cannot include a '?' character in a manually specified \`to.pathname\` field [{"pathname":"/about/thing?search#hash"}].  Please separate it out to the \`to.search\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you."
+                    _ expect
+                        => 
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.root.findAllByType("button")[3].props.onClick()
+                        ._ toThrowErrorMatchingInlineSnapshot
+                            `lit 
+                                + "Cannot include a '#' character in a manually specified \`to.search\` field [{"pathname":"/about/thing","search":"?search#hash"}].  Please separate it out to the \`to.hash\` field. Alternatively you may provide the full path as a string in <Link to="..."> and the router will parse it for you."
+            _ it
+                @ "allows useNavigate usage in a mixed RouterProvider/<Routes> scenario"
+                => 
+                    const router
+                        _ createMemoryRouter
+                            [ 
+                                { 
+                                    @ path "/*"
+                                    m Component
+                                        let navigate = useNavigate()
+                                            # eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                        let location = useLocation()
+                                        return 
+                                            < React.Fragment
+                                                button 
+                                                    @ onClick
+                                                        => 
+                                                            _ navigate
+                                                                iif location.pathname === "/"
+                                                                    then "/page"
+                                                                    else "/"
+                                                    + Navigate from RouterProvider
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "/page"
+                                                        @ element
+                                                            < Page 
+                    function Home
+                        let navigate = useNavigate()
+                        return 
+                            < React.Fragment
+                                h1 
+                                    + Home
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate("/page")
+                                    + Navigate /page from Routes
+                    function Page
+                        let navigate = useNavigate()
+                        return 
+                            < React.Fragment
+                                h1 
+                                    + Page
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ navigate("/")
+                                    + Navigate /home from Routes
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < RouterProvider 
+                                        @ router {router}
+                    _ expect(router.state.location.pathname).toBe("/")
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate from RouterProvider&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Home&lf;
+                            + &nbsp;       </h1>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate /page from Routes&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    let button
+                        _ renderer.root.findByProps
+                            { 
+                                @ children "Navigate from RouterProvider"
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                    _ expect(router.state.location.pathname).toBe("/page")
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate from RouterProvider&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Page&lf;
+                            + &nbsp;       </h1>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate /home from Routes&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    set button =
+                        _ renderer.root.findByProps
+                            { 
+                                @ children "Navigate from RouterProvider"
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                    _ expect(router.state.location.pathname).toBe("/")
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate from RouterProvider&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Home&lf;
+                            + &nbsp;       </h1>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate /page from Routes&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    set button =
+                        _ renderer.root.findByProps
+                            { 
+                                @ children "Navigate /page from Routes"
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                    _ expect(router.state.location.pathname).toBe("/page")
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate from RouterProvider&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Page&lf;
+                            + &nbsp;       </h1>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate /home from Routes&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    set button =
+                        _ renderer.root.findByProps
+                            { 
+                                @ children "Navigate /home from Routes"
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                    _ expect(router.state.location.pathname).toBe("/")
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate from RouterProvider&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Home&lf;
+                            + &nbsp;       </h1>,&lf;
+                            + &nbsp;       <button&lf;
+                            + &nbsp;         onClick={[Function]}&lf;
+                            + &nbsp;       >&lf;
+                            + &nbsp;         Navigate /page from Routes&lf;
+                            + &nbsp;       </button>,&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+            _ describe
+                @ "navigating in effects versus render"
+                => 
+                    let warnSpy
+                        :ref jest.SpyInstance
+                    _ beforeEach
+                        => 
+                            set warnSpy =
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                    _ afterEach
+                        => 
+                            _ warnSpy.mockRestore()
+                    _ describe
+                        @ "MemoryRouter"
+                        => 
+                            _ it
+                                @ "does not allow navigation from the render cycle"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        < Routes 
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < Home 
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                    function Home
+                                        let navigate = useNavigate()
+                                        _ navigate("/about")
+                                        return 
+                                            h1 
+                                                + Home
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Home&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                    _ expect(warnSpy).toHaveBeenCalledWith("You should call navigate() in a React.useEffect(), not when your component is first rendered.")
+                            _ it
+                                @ "allows navigation from effects"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        < Routes 
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < Home 
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                    function Home
+                                        let navigate = useNavigate()
+                                        _ React.useEffect
+                                            => 
+                                                _ navigate("/about")
+                                            [ 
+                                                @ navigate
+                                        return 
+                                            h1 
+                                                + Home
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                    _ expect(warnSpy).not.toHaveBeenCalled()
+                            _ it
+                                @ "allows navigation in child useEffects"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < Parent 
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                    function Parent
+                                        let navigate = useNavigate()
+                                        let onChildRendered
+                                            _ React.useCallback
+                                                => 
+                                                    _ navigate("/about")
+                                                [ 
+                                                    @ navigate
+                                        return 
+                                            < Child 
+                                                @ onChildRendered {onChildRendered}
+                                    function Child
+                                        { 
+                                            @ onChildRendered
+                                        _ React.useEffect
+                                            => 
+                                                _ onChildRendered()
+                                        return null
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "RouterProvider"
+                        => 
+                            _ it
+                                @ "does not allow navigation from the render cycle"
+                                async=> 
+                                    let router
+                                        _ createMemoryRouter
+                                            [ 
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let navigate = useNavigate()
+                                                        _ navigate("/about")
+                                                        return 
+                                                            h1 
+                                                                + Home
+                                                { 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Home&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                    _ expect(warnSpy).toHaveBeenCalledWith("You should call navigate() in a React.useEffect(), not when your component is first rendered.")
+                            _ it
+                                @ "allows navigation from effects"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            [ 
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let navigate = useNavigate()
+                                                        _ React.useEffect
+                                                            => 
+                                                                _ navigate("/about")
+                                                            [ 
+                                                                @ navigate
+                                                        return 
+                                                            h1 
+                                                                + Home
+                                                { 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                    _ expect(warnSpy).not.toHaveBeenCalled()
+                            _ it
+                                @ "allows navigation in child useEffects"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            [ 
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let navigate = useNavigate()
+                                                        let onChildRendered
+                                                            _ React.useCallback
+                                                                => 
+                                                                    _ navigate("/about")
+                                                                [ 
+                                                                    @ navigate
+                                                        return 
+                                                            < Child 
+                                                                @ onChildRendered {onChildRendered}
+                                                { 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                    function Child
+                                        { 
+                                            @ onChildRendered
+                                        _ React.useEffect
+                                            => 
+                                                _ onChildRendered()
+                                        return null
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+            _ describe
+                @ "with state"
+                => 
+                    _ it
+                        @ "adds the state to location.state"
+                        => 
+                            function Home
+                                let navigate = useNavigate()
+                                function handleClick
+                                    _ navigate
+                                        @ "/about"
+                                        { 
+                                            { state
+                                                @ from "home"
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        button 
+                                            @ onClick {handleClick}
+                                            + click me
+                            function ShowLocationState
+                                return 
+                                    p 
+                                        + location.state:
+                                        + {JSON.stringify(useLocation().state)}
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < ShowLocationState 
+                                # @ts-expect-error
+                            let button = renderer.root.findByType("button")
+                                # @ts-expect-error
+                            _ TestRenderer.act
+                                => 
+                                    _ button.props.onClick()
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         location.state:&lf;
+                                    + &nbsp;         {"from":"home"}&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ describe
+                @ "when relative navigation is handled via React Context"
+                => 
+                    _ describe
+                        @ "with an absolute href"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to "/about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "with a relative href (relative=route)"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to "../about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from an index routes"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                < Route 
+                                                                    @ index
+                                                                    @ element
+                                                                        < UseNavigateButton 
+                                                                            @ to "../about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside a pathless layout route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ path "home"
+                                                                    @ element
+                                                                        < UseNavigateButton 
+                                                                            @ to "../about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ element
+                                                                            < Outlet 
+                                                                        < Route 
+                                                                            @ element
+                                                                                < Outlet 
+                                                                            < Route 
+                                                                                @ index
+                                                                                @ element
+                                                                                    < UseNavigateButton 
+                                                                                        @ to "../about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home/page"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ element
+                                                                            < Outlet 
+                                                                        < Route 
+                                                                            @ element
+                                                                                < Outlet 
+                                                                            < Route 
+                                                                                @ path "page"
+                                                                                @ element
+                                                                                    < UseNavigateButton 
+                                                                                        @ to "../../about"
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles parent navigation from inside multiple pathless layout routes"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home/page"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < React.Fragment
+                                                                        h1 
+                                                                            + Home
+                                                                        < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ element
+                                                                            < Outlet 
+                                                                        < Route 
+                                                                            @ element
+                                                                                < Outlet 
+                                                                            < Route 
+                                                                                @ path "page"
+                                                                                @ element
+                                                                                    < React.Fragment
+                                                                                        h2 
+                                                                                            + Page
+                                                                                        < UseNavigateButton 
+                                                                                            @ to ".."
+                                                            < Route 
+                                                                @ path "about"
+                                                                @ element
+                                                                    h1 
+                                                                        + About
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Home&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles relative navigation from nested index route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/layout/thing"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "layout"
+                                                                < Route 
+                                                                    @ path ":param"
+                                                                    { 
+                                                                        # 
+                                                                            # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to "dest"
+                                                                    < Route 
+                                                                        @ path "dest"
+                                                                        @ element
+                                                                            h1 
+                                                                                + Destination
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Destination&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "with a relative href (relative=path)"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    h1 
+                                                                        + Contacts
+                                                            < Route 
+                                                                @ path "contacts/:id"
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to ".."
+                                                                        @ relative "path"
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from an index routes"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    h1 
+                                                                        + Contacts
+                                                            < Route 
+                                                                @ path "contacts/:id"
+                                                                < Route 
+                                                                    @ index
+                                                                    @ element
+                                                                        < UseNavigateButton 
+                                                                            @ to ".."
+                                                                            @ relative "path"
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside a pathless layout route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    h1 
+                                                                        + Contacts
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ path "contacts/:id"
+                                                                    @ element
+                                                                        < UseNavigateButton 
+                                                                            @ to ".."
+                                                                            @ relative "path"
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    h1 
+                                                                        + Contacts
+                                                            < Route 
+                                                                @ path "contacts/:id"
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ element
+                                                                            < Outlet 
+                                                                        < Route 
+                                                                            @ element
+                                                                                < Outlet 
+                                                                            < Route 
+                                                                                @ index
+                                                                                @ element
+                                                                                    < UseNavigateButton 
+                                                                                        @ to ".."
+                                                                                        @ relative "path"
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ index
+                                                                    @ element
+                                                                        h1 
+                                                                            + Contacts
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ element
+                                                                            < Outlet 
+                                                                        < Route 
+                                                                            @ element
+                                                                                < Outlet 
+                                                                            < Route 
+                                                                                @ path ":id"
+                                                                                @ element
+                                                                                    < UseNavigateButton 
+                                                                                        @ to ".."
+                                                                                        @ relative "path"
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles relative navigation from nested index route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/layout/thing"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "layout"
+                                                                < Route 
+                                                                    @ path ":param"
+                                                                    { 
+                                                                        # 
+                                                                            # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to "dest"
+                                                                                @ relative "path"
+                                                                    < Route 
+                                                                        @ path "dest"
+                                                                        @ element
+                                                                            h1 
+                                                                                + Destination
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Destination&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "preserves search params and hash"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/contacts/1"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "contacts"
+                                                                @ element
+                                                                    < Contacts 
+                                                            < Route 
+                                                                @ path "contacts/:id"
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to "..?foo=bar#hash"
+                                                                        @ relative "path"
+                                    function Contacts
+                                        let 
+                                            { 
+                                                @ search
+                                                @ hash
+                                            = useLocation()
+                                        return 
+                                            < React.Fragment
+                                                h1 
+                                                    + Contacts
+                                                p 
+                                                    + {search}
+                                                    + {hash}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         [&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Contacts&lf;
+                                            + &nbsp;           </h1>,&lf;
+                                            + &nbsp;           <p>&lf;
+                                            + &nbsp;             ?foo=bar&lf;
+                                            + &nbsp;             #hash&lf;
+                                            + &nbsp;           </p>,&lf;
+                                            + &nbsp;         ]&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ it
+                        @ "is not stable across location changes"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < React.Fragment
+                                                                < NavBar 
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "home"
+                                                            @ element
+                                                                h1 
+                                                                    + Home
+                                                        < Route 
+                                                            @ path "about"
+                                                            @ element
+                                                                h1 
+                                                                    + About
+                            function NavBar
+                                let count = React.useRef(0)
+                                let navigate = useNavigate()
+                                _ React.useEffect
+                                    => 
+                                        set count.current++
+                                    [ 
+                                        @ navigate
+                                return 
+                                    nav 
+                                        button 
+                                            @ onClick
+                                                => 
+                                                    _ navigate("/home")
+                                            + Home
+                                        button 
+                                            @ onClick
+                                                => 
+                                                    _ navigate("/about")
+                                            + About
+                                        p 
+                                            { 
+                                                `lit 
+                                                    + count:
+                                                    @ count.current
+                                                    + 
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:0&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                                # @ts-expect-error
+                            let buttons = renderer.root.findAllByType("button")
+                                # @ts-expect-error
+                            _ TestRenderer.act
+                                => 
+                                    _ buttons[1].props.onClick()
+                                        # link to /about
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:1&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           About&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                                # @ts-expect-error
+                            set buttons = renderer.root.findAllByType("button")
+                                # @ts-expect-error
+                            _ TestRenderer.act
+                                => 
+                                    _ buttons[0].props.onClick()
+                                        # link back to /home
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:2&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ describe
+                @ "when relative navigation is handled via @remix-run/router"
+                => 
+                    _ describe
+                        @ "with an absolute href"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < UseNavigateButton 
+                                                                @ to "/about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "with a relative href (relative=route)"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < UseNavigateButton 
+                                                                @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from an index routes"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < UseNavigateButton 
+                                                                    @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside a pathless layout route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ path "home"
+                                                            @ element
+                                                                < UseNavigateButton 
+                                                                    @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path "page"
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to "../../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home/page"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           About&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles parent navigation from inside multiple pathless layout routes"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Home
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path "page"
+                                                                        @ element
+                                                                            < React.Fragment
+                                                                                h2 
+                                                                                    + Page
+                                                                                < UseNavigateButton 
+                                                                                    @ to ".."
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                            { 
+                                                [ initialEntries
+                                                    @ "/home/page"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Home&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles relative navigation from nested index route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "layout"
+                                                        < Route 
+                                                            @ path ":param"
+                                                            { 
+                                                                # 
+                                                                    # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to "dest"
+                                                            < Route 
+                                                                @ path "dest"
+                                                                @ element
+                                                                    h1 
+                                                                        + Destination
+                                            { 
+                                                [ initialEntries
+                                                    @ "/layout/thing"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Destination&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "with a relative href (relative=path)"
+                        => 
+                            _ it
+                                @ "navigates to the correct URL"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        @ element
+                                                            < UseNavigateButton 
+                                                                @ to ".."
+                                                                @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from an index routes"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < UseNavigateButton 
+                                                                    @ to ".."
+                                                                    @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside a pathless layout route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ path "contacts/:id"
+                                                            @ element
+                                                                < UseNavigateButton 
+                                                                    @ to ".."
+                                                                    @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to ".."
+                                                                                @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                h1 
+                                                                    + Contacts
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path ":id"
+                                                                        @ element
+                                                                            < UseNavigateButton 
+                                                                                @ to ".."
+                                                                                @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Contacts&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "handles relative navigation from nested index route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "layout"
+                                                        < Route 
+                                                            @ path ":param"
+                                                            { 
+                                                                # 
+                                                                    # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < UseNavigateButton 
+                                                                        @ to "dest"
+                                                                        @ relative "path"
+                                                            < Route 
+                                                                @ path "dest"
+                                                                @ element
+                                                                    h1 
+                                                                        + Destination
+                                            { 
+                                                [ initialEntries
+                                                    @ "/layout/thing"
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Destination&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "preserves search params and hash"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            _ createRoutesFromElements
+                                                < React.Fragment
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            < Contacts 
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        @ element
+                                                            < UseNavigateButton 
+                                                                @ to "..?foo=bar#hash"
+                                                                @ relative "path"
+                                            { 
+                                                [ initialEntries
+                                                    @ "/contacts/1"
+                                    function Contacts
+                                        let 
+                                            { 
+                                                @ search
+                                                @ hash
+                                            = useLocation()
+                                        return 
+                                            < React.Fragment
+                                                h1 
+                                                    + Contacts
+                                                p 
+                                                    + {search}
+                                                    + {hash}
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         [&lf;
+                                            + &nbsp;           <h1>&lf;
+                                            + &nbsp;             Contacts&lf;
+                                            + &nbsp;           </h1>,&lf;
+                                            + &nbsp;           <p>&lf;
+                                            + &nbsp;             ?foo=bar&lf;
+                                            + &nbsp;             #hash&lf;
+                                            + &nbsp;           </p>,&lf;
+                                            + &nbsp;         ]&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ it
+                        @ "is stable across location changes"
+                        => 
+                            let router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            @ Component
+                                                => 
+                                                    < React.Fragment
+                                                        < NavBar 
+                                                        < Outlet 
+                                            [ children
+                                                { 
+                                                    @ path "home"
+                                                    @ element
+                                                        h1 
+                                                            + Home
+                                                { 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                                    { 
+                                        [ initialEntries
+                                            @ "/home"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < RouterProvider 
+                                                @ router {router}
+                            function NavBar
+                                let count = React.useRef(0)
+                                let navigate = useNavigate()
+                                _ React.useEffect
+                                    => 
+                                        set count.current++
+                                    [ 
+                                        @ navigate
+                                return 
+                                    nav 
+                                        button 
+                                            @ onClick
+                                                => 
+                                                    _ router.navigate("/home")
+                                            + Home
+                                        button 
+                                            @ onClick
+                                                => 
+                                                    _ router.navigate("/about")
+                                            + About
+                                        p 
+                                            { 
+                                                `lit 
+                                                    + count:
+                                                    @ count.current
+                                                    + 
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:0&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                                # @ts-expect-error
+                            let buttons = renderer.root.findAllByType("button")
+                                # @ts-expect-error
+                            _ TestRenderer.act
+                                => 
+                                    _ buttons[1].props.onClick()
+                                        # link to /about
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:1&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           About&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                                # @ts-expect-error
+                            set buttons = renderer.root.findAllByType("button")
+                                # @ts-expect-error
+                            _ TestRenderer.act
+                                => 
+                                    _ buttons[0].props.onClick()
+                                        # link back to /home
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <nav>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             Home&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <button&lf;
+                                    + &nbsp;             onClick={[Function]}&lf;
+                                    + &nbsp;           >&lf;
+                                    + &nbsp;             About&lf;
+                                    + &nbsp;           </button>&lf;
+                                    + &nbsp;           <p>&lf;
+                                    + &nbsp;             count:1&lf;
+                                    + &nbsp;           </p>&lf;
+                                    + &nbsp;         </nav>,&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Home&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ describe
+                @ "with a basename"
+                => 
+                    _ describe
+                        @ "in a MemoryRouter"
+                        => 
+                            _ it
+                                @ "in a root route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/base"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/base"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "/"
+                                                                @ element
+                                                                    < Home 
+                                                            < Route 
+                                                                @ path "/path"
+                                                                @ element
+                                                                    h1 
+                                                                        + Path
+                                    function Home
+                                        let navigate = useNavigate()
+                                        return 
+                                            button 
+                                                @ onClick
+                                                    => 
+                                                        _ navigate("/path")
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <button&lf;
+                                            + &nbsp;           onClick={[Function]}&lf;
+                                            + &nbsp;         />&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Path&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "in a descendant route"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ basename "/base"
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/base"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "/*"
+                                                                @ element
+                                                                    < Routes 
+                                                                        < Route 
+                                                                            @ index
+                                                                            @ element
+                                                                                < Home 
+                                                            < Route 
+                                                                @ path "/path"
+                                                                @ element
+                                                                    h1 
+                                                                        + Path
+                                    function Home
+                                        let navigate = useNavigate()
+                                        return 
+                                            button 
+                                                @ onClick
+                                                    => 
+                                                        _ navigate("/path")
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <button&lf;
+                                            + &nbsp;           onClick={[Function]}&lf;
+                                            + &nbsp;         />&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Path&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                    _ describe
+                        @ "in a RouterProvider"
+                        => 
+                            _ it
+                                @ "in a root route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            [ 
+                                                { 
+                                                    @ path "/"
+                                                    @ Component Home
+                                                { 
+                                                    @ path "/path"
+                                                    @ Component
+                                                        => 
+                                                            h1 
+                                                                + Path
+                                            { 
+                                                @ basename "/base"
+                                                [ initialEntries
+                                                    @ "/base"
+                                    function Home
+                                        let navigate = useNavigate()
+                                        return 
+                                            button 
+                                                @ onClick
+                                                    => 
+                                                        _ navigate("/path")
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <button&lf;
+                                            + &nbsp;           onClick={[Function]}&lf;
+                                            + &nbsp;         />&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Path&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                            _ it
+                                @ "in a descendant route"
+                                => 
+                                    let router
+                                        _ createMemoryRouter
+                                            [ 
+                                                { 
+                                                    @ path "/*"
+                                                    m Component
+                                                        return 
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ index
+                                                                    @ element
+                                                                        < Home 
+                                                { 
+                                                    @ path "/path"
+                                                    @ Component
+                                                        => 
+                                                            h1 
+                                                                + Path
+                                            { 
+                                                @ basename "/base"
+                                                [ initialEntries
+                                                    @ "/base"
+                                    function Home
+                                        let navigate = useNavigate()
+                                        return 
+                                            button 
+                                                @ onClick
+                                                    => 
+                                                        _ navigate("/path")
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < RouterProvider 
+                                                        @ router {router}
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <button&lf;
+                                            + &nbsp;           onClick={[Function]}&lf;
+                                            + &nbsp;         />&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+                                        # @ts-expect-error
+                                    let button = renderer.root.findByType("button")
+                                        # @ts-expect-error
+                                    _ TestRenderer.act
+                                        => 
+                                            _ button.props.onClick()
+                                        # @ts-expect-error
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <h1>&lf;
+                                            + &nbsp;           Path&lf;
+                                            + &nbsp;         </h1>&lf;
+                                            + &nbsp;      &nbsp;
+                                        # @ts-expect-error
+    function UseNavigateButton
+        { 
+            @ to
+            @ relative
+            :{ 
+                :p to
+                    :ref To
+                :p relative
+                    :optional 
+                    :ref RelativeRoutingType
+        let navigate = useNavigate()
+        return 
+            button 
+                @ onClick
+                    => 
+                        _ navigate
+                            @ to
+                            { 
+                                @ relative
+                + Navigate

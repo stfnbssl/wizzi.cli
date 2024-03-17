@@ -1,0 +1,1175 @@
+module
+    :import-type 
+        @ RouteObject
+        from "react-router"
+    import 
+        @ matchRoutes
+        from "react-router"
+    function pickPaths
+        param routes
+            :[ 
+                :ref RouteObject
+        param pathname
+            :string 
+        :return
+            :union 
+                :[ 
+                    :string 
+                :null 
+        let matches = matchRoutes(routes, pathname)
+        return 
+            && 
+                + matches
+                _ matches.map
+                    => 
+                        param match
+                        @expr match.route.path || ""
+    function pickPathsAndParams
+        param routes
+            :[ 
+                :ref RouteObject
+        param pathname
+            :string 
+        let matches = matchRoutes(routes, pathname)
+        return 
+            (
+                && 
+                    + matches
+                    _ matches.map
+                        => 
+                            param match
+                            (
+                                { 
+                                    ... 
+                                        ( 
+                                            iif match.route.index
+                                                then
+                                                    { 
+                                                        @ index match.route.index
+                                                else
+                                                    { 
+                                    ... 
+                                        ( 
+                                            iif match.route.path
+                                                then
+                                                    { 
+                                                        @ path match.route.path
+                                                else
+                                                    { 
+                                    @ params match.params
+    _ describe
+        @ "path matching"
+        => 
+            _ test
+                @ "root vs. dynamic"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/"
+                            { 
+                                @ path ":id"
+                    _ expect(pickPaths(routes, "/")).toEqual
+                        [ 
+                            @ "/"
+                    _ expect(pickPaths(routes, "/123")).toEqual
+                        [ 
+                            @ ":id"
+            _ test
+                @ "precedence of a bunch of routes in a flat route config"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/groups/main/users/me"
+                            { 
+                                @ path "/groups/:groupId/users/me"
+                            { 
+                                @ path "/groups/:groupId/users/:userId"
+                            { 
+                                @ path "/groups/:groupId/users/*"
+                            { 
+                                @ path "/groups/main/users"
+                            { 
+                                @ path "/groups/:groupId/users"
+                            { 
+                                @ path "/groups/main"
+                            { 
+                                @ path "/groups/:groupId"
+                            { 
+                                @ path "/groups"
+                            { 
+                                @ path "/files/*"
+                            { 
+                                @ path "/files"
+                            { 
+                                @ path "/:one/:two/:three/:four/:five"
+                            { 
+                                @ path "/"
+                            { 
+                                @ path "*"
+                    _ expect(pickPaths(routes, "/groups/main/users/me")).toEqual
+                        [ 
+                            @ "/groups/main/users/me"
+                    _ expect(pickPaths(routes, "/groups/other/users/me")).toEqual
+                        [ 
+                            @ "/groups/:groupId/users/me"
+                    _ expect(pickPaths(routes, "/groups/123/users/456")).toEqual
+                        [ 
+                            @ "/groups/:groupId/users/:userId"
+                    _ expect(pickPaths(routes, "/groups/main/users/a/b")).toEqual
+                        [ 
+                            @ "/groups/:groupId/users/*"
+                    _ expect(pickPaths(routes, "/groups/main/users")).toEqual
+                        [ 
+                            @ "/groups/main/users"
+                    _ expect(pickPaths(routes, "/groups/123/users")).toEqual
+                        [ 
+                            @ "/groups/:groupId/users"
+                    _ expect(pickPaths(routes, "/groups/main")).toEqual
+                        [ 
+                            @ "/groups/main"
+                    _ expect(pickPaths(routes, "/groups/123")).toEqual
+                        [ 
+                            @ "/groups/:groupId"
+                    _ expect(pickPaths(routes, "/groups")).toEqual
+                        [ 
+                            @ "/groups"
+                    _ expect(pickPaths(routes, "/files/some/long/path")).toEqual
+                        [ 
+                            @ "/files/*"
+                    _ expect(pickPaths(routes, "/files")).toEqual
+                        [ 
+                            @ "/files"
+                    _ expect(pickPaths(routes, "/one/two/three/four/five")).toEqual
+                        [ 
+                            @ "/:one/:two/:three/:four/:five"
+                    _ expect(pickPaths(routes, "/")).toEqual
+                        [ 
+                            @ "/"
+                    _ expect(pickPaths(routes, "/no/where")).toEqual
+                        [ 
+                            @ "*"
+            _ test
+                @ "precedence of a bunch of routes in a nested route config"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "courses"
+                                [ children
+                                    { 
+                                        @ path ":id"
+                                        [ children
+                                            { 
+                                                @ path "subjects"
+                                    { 
+                                        @ path "new"
+                                    { 
+                                        @ index true
+                                    { 
+                                        @ path "*"
+                            { 
+                                @ path "courses"
+                                [ children
+                                    { 
+                                        @ path "react-fundamentals"
+                                    { 
+                                        @ path "advanced-react"
+                            { 
+                                @ path "/"
+                            { 
+                                @ path "*"
+                    _ expect(pickPaths(routes, "/courses")).toEqual
+                        [ 
+                            @ "courses"
+                            @ ""
+                    _ expect(pickPaths(routes, "/courses/routing")).toEqual
+                        [ 
+                            @ "courses"
+                            @ ":id"
+                    _ expect(pickPaths(routes, "/courses/routing/subjects")).toEqual
+                        [ 
+                            @ "courses"
+                            @ ":id"
+                            @ "subjects"
+                    _ expect(pickPaths(routes, "/courses/new")).toEqual
+                        [ 
+                            @ "courses"
+                            @ "new"
+                    _ expect(pickPaths(routes, "/courses/whatever/path")).toEqual
+                        [ 
+                            @ "courses"
+                            @ "*"
+                    _ expect(pickPaths(routes, "/courses/react-fundamentals")).toEqual
+                        [ 
+                            @ "courses"
+                            @ "react-fundamentals"
+                    _ expect(pickPaths(routes, "/courses/advanced-react")).toEqual
+                        [ 
+                            @ "courses"
+                            @ "advanced-react"
+                    _ expect(pickPaths(routes, "/")).toEqual
+                        [ 
+                            @ "/"
+                    _ expect(pickPaths(routes, "/whatever")).toEqual
+                        [ 
+                            @ "*"
+            _ test
+                @ "nested index route vs sibling static route"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path ":page"
+                                [ children
+                                    { 
+                                        @ index true
+                            { 
+                                @ path "page"
+                    _ expect(pickPaths(routes, "/page")).toEqual
+                        [ 
+                            @ "page"
+            _ test
+                @ "dynamic segments can contain dashes"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path ":foo-bar"
+                            { 
+                                @ path "foo-bar"
+                    _ expect(matchRoutes(routes, "/foo-bar")).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       {&lf;
+                            + &nbsp;         "params": {},&lf;
+                            + &nbsp;         "pathname": "/foo-bar",&lf;
+                            + &nbsp;         "pathnameBase": "/foo-bar",&lf;
+                            + &nbsp;         "route": {&lf;
+                            + &nbsp;           "path": "foo-bar",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;       },&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(matchRoutes(routes, "/whatever")).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       {&lf;
+                            + &nbsp;         "params": {&lf;
+                            + &nbsp;           "foo-bar": "whatever",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;         "pathname": "/whatever",&lf;
+                            + &nbsp;         "pathnameBase": "/whatever",&lf;
+                            + &nbsp;         "route": {&lf;
+                            + &nbsp;           "path": ":foo-bar",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;       },&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+    _ describe
+        @ "path matching with a basename"
+        => 
+            let routes
+                [ 
+                    { 
+                        @ path "/users/:userId"
+                        [ children
+                            { 
+                                @ path "subjects"
+                                [ children
+                                    { 
+                                        @ path ":courseId"
+            _ test
+                @ "top-level route"
+                => 
+                    let location
+                        { 
+                            @ pathname "/users/michael"
+                    let matches = matchRoutes(routes, location)
+                    _ expect(matches).not.toBeNull()
+                    _ expect(matches).toHaveLength(1)
+                    _ expect(matches).toMatchObject
+                        [ 
+                            { 
+                                { params
+                                    @ userId "michael"
+                                @ pathname "/users/michael"
+                                @ pathnameBase "/users/michael"
+            _ test
+                @ "deeply nested route"
+                => 
+                    let location
+                        { 
+                            @ pathname "/users/michael/subjects/react"
+                    let matches = matchRoutes(routes, location)
+                    _ expect(matches).not.toBeNull()
+                    _ expect(matches).toHaveLength(3)
+                    _ expect(matches).toMatchObject
+                        [ 
+                            { 
+                                { params
+                                    @ userId "michael"
+                                    @ courseId "react"
+                                @ pathname "/users/michael"
+                                @ pathnameBase "/users/michael"
+                            { 
+                                { params
+                                    @ userId "michael"
+                                    @ courseId "react"
+                                @ pathname "/users/michael/subjects"
+                                @ pathnameBase "/users/michael/subjects"
+                            { 
+                                { params
+                                    @ userId "michael"
+                                    @ courseId "react"
+                                @ pathname "/users/michael/subjects/react"
+                                @ pathnameBase "/users/michael/subjects/react"
+    _ describe
+        @ "path matching with splats"
+        => 
+            _ describe
+                @ "splat after /"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "users/:id/files/*"
+                    _ it
+                        @ "finds the correct match"
+                        => 
+                            let match
+                                :! 
+                                    _ matchRoutes(routes, "/users/mj/files/secrets.txt")
+                            _ expect(match).not.toBeNull()
+                            _ expect(match[0]).toMatchObject
+                                { 
+                                    { params
+                                        @ id "mj"
+                                        @ "*" "secrets.txt"
+                                    @ pathname "/users/mj/files/secrets.txt"
+                                    @ pathnameBase "/users/mj/files"
+                    _ describe
+                        @ "when other characters come before the /"
+                        => 
+                            _ it
+                                @ "does not find a match"
+                                => 
+                                    let match = matchRoutes(routes, "/users/mj/filesssss/secrets.txt")
+                                    _ expect(match).toBeNull()
+            _ test
+                @ "parent route with splat"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "users/:id/files/*"
+                                [ children
+                                    { 
+                                        @ path "secrets.txt"
+                    let match
+                        :! 
+                            _ matchRoutes(routes, "/users/mj/files/secrets.txt")
+                    _ expect(match).not.toBeNull()
+                    _ expect(match[0]).toMatchObject
+                        { 
+                            { params
+                                @ id "mj"
+                                @ "*" "secrets.txt"
+                            @ pathname "/users/mj/files/secrets.txt"
+                            @ pathnameBase "/users/mj/files"
+                    _ expect(match[1]).toMatchObject
+                        { 
+                            { params
+                                @ id "mj"
+                                @ "*" "secrets.txt"
+                            @ pathname "/users/mj/files/secrets.txt"
+            _ test
+                @ "multiple nested routes"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "*"
+                                [ children
+                                    { 
+                                        @ path "*"
+                                        [ children
+                                            { 
+                                                @ path "*"
+                    let match
+                        :! 
+                            _ matchRoutes(routes, "/one/two/three")
+                    _ expect(match).not.toBeNull()
+                    _ expect(match[0]).toMatchObject
+                        { 
+                            { params
+                                @ "*" "one/two/three"
+                            @ pathname "/one/two/three"
+                            @ pathnameBase "/"
+                    _ expect(match[1]).toMatchObject
+                        { 
+                            { params
+                                @ "*" "one/two/three"
+                            @ pathname "/one/two/three"
+                            @ pathnameBase "/"
+                    _ expect(match[2]).toMatchObject
+                        { 
+                            { params
+                                @ "*" "one/two/three"
+                            @ pathname "/one/two/three"
+                            @ pathnameBase "/"
+            _ test
+                @ "nested routes with partial matching"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/"
+                                [ children
+                                    { 
+                                        @ path "courses"
+                                        [ children
+                                            { 
+                                                @ path "*"
+                    let match = matchRoutes(routes, "/courses/abc")
+                    _ expect(match).not.toBeNull()
+                    _ expect(match).toHaveLength(3)
+                    _ expect
+                        :! match
+                            .[ 0
+                        ._ toMatchObject
+                            { 
+                                { params
+                                    @ "*" "abc"
+                                @ pathname "/"
+                                @ pathnameBase "/"
+                    _ expect
+                        :! match
+                            .[ 1
+                        ._ toMatchObject
+                            { 
+                                { params
+                                    @ "*" "abc"
+                                @ pathname "/courses"
+                                @ pathnameBase "/courses"
+                    _ expect
+                        :! match
+                            .[ 2
+                        ._ toMatchObject
+                            { 
+                                { params
+                                    @ "*" "abc"
+                                @ pathname "/courses/abc"
+                                @ pathnameBase "/courses"
+            _ test
+                @ "does not support partial path matching with named parameters"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/prefix:id"
+                    _ expect(matchRoutes(routes, "/prefix:id")).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       {&lf;
+                            + &nbsp;         "params": {},&lf;
+                            + &nbsp;         "pathname": "/prefix:id",&lf;
+                            + &nbsp;         "pathnameBase": "/prefix:id",&lf;
+                            + &nbsp;         "route": {&lf;
+                            + &nbsp;           "path": "/prefix:id",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;       },&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(matchRoutes(routes, "/prefixabc")).toEqual(null)
+                    _ expect(matchRoutes(routes, "/prefix/abc")).toEqual(null)
+            _ test
+                @ "does not support partial path matching with splat parameters"
+                => 
+                    let consoleWarn
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/prefix*"
+                    _ expect(matchRoutes(routes, "/prefix/abc")).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       {&lf;
+                            + &nbsp;         "params": {&lf;
+                            + &nbsp;           "*": "abc",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;         "pathname": "/prefix/abc",&lf;
+                            + &nbsp;         "pathnameBase": "/prefix",&lf;
+                            + &nbsp;         "route": {&lf;
+                            + &nbsp;           "path": "/prefix*",&lf;
+                            + &nbsp;         },&lf;
+                            + &nbsp;       },&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(matchRoutes(routes, "/prefixabc")).toMatchInlineSnapshot
+                        `lit 
+                            + null
+                        # Should warn on each invocation of matchRoutes
+                    _ expect(consoleWarn.mock.calls).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     [&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "/prefix*" will be treated as if it were "/prefix/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "/prefix/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;       [&lf;
+                            + &nbsp;         "Route path "/prefix*" will be treated as if it were "/prefix/*" because the \`*\` character must always follow a \`/\` in the pattern. To get rid of this warning, please change the route path to "/prefix/*".",&lf;
+                            + &nbsp;       ],&lf;
+                            + &nbsp;     ]&lf;
+                            + &nbsp;  &nbsp;
+                        # Should warn on each invocation of matchRoutes
+                    _ consoleWarn.mockRestore()
+    _ describe
+        @ "path matching with optional segments"
+        => 
+            _ test
+                @ "optional static segment at the start of the path"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/en?/abc"
+                    _ expect(pickPathsAndParams(routes, "/")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/abc")).toEqual
+                        [ 
+                            { 
+                                @ path "/en?/abc"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/en/abc")).toEqual
+                        [ 
+                            { 
+                                @ path "/en?/abc"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/en/abc/bar")).toEqual(null)
+            _ test
+                @ "optional static segment at the end of the path"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/nested/one?/two?"
+                    _ expect(pickPathsAndParams(routes, "/nested")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/one")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/one/two")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/one/two/baz")).toEqual(null)
+            _ test
+                @ "intercalated optional static segments"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/nested/one?/two/three?"
+                    _ expect(pickPathsAndParams(routes, "/nested")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/nested/one")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/nested/two")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two/three?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/one/two")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two/three?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/one/two/three")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/one?/two/three?"
+                                { params
+            _ test
+                @ "optional static segment in nested routes"
+                => 
+                    let nested
+                        [ 
+                            { 
+                                @ path "/en?"
+                                [ children
+                                    { 
+                                        @ path "abc"
+                    _ expect(pickPathsAndParams(nested, "/en/abc")).toEqual
+                        [ 
+                            { 
+                                @ path "/en?"
+                                { params
+                            { 
+                                @ path "abc"
+                                { params
+    _ describe
+        @ "path matching with optional dynamic segments"
+        => 
+            _ test
+                @ "optional params at the start of the path"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/:lang?/abc"
+                    _ expect(pickPathsAndParams(routes, "/")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/abc")).toEqual
+                        [ 
+                            { 
+                                @ path "/:lang?/abc"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/en/abc")).toEqual
+                        [ 
+                            { 
+                                @ path "/:lang?/abc"
+                                { params
+                                    @ lang "en"
+                    _ expect(pickPathsAndParams(routes, "/en/abc/bar")).toEqual(null)
+            _ test
+                @ "optional params at the end of the path"
+                => 
+                    let manualRoutes
+                        [ 
+                            { 
+                                @ path "/nested"
+                            { 
+                                @ path "/nested/:one"
+                            { 
+                                @ path "/nested/:one/:two"
+                            { 
+                                @ path "/nested/:one/:two/:three"
+                            { 
+                                @ path "/nested/:one/:two/:three/:four"
+                    let routes
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                                { params
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested/foo")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one"
+                                { params
+                                    @ one "foo"
+                    _ expect(pickPathsAndParams(routes, "/nested/foo")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                                { params
+                                    @ one "foo"
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested/foo/bar")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one/:two"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/bar")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested/foo/bar/baz")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one/:two/:three"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                                    @ three "baz"
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/bar/baz")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                                    @ three "baz"
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested/foo/bar/baz/qux")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one/:two/:three/:four"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                                    @ three "baz"
+                                    @ four "qux"
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/bar/baz/qux")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/:two?/:three?/:four?"
+                                { params
+                                    @ one "foo"
+                                    @ two "bar"
+                                    @ three "baz"
+                                    @ four "qux"
+                    _ expect(pickPathsAndParams(manualRoutes, "/nested/foo/bar/baz/qux/zod")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/bar/baz/qux/zod")).toEqual(null)
+            _ test
+                @ "intercalated optional params"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "/nested/:one?/two/:three?"
+                    _ expect(pickPathsAndParams(routes, "/nested")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/nested/foo")).toEqual(null)
+                    _ expect(pickPathsAndParams(routes, "/nested/two")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/two/:three?"
+                                { params
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/two")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/two/:three?"
+                                { params
+                                    @ one "foo"
+                    _ expect(pickPathsAndParams(routes, "/nested/foo/two/bar")).toEqual
+                        [ 
+                            { 
+                                @ path "/nested/:one?/two/:three?"
+                                { params
+                                    @ one "foo"
+                                    @ three "bar"
+            _ test
+                @ "consecutive optional dynamic segments in nested routes"
+                => 
+                    let manuallyExploded
+                        [ 
+                            { 
+                                @ path ":one"
+                                [ children
+                                    { 
+                                        @ path ":two"
+                                        [ children
+                                            { 
+                                                @ path ":three"
+                                            { 
+                                                @ path ""
+                                    { 
+                                        @ path ""
+                                        [ children
+                                            { 
+                                                @ path ":three"
+                                            { 
+                                                @ path ""
+                            { 
+                                @ path ""
+                                [ children
+                                    { 
+                                        @ path ":two"
+                                        [ children
+                                            { 
+                                                @ path ":three"
+                                            { 
+                                                @ path ""
+                                    { 
+                                        @ path ""
+                                        [ children
+                                            { 
+                                                @ path ":three"
+                                            { 
+                                                @ path ""
+                    let optional
+                        [ 
+                            { 
+                                @ path ":one?"
+                                [ children
+                                    { 
+                                        @ path ":two?"
+                                        [ children
+                                            { 
+                                                @ path ":three?"
+                    _ expect(pickPathsAndParams(manuallyExploded, "/uno")).toEqual
+                        [ 
+                            { 
+                                @ path ":one"
+                                { params
+                                    @ one "uno"
+                            { 
+                                { params
+                                    @ one "uno"
+                            { 
+                                { params
+                                    @ one "uno"
+                    _ expect(pickPathsAndParams(optional, "/uno")).toEqual
+                        [ 
+                            { 
+                                @ path ":one?"
+                                { params
+                                    @ one "uno"
+                            { 
+                                { params
+                                    @ one "uno"
+                                @ path ":two?"
+                            { 
+                                { params
+                                    @ one "uno"
+                                @ path ":three?"
+                    _ expect(pickPathsAndParams(manuallyExploded, "/uno/dos")).toEqual
+                        [ 
+                            { 
+                                @ path ":one"
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                @ path ":two"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                    _ expect(pickPathsAndParams(optional, "/uno/dos")).toEqual
+                        [ 
+                            { 
+                                @ path ":one?"
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                @ path ":two?"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                @ path ":three?"
+                    _ expect(pickPathsAndParams(manuallyExploded, "/uno/dos/tres")).toEqual
+                        [ 
+                            { 
+                                @ path ":one"
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                                @ path ":two"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                                @ path ":three"
+                    _ expect(pickPathsAndParams(optional, "/uno/dos/tres")).toEqual
+                        [ 
+                            { 
+                                @ path ":one?"
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                                @ path ":two?"
+                            { 
+                                { params
+                                    @ one "uno"
+                                    @ two "dos"
+                                    @ three "tres"
+                                @ path ":three?"
+                    _ expect(pickPathsAndParams(manuallyExploded, "/uno/dos/tres/nope")).toEqual(null)
+                    _ expect(pickPathsAndParams(optional, "/uno/dos/tres/nope")).toEqual(null)
+            _ test
+                @ "consecutive optional static + dynamic segments in nested routes"
+                => 
+                    let nested
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                [ children
+                                    { 
+                                        @ path "three/:four?"
+                                        [ children
+                                            { 
+                                                @ path ":five?"
+                    _ expect(pickPathsAndParams(nested, "/one/dos/three/cuatro/cinco")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                            { 
+                                @ path "three/:four?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                            { 
+                                @ path ":five?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                    _ expect(pickPathsAndParams(nested, "/one/dos/three/cuatro")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                            { 
+                                @ path "three/:four?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                            { 
+                                @ path ":five?"
+                                { params
+                                    @ two "dos"
+                                    @ four "cuatro"
+                    _ expect(pickPathsAndParams(nested, "/one/dos/three")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ two "dos"
+                            { 
+                                @ path "three/:four?"
+                                { params
+                                    @ two "dos"
+                            { 
+                                @ path ":five?"
+                                { params
+                                    @ two "dos"
+                                # Matches into 5 because it's just like if we did path=""
+                    _ expect(pickPathsAndParams(nested, "/one/dos")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ two "dos"
+                    _ expect(pickPathsAndParams(nested, "/one")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                    _ expect(pickPathsAndParams(nested, "/one/three/cuatro/cinco")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                            { 
+                                @ path "three/:four?"
+                                { params
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                            { 
+                                @ path ":five?"
+                                { params
+                                    @ four "cuatro"
+                                    @ five "cinco"
+                    _ expect(pickPathsAndParams(nested, "/one/three/cuatro")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                                    @ four "cuatro"
+                            { 
+                                @ path "three/:four?"
+                                { params
+                                    @ four "cuatro"
+                            { 
+                                @ path ":five?"
+                                { params
+                                    @ four "cuatro"
+                    _ expect(pickPathsAndParams(nested, "/one/three")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+                            { 
+                                @ path "three/:four?"
+                                { params
+                            { 
+                                @ path ":five?"
+                                { params
+                                # Matches into 5 because it's just like if we did path=""
+                    _ expect(pickPathsAndParams(nested, "/one")).toEqual
+                        [ 
+                            { 
+                                @ path "/one/:two?"
+                                { params
+            _ test
+                @ "prefers optional static over optional dynamic segments"
+                => 
+                    let nested
+                        [ 
+                            { 
+                                @ path "/one"
+                                [ children
+                                    { 
+                                        @ path ":param?"
+                                        [ children
+                                            { 
+                                                @ path "three"
+                                    { 
+                                        @ path "two?"
+                                        [ children
+                                            { 
+                                                @ path "three"
+                        # static `two` segment should win
+                    _ expect(pickPathsAndParams(nested, "/one/two/three")).toEqual
+                        [ 
+                            { 
+                                { params
+                                @ path "/one"
+                            { 
+                                { params
+                                @ path "two?"
+                            { 
+                                { params
+                                @ path "three"
+                        # static `two` segment should win
+                        # fall back to param when no static match
+                    _ expect(pickPathsAndParams(nested, "/one/not-two/three")).toEqual
+                        [ 
+                            { 
+                                { params
+                                    @ param "not-two"
+                                @ path "/one"
+                            { 
+                                { params
+                                    @ param "not-two"
+                                @ path ":param?"
+                            { 
+                                { params
+                                    @ param "not-two"
+                                @ path "three"
+                        # fall back to param when no static match
+                        # No optional segment provided - earlier "dup" route should win
+                    _ expect(pickPathsAndParams(nested, "/one/three")).toEqual
+                        [ 
+                            { 
+                                { params
+                                @ path "/one"
+                            { 
+                                { params
+                                @ path ":param?"
+                            { 
+                                { params
+                                @ path "three"
+                        # No optional segment provided - earlier "dup" route should win
+            _ test
+                @ "prefers index routes over optional static segments"
+                => 
+                    let nested
+                        [ 
+                            { 
+                                @ path "/one"
+                                [ children
+                                    { 
+                                        @ path ":param?"
+                                        [ children
+                                            { 
+                                                @ path "three?"
+                                            { 
+                                                @ index true
+                    _ expect(pickPathsAndParams(nested, "/one/two")).toEqual
+                        [ 
+                            { 
+                                { params
+                                    @ param "two"
+                                @ path "/one"
+                            { 
+                                { params
+                                    @ param "two"
+                                @ path ":param?"
+                            { 
+                                @ index true
+                                { params
+                                    @ param "two"
+                    _ expect(pickPathsAndParams(nested, "/one")).toEqual
+                        [ 
+                            { 
+                                { params
+                                @ path "/one"
+                            { 
+                                { params
+                                @ path ":param?"
+                            { 
+                                @ index true
+                                { params
+            _ test
+                @ "prefers index routes over optional dynamic segments"
+                => 
+                    let nested
+                        [ 
+                            { 
+                                @ path "/one"
+                                [ children
+                                    { 
+                                        @ path ":param?"
+                                        [ children
+                                            { 
+                                                @ path ":three?"
+                                            { 
+                                                @ index true
+                    _ expect(pickPathsAndParams(nested, "/one/two")).toEqual
+                        [ 
+                            { 
+                                { params
+                                    @ param "two"
+                                @ path "/one"
+                            { 
+                                { params
+                                    @ param "two"
+                                @ path ":param?"
+                            { 
+                                @ index true
+                                { params
+                                    @ param "two"
+                    _ expect(pickPathsAndParams(nested, "/one")).toEqual
+                        [ 
+                            { 
+                                { params
+                                @ path "/one"
+                            { 
+                                { params
+                                @ path ":param?"
+                            { 
+                                @ index true
+                                { params

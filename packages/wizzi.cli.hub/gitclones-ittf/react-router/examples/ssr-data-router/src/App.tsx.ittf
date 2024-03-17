@@ -1,0 +1,153 @@
+module
+    :import-type 
+        @ RouteObject
+        from "react-router-dom"
+    import 
+        @ Outlet
+        @ Link
+        @ useLoaderData
+        @ redirect
+        from "react-router-dom"
+    export 
+        const routes
+            :[ 
+                :ref RouteObject
+            =
+                [ 
+                    { 
+                        @ path "/"
+                        @ element
+                            < Layout 
+                        [ children
+                            { 
+                                @ index true
+                                @ loader homeLoader
+                                @ element
+                                    < Home 
+                            { 
+                                @ path "about"
+                                @ element
+                                    < About 
+                            { 
+                                @ path "dashboard"
+                                @ loader dashboardLoader
+                                @ element
+                                    < Dashboard 
+                            { 
+                                @ path "lazy"
+                                @ lazy
+                                    => 
+                                        _ import
+                                            @ "./lazy"
+                            { 
+                                @ path "redirect"
+                                @ loader redirectLoader
+                            { 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+    function Layout
+        return 
+            div 
+                h1 
+                    + Data Router Server Rendering Example
+                p 
+                    + If you check out the HTML source of this page, you'll notice that it&lf;        already contains the HTML markup of the app that was sent from the&lf;        server, and all the loader data was pre-fetched!
+                p 
+                    + This is great for search engines that need to index this page. It's also&lf;        great for users because server-rendered pages tend to load more quickly&lf;        on mobile devices and over slow networks.
+                p 
+                    + Another thing to notice is that when you click one of the links below&lf;        and navigate to a different URL, then hit the refresh button on your&lf;        browser, the server is able to generate the HTML markup for that page as&lf;        well because you're using React Router on the server. This creates a&lf;        seamless experience both for your users navigating around your site and&lf;        for developers on your team who get to use the same routing library in&lf;        both places.
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/about"
+                                + About
+                        li 
+                            < Link 
+                                @ to "/dashboard"
+                                + Dashboard
+                        li 
+                            < Link 
+                                @ to "/lazy"
+                                + Lazy
+                        li 
+                            < Link 
+                                @ to "/redirect"
+                                + Redirect to Home
+                        li 
+                            < Link 
+                                @ to "/nothing-here"
+                                + Nothing Here
+                hr 
+                < Outlet 
+    const sleep
+        => 
+            param n = 500
+            new Promise
+                => 
+                    param r
+                    _ setTimeout(r, n)
+    const rand
+        => 
+            _ Math.round(Math.random() * 100)
+    async-function homeLoader
+        await 
+            _ sleep()
+        return 
+            { 
+                @ data
+                    `lit 
+                        + Home loader - random value&nbsp;
+                        _ rand()
+                        + 
+    function Home
+        let data = useLoaderData()
+        return 
+            div 
+                h2 
+                    + Home
+                p 
+                    + Loader Data:
+                    + {data.data}
+    function About
+        return 
+            div 
+                h2 
+                    + About
+    async-function dashboardLoader
+        await 
+            _ sleep()
+        return 
+            { 
+                @ data
+                    `lit 
+                        + Dashboard loader - random value&nbsp;
+                        _ rand()
+                        + 
+    function Dashboard
+        let data = useLoaderData()
+        return 
+            div 
+                h2 
+                    + Dashboard
+                p 
+                    + Loader Data:
+                    + {data.data}
+    async-function redirectLoader
+        await 
+            _ sleep()
+        return redirect("/")
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

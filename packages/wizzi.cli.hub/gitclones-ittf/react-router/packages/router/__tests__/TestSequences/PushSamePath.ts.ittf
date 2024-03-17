@@ -1,0 +1,39 @@
+module
+    :import-type 
+        @ History
+        from "../../history"
+    export-default 
+        async-function PushSamePath
+            param history
+                :ref History
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/"
+            _ history.push("/home")
+            _ expect(history.action).toBe("PUSH")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"
+            _ history.push("/home")
+            _ expect(history.action).toBe("PUSH")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"
+                # JSDom doesn't fire the listener synchronously :(
+            let promise
+                new Promise
+                    => 
+                        param resolve
+                        let unlisten
+                            _ history.listen
+                                => 
+                                    _ unlisten()
+                                    _ resolve(null)
+                # JSDom doesn't fire the listener synchronously :(
+            _ history.go(-1)
+            await 
+                @id promise
+            _ expect(history.action).toBe("POP")
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/home"

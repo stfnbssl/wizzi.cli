@@ -1,0 +1,368 @@
+module
+    kind react
+    const path = require("path")
+    const babel = require("@rollup/plugin-babel").default
+    const copy = require("rollup-plugin-copy")
+    const extensions = require("rollup-plugin-extensions")
+    const prettier = require("rollup-plugin-prettier")
+    const replace = require("@rollup/plugin-replace")
+    const 
+        { 
+            @ terser
+        = require("rollup-plugin-terser")
+    const typescript = require("@rollup/plugin-typescript")
+    const 
+        { 
+            @ createBanner
+            @ getBuildDirectories
+            @ PRETTY
+        = require("../../rollup.utils")
+    const 
+        { 
+            @ name
+            @ version
+        = require("./package.json")
+    set module.exports =
+        function rollup
+            const 
+                { 
+                    @ ROOT_DIR
+                    @ SOURCE_DIR
+                    @ OUTPUT_DIR
+                = getBuildDirectories(name)
+                # JS modules for bundlers
+            const modules
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /index.js
+                            @ format "esm"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router", version)
+                        [ external
+                            @ "@remix-run/router"
+                            @ "react"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ copy
+                                { 
+                                    [ targets
+                                        { 
+                                            @ src path.join(ROOT_DIR, "LICENSE.md")
+                                            @ dest SOURCE_DIR
+                                    @ verbose true
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # JS modules for bundlers
+                # JS modules for <script type=module>
+            const webModules
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /react-router.development.js
+                            @ format "esm"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router", version)
+                        [ external
+                            @ "@remix-run/router"
+                            @ "react"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        @ "@babel/preset-modules"
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ typescript
+                                { 
+                                    @ tsconfig path.join(__dirname, "tsconfig.json")
+                                    [ exclude
+                                        @ "__tests__"
+                                    @ noEmitOnError true
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("development")
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /react-router.production.min.js
+                            @ format "esm"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router", version)
+                        [ external
+                            @ "@remix-run/router"
+                            @ "react"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-modules"
+                                            { 
+                                                @ loose true
+                                                    # Don't spoof `.name` for Arrow Functions, which breaks when minified anyway.
+                                        [ 
+                                            @ "@babel/preset-react"
+                                            { 
+                                                @ useBuiltIns true
+                                                    # Compile JSX Spread to Object.assign(), which is reliable in ESM browsers.
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("production")
+                            _ terser
+                                { 
+                                    @ ecma 8
+                                    @ safari10 true
+                                # compiler(),
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # JS modules for <script type=module>
+                # UMD modules for <script> tags and CommonJS (node)
+            const globals
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /umd/react-router.development.js
+                            @ format "umd"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router", version)
+                            { globals
+                                @ "@remix-run/router" "RemixRouter"
+                                @ react "React"
+                            @ name "ReactRouter"
+                        [ external
+                            @ "@remix-run/router"
+                            @ "react"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("development")
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /index.ts
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /umd/react-router.production.min.js
+                            @ format "umd"
+                            @ sourcemap !PRETTY
+                            @ banner createBanner("React Router", version)
+                            { globals
+                                @ "@remix-run/router" "RemixRouter"
+                                @ react "React"
+                            @ name "ReactRouter"
+                        [ external
+                            @ "@remix-run/router"
+                            @ "react"
+                        [ plugins
+                            _ extensions
+                                { 
+                                    [ extensions
+                                        @ ".tsx"
+                                        @ ".ts"
+                            _ babel
+                                { 
+                                    @ babelHelpers "bundled"
+                                    @ exclude /node_modules/
+                                    [ presets
+                                        [ 
+                                            @ "@babel/preset-env"
+                                            { 
+                                                @ loose true
+                                        @ "@babel/preset-react"
+                                        @ "@babel/preset-typescript"
+                                    [ plugins
+                                        @ "babel-plugin-dev-expression"
+                                    [ extensions
+                                        @ ".ts"
+                                        @ ".tsx"
+                            _ replace
+                                { 
+                                    @ preventAssignment true
+                                    { values
+                                        @ "process.env.NODE_ENV" JSON.stringify("production")
+                            _ terser()
+                                # compiler(),
+                            ._ concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # UMD modules for <script> tags and CommonJS (node)
+                # Node entry points
+            const node
+                [ 
+                    { 
+                        @ input
+                            `lit 
+                                + 
+                                @ SOURCE_DIR
+                                + /node-main.js
+                        { output
+                            @ file
+                                `lit 
+                                    + 
+                                    @ OUTPUT_DIR
+                                    + /main.js
+                            @ format "cjs"
+                            @ banner createBanner("React Router", version)
+                        @ plugins
+                            _ [].concat
+                                iif PRETTY
+                                    then
+                                        _ prettier
+                                            { 
+                                                @ parser "babel"
+                                    else []
+                # Node entry points
+            return 
+                [ 
+                    @ ...modules
+                    @ ...webModules
+                    @ ...globals
+                    @ ...node
+        #
+            # *
+            # * @typedef {import('rollup').InputOptions} RollupInputOptions
+            # * @typedef {import('rollup').OutputOptions} RollupOutputOptions
+            # * @typedef {import('rollup').RollupOptions} RollupOptions
+            # * @typedef {import('rollup').Plugin} RollupPlugin
+            # 

@@ -1,0 +1,1637 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Navigate
+        @ Outlet
+        @ Routes
+        @ Route
+        @ RouterProvider
+        @ createMemoryRouter
+        @ useLocation
+        from "react-router"
+    import 
+        @ render
+        @ screen
+        @ waitFor
+        from "@testing-library/react"
+    import getHtml from "../../react-router/__tests__/utils/getHtml"
+    _ describe
+        @ "<Navigate>"
+        => 
+            _ describe
+                @ "with an absolute href"
+                => 
+                    _ it
+                        @ "navigates to the correct URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Navigate 
+                                                                @ to "/about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ describe
+                @ "with a relative href (relative=route)"
+                => 
+                    _ it
+                        @ "navigates to the correct URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Navigate 
+                                                                @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from an index routes"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < Navigate 
+                                                                    @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside a pathless layout route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ path "home"
+                                                            @ element
+                                                                < Navigate 
+                                                                    @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < Navigate 
+                                                                                @ to "../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/page"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path "page"
+                                                                        @ element
+                                                                            < Navigate 
+                                                                                @ to "../../about"
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         About&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles parent navigation from inside multiple pathless layout routes"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/page"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Home
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path "page"
+                                                                        @ element
+                                                                            < React.Fragment
+                                                                                h2 
+                                                                                    + Page
+                                                                                < Navigate 
+                                                                                    @ to ".."
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            h1 
+                                                                + About
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Home&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles relative navigation from nested index route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/layout/thing"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "layout"
+                                                        < Route 
+                                                            @ path ":param"
+                                                            { 
+                                                                # 
+                                                                    # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < Navigate 
+                                                                        @ to "dest"
+                                                            < Route 
+                                                                @ path "dest"
+                                                                @ element
+                                                                    h1 
+                                                                        + Destination
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Destination&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ describe
+                @ "with a relative href (relative=path)"
+                => 
+                    _ it
+                        @ "navigates to the correct URL"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        @ element
+                                                            < Navigate 
+                                                                @ to ".."
+                                                                @ relative "path"
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Contacts&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from an index routes"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                < Navigate 
+                                                                    @ to ".."
+                                                                    @ relative "path"
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Contacts&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside a pathless layout route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ path "contacts/:id"
+                                                            @ element
+                                                                < Navigate 
+                                                                    @ to ".."
+                                                                    @ relative "path"
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Contacts&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside multiple pathless layout routes + index route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            h1 
+                                                                + Contacts
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ index
+                                                                        @ element
+                                                                            < Navigate 
+                                                                                @ to ".."
+                                                                                @ relative "path"
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Contacts&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles upward navigation from inside multiple pathless layout routes + path route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            < Outlet 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                h1 
+                                                                    + Contacts
+                                                        < Route 
+                                                            @ element
+                                                                < Outlet 
+                                                            < Route 
+                                                                @ element
+                                                                    < Outlet 
+                                                                < Route 
+                                                                    @ element
+                                                                        < Outlet 
+                                                                    < Route 
+                                                                        @ path ":id"
+                                                                        @ element
+                                                                            < Navigate 
+                                                                                @ to ".."
+                                                                                @ relative "path"
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Contacts&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "handles relative navigation from nested index route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/layout/thing"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "layout"
+                                                        < Route 
+                                                            @ path ":param"
+                                                            { 
+                                                                # 
+                                                                    # redirect /layout/:param/ index routes to /layout/:param/dest
+                                                            < Route 
+                                                                @ index
+                                                                @ element
+                                                                    < Navigate 
+                                                                        @ to "dest"
+                                                                        @ relative "path"
+                                                            < Route 
+                                                                @ path "dest"
+                                                                @ element
+                                                                    h1 
+                                                                        + Destination
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Destination&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+                    _ it
+                        @ "preserves search params and hash"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts"
+                                                        @ element
+                                                            < Contacts 
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        @ element
+                                                            < Navigate 
+                                                                @ to "..?foo=bar#hash"
+                                                                @ relative "path"
+                            function Contacts
+                                let 
+                                    { 
+                                        @ search
+                                        @ hash
+                                    = useLocation()
+                                return 
+                                    < React.Fragment
+                                        h1 
+                                            + Contacts
+                                        p 
+                                            + {search}
+                                            + {hash}
+                                # @ts-expect-error
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       [&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Contacts&lf;
+                                    + &nbsp;         </h1>,&lf;
+                                    + &nbsp;         <p>&lf;
+                                    + &nbsp;           ?foo=bar&lf;
+                                    + &nbsp;           #hash&lf;
+                                    + &nbsp;         </p>,&lf;
+                                    + &nbsp;       ]&lf;
+                                    + &nbsp;    &nbsp;
+                                # @ts-expect-error
+            _ it
+                @ "does not cause navigation loops in data routers"
+                async=> 
+                    let router
+                        _ createMemoryRouter
+                            [ 
+                                { 
+                                    @ path "home"
+                                    @ element
+                                        < Navigate 
+                                            @ to "/about"
+                                { 
+                                    @ path "about"
+                                    @ element
+                                        h1 
+                                            + About
+                                    @ loader
+                                        => 
+                                            new Promise
+                                                => 
+                                                    param r
+                                                    _ setTimeout
+                                                        => 
+                                                            _ r("ok")
+                                                        @ 10
+                            { 
+                                [ initialEntries
+                                    @ "/home"
+                        # Note this is not the idiomatic way to do these redirects, they should
+                        # be done with loaders in data routers, but this is a likely scenario to
+                        # encounter while migrating to a data router
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < React.StrictMode 
+                                    < RouterProvider 
+                                        @ router {router}
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("About")
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     "<div>&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         About&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;     </div>"&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "handles sync relative navigations in StrictMode using a data router"
+                async=> 
+                    const router
+                        _ createMemoryRouter
+                            [ 
+                                { 
+                                    @ path "/"
+                                    [ children
+                                        { 
+                                            @ index true
+                                            @ Component
+                                                => 
+                                                    < Navigate 
+                                                        @ to {"b"}
+                                                        @ replace
+                                                # This is a relative navigation from the current location of /a.
+                                                # Ensure we don't route from / -> /b -> /b/b
+                                        { 
+                                            @ path "b"
+                                            @ element
+                                                h1 
+                                                    + Page B
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < React.StrictMode 
+                                    < RouterProvider 
+                                        @ router {router}
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Page B")
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     "<div>&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Page B&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;     </div>"&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "handles async relative navigations in StrictMode using a data router"
+                async=> 
+                    const router
+                        _ createMemoryRouter
+                            [ 
+                                { 
+                                    @ path "/a"
+                                    [ children
+                                        { 
+                                            @ index true
+                                            @ Component
+                                                => 
+                                                    < Navigate 
+                                                        @ to {"b"}
+                                                        @ replace
+                                                # This is a relative navigation from the current location of /a.
+                                                # Ensure we don't route from /a -> /a/b -> /a/b/b
+                                        { 
+                                            @ path "b"
+                                            m loader
+                                                async
+                                                await 
+                                                    new Promise
+                                                        => 
+                                                            param r
+                                                            _ setTimeout(r, 10)
+                                                return null
+                                            @ element
+                                                h1 
+                                                    + Page B
+                            { 
+                                [ initialEntries
+                                    @ "/a"
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < React.StrictMode 
+                                    < RouterProvider 
+                                        @ router {router}
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Page B")
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     "<div>&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Page B&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;     </div>"&lf;
+                            + &nbsp;  &nbsp;
+    _ describe
+        @ "concurrent mode"
+        => 
+            _ describe
+                @ "v7_startTransition = false"
+                => 
+                    _ it
+                        @ "handles setState in render in StrictMode using a data router (sync loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        if count === 0
+                                                            _ setCount(1)
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(2)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                    _ it
+                        @ "handles setState in effect in StrictMode using a data router (sync loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        _ React.useEffect
+                                                            => 
+                                                                if count === 0
+                                                                    _ setCount(1)
+                                                            [ 
+                                                                @ count
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         0&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(2)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 0
+                                    @ 0
+                    _ it
+                        @ "handles setState in render in StrictMode using a data router (async loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        if count === 0
+                                                            _ setCount(1)
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m loader
+                                                        async
+                                                        await 
+                                                            new Promise
+                                                                => 
+                                                                    param r
+                                                                    _ setTimeout(r, 10)
+                                                        return null
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(2)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                                # /a/b rendered with the same state value both times
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                                # /a/b rendered with the same state value both times
+                    _ it
+                        @ "handles setState in effect in StrictMode using a data router (async loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                            # When state managed by react and changes during render, we'll
+                                                            # only "see" the value from the first pass through here in our
+                                                            # effects
+                                                        _ React.useEffect
+                                                            => 
+                                                                if count === 0
+                                                                    _ setCount(1)
+                                                            [ 
+                                                                @ count
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m loader
+                                                        async
+                                                        await 
+                                                            new Promise
+                                                                => 
+                                                                    param r
+                                                                    _ setTimeout(r, 10)
+                                                        return null
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(3)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                                # StrictMode only applies the double-effect execution on component mount,
+                                # not component update
+                            _ expect(navigateSpy.mock.calls[2]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                                # StrictMode only applies the double-effect execution on component mount,
+                                # not component update
+                                # /a/b rendered with the latest state value both times
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                                # /a/b rendered with the latest state value both times
+            _ describe
+                @ "v7_startTransition = true"
+                => 
+                    _ it
+                        @ "handles setState in render in StrictMode using a data router (sync loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        if count === 0
+                                                            _ setCount(1)
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                                                @ future
+                                                    { 
+                                                        @ v7_startTransition true
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(2)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                    _ it
+                        @ "handles setState in effect in StrictMode using a data router (sync loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        _ React.useEffect
+                                                            => 
+                                                                if count === 0
+                                                                    _ setCount(1)
+                                                            [ 
+                                                                @ count
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                                                @ future
+                                                    { 
+                                                        @ v7_startTransition true
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(3)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(navigateSpy.mock.calls[2]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                    _ it
+                        @ "handles setState in render in StrictMode using a data router (async loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                        if count === 0
+                                                            _ setCount(1)
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m loader
+                                                        async
+                                                        await 
+                                                            new Promise
+                                                                => 
+                                                                    param r
+                                                                    _ setTimeout(r, 10)
+                                                        return null
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                                                @ future
+                                                    { 
+                                                        @ v7_startTransition true
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(2)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                                # /a/b rendered with the same state value both times
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                                # /a/b rendered with the same state value both times
+                    _ it
+                        @ "handles setState in effect in StrictMode using a data router (async loader)"
+                        async=> 
+                            let renders
+                                :[ 
+                                    :number 
+                                = []
+                            const router
+                                _ createMemoryRouter
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    m Component
+                                                        let [count, setCount] = React.useState(0)
+                                                            # When state managed by react and changes during render, we'll
+                                                            # only "see" the value from the first pass through here in our
+                                                            # effects
+                                                        _ React.useEffect
+                                                            => 
+                                                                if count === 0
+                                                                    _ setCount(1)
+                                                            [ 
+                                                                @ count
+                                                        return 
+                                                            < Navigate 
+                                                                @ to {"b"}
+                                                                @ replace
+                                                                @ state
+                                                                    { 
+                                                                        @ count
+                                                { 
+                                                    @ path "b"
+                                                    m loader
+                                                        async
+                                                        await 
+                                                            new Promise
+                                                                => 
+                                                                    param r
+                                                                    _ setTimeout(r, 10)
+                                                        return null
+                                                    m Component
+                                                        let 
+                                                            { 
+                                                                @ state
+                                                            =
+                                                                _ useLocation()
+                                                                    :as 
+                                                                        :{ 
+                                                                            :p state
+                                                                                :{ 
+                                                                                    :p count
+                                                                                        :number 
+                                                        _ renders.push(state.count)
+                                                        return 
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Page B
+                                                                p 
+                                                                    + {state.count}
+                            let navigateSpy = jest.spyOn(router, "navigate")
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < React.StrictMode 
+                                            < RouterProvider 
+                                                @ router {router}
+                                                @ future
+                                                    { 
+                                                        @ v7_startTransition true
+                            await 
+                                _ waitFor
+                                    => 
+                                        _ screen.getByText("Page B")
+                            _ expect(getHtml(container)).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "<div>&lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Page B&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;       <p>&lf;
+                                    + &nbsp;         1&lf;
+                                    + &nbsp;       </p>&lf;
+                                    + &nbsp;     </div>"&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(navigateSpy).toHaveBeenCalledTimes(3)
+                            _ expect(navigateSpy.mock.calls[0]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                            _ expect(navigateSpy.mock.calls[1]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 0
+                                # StrictMode only applies the double-effect execution on component mount,
+                                # not component update
+                            _ expect(navigateSpy.mock.calls[2]).toMatchObject
+                                [ 
+                                    { 
+                                        @ pathname "/b"
+                                    { 
+                                        { state
+                                            @ count 1
+                                # StrictMode only applies the double-effect execution on component mount,
+                                # not component update
+                                # /a/b rendered with the latest state value both times
+                            _ expect(renders).toEqual
+                                [ 
+                                    @ 1
+                                    @ 1
+                                # /a/b rendered with the latest state value both times

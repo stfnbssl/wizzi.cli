@@ -1,0 +1,404 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ AgnosticIndexRouteObject
+        @ AgnosticNonIndexRouteObject
+        @ AgnosticRouteMatch
+        @ History
+        @ LazyRouteFunction
+        @ Location
+        @ Action
+            as NavigationType
+        @ RelativeRoutingType
+        @ Router
+        @ StaticHandlerContext
+        @ To
+        @ TrackedPromise
+        from "@remix-run/router"
+        # Create react-specific types from the agnostic types in @remix-run/router to
+        # export from react-router
+    export 
+        :interface IndexRouteObject
+            :p caseSensitive
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "caseSensitive"
+            :p path
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "path"
+            :p id
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "id"
+            :p loader
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "loader"
+            :p action
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "action"
+            :p hasErrorBoundary
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "hasErrorBoundary"
+            :p shouldRevalidate
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "shouldRevalidate"
+            :p handle
+                :optional 
+                :[] 
+                    :ref AgnosticIndexRouteObject
+                    :literal "handle"
+            :p index
+                :literal true
+            :p children
+                :optional 
+                :undefined 
+            :p element
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p hydrateFallbackElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p errorElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p Component
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p HydrateFallback
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p ErrorBoundary
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p lazy
+                :optional 
+                :ref LazyRouteFunction
+                    :param 
+                        :ref RouteObject
+        # Create react-specific types from the agnostic types in @remix-run/router to
+        # export from react-router
+    export 
+        :interface NonIndexRouteObject
+            :p caseSensitive
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "caseSensitive"
+            :p path
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "path"
+            :p id
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "id"
+            :p loader
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "loader"
+            :p action
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "action"
+            :p hasErrorBoundary
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "hasErrorBoundary"
+            :p shouldRevalidate
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "shouldRevalidate"
+            :p handle
+                :optional 
+                :[] 
+                    :ref AgnosticNonIndexRouteObject
+                    :literal "handle"
+            :p index
+                :optional 
+                :literal false
+            :p children
+                :optional 
+                :[ 
+                    :ref RouteObject
+            :p element
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p hydrateFallbackElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p errorElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p Component
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p HydrateFallback
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p ErrorBoundary
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p lazy
+                :optional 
+                :ref LazyRouteFunction
+                    :param 
+                        :ref RouteObject
+    export 
+        :type RouteObject
+            :union 
+                :ref IndexRouteObject
+                :ref NonIndexRouteObject
+    export 
+        :type DataRouteObject
+            :intersect 
+                :ref RouteObject
+                :{ 
+                    :p children
+                        :optional 
+                        :[ 
+                            :ref DataRouteObject
+                    :p id
+                        :string 
+    export 
+        :interface RouteMatch
+            :< ParamKey
+                :string 
+            :< RouteObjectType
+                :ref RouteObject
+            :extends AgnosticRouteMatch
+                :param 
+                    :ref ParamKey
+                :param 
+                    :ref RouteObjectType
+    export 
+        :interface DataRouteMatch
+            :extends RouteMatch
+                :param string
+                :param 
+                    :ref DataRouteObject
+    export 
+        :interface DataRouterContextObject
+            :extends Omit
+                :param 
+                    :ref NavigationContextObject
+                :param 
+                    :literal "future"
+            :p router
+                :ref Router
+            :p staticContext
+                :optional 
+                :ref StaticHandlerContext
+    export 
+        const DataRouterContext
+            _ React.createContext
+                :param 
+                    :union 
+                        :ref DataRouterContextObject
+                        :null 
+                @ null
+    if __DEV__
+        set DataRouterContext.displayName = "DataRouter"
+    export 
+        const DataRouterStateContext
+            _ React.createContext
+                :param 
+                    :union 
+                        :[] 
+                            :ref Router
+                            :literal "state"
+                        :null 
+                @ null
+    if __DEV__
+        set DataRouterStateContext.displayName = "DataRouterState"
+    export 
+        const AwaitContext
+            _ React.createContext
+                :param 
+                    :union 
+                        :ref TrackedPromise
+                        :null 
+                @ null
+    if __DEV__
+        set AwaitContext.displayName = "Await"
+    export 
+        :interface NavigateOptions
+            :p replace
+                :optional 
+                :boolean 
+            :p state
+                :optional 
+                :any 
+            :p preventScrollReset
+                :optional 
+                :boolean 
+            :p relative
+                :optional 
+                :ref RelativeRoutingType
+            :p unstable_flushSync
+                :optional 
+                :boolean 
+            :p unstable_viewTransition
+                :optional 
+                :boolean 
+        #
+            # *
+            # * A Navigator is a "location changer"; it's how you get to different locations.
+            # *
+            # * Every history instance conforms to the Navigator interface, but the
+            # * distinction is useful primarily when it comes to the low-level `<Router>` API
+            # * where both the location and a navigator must be provided separately in order
+            # * to avoid "tearing" that may occur in a suspense-enabled app if the action
+            # * and/or location were to be read directly from the history instance.
+            # 
+    export 
+        :interface Navigator
+            :p createHref
+                :[] 
+                    :ref History
+                    :literal "createHref"
+                # Optional for backwards-compat with Router/HistoryRouter usage (edge case)
+            :p encodeLocation
+                :optional 
+                :[] 
+                    :ref History
+                    :literal "encodeLocation"
+                # Optional for backwards-compat with Router/HistoryRouter usage (edge case)
+            :p go
+                :[] 
+                    :ref History
+                    :literal "go"
+            :m push
+                :void 
+                param to
+                    :ref To
+                param state
+                    :any 
+                    :optional 
+                param opts
+                    :ref NavigateOptions
+                    :optional 
+            :m replace
+                :void 
+                param to
+                    :ref To
+                param state
+                    :any 
+                    :optional 
+                param opts
+                    :ref NavigateOptions
+                    :optional 
+        #
+            # *
+            # * A Navigator is a "location changer"; it's how you get to different locations.
+            # *
+            # * Every history instance conforms to the Navigator interface, but the
+            # * distinction is useful primarily when it comes to the low-level `<Router>` API
+            # * where both the location and a navigator must be provided separately in order
+            # * to avoid "tearing" that may occur in a suspense-enabled app if the action
+            # * and/or location were to be read directly from the history instance.
+            # 
+    :interface NavigationContextObject
+        :p basename
+            :string 
+        :p navigator
+            :ref Navigator
+        :p static
+            :boolean 
+        :p future
+            :{ 
+                :p v7_relativeSplatPath
+                    :boolean 
+    export 
+        const NavigationContext
+            _ React.createContext
+                :param 
+                    :ref NavigationContextObject
+                :! null
+    if __DEV__
+        set NavigationContext.displayName = "Navigation"
+    :interface LocationContextObject
+        :p location
+            :ref Location
+        :p navigationType
+            :ref NavigationType
+    export 
+        const LocationContext
+            _ React.createContext
+                :param 
+                    :ref LocationContextObject
+                :! null
+    if __DEV__
+        set LocationContext.displayName = "Location"
+    export 
+        :interface RouteContextObject
+            :p outlet
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            :p matches
+                :[ 
+                    :ref RouteMatch
+            :p isDataRoute
+                :boolean 
+    export 
+        const RouteContext
+            _ React.createContext
+                :param 
+                    :ref RouteContextObject
+                { 
+                    @ outlet null
+                    @ matches []
+                    @ isDataRoute false
+    if __DEV__
+        set RouteContext.displayName = "Route"
+    export 
+        const RouteErrorContext
+            _ React.createContext
+                :param any
+                @ null
+    if __DEV__
+        set RouteErrorContext.displayName = "RouteError"

@@ -1,0 +1,236 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    :import-type 
+        @ RouteObject
+        from "react-router"
+    import 
+        @ MemoryRouter
+        @ Outlet
+        @ Routes
+        @ Route
+        @ useParams
+        @ useRoutes
+        from "react-router"
+    _ describe
+        @ "route matching"
+        => 
+            function describeRouteMatching
+                param routes
+                    :ref React.ReactNode
+                let testPaths
+                    [ 
+                        @ "/courses"
+                        @ "/courses/routing"
+                        @ "/courses/routing/grades"
+                        @ "/courses/new"
+                        @ "/courses/not/found"
+                        @ "/courses/react-fundamentals"
+                        @ "/courses/advanced-react"
+                        @ "/"
+                        @ "/not-found"
+                _ testPaths.forEach
+                    => 
+                        param path
+                        _ it
+                            `lit 
+                                + renders the right elements at&nbsp;
+                                @ path
+                                + 
+                            => 
+                                let renderer
+                                    :ref TestRenderer.ReactTestRenderer
+                                _ TestRenderer.act
+                                    => 
+                                        set renderer =
+                                            _ TestRenderer.create
+                                                < MemoryRouter 
+                                                    @ initialEntries
+                                                        [ 
+                                                            @ path
+                                                    @ children {routes}
+                                _ expect(renderer.toJSON()).toMatchSnapshot()
+            _ describe
+                @ "using a route config object"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "courses"
+                                @ element
+                                    < Courses 
+                                [ children
+                                    { 
+                                        @ index true
+                                        @ element
+                                            < CoursesIndex 
+                                    { 
+                                        @ path ":id"
+                                        @ element
+                                            < Course 
+                                        [ children
+                                            { 
+                                                @ path "grades"
+                                                @ element
+                                                    < CourseGrades 
+                                    { 
+                                        @ path "new"
+                                        @ element
+                                            < NewCourse 
+                                    { 
+                                        @ path "*"
+                                        @ element
+                                            < CoursesNotFound 
+                            { 
+                                @ path "courses"
+                                @ element
+                                    < Landing 
+                                [ children
+                                    { 
+                                        @ path "react-fundamentals"
+                                        @ element
+                                            < ReactFundamentals 
+                                    { 
+                                        @ path "advanced-react"
+                                        @ element
+                                            < AdvancedReact 
+                                    { 
+                                        @ path "*"
+                                        @ element
+                                            < NeverRender 
+                            { 
+                                @ index true
+                                @ element
+                                    < Home 
+                            { 
+                                @ path "*"
+                                @ element
+                                    < NotFound 
+                    function RoutesRenderer
+                        { 
+                            @ routes
+                            :{ 
+                                :p routes
+                                    :[ 
+                                        :ref RouteObject
+                        return useRoutes(routes)
+                    _ describeRouteMatching
+                        < RoutesRenderer 
+                            @ routes {routes}
+            _ describe
+                @ "using <Routes> with <Route> elements"
+                => 
+                    let routes
+                        < Routes 
+                            < Route 
+                                @ path "courses"
+                                @ element
+                                    < Courses 
+                                < Route 
+                                    @ index
+                                    @ element
+                                        < CoursesIndex 
+                                < Route 
+                                    @ path ":id"
+                                    @ element
+                                        < Course 
+                                    < Route 
+                                        @ path "grades"
+                                        @ element
+                                            < CourseGrades 
+                                < Route 
+                                    @ path "new"
+                                    @ element
+                                        < NewCourse 
+                                < Route 
+                                    @ path "*"
+                                    @ element
+                                        < CoursesNotFound 
+                            < Route 
+                                @ path "courses"
+                                @ element
+                                    < Landing 
+                                < Route 
+                                    @ path "react-fundamentals"
+                                    @ element
+                                        < ReactFundamentals 
+                                < Route 
+                                    @ path "advanced-react"
+                                    @ element
+                                        < AdvancedReact 
+                                < Route 
+                                    @ path "*"
+                                    @ element
+                                        < NeverRender 
+                            < Route 
+                                @ index
+                                @ element
+                                    < Home 
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NotFound 
+                    _ describeRouteMatching(routes)
+            function Courses
+                return 
+                    div 
+                        h1 
+                            + Courses
+                        < Outlet 
+            function Course
+                let 
+                    { 
+                        @ id
+                    = useParams()
+                return 
+                    div 
+                        h2 
+                            + Course
+                            + {id}
+                        < Outlet 
+            function CourseGrades
+                return 
+                    p 
+                        + Course Grades
+            function NewCourse
+                return 
+                    p 
+                        + New Course
+            function CoursesIndex
+                return 
+                    p 
+                        + All Courses
+            function CoursesNotFound
+                return 
+                    p 
+                        + Course Not Found
+            function Landing
+                return 
+                    p 
+                        h1 
+                            + Welcome to React Training
+                        < Outlet 
+            function ReactFundamentals
+                return 
+                    p 
+                        + React Fundamentals
+            function AdvancedReact
+                return 
+                    p 
+                        + Advanced React
+            function Home
+                return 
+                    p 
+                        + Home
+            function NotFound
+                return 
+                    p 
+                        + Not Found
+            function NeverRender
+                :return
+                    :ref React.ReactElement
+                throw new Error("NeverRender should ... uh ... never render")

@@ -1,0 +1,1305 @@
+module
+    import 
+        @ render
+        @ fireEvent
+        @ waitFor
+        @ screen
+        from "@testing-library/react"
+    import "@testing-library/jest-dom"
+    import 
+        @ JSDOM
+        from "jsdom"
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ BrowserRouter
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ RouterProvider
+        @ NavLink
+        @ Outlet
+        @ createBrowserRouter
+        @ createRoutesFromElements
+        from "react-router-dom"
+    _ describe
+        @ "NavLink"
+        => 
+            _ describe
+                @ "when it does not match"
+                => 
+                    _ it
+                        @ "does not apply an 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "somewhere-else"
+                                                                + Somewhere else
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).not.toMatch("active")
+                    _ it
+                        @ "does not change the content inside the <a>"
+                        => 
+                            let renderer
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/home"
+                                                @ element
+                                                    < NavLink 
+                                                        @ to "somewhere-else"
+                                                        => 
+                                                            { 
+                                                                @ isActive
+                                                            ( 
+                                                                iif isActive
+                                                                    then "Current"
+                                                                    else "Somewhere else"
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.children[0]).toMatch("Somewhere else")
+                    _ it
+                        @ "applies an 'undefined' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "somewhere-else"
+                                                                @ className
+                                                                    => 
+                                                                        { 
+                                                                            @ isActive
+                                                                        iif isActive
+                                                                            then "some-active-classname"
+                                                                            else undefined
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toBeUndefined()
+            _ describe
+                @ "when it matches to the end"
+                => 
+                    _ it
+                        @ "applies the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "."
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ it
+                        @ "when the current URL has a trailing slash"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "/home/"
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ it
+                        @ "applies its className correctly when provided as a function"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "."
+                                                                @ className
+                                                                    => 
+                                                                        { 
+                                                                            @ isActive
+                                                                        op+ 
+                                                                            + "nav-link"
+                                                                            ( 
+                                                                                iif isActive
+                                                                                    then " highlighted"
+                                                                                    else " plain"
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className.includes("nav-link")).toBe(true)
+                            _ expect(anchor.props.className.includes("highlighted")).toBe(true)
+                            _ expect(anchor.props.className.includes("plain")).toBe(false)
+                    _ it
+                        @ "applies its style correctly when provided as a function"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "."
+                                                                @ style
+                                                                    => 
+                                                                        { 
+                                                                            @ isActive
+                                                                        iif isActive
+                                                                            then
+                                                                                { 
+                                                                                    @ textTransform "uppercase"
+                                                                            else
+                                                                                { 
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.style).toMatchObject
+                                { 
+                                    @ textTransform "uppercase"
+                    _ it
+                        @ "applies its children correctly when provided as a function"
+                        => 
+                            let renderer
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/home"
+                                                @ element
+                                                    < NavLink 
+                                                        @ to "."
+                                                        => 
+                                                            { 
+                                                                @ isActive
+                                                            ( 
+                                                                iif isActive
+                                                                    then "Home (current)"
+                                                                    else "Home"
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.children[0]).toMatch("Home (current)")
+                    _ it
+                        @ "matches when portions of the url are encoded"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < BrowserRouter 
+                                                @ window {getWindow("/users/matt brophy")}
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users/:name"
+                                                        @ element
+                                                            < React.Fragment
+                                                                < NavLink 
+                                                                    @ to "."
+                                                                    + Matt
+                                                                < NavLink 
+                                                                    @ to "/users/matt brophy"
+                                                                    + Matt
+                                                                < NavLink 
+                                                                    @ to "/users/michael jackson"
+                                                                    + Michael
+                            let anchors = renderer.root.findAllByType("a")
+                            _ expect
+                                _ anchors.map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.className
+                                ._ toEqual
+                                    [ 
+                                        @ "active"
+                                        @ "active"
+                                        @ ""
+            _ describe
+                @ "when it matches a partial URL segment"
+                => 
+                    _ it
+                        @ "does not apply the 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/children"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            div 
+                                                                < NavLink 
+                                                                    @ to "child"
+                                                                    + Home
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "children"
+                                                            @ element
+                                                                div 
+                                                                    + Child
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).not.toMatch("active")
+                    _ it
+                        @ "does not match when <Link to> path is a subset of the active url"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/user-preferences"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            div 
+                                                                < NavLink 
+                                                                    @ to "user"
+                                                                    + Go to /user
+                                                                < NavLink 
+                                                                    @ to "user-preferences"
+                                                                    + Go to /user-preferences
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                p 
+                                                                    + Index
+                                                        < Route 
+                                                            @ path "user"
+                                                            @ element
+                                                                p 
+                                                                    + User
+                                                        < Route 
+                                                            @ path "user-preferences"
+                                                            @ element
+                                                                p 
+                                                                    + User Preferences
+                            let anchors = renderer.root.findAllByType("a")
+                            _ expect
+                                _ anchors.map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.className
+                                ._ toEqual
+                                    [ 
+                                        @ ""
+                                        @ "active"
+                    _ it
+                        @ "does not match when active url is a subset of a <Route path> segment"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/user"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            div 
+                                                                < NavLink 
+                                                                    @ to "user"
+                                                                    + Go to /user
+                                                                < NavLink 
+                                                                    @ to "user-preferences"
+                                                                    + Go to /user-preferences
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                p 
+                                                                    + Index
+                                                        < Route 
+                                                            @ path "user"
+                                                            @ element
+                                                                p 
+                                                                    + User
+                                                        < Route 
+                                                            @ path "user-preferences"
+                                                            @ element
+                                                                p 
+                                                                    + User Preferences
+                            let anchors = renderer.root.findAllByType("a")
+                            _ expect
+                                _ anchors.map
+                                    => 
+                                        param a
+                                        +
+                                            @expr a.props.className
+                                ._ toEqual
+                                    [ 
+                                        @ "active"
+                                        @ ""
+                    _ it
+                        @ "matches the root route with or without the end prop"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                < Routes 
+                                                    < Route 
+                                                        @ index
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "/"
+                                                                + Root
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                < Routes 
+                                                    < Route 
+                                                        @ index
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "/"
+                                                                @ end
+                                                                + Root
+                            set anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ it
+                        @ "does not automatically apply to root non-layout segments"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ index
+                                                        @ element
+                                                            h1 
+                                                                + Root
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "/"
+                                                                + Root
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).not.toMatch("active")
+                    _ it
+                        @ "does not automatically apply to root layout segments"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < React.Fragment
+                                                                h1 
+                                                                    + Root
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "home"
+                                                            @ element
+                                                                < NavLink 
+                                                                    @ to "/"
+                                                                    + Root
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).not.toMatch("active")
+            _ describe
+                @ "when it matches just the beginning but not to the end"
+                => 
+                    _ it
+                        @ "applies the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/child"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            div 
+                                                                < NavLink 
+                                                                    @ to "."
+                                                                    + Home
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "child"
+                                                            @ element
+                                                                div 
+                                                                    + Child
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ it
+                        @ "In case of trailing slash at the end of link"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/child"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            div 
+                                                                < NavLink 
+                                                                    @ to "/home/"
+                                                                    + Home
+                                                                < Outlet 
+                                                        < Route 
+                                                            @ path "child"
+                                                            @ element
+                                                                div 
+                                                                    + Child
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ describe
+                        @ "when end=true"
+                        => 
+                            _ it
+                                @ "does not apply the default 'active' className to the underlying <a>"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home/child"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    div 
+                                                                        < NavLink 
+                                                                            @ to "."
+                                                                            @ end {true}
+                                                                            + Home
+                                                                        < Outlet 
+                                                                < Route 
+                                                                    @ path "child"
+                                                                    @ element
+                                                                        div 
+                                                                            + Child
+                                    let anchor = renderer.root.findByType("a")
+                                    _ expect(anchor.props.className).not.toMatch("active")
+                            _ it
+                                @ "Handles trailing slashes accordingly when the URL does not have a trailing slash"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    div 
+                                                                        < NavLink 
+                                                                            @ to "/home"
+                                                                            @ end
+                                                                            + Home
+                                                                        < NavLink 
+                                                                            @ to "/home/"
+                                                                            @ end
+                                                                            + Home
+                                                                        < Outlet 
+                                                                < Route 
+                                                                    @ path "child"
+                                                                    @ element
+                                                                        div 
+                                                                            + Child
+                                    let anchors = renderer.root.findAllByType("a")
+                                    _ expect
+                                        _ anchors.map
+                                            => 
+                                                param a
+                                                +
+                                                    @expr a.props.className
+                                        ._ toEqual
+                                            [ 
+                                                @ "active"
+                                                @ ""
+                            _ it
+                                @ "Handles trailing slashes accordingly when the URL has a trailing slash"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    div 
+                                                                        < NavLink 
+                                                                            @ to "/home"
+                                                                            @ end
+                                                                            + Home
+                                                                        < NavLink 
+                                                                            @ to "/home/"
+                                                                            @ end
+                                                                            + Home
+                                                                        < Outlet 
+                                                                < Route 
+                                                                    @ path "child"
+                                                                    @ element
+                                                                        div 
+                                                                            + Child
+                                    let anchors = renderer.root.findAllByType("a")
+                                    _ expect
+                                        _ anchors.map
+                                            => 
+                                                param a
+                                                +
+                                                    @expr a.props.className
+                                        ._ toEqual
+                                            [ 
+                                                @ ""
+                                                @ "active"
+            _ describe
+                @ "when it matches without matching case"
+                => 
+                    _ it
+                        @ "applies the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/Home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "."
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+                    _ describe
+                        @ "when caseSensitive=true"
+                        => 
+                            _ it
+                                @ "does not apply the default 'active' className to the underlying <a>"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/Home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "home"
+                                                                @ element
+                                                                    < NavLink 
+                                                                        @ to "/home"
+                                                                        @ caseSensitive {true}
+                                                                        + Home
+                                    let anchor = renderer.root.findByType("a")
+                                    _ expect(anchor.props.className).not.toMatch("active")
+            _ describe
+                @ "when it matches with relative=path links"
+                => 
+                    _ it
+                        @ "applies the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/contacts/1"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "contacts/:id"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "../1"
+                                                                @ relative "path"
+                                                                + Link
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.href).toEqual("/contacts/1")
+                            _ expect(anchor.props.className).toEqual("active")
+    _ describe
+        @ "NavLink using a data router"
+        => 
+            _ it
+                @ "applies the default 'active'/'pending' classNames to the underlying <a>"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    + Link to Bar
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Bar"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("pending")
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("active")
+            _ it
+                @ "applies its className correctly when provided as a function"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    @ className
+                                        => 
+                                            { 
+                                                @ isActive
+                                                @ isPending
+                                            iif isPending
+                                                then "some-pending-classname"
+                                                else
+                                                    iif isActive
+                                                        then "some-active-classname"
+                                                        else undefined
+                                    + Link to Bar
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Bar"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("some-pending-classname")
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("some-active-classname")
+            _ it
+                @ "applies its style correctly when provided as a function"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    @ style
+                                        => 
+                                            { 
+                                                @ isActive
+                                                @ isPending
+                                            iif isPending
+                                                then
+                                                    { 
+                                                        @ textTransform "lowercase"
+                                                else
+                                                    iif isActive
+                                                        then
+                                                            { 
+                                                                @ textTransform "uppercase"
+                                                        else undefined
+                                    + Link to Bar
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").style.textTransform).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Bar"))
+                    _ expect(screen.getByText("Link to Bar").style.textTransform).toBe("lowercase")
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar").style.textTransform).toBe("uppercase")
+            _ it
+                @ "applies its children correctly when provided as a function"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    { 
+                                        => 
+                                            { 
+                                                @ isActive
+                                                @ isPending
+                                            iif isPending
+                                                then "Link to Bar (loading...)"
+                                                else
+                                                    iif isActive
+                                                        then "Link to Bar (current)"
+                                                        else "Link to Bar (idle)"
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar (idle)")).toBeDefined()
+                    _ fireEvent.click(screen.getByText("Link to Bar (idle)"))
+                    _ expect(screen.getByText("Link to Bar (loading...)")).toBeDefined()
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar (current)")).toBeDefined()
+            _ it
+                @ "does not apply during transitions to non-matching locations"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ element
+                                            p 
+                                                + Bar page
+                                    < Route 
+                                        @ path "baz"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Baz page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    + Link to Bar
+                                < NavLink 
+                                    @ to "/baz"
+                                    + Link to Baz
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Baz"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Baz page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+            _ it
+                @ "applies the default 'active'/'pending' classNames when the url has encoded characters"
+                async=> 
+                    let barDfd = createDeferred()
+                    let bazDfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar/:param"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr barDfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                                    < Route 
+                                        @ path "baz-✅"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr bazDfd.promise
+                                        @ element
+                                            p 
+                                                + Baz page
+                            { 
+                                @ window getWindow("/foo")
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar/matt brophy"
+                                    + Link to Bar
+                                < NavLink 
+                                    @ to "/baz-✅"
+                                    + Link to Baz
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ expect(screen.getByText("Link to Baz").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Bar"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("pending")
+                    _ expect(screen.getByText("Link to Baz").className).toBe("")
+                    _ barDfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("active")
+                    _ expect(screen.getByText("Link to Baz").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Baz"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("active")
+                    _ expect(screen.getByText("Link to Baz").className).toBe("pending")
+                    _ bazDfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Baz page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ expect(screen.getByText("Link to Baz").className).toBe("active")
+            _ it
+                @ "applies the default 'active'/'pending' classNames when a basename is used"
+                async=> 
+                    let dfd = createDeferred()
+                    let router
+                        _ createBrowserRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ element
+                                            p 
+                                                + Foo page
+                                    < Route 
+                                        @ path "bar"
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ element
+                                            p 
+                                                + Bar page
+                            { 
+                                @ window getWindow("/base/foo")
+                                @ basename "/base"
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    function Layout
+                        return 
+                            < React.Fragment
+                                < NavLink 
+                                    @ to "/foo"
+                                    + Link to Foo
+                                < NavLink 
+                                    @ to "/bar"
+                                    + Link to Bar
+                                < Outlet 
+                    _ expect(screen.getByText("Link to Bar").className).toBe("")
+                    _ fireEvent.click(screen.getByText("Link to Bar"))
+                    _ expect(screen.getByText("Link to Bar").className).toBe("pending")
+                    _ dfd.resolve(null)
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Bar page")
+                    _ expect(screen.getByText("Link to Bar").className).toBe("active")
+    _ describe
+        @ "NavLink under a Routes with a basename"
+        => 
+            _ describe
+                @ "when it does not match"
+                => 
+                    _ it
+                        @ "does not apply the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "somewhere-else"
+                                                                + Somewhere else
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).not.toMatch("active")
+            _ describe
+                @ "when it matches"
+                => 
+                    _ it
+                        @ "applies the default 'active' className to the underlying <a>"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ basename "/app"
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/app/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < NavLink 
+                                                                @ to "."
+                                                                + Home
+                            let anchor = renderer.root.findByType("a")
+                            _ expect(anchor.props.className).toMatch("active")
+    function createDeferred
+        let resolve
+            :=> 
+                :ref Promise
+                    :param void
+                param val
+                    :any 
+                    :optional 
+        let reject
+            :=> 
+                :ref Promise
+                    :param void
+                param error
+                    :ref Error
+                    :optional 
+        let promise
+            new Promise
+                => 
+                    param res
+                    param rej
+                    set resolve =
+                        async=> 
+                            param val
+                                :any 
+                            _ res(val)
+                            try 
+                                await 
+                                    @id promise
+                            catch e
+                    set reject =
+                        async=> 
+                            param error
+                                :ref Error
+                                :optional 
+                            _ rej(error)
+                            try 
+                                await 
+                                    @id promise
+                            catch e
+        return 
+            { 
+                @ promise
+                @ resolve
+                    # @ts-ignore
+                @ reject
+                    # @ts-ignore
+    function getWindow
+        param initialUrl
+            :string 
+        :return
+            :ref Window
+        const dom
+            new JSDOM
+                `lit 
+                    + <!DOCTYPE html>
+                { 
+                    @ url "https://remix.run/"
+            # Need to use our own custom DOM in order to get a working history
+        _ dom.window.history.replaceState(null, "", initialUrl)
+        return 
+            @expr
+                @expr dom.window
+                    :as 
+                        :unknown 
+                :as 
+                    :ref Window

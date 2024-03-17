@@ -1,0 +1,663 @@
+module
+    :import-type 
+        @ TestRouteObject
+        from "./utils/data-router-setup"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    _ describe
+        @ "scroll restoration"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Version of TASK_ROUTES with no root loader to allow for initialized
+                # hydrationData:null usage
+            const SCROLL_ROUTES
+                :[ 
+                    :ref TestRouteObject
+                =
+                    [ 
+                        { 
+                            @ path "/"
+                            [ children
+                                { 
+                                    @ id "index"
+                                    @ index true
+                                    @ loader true
+                                { 
+                                    @ id "tasks"
+                                    @ path "tasks"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "no-loader"
+                # Version of TASK_ROUTES with no root loader to allow for initialized
+                # hydrationData:null usage
+            _ describe
+                @ "scroll restoration"
+                => 
+                    _ it
+                        @ "restores scroll on initial load (w/o hydrationData)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/no-loader"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # Assume initial location had a saved position
+                            let positions
+                                { 
+                                    @ default 50
+                                # Assume initial location had a saved position
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + 0
+                            _ expect(t.router.state.restoreScrollPosition).toBe(50)
+                    _ it
+                        @ "restores scroll on initial load (w/ hydrationData)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ index "INDEX"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # Assume initial location had a saved position
+                            let positions
+                                { 
+                                    @ default 50
+                                # Assume initial location had a saved position
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + 0
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                    _ it
+                        @ "restores scroll on navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ index "INDEX_DATA"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                            let positions
+                                { 
+                                # Simulate scrolling to 100 on /
+                            let activeScrollPosition = 100
+                                # Simulate scrolling to 100 on /
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + activeScrollPosition
+                                # No restoration on first click to /tasks
+                            let nav1
+                                await 
+                                    _ t.navigate("/tasks")
+                                # No restoration on first click to /tasks
+                            await 
+                                _ nav1.loaders.tasks.resolve("TASKS")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # Simulate scrolling down on /tasks
+                            set activeScrollPosition = 200
+                                # Simulate scrolling down on /tasks
+                                # Restore on pop back to /
+                            let nav2
+                                await 
+                                    _ t.navigate(-1)
+                                # Restore on pop back to /
+                            _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                            await 
+                                _ nav2.loaders.index.resolve("INDEX")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(100)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # Restore on pop forward to /tasks
+                            let nav3
+                                await 
+                                    _ t.navigate(1)
+                                # Restore on pop forward to /tasks
+                            await 
+                                _ nav3.loaders.tasks.resolve("TASKS")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(200)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                    _ it
+                        @ "restores scroll using custom key"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ index "INDEX_DATA"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                            let positions
+                                { 
+                                    @ "/tasks" 100
+                            let activeScrollPosition = 0
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + activeScrollPosition
+                                => 
+                                    param l
+                                    +
+                                        @expr l.pathname
+                            let nav1
+                                await 
+                                    _ t.navigate("/tasks")
+                            await 
+                                _ nav1.loaders.tasks.resolve("TASKS")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(100)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                    _ it
+                        @ "does not strip the basename from the location provided to getKey"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        @ basename "/base"
+                                        [ initialEntries
+                                            @ "/base"
+                                        { hydrationData
+                                            { loaderData
+                                                @ index "INDEX_DATA"
+                            let positions
+                                { 
+                                    @ "/base/tasks" 100
+                            let activeScrollPosition = 0
+                            let pathname
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + activeScrollPosition
+                                => 
+                                    param l
+                                    set pathname = l.pathname
+                                    return l.pathname
+                            let nav1
+                                await 
+                                    _ t.navigate("/base/tasks")
+                            await 
+                                _ nav1.loaders.tasks.resolve("TASKS")
+                            _ expect(pathname).toBe("/base/tasks")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(100)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                    _ it
+                        @ "restores scroll on GET submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/tasks"
+                                        { hydrationData
+                                            { loaderData
+                                                @ tasks "TASKS"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # We were previously on tasks at 100
+                            let positions
+                                { 
+                                    @ "/tasks" 100
+                                # We were previously on tasks at 100
+                                # But we've scrolled up to 50 to submit.  We'll save this overtop of
+                                # the 100 when we start this submission navigation and then restore to
+                                # 50 below
+                            let activeScrollPosition = 50
+                                # But we've scrolled up to 50 to submit.  We'll save this overtop of
+                                # the 100 when we start this submission navigation and then restore to
+                                # 50 below
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + activeScrollPosition
+                                => 
+                                    param l
+                                    +
+                                        @expr l.pathname
+                            let nav1
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ formMethod "get"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ nav1.loaders.tasks.resolve("TASKS2")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(50)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                    _ it
+                        @ "restores scroll on POST submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes SCROLL_ROUTES
+                                        [ initialEntries
+                                            @ "/tasks"
+                                        { hydrationData
+                                            { loaderData
+                                                @ index "INDEX_DATA"
+                            _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+                                # We were previously on tasks at 100
+                            let positions
+                                { 
+                                    @ "/tasks" 100
+                                # We were previously on tasks at 100
+                                # But we've scrolled up to 50 to submit.  We'll save this overtop of
+                                # the 100 when we start this submission navigation and then restore to
+                                # 50 below
+                            let activeScrollPosition = 50
+                                # But we've scrolled up to 50 to submit.  We'll save this overtop of
+                                # the 100 when we start this submission navigation and then restore to
+                                # 50 below
+                            _ t.router.enableScrollRestoration
+                                @ positions
+                                => 
+                                    + activeScrollPosition
+                                => 
+                                    param l
+                                    +
+                                        @expr l.pathname
+                            let nav1
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            const nav2
+                                await 
+                                    _ nav1.actions.tasks.redirectReturn("/tasks")
+                            await 
+                                _ nav2.loaders.tasks.resolve("TASKS")
+                            _ expect(t.router.state.restoreScrollPosition).toBe(50)
+                            _ expect(t.router.state.preventScrollReset).toBe(false)
+            _ describe
+                @ "scroll reset"
+                => 
+                    _ describe
+                        @ "default behavior"
+                        => 
+                            _ it
+                                @ "resets on navigations"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate("/tasks")
+                                    await 
+                                        _ nav1.loaders.tasks.resolve("TASKS")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                            _ it
+                                @ "resets on navigations that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate("/tasks")
+                                    let nav2
+                                        await 
+                                            _ nav1.loaders.tasks.redirectReturn("/")
+                                    await 
+                                        _ nav2.loaders.index.resolve("INDEX_DATA 2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                            _ it
+                                @ "does not reset on submission navigations"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    await 
+                                        _ nav1.actions.tasks.resolve("ACTION")
+                                    await 
+                                        _ nav1.loaders.tasks.resolve("TASKS")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)
+                            _ it
+                                @ "resets on submission navigations that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    let nav2
+                                        await 
+                                            _ nav1.actions.tasks.redirectReturn("/")
+                                    await 
+                                        _ nav2.loaders.index.resolve("INDEX_DATA2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                            _ it
+                                @ "resets on fetch submissions that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/tasks"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ tasks "TASKS"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.fetch
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    let nav2
+                                        await 
+                                            _ nav1.actions.tasks.redirectReturn("/tasks")
+                                    await 
+                                        _ nav2.loaders.tasks.resolve("TASKS 2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                    _ describe
+                        @ "user-specified flag preventScrollReset flag"
+                        => 
+                            _ it
+                                @ "prevents scroll reset on navigations"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ preventScrollReset true
+                                    await 
+                                        _ nav1.loaders.tasks.resolve("TASKS")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)
+                            _ it
+                                @ "prevents scroll reset on navigations that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ preventScrollReset true
+                                    let nav2
+                                        await 
+                                            _ nav1.loaders.tasks.redirectReturn("/")
+                                    await 
+                                        _ nav2.loaders.index.resolve("INDEX_DATA 2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)
+                            _ it
+                                @ "prevents scroll reset on submission navigations"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                    @ preventScrollReset true
+                                    await 
+                                        _ nav1.actions.tasks.resolve("ACTION")
+                                    await 
+                                        _ nav1.loaders.tasks.resolve("TASKS")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)
+                            _ it
+                                @ "prevents scroll reset on submission navigations that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ index "INDEX_DATA"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.navigate
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                    @ preventScrollReset true
+                                    let nav2
+                                        await 
+                                            _ nav1.actions.tasks.redirectReturn("/")
+                                    await 
+                                        _ nav2.loaders.index.resolve("INDEX_DATA2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)
+                            _ it
+                                @ "prevents scroll reset on fetch submissions that redirect"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                @ routes SCROLL_ROUTES
+                                                [ initialEntries
+                                                    @ "/tasks"
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ tasks "TASKS"
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(false)
+                                    _ expect(t.router.state.preventScrollReset).toBe(false)
+                                    let positions
+                                        { 
+                                    let activeScrollPosition = 0
+                                    _ t.router.enableScrollRestoration
+                                        @ positions
+                                        => 
+                                            + activeScrollPosition
+                                    let nav1
+                                        await 
+                                            _ t.fetch
+                                                @ "/tasks"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                    @ preventScrollReset true
+                                    let nav2
+                                        await 
+                                            _ nav1.actions.tasks.redirectReturn("/tasks")
+                                    await 
+                                        _ nav2.loaders.tasks.resolve("TASKS 2")
+                                    _ expect(t.router.state.restoreScrollPosition).toBe(null)
+                                    _ expect(t.router.state.preventScrollReset).toBe(true)

@@ -1,0 +1,168 @@
+module
+    kind react
+    const path = require("path")
+    const 
+        { 
+            @ execSync
+        = require("child_process")
+    const jsonfile = require("jsonfile")
+    const semver = require("semver")
+    const rootDir = path.resolve(__dirname, "..")
+        #
+            # *
+            # * @param {*} cond
+            # * @param {string} message
+            # * @returns {asserts cond}
+            # 
+    function invariant
+        param cond
+        param message
+        if !cond
+            throw new Error(message)
+        #
+            # *
+            # * @param {*} cond
+            # * @param {string} message
+            # * @returns {asserts cond}
+            # 
+        #
+            # *
+            # * @returns {string}
+            # 
+    function getTaggedVersion
+        let output = execSync("git tag --list --points-at HEAD").toString()
+        return output.replace(/^v|\n+$/g, "")
+        #
+            # *
+            # * @returns {string}
+            # 
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string|number} version
+            # 
+    async-function ensureBuildVersion
+        param packageName
+        param version
+        let file = path.join(rootDir, "packages", packageName, "package.json")
+        let json
+            await 
+                _ jsonfile.readFile(file)
+        _ invariant
+            set json.version === version
+            `lit 
+                + Package&nbsp;
+                @ packageName
+                + &nbsp;is on version&nbsp;
+                @ json.version
+                + , but should be on&nbsp;
+                @ version
+                + 
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string|number} version
+            # 
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string} tag
+            # 
+    function publishBuild
+        param packageName
+        param tag
+        let buildDir = path.join(rootDir, "packages", packageName)
+        _ console.log()
+        _ console.log
+            `lit 
+                + &nbsp; npm publish&nbsp;
+                @ buildDir
+                + &nbsp;--tag&nbsp;
+                @ tag
+                + &nbsp;--access public
+        _ console.log()
+        _ execSync
+            `lit 
+                + npm publish&nbsp;
+                @ buildDir
+                + &nbsp;--tag&nbsp;
+                @ tag
+                + &nbsp;--access public
+            { 
+                @ stdio "inherit"
+        #
+            # *
+            # * @param {string} packageName
+            # * @param {string} tag
+            # 
+        #
+            # *
+            # * @returns {Promise<1 | 0>}
+            # 
+    async-function run
+        try 
+            _ invariant
+                @expr process.env.CI
+                `lit 
+                    + You should always run the publish script from the CI environment!
+                # 0. Ensure we are in CI. We don't do this manually
+                # 1. Get the current tag, which has the release version number
+            let version = getTaggedVersion()
+                # 1. Get the current tag, which has the release version number
+            _ invariant(version !== "", "Missing release version. Run the version script first.")
+                # 2. Determine the appropriate npm tag to use
+            let tag
+                iif version.includes("experimental")
+                    then "experimental"
+                    else
+                        iif semver.prerelease(version) == null
+                            then "latest"
+                            else "pre"
+                # 2. Determine the appropriate npm tag to use
+            _ console.log()
+            _ console.log
+                `lit 
+                    + &nbsp; Publishing version&nbsp;
+                    @ version
+                    + &nbsp;to npm with tag "
+                    @ tag
+                    + "
+                # 3. Ensure build versions match the release version
+            if version.includes("experimental")
+                await 
+                    _ ensureBuildVersion("router", version)
+                    # FIXME: @remix-run/router is versioned differently and is only handled
+                    # for experimental releases here
+            await 
+                _ ensureBuildVersion("react-router", version)
+            await 
+                _ ensureBuildVersion("react-router-dom", version)
+            await 
+                _ ensureBuildVersion("react-router-dom-v5-compat", version)
+            await 
+                _ ensureBuildVersion("react-router-native", version)
+                # 4. Publish to npm
+            _ publishBuild("router", tag)
+                # 4. Publish to npm
+            _ publishBuild("react-router", tag)
+            _ publishBuild("react-router-dom", tag)
+            _ publishBuild("react-router-dom-v5-compat", tag)
+            _ publishBuild("react-router-native", tag)
+        catch error
+            _ console.log()
+            _ console.error
+                `lit 
+                    + &nbsp;&nbsp;
+                    @ error.message
+                    + 
+            _ console.log()
+            return 1
+        return 0
+        #
+            # *
+            # * @returns {Promise<1 | 0>}
+            # 
+    _ run().then
+        => 
+            param code
+            _ process.exit(code)

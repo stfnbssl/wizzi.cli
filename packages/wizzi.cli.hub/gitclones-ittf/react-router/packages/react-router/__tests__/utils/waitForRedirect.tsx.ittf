@@ -1,0 +1,12 @@
+module
+    export-default 
+        function waitForRedirect
+            param fn
+                :=> 
+                    :void 
+                    param ...args
+                        :[ 
+                            :any 
+            _ setTimeout(fn, 100)
+                # TODO: Hook into <Redirect> so we can know when
+                # the redirect actually happens instead of guessing.

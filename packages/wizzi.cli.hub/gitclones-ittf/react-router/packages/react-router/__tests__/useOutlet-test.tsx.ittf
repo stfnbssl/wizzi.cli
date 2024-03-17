@@ -1,0 +1,457 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useOutlet
+        @ useOutletContext
+        from "react-router"
+    _ describe
+        @ "useOutlet"
+        => 
+            _ describe
+                @ "when there is no child route"
+                => 
+                    _ it
+                        @ "returns null"
+                        => 
+                            function Home
+                                return useOutlet()
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < Home 
+                            _ expect(renderer.toJSON()).toBeNull()
+                    _ it
+                        @ "renders the fallback"
+                        => 
+                            function Home
+                                let outlet = useOutlet()
+                                return 
+                                    div 
+                                        { 
+                                            iif outlet
+                                                then "outlet"
+                                                else "no outlet"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < Home 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         no outlet&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "renders the fallback with context provided"
+                        => 
+                            function Home
+                                let outlet
+                                    _ useOutlet
+                                        { 
+                                            @ some "context"
+                                return 
+                                    div 
+                                        { 
+                                            iif outlet
+                                                then "outlet"
+                                                else "no outlet"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < Home 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         no outlet&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when there is a child route"
+                => 
+                    _ it
+                        @ "returns an element"
+                        => 
+                            function Users
+                                return useOutlet()
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/profile"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "users"
+                                                        @ element
+                                                            < Users 
+                                                        < Route 
+                                                            @ path "profile"
+                                                            @ element
+                                                                h1 
+                                                                    + Profile
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Profile&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "returns an element when no context"
+                        => 
+                            function Home
+                                let outlet = useOutlet()
+                                return 
+                                    div 
+                                        { 
+                                            iif outlet
+                                                then "outlet"
+                                                else "no outlet"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < Home 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                div 
+                                                                    + index
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           outlet&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;      &nbsp;
+                    _ it
+                        @ "returns an element when context"
+                        => 
+                            function Home
+                                let outlet
+                                    _ useOutlet
+                                        { 
+                                            @ some "context"
+                                return 
+                                    div 
+                                        { 
+                                            iif outlet
+                                                then "outlet"
+                                                else "no outlet"
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/home"
+                                                        @ element
+                                                            < Home 
+                                                        < Route 
+                                                            @ index
+                                                            @ element
+                                                                div 
+                                                                    + index
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;         <div>&lf;
+                                    + &nbsp;           outlet&lf;
+                                    + &nbsp;         </div>&lf;
+                                    + &nbsp;      &nbsp;
+            _ describe
+                @ "OutletContext when there is no context"
+                => 
+                    _ it
+                        @ "returns null"
+                        => 
+                            function Users
+                                return useOutlet()
+                            function Profile
+                                let outletContext = useOutletContext()
+                                return 
+                                    div 
+                                        h1 
+                                            + Profile
+                                        pre 
+                                            + {outletContext}
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/profile"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "users"
+                                                        @ element
+                                                            < Users 
+                                                        < Route 
+                                                            @ path "profile"
+                                                            @ element
+                                                                < Profile 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Profile&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <pre />&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "OutletContext when there is context"
+                => 
+                    _ it
+                        @ "returns the context"
+                        => 
+                            function Users
+                                return 
+                                    _ useOutlet
+                                        [ 
+                                            @ "Mary"
+                                            @ "Jane"
+                                            @ "Michael"
+                                            @ "Bert"
+                                            @ "Winifred"
+                                            @ "George"
+                            function Profile
+                                let outletContext
+                                    _ useOutletContext
+                                        :param 
+                                            :[ 
+                                                :string 
+                                return 
+                                    div 
+                                        h1 
+                                            + Profile
+                                        ul 
+                                            { 
+                                                _ outletContext.map
+                                                    => 
+                                                        param name
+                                                        li 
+                                                            @ key {name}
+                                                            + {name}
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/profile"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "users"
+                                                        @ element
+                                                            < Users 
+                                                        < Route 
+                                                            @ path "profile"
+                                                            @ element
+                                                                < Profile 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Profile&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <ul>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Mary&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Jane&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Michael&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Bert&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Winifred&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             George&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;         </ul>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when child route without element prop"
+                => 
+                    _ it
+                        @ "returns nested route element"
+                        => 
+                            function Layout
+                                return useOutlet()
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/profile"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Layout 
+                                                        < Route 
+                                                            @ path "users"
+                                                            < Route 
+                                                                @ path "profile"
+                                                                @ element
+                                                                    h1 
+                                                                        + Profile
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         Profile&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "returns the context"
+                        => 
+                            function Layout
+                                return 
+                                    _ useOutlet
+                                        [ 
+                                            @ "Mary"
+                                            @ "Jane"
+                                            @ "Michael"
+                            function Profile
+                                let outletContext
+                                    _ useOutletContext
+                                        :param 
+                                            :[ 
+                                                :string 
+                                return 
+                                    div 
+                                        h1 
+                                            + Profile
+                                        ul 
+                                            { 
+                                                _ outletContext.map
+                                                    => 
+                                                        param name
+                                                        li 
+                                                            @ key {name}
+                                                            + {name}
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/profile"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < Layout 
+                                                        < Route 
+                                                            @ path "users"
+                                                            < Route 
+                                                                @ path "profile"
+                                                                @ element
+                                                                    < Profile 
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <div>&lf;
+                                    + &nbsp;         <h1>&lf;
+                                    + &nbsp;           Profile&lf;
+                                    + &nbsp;         </h1>&lf;
+                                    + &nbsp;         <ul>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Mary&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Jane&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;           <li>&lf;
+                                    + &nbsp;             Michael&lf;
+                                    + &nbsp;           </li>&lf;
+                                    + &nbsp;         </ul>&lf;
+                                    + &nbsp;       </div>&lf;
+                                    + &nbsp;    &nbsp;

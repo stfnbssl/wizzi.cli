@@ -1,0 +1,558 @@
+module
+    :import-type 
+        @ FormEncType
+        @ HTMLFormMethod
+        @ RelativeRoutingType
+        from "@remix-run/router"
+    import 
+        @ stripBasename
+        @ UNSAFE_warning
+            as warning
+        from "@remix-run/router"
+    export 
+        const defaultMethod
+            :ref HTMLFormMethod
+            = "get"
+    const defaultEncType
+        :ref FormEncType
+        = "application/x-www-form-urlencoded"
+    export 
+        function isHtmlElement
+            param object
+                :any 
+            :return
+                :predicate object
+                    :ref HTMLElement
+            return object != null && typeof object.tagName === "string"
+    export 
+        function isButtonElement
+            param object
+                :any 
+            :return
+                :predicate object
+                    :ref HTMLButtonElement
+            return isHtmlElement(object) && object.tagName.toLowerCase() === "button"
+    export 
+        function isFormElement
+            param object
+                :any 
+            :return
+                :predicate object
+                    :ref HTMLFormElement
+            return isHtmlElement(object) && object.tagName.toLowerCase() === "form"
+    export 
+        function isInputElement
+            param object
+                :any 
+            :return
+                :predicate object
+                    :ref HTMLInputElement
+            return isHtmlElement(object) && object.tagName.toLowerCase() === "input"
+    :type LimitedMouseEvent
+        :ref Pick
+            :param 
+                :ref MouseEvent
+            :param 
+                :union 
+                    :literal "button"
+                    :literal "metaKey"
+                    :literal "altKey"
+                    :literal "ctrlKey"
+                    :literal "shiftKey"
+    function isModifiedEvent
+        param event
+            :ref LimitedMouseEvent
+        return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+    export 
+        function shouldProcessLinkClick
+            param event
+                :ref LimitedMouseEvent
+            param target
+                :string 
+                :optional 
+            return (event.button === 0 && (!target || target === "_self") && !isModifiedEvent(event))
+    export 
+        :type ParamKeyValuePair
+            :tuple 
+                :string 
+                :string 
+    export 
+        :type URLSearchParamsInit
+            :union 
+                :string 
+                :[ 
+                    :ref ParamKeyValuePair
+                :ref Record
+                    :param string
+                    :param 
+                        :union 
+                            :string 
+                            :[ 
+                                :string 
+                :ref URLSearchParams
+        #
+            # *
+            # * Creates a URLSearchParams object using the given initializer.
+            # *
+            # * This is identical to `new URLSearchParams(init)` except it also
+            # * supports arrays as values in the object form of the initializer
+            # * instead of just strings. This is convenient when you need multiple
+            # * values for a given key, but don't want to use an array initializer.
+            # *
+            # * For example, instead of:
+            # *
+            # *   let searchParams = new URLSearchParams([
+            # *     ['sort', 'name'],
+            # *     ['sort', 'price']
+            # *   ]);
+            # *
+            # * you can do:
+            # *
+            # *   let searchParams = createSearchParams({
+            # *     sort: ['name', 'price']
+            # *   });
+            # 
+    export 
+        function createSearchParams
+            param init
+                :ref URLSearchParamsInit
+                = ""
+            :return
+                :ref URLSearchParams
+            return 
+                new URLSearchParams
+                    iif typeof init === "string" || Array.isArray(init) || init instanceof URLSearchParams
+                        then init
+                        else
+                            _ Object.keys(init).reduce
+                                => 
+                                    param memo
+                                    param key
+                                    let value = init[key]
+                                    return 
+                                        _ memo.concat
+                                            iif Array.isArray(value)
+                                                then
+                                                    _ value.map
+                                                        => 
+                                                            param v
+                                                            [ 
+                                                                @id key
+                                                                @id v
+                                                else
+                                                    [ 
+                                                        [ 
+                                                            @id key
+                                                            @id value
+                                [ []
+                                    :as 
+                                        :[ 
+                                            :ref ParamKeyValuePair
+        #
+            # *
+            # * Creates a URLSearchParams object using the given initializer.
+            # *
+            # * This is identical to `new URLSearchParams(init)` except it also
+            # * supports arrays as values in the object form of the initializer
+            # * instead of just strings. This is convenient when you need multiple
+            # * values for a given key, but don't want to use an array initializer.
+            # *
+            # * For example, instead of:
+            # *
+            # *   let searchParams = new URLSearchParams([
+            # *     ['sort', 'name'],
+            # *     ['sort', 'price']
+            # *   ]);
+            # *
+            # * you can do:
+            # *
+            # *   let searchParams = createSearchParams({
+            # *     sort: ['name', 'price']
+            # *   });
+            # 
+    export 
+        function getSearchParamsForLocation
+            param locationSearch
+                :string 
+            param defaultSearchParams
+                :union 
+                    :ref URLSearchParams
+                    :null 
+            let searchParams = createSearchParams(locationSearch)
+            if defaultSearchParams
+                _ defaultSearchParams.forEach
+                    => 
+                        param _
+                        param key
+                        if !searchParams.has(key)
+                            _ defaultSearchParams.getAll(key).forEach
+                                => 
+                                    param value
+                                    _ searchParams.append(key, value)
+                    # Use `defaultSearchParams.forEach(...)` here instead of iterating of
+                    # `defaultSearchParams.keys()` to work-around a bug in Firefox related to
+                    # web extensions. Relevant Bugzilla tickets:
+                    # https://bugzilla.mozilla.org/show_bug.cgi?id=1414602
+                    # https://bugzilla.mozilla.org/show_bug.cgi?id=1023984
+            return searchParams
+        # Thanks https://github.com/sindresorhus/type-fest!
+    :type JsonObject
+        :intersect 
+            :mapped 
+                :< Key
+                    :string 
+                :ref JsonValue
+            :mapped 
+                :optional 
+                :< Key
+                    :string 
+                :union 
+                    :ref JsonValue
+                    :undefined 
+        # Thanks https://github.com/sindresorhus/type-fest!
+    :type JsonArray
+        :union 
+            :[ 
+                :ref JsonValue
+            :readonly 
+                :[ 
+                    :ref JsonValue
+    :type JsonPrimitive
+        :union 
+            :string 
+            :number 
+            :boolean 
+            :null 
+    :type JsonValue
+        :union 
+            :ref JsonPrimitive
+            :ref JsonObject
+            :ref JsonArray
+    export 
+        :type SubmitTarget
+            :union 
+                :ref HTMLFormElement
+                :ref HTMLButtonElement
+                :ref HTMLInputElement
+                :ref FormData
+                :ref URLSearchParams
+                :ref JsonValue
+                :null 
+        # One-time check for submitter support
+    let _formDataSupportsSubmitter
+        :union 
+            :boolean 
+            :null 
+        = null
+        # One-time check for submitter support
+    function isFormDataSubmitterSupported
+        if _formDataSupportsSubmitter === null
+            try 
+                new FormData
+                    _ document.createElement("form")
+                    @ 0
+                        # @ts-expect-error if FormData supports the submitter parameter, this will throw
+                set _formDataSupportsSubmitter = false
+            catch e
+                set _formDataSupportsSubmitter = true
+        return _formDataSupportsSubmitter
+    export 
+        :interface SubmitOptions
+            :p method
+                :optional 
+                :ref HTMLFormMethod
+                #
+                    # *
+                    # * The HTTP method used to submit the form. Overrides `<form method>`.
+                    # * Defaults to "GET".
+                    # 
+                #
+                    # *
+                    # * The action URL path used to submit the form. Overrides `<form action>`.
+                    # * Defaults to the path of the current route.
+                    # 
+            :p action
+                :optional 
+                :string 
+                #
+                    # *
+                    # * The action URL path used to submit the form. Overrides `<form action>`.
+                    # * Defaults to the path of the current route.
+                    # 
+                #
+                    # *
+                    # * The encoding used to submit the form. Overrides `<form encType>`.
+                    # * Defaults to "application/x-www-form-urlencoded".
+                    # 
+            :p encType
+                :optional 
+                :ref FormEncType
+                #
+                    # *
+                    # * The encoding used to submit the form. Overrides `<form encType>`.
+                    # * Defaults to "application/x-www-form-urlencoded".
+                    # 
+                #
+                    # *
+                    # * Indicate a specific fetcherKey to use when using navigate=false
+                    # 
+            :p fetcherKey
+                :optional 
+                :string 
+                #
+                    # *
+                    # * Indicate a specific fetcherKey to use when using navigate=false
+                    # 
+                #
+                    # *
+                    # * navigate=false will use a fetcher instead of a navigation
+                    # 
+            :p navigate
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * navigate=false will use a fetcher instead of a navigation
+                    # 
+                #
+                    # *
+                    # * Set `true` to replace the current entry in the browser's history stack
+                    # * instead of creating a new one (i.e. stay on "the same page"). Defaults
+                    # * to `false`.
+                    # 
+            :p replace
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Set `true` to replace the current entry in the browser's history stack
+                    # * instead of creating a new one (i.e. stay on "the same page"). Defaults
+                    # * to `false`.
+                    # 
+                #
+                    # *
+                    # * State object to add to the history stack entry for this navigation
+                    # 
+            :p state
+                :optional 
+                :any 
+                #
+                    # *
+                    # * State object to add to the history stack entry for this navigation
+                    # 
+                #
+                    # *
+                    # * Determines whether the form action is relative to the route hierarchy or
+                    # * the pathname.  Use this if you want to opt out of navigating the route
+                    # * hierarchy and want to instead route based on /-delimited URL segments
+                    # 
+            :p relative
+                :optional 
+                :ref RelativeRoutingType
+                #
+                    # *
+                    # * Determines whether the form action is relative to the route hierarchy or
+                    # * the pathname.  Use this if you want to opt out of navigating the route
+                    # * hierarchy and want to instead route based on /-delimited URL segments
+                    # 
+                #
+                    # *
+                    # * In browser-based environments, prevent resetting scroll after this
+                    # * navigation when using the <ScrollRestoration> component
+                    # 
+            :p preventScrollReset
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * In browser-based environments, prevent resetting scroll after this
+                    # * navigation when using the <ScrollRestoration> component
+                    # 
+                #
+                    # *
+                    # * Enable flushSync for this navigation's state updates
+                    # 
+            :p unstable_flushSync
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Enable flushSync for this navigation's state updates
+                    # 
+                #
+                    # *
+                    # * Enable view transitions on this submission navigation
+                    # 
+            :p unstable_viewTransition
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Enable view transitions on this submission navigation
+                    # 
+    const supportedFormEncTypes
+        :ref Set
+            :param 
+                :ref FormEncType
+        =
+            new Set
+                [ 
+                    @ "application/x-www-form-urlencoded"
+                    @ "multipart/form-data"
+                    @ "text/plain"
+    function getFormEncType
+        param encType
+            :union 
+                :string 
+                :null 
+        if 
+            test
+                && 
+                    + encType != null
+                    op! 
+                        _ supportedFormEncTypes.has
+                            + encType
+                                :as 
+                                    :ref FormEncType
+            _ warning
+                @ false
+                op+ 
+                    `lit 
+                        + "
+                        @ encType
+                        + " is not a valid \`encType\` for \`<Form>\`/\`<fetcher.Form>\`&nbsp;
+                    `lit 
+                        + and will default to "
+                        @ defaultEncType
+                        + "
+            return null
+        return encType
+    export 
+        function getFormSubmissionInfo
+            param target
+                :ref SubmitTarget
+            param basename
+                :string 
+            :return
+                :{ 
+                    :p action
+                        :union 
+                            :string 
+                            :null 
+                    :p method
+                        :string 
+                    :p encType
+                        :string 
+                    :p formData
+                        :union 
+                            :ref FormData
+                            :undefined 
+                    :p body
+                        :any 
+            let method
+                :string 
+            let action
+                :union 
+                    :string 
+                    :null 
+            let encType
+                :string 
+            let formData
+                :union 
+                    :ref FormData
+                    :undefined 
+            let body
+                :any 
+            if isFormElement(target)
+                let attr = target.getAttribute("action")
+                    # When grabbing the action from the element, it will have had the basename
+                    # prefixed to ensure non-JS scenarios work, so strip it since we'll
+                    # re-prefix in the router
+                set action =
+                    iif attr
+                        then stripBasename(attr, basename)
+                        else null
+                set method = target.getAttribute("method") || defaultMethod
+                set encType = getFormEncType(target.getAttribute("enctype")) || defaultEncType
+                set formData = new FormData(target)
+            else
+                if isButtonElement(target) || (isInputElement(target) && (target.type === "submit" || target.type === "image"))
+                    let form = target.form
+                    if form == null
+                        throw 
+                            new Error
+                                `lit 
+                                    + Cannot submit a <button> or <input type="submit"> without a <form>
+                    let attr = target.getAttribute("formaction") || form.getAttribute("action")
+                        # <button>/<input type="submit"> may override attributes of <form>
+                        # When grabbing the action from the element, it will have had the basename
+                        # prefixed to ensure non-JS scenarios work, so strip it since we'll
+                        # re-prefix in the router
+                    set action =
+                        iif attr
+                            then stripBasename(attr, basename)
+                            else null
+                    set method = target.getAttribute("formmethod") || form.getAttribute("method") || defaultMethod
+                    set encType = getFormEncType(target.getAttribute("formenctype")) || getFormEncType(form.getAttribute("enctype")) || defaultEncType
+                        # Build a FormData object populated from a form and submitter
+                    set formData = new FormData(form, target)
+                        # Build a FormData object populated from a form and submitter
+                        # If this browser doesn't support the `FormData(el, submitter)` format,
+                        # then tack on the submitter value at the end.  This is a lightweight
+                        # solution that is not 100% spec compliant.  For complete support in older
+                        # browsers, consider using the `formdata-submitter-polyfill` package
+                    if !isFormDataSubmitterSupported()
+                        let 
+                            { 
+                                @ name
+                                @ type
+                                @ value
+                            = target
+                        if type === "image"
+                            let prefix
+                                iif name
+                                    then
+                                        `lit 
+                                            + 
+                                            @ name
+                                            + .
+                                    else ""
+                            _ formData.append
+                                `lit 
+                                    + 
+                                    @ prefix
+                                    + x
+                                @ "0"
+                            _ formData.append
+                                `lit 
+                                    + 
+                                    @ prefix
+                                    + y
+                                @ "0"
+                        else
+                            if name
+                                _ formData.append(name, value)
+                else
+                    if isHtmlElement(target)
+                        throw 
+                            new Error
+                                op+ 
+                                    `lit 
+                                        + Cannot submit element that is not <form>, <button>, or&nbsp;
+                                    `lit 
+                                        + <input type="submit|image">
+                    else
+                        set method = defaultMethod
+                        set action = null
+                        set encType = defaultEncType
+                        set body = target
+            if formData && encType === "text/plain"
+                set body = formData
+                set formData = undefined
+            return 
+                { 
+                    @ action
+                    @ method method.toLowerCase()
+                    @ encType
+                    @ formData
+                    @ body

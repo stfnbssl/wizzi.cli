@@ -1,0 +1,549 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    :import-type 
+        @ Path
+        from "react-router"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useResolvedPath
+        @ useLocation
+        from "react-router"
+    import 
+        @ prettyDOM
+        @ render
+        from "@testing-library/react"
+    function ShowResolvedPath
+        { 
+            @ path
+            :{ 
+                :p path
+                    :union 
+                        :string 
+                        :ref Path
+        return 
+            pre 
+                + {JSON.stringify(useResolvedPath(path))}
+    _ describe
+        @ "useResolvedPath"
+        => 
+            _ it
+                @ "path string resolves correctly"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    < ShowResolvedPath 
+                                                        @ path "/home?user=mj#welcome"
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <pre>&lf;
+                            + &nbsp;       {"pathname":"/home","search":"?user=mj","hash":"#welcome"}&lf;
+                            + &nbsp;     </pre>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "partial path object resolves correctly"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    < ShowResolvedPath 
+                                                        @ path
+                                                            { 
+                                                                @ pathname "/home"
+                                                                @ search
+                                                                    new URLSearchParams
+                                                                        { 
+                                                                            @ user "mj"
+                                                                        ._ toString
+                                                                @ hash "#welcome"
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <pre>&lf;
+                            + &nbsp;       {"pathname":"/home","search":"?user=mj","hash":"#welcome"}&lf;
+                            + &nbsp;     </pre>&lf;
+                            + &nbsp;  &nbsp;
+            _ describe
+                @ "given a hash with a ? character"
+                => 
+                    _ it
+                        @ "hash is not parsed as a search string"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < ShowResolvedPath 
+                                                                @ path "/home#welcome?user=mj"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/home","search":"","hash":"#welcome?user=mj"}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "in a splat route"
+                => 
+                    _ it
+                        @ "resolves . to the route path"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users"
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                < ShowResolvedPath 
+                                                                    @ path "."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                        # Note: This test asserts long-standing buggy behavior fixed by enabling
+                        # the future.v7_relativeSplatPath flag.  See:
+                        # https://github.com/remix-run/react-router/issues/11052#issuecomment-1836589329
+                    _ it
+                        @ "resolves .. to the parent route path"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users"
+                                                        < Route 
+                                                            @ path "*"
+                                                            @ element
+                                                                < ShowResolvedPath 
+                                                                    @ path "."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "resolves . to the route path (descendant route)"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "mj"
+                                                                    @ element
+                                                                        < ShowResolvedPath 
+                                                                            @ path "."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users/mj","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "resolves .. to the parent route path (descendant route)"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users/*"
+                                                        @ element
+                                                            < Routes 
+                                                                < Route 
+                                                                    @ path "mj"
+                                                                    @ element
+                                                                        < ShowResolvedPath 
+                                                                            @ path ".."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "in a param route"
+                => 
+                    _ it
+                        @ "resolves . to the route path"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users"
+                                                        < Route 
+                                                            @ path ":name"
+                                                            @ element
+                                                                < ShowResolvedPath 
+                                                                    @ path "."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users/mj","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "resolves .. to the parent route"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/users"
+                                                        < Route 
+                                                            @ path ":name"
+                                                            @ element
+                                                                < ShowResolvedPath 
+                                                                    @ path ".."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {"pathname":"/users","search":"","hash":""}&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                # See: https://github.com/remix-run/react-router/issues/11052#issuecomment-1836589329
+            _ describe
+                @ "future.v7_relativeSplatPath"
+                => 
+                    function App
+                        { 
+                            @ enableFlag
+                            :{ 
+                                :p enableFlag
+                                    :boolean 
+                        let routeConfigs
+                            [ 
+                                { 
+                                    @ routes
+                                        < Route 
+                                            @ path "/foo/bar"
+                                            @ element
+                                                < Component 
+                                                    @ desc '<Route path="/foo/bar" />'
+                                { 
+                                    @ routes
+                                        < Route 
+                                            @ path "/foo/:param"
+                                            @ element
+                                                < Component 
+                                                    @ desc '<Route path="/foo/:param" />'
+                                { 
+                                    @ routes
+                                        < Route 
+                                            @ path "/foo"
+                                            < Route 
+                                                @ path ":param"
+                                                @ element
+                                                    < Component 
+                                                        @ desc '<Route path="/foo"><Route path=":param" />'
+                                { 
+                                    @ routes
+                                        < Route 
+                                            @ path "/foo/*"
+                                            @ element
+                                                < Component 
+                                                    @ desc '<Route path="/foo/*" />'
+                                { 
+                                    @ routes
+                                        < Route 
+                                            @ path "foo"
+                                            < Route 
+                                                @ path "*"
+                                                @ element
+                                                    < Component 
+                                                        @ desc '<Route path="/foo"><Route path="*" />'
+                        return 
+                            < React.Fragment
+                                { 
+                                    _ routeConfigs.map
+                                        => 
+                                            param config
+                                            param idx
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/foo/bar"
+                                                @ key {idx}
+                                                @ future
+                                                    { 
+                                                        @ v7_relativeSplatPath enableFlag
+                                                < Routes 
+                                                    + {config.routes}
+                    function Component
+                        { 
+                            @ desc
+                        return 
+                            < React.Fragment
+                                { 
+                                    `lit 
+                                        + --- Routes:&nbsp;
+                                        @ desc
+                                        + &nbsp;---
+                                { 
+                                    `lit 
+                                        + useLocation():&nbsp;
+                                        @ useLocation().pathname
+                                        + 
+                                { 
+                                    `lit 
+                                        + useResolvedPath('.'):&nbsp;
+                                        @ useResolvedPath(".").pathname
+                                        + 
+                                { 
+                                    `lit 
+                                        + useResolvedPath('..'):&nbsp;
+                                        @ useResolvedPath("..").pathname
+                                        + 
+                                { 
+                                    `lit 
+                                        + useResolvedPath('..', { relative: 'path' }):&nbsp;
+                                        _ useResolvedPath
+                                            @ ".."
+                                            { 
+                                                @ relative "path"
+                                            . pathname
+                                        + 
+                                { 
+                                    `lit 
+                                        + useResolvedPath('baz/qux'):&nbsp;
+                                        @ useResolvedPath("baz/qux").pathname
+                                        + 
+                                { 
+                                    `lit 
+                                        + useResolvedPath('./baz/qux'):&nbsp;
+                                        @ useResolvedPath("./baz/qux").pathname
+                                        + \n
+                    _ it
+                        @ "when disabled, resolves splat route relative paths differently than other routes"
+                        async=> 
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < App 
+                                            @ enableFlag {false}
+                            let html = getHtml(container)
+                            set html =
+                                iif html
+                                    then html.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                                    else html
+                            _ expect(html).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       "<div>&lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/bar" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/:param" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo"><Route path=":param" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/*" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo"><Route path="*" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;       </div>"&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "when enabled, resolves splat route relative paths differently than other routes"
+                        async=> 
+                            let 
+                                { 
+                                    @ container
+                                =
+                                    _ render
+                                        < App 
+                                            @ enableFlag {true}
+                            let html = getHtml(container)
+                            set html =
+                                iif html
+                                    then html.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                                    else html
+                            _ expect(html).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       "<div>&lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/bar" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/:param" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo"><Route path=":param" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo/*" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;         --- Routes: <Route path="/foo"><Route path="*" /> ---&lf;
+                                    + &nbsp;         useLocation(): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('.'): /foo/bar&lf;
+                                    + &nbsp;         useResolvedPath('..'): /foo&lf;
+                                    + &nbsp;         useResolvedPath('..', { relative: 'path' }): /foo&lf;
+                                    + &nbsp;         useResolvedPath('baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &nbsp;         useResolvedPath('./baz/qux'): /foo/bar/baz/qux&lf;
+                                    + &lf;
+                                    + &nbsp;       </div>"&lf;
+                                    + &nbsp;    &nbsp;
+                # See: https://github.com/remix-run/react-router/issues/11052#issuecomment-1836589329
+    function getHtml
+        param container
+            :ref HTMLElement
+        return 
+            _ prettyDOM
+                @ container
+                @ undefined
+                { 
+                    @ highlight false

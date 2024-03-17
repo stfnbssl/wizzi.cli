@@ -1,0 +1,17 @@
+module
+    kind react
+    const 
+        { 
+            @ createRequire
+        = require("module")
+    const babelJest = require("babel-jest")
+    const rnRequire = createRequire(require.resolve("react-native"))
+    set module.exports =
+        _ babelJest.createTransformer
+            { 
+                [ presets
+                    @ "@babel/preset-typescript"
+                    _ rnRequire.resolve("metro-react-native-babel-preset")
+                        # RN bundles this preset, so let's load it instead of depending on it ourselves
+                [ plugins
+                    @ "babel-plugin-dev-expression"

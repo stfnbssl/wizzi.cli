@@ -1,0 +1,39 @@
+module
+    import 
+        @ createBrowserRouter
+        @ RouterProvider
+        @ useLoaderData
+        from "react-router-dom"
+    import "./index.css"
+    let router
+        _ createBrowserRouter
+            [ 
+                { 
+                    @ path "/"
+                    @ loader
+                        => 
+                            (
+                                { 
+                                    @ message "Hello Data Router!"
+                    m Component
+                        let data
+                            _ useLoaderData()
+                                :as 
+                                    :{ 
+                                        :p message
+                                            :string 
+                        return 
+                            h1 
+                                + {data.message}
+    export-default 
+        function App
+            return 
+                < RouterProvider 
+                    @ router {router}
+                    @ fallbackElement
+                        p 
+                            + Loading...
+    if import.meta.hot
+        _ import.meta.hot.dispose
+            => 
+                _ router.dispose()

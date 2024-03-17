@@ -1,0 +1,163 @@
+module
+    :import-type 
+        @ RouteObject
+        from "react-router-dom"
+    import 
+        @ Outlet
+        @ Link
+        @ useRoutes
+        @ useParams
+        from "react-router-dom"
+    export-default 
+        function App
+            let routes
+                :[ 
+                    :ref RouteObject
+                =
+                    [ 
+                        { 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            [ children
+                                { 
+                                    @ index true
+                                    @ element
+                                        < Home 
+                                { 
+                                    @ path "/courses"
+                                    @ element
+                                        < Courses 
+                                    [ children
+                                        { 
+                                            @ index true
+                                            @ element
+                                                < CoursesIndex 
+                                        { 
+                                            @ path "/courses/:id"
+                                            @ element
+                                                < Course 
+                                { 
+                                    @ path "*"
+                                    @ element
+                                        < NoMatch 
+                # The useRoutes() hook allows you to define your routes as JavaScript objects
+                # instead of <Routes> and <Route> elements. This is really just a style
+                # preference for those who prefer to not use JSX for their routes config.
+            let element = useRoutes(routes)
+                # The useRoutes() hook allows you to define your routes as JavaScript objects
+                # instead of <Routes> and <Route> elements. This is really just a style
+                # preference for those who prefer to not use JSX for their routes config.
+            return 
+                div 
+                    h1 
+                        + Route Objects Example
+                    p 
+                        + This example demonstrates how to use React Router's "route object" API&lf;        instead of the JSX API to configure your routes. Both APIs are&lf;        first-class. In fact, React Router actually uses the object-based API&lf;        internally by creating route objects from your
+                        + {" "}
+                        code 
+                            + <Route>
+                        + elements.
+                    p 
+                        + React Router exposes a
+                        code 
+                            + useRoutes()
+                        + hook that allows you to&lf;        hook into the same matching algorithm that
+                        code 
+                            + <Routes>
+                        + {" "}
+                        + uses internally to decide which
+                        code 
+                            + <Route>
+                        + to render.&lf;        When you use this hook, you get back an element that will render your&lf;        entire route hierarchy.
+                    + {element}
+    function Layout
+        return 
+            div 
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/courses"
+                                + Courses
+                        li 
+                            < Link 
+                                @ to "/nothing-here"
+                                + Nothing Here
+                hr 
+                < Outlet 
+    function Home
+        return 
+            div 
+                h2 
+                    + Home
+    function Courses
+        return 
+            div 
+                h2 
+                    + Courses
+                < Outlet 
+    function CoursesIndex
+        return 
+            div 
+                p 
+                    + Please choose a course:
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "react-fundamentals"
+                                + React Fundamentals
+                        li 
+                            < Link 
+                                @ to "advanced-react"
+                                + Advanced React
+                        li 
+                            < Link 
+                                @ to "react-router"
+                                + React Router
+    function Course
+        let 
+            { 
+                @ id
+            =
+                _ useParams
+                    :param 
+                        :literal "id"
+        return 
+            div 
+                h2 
+                    + Welcome to the
+                    { 
+                        _ id
+                            ._ split
+                                @ "-"
+                            ._ map
+                                @ capitalizeString
+                            ._ join
+                                @ " "
+                    + course!
+                p 
+                    + This is a great course. You're gonna love it!
+                < Link 
+                    @ to "/courses"
+                    + See all courses
+    function capitalizeString
+        param s
+            :string 
+        :return
+            :string 
+        return s.charAt(0).toUpperCase() + s.slice(1)
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + It looks like you're lost...
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

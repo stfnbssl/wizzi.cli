@@ -1,0 +1,32 @@
+module
+    import 
+        @ resolveTo
+        from "@remix-run/router"
+    _ describe
+        @ "resolveTo"
+        => 
+            _ it
+                @ 'resolve path without mutating the "to" argument'
+                => 
+                    const toArg
+                        { 
+                            @ pathname "../../create"
+                    const routePathnames
+                        [ 
+                            @ "/"
+                            @ "/user"
+                            @ "/user/1"
+                            @ "/user/1/edit"
+                    const locationPathname = "/user/1/edit/"
+                    let resolvedPath = resolveTo(toArg, routePathnames, locationPathname)
+                    _ expect(resolvedPath).toEqual
+                        { 
+                            @ pathname "/user/create"
+                            @ search ""
+                            @ hash ""
+                    set resolvedPath = resolveTo(toArg, routePathnames, locationPathname)
+                    _ expect(resolvedPath).toEqual
+                        { 
+                            @ pathname "/user/create"
+                            @ search ""
+                            @ hash ""

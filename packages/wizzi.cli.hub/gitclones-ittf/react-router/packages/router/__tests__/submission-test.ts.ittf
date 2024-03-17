@@ -1,0 +1,1596 @@
+module
+    :import-type 
+        @ HydrationState
+        from "../index"
+    import 
+        @ ErrorResponseImpl
+        from "../utils"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    function initializeTest
+        param init
+            :{ 
+                :p url
+                    :optional 
+                    :string 
+                :p hydrationData
+                    :optional 
+                    :ref HydrationState
+            :optional 
+        return 
+            _ setup
+                { 
+                    [ routes
+                        { 
+                            @ path ""
+                            @ id "root"
+                            @ hasErrorBoundary true
+                            @ loader true
+                            [ children
+                                { 
+                                    @ path "/"
+                                    @ id "index"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/foo"
+                                    @ id "foo"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/bar"
+                                    @ id "bar"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/baz"
+                                    @ id "baz"
+                                    @ loader true
+                                    @ action true
+                    @ hydrationData
+                        || 
+                            + init?.hydrationData
+                            { 
+                                { loaderData
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                    ... 
+                        ( 
+                            iif init?.url
+                                then
+                                    { 
+                                        [ initialEntries
+                                            @ init.url
+                                else
+                                    { 
+    _ describe
+        @ "submissions"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ describe
+                @ "submission navigations"
+                => 
+                    _ it
+                        @ "reloads all routes when a loader during an actionReload redirects"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            await 
+                                _ A.actions.foo.resolve("FOO ACTION")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "FOO ACTION"
+                            let B
+                                await 
+                                    _ A.loaders.foo.redirect("/bar")
+                            await 
+                                _ A.loaders.root.reject("ROOT ERROR")
+                            await 
+                                _ B.loaders.root.resolve("ROOT LOADER 2")
+                            await 
+                                _ B.loaders.bar.resolve("BAR LOADER")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ actionData null
+                                    { loaderData
+                                        @ root "ROOT LOADER 2"
+                                        @ bar "BAR LOADER"
+                                    { errors
+                    _ it
+                        @ "commits action data as soon as it lands"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(t.router.state.actionData).toBeNull()
+                            await 
+                                _ A.actions.foo.resolve("A")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "A"
+                    _ it
+                        @ "reloads all routes after the action"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            await 
+                                _ A.actions.foo.resolve("FOO ACTION")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "FOO ACTION"
+                            await 
+                                _ A.loaders.foo.resolve("A LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                                        # old data
+                                        # old data
+                            await 
+                                _ A.loaders.root.resolve("ROOT LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "FOO ACTION"
+                                        # kept around on action reload
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ foo "A LOADER"
+                                    @ root "ROOT LOADER"
+                    _ it
+                        @ "reloads all routes after action redirect (throw)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            let B
+                                await 
+                                    _ A.actions.foo.redirect("/bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            await 
+                                _ B.loaders.root.resolve("ROOT LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                                        # old data
+                                        # old data
+                            await 
+                                _ B.loaders.bar.resolve("B LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ bar "B LOADER"
+                                    @ root "ROOT LOADER"
+                    _ it
+                        @ "reloads all routes after action redirect (return)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            let B
+                                await 
+                                    _ A.actions.foo.redirectReturn("/bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            await 
+                                _ B.loaders.root.resolve("ROOT LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                                        # old data
+                                        # old data
+                            await 
+                                _ B.loaders.bar.resolve("B LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ bar "B LOADER"
+                                    @ root "ROOT LOADER"
+                    _ it
+                        @ "reloads all routes after action redirect (chained redirects)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            let B
+                                await 
+                                    _ A.actions.foo.redirectReturn("/bar")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            let C
+                                await 
+                                    _ B.loaders.bar.redirectReturn("/baz")
+                            _ expect(C.loaders.root.stub.mock.calls.length).toBe(1)
+                            await 
+                                _ C.loaders.root.resolve("ROOT**")
+                            await 
+                                _ C.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ baz "BAZ"
+                                    @ root "ROOT**"
+                    _ it
+                        @ "removes action data at new locations"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ A.actions.foo.resolve("A ACTION")
+                            await 
+                                _ A.loaders.root.resolve("A ROOT")
+                            await 
+                                _ A.loaders.foo.resolve("A LOADER")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "A ACTION"
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                            await 
+                                _ B.loaders.bar.resolve("B LOADER")
+                            _ expect(t.router.state.actionData).toBeNull()
+                    _ it
+                        @ "removes action data after action redirect (w/o loaders to run)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ index true
+                                                @ id "index"
+                                                @ action true
+                                            { 
+                                                @ path "/other"
+                                                @ id "other"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh ""
+                            await 
+                                _ A.actions.index.resolve
+                                    { 
+                                        @ error "invalid"
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    { index
+                                        @ error "invalid"
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ B.actions.index.redirectReturn("/other")
+                            _ expect(t.router.state.actionData).toBeNull()
+                    _ it
+                        @ "removes action data after action redirect (w/ loaders to run)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ index true
+                                                @ id "index"
+                                                @ action true
+                                            { 
+                                                @ path "/other"
+                                                @ id "other"
+                                                @ loader true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh ""
+                            await 
+                                _ A.actions.index.resolve
+                                    { 
+                                        @ error "invalid"
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    { index
+                                        @ error "invalid"
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            let C
+                                await 
+                                    _ B.actions.index.redirectReturn("/other")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    { index
+                                        @ error "invalid"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ C.loaders.other.resolve("OTHER")
+                            _ expect(t.router.state.actionData).toBeNull()
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ other "OTHER"
+                    _ it
+                        @ "removes action data after action redirect to current location"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                                @ action true
+                                                @ loader true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh ""
+                            await 
+                                _ A.actions.index.resolve
+                                    { 
+                                        @ error "invalid"
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    { index
+                                        @ error "invalid"
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            let C
+                                await 
+                                    _ B.actions.index.redirectReturn("/")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    { index
+                                        @ error "invalid"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ C.loaders.index.resolve("NEW")
+                            _ expect(t.router.state.actionData).toBeNull()
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ index "NEW"
+                    _ it
+                        @ "uses the proper action for index routes"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "parent"
+                                                [ children
+                                                    { 
+                                                        @ path "/child"
+                                                        @ id "child"
+                                                        @ hasErrorBoundary true
+                                                        @ action true
+                                                        [ children
+                                                            { 
+                                                                @ index true
+                                                                @ id "childIndex"
+                                                                @ hasErrorBoundary true
+                                                                @ action true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ A.actions.child.resolve("CHILD")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ child "CHILD"
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/child?index"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ B.actions.childIndex.resolve("CHILD INDEX")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ childIndex "CHILD INDEX"
+                    _ it
+                        @ "uses the proper action for pathless layout routes"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "parent"
+                                                @ path "/parent"
+                                                @ action true
+                                                [ children
+                                                    { 
+                                                        @ hasErrorBoundary true
+                                                        [ children
+                                                            { 
+                                                                @ id "index"
+                                                                @ index true
+                                                                @ action true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/parent"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ A.actions.parent.resolve("PARENT")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/parent"
+                                    { actionData
+                                        @ parent "PARENT"
+                                    @ errors null
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/parent?index"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ B.actions.index.resolve("INDEX")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/parent"
+                                        @ search "?index"
+                                    { actionData
+                                        @ index "INDEX"
+                                    @ errors null
+                    _ it
+                        @ "retains the index match when submitting to a layout route"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "parent"
+                                                @ loader true
+                                                @ action true
+                                                [ children
+                                                    { 
+                                                        @ path "/child"
+                                                        @ id "child"
+                                                        @ loader true
+                                                        @ action true
+                                                        [ children
+                                                            { 
+                                                                @ index true
+                                                                @ id "childIndex"
+                                                                @ loader true
+                                                                @ action true
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            await 
+                                _ A.actions.child.resolve("CHILD ACTION")
+                            await 
+                                _ A.loaders.parent.resolve("PARENT LOADER")
+                            await 
+                                _ A.loaders.child.resolve("CHILD LOADER")
+                            await 
+                                _ A.loaders.childIndex.resolve("CHILD INDEX LOADER")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ parent "PARENT LOADER"
+                                    @ child "CHILD LOADER"
+                                    @ childIndex "CHILD INDEX LOADER"
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ child "CHILD ACTION"
+                            _ expect
+                                _ t.router.state.matches.map
+                                    => 
+                                        param m
+                                        +
+                                            @expr m.route.id
+                                ._ toEqual
+                                    [ 
+                                        @ "parent"
+                                        @ "child"
+                                        @ "childIndex"
+                    _ describe
+                        @ "formMethod casing"
+                        => 
+                            _ it
+                                @ "normalizes to lowercase in v6"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ id "root"
+                                                        @ path "/"
+                                                        [ children
+                                                            { 
+                                                                @ id "child"
+                                                                @ path "child"
+                                                                @ loader true
+                                                                @ action true
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "get"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.navigation.formMethod).toBe("get")
+                                    await 
+                                        _ A.loaders.child.resolve("LOADER")
+                                    _ expect(t.router.state.navigation.formMethod).toBeUndefined()
+                                    await 
+                                        _ t.router.navigate("/")
+                                    let B
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "POST"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.navigation.formMethod).toBe("post")
+                                    await 
+                                        _ B.actions.child.resolve("ACTION")
+                                    await 
+                                        _ B.loaders.child.resolve("LOADER")
+                                    _ expect(t.router.state.navigation.formMethod).toBeUndefined()
+                                    await 
+                                        _ t.router.navigate("/")
+                                    let C
+                                        await 
+                                            _ t.fetch
+                                                @ "/child"
+                                                @ "key"
+                                                { 
+                                                    @ formMethod "GET"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBe("get")
+                                    await 
+                                        _ C.loaders.child.resolve("LOADER FETCH")
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBeUndefined()
+                                    let D
+                                        await 
+                                            _ t.fetch
+                                                @ "/child"
+                                                @ "key"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBe("post")
+                                    await 
+                                        _ D.actions.child.resolve("ACTION FETCH")
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBeUndefined()
+                            _ it
+                                @ "normalizes to uppercase in v7 via v7_normalizeFormMethod"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ id "root"
+                                                        @ path "/"
+                                                        [ children
+                                                            { 
+                                                                @ id "child"
+                                                                @ path "child"
+                                                                @ loader true
+                                                                @ action true
+                                                { future
+                                                    @ v7_normalizeFormMethod true
+                                                    @ v7_prependBasename false
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "get"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.navigation.formMethod).toBe("GET")
+                                    await 
+                                        _ A.loaders.child.resolve("LOADER")
+                                    _ expect(t.router.state.navigation.formMethod).toBeUndefined()
+                                    await 
+                                        _ t.router.navigate("/")
+                                    let B
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "POST"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.navigation.formMethod).toBe("POST")
+                                    await 
+                                        _ B.actions.child.resolve("ACTION")
+                                    await 
+                                        _ B.loaders.child.resolve("LOADER")
+                                    _ expect(t.router.state.navigation.formMethod).toBeUndefined()
+                                    await 
+                                        _ t.router.navigate("/")
+                                    let C
+                                        await 
+                                            _ t.fetch
+                                                @ "/child"
+                                                @ "key"
+                                                { 
+                                                    @ formMethod "GET"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBe("GET")
+                                    await 
+                                        _ C.loaders.child.resolve("LOADER FETCH")
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBeUndefined()
+                                    let D
+                                        await 
+                                            _ t.fetch
+                                                @ "/child"
+                                                @ "key"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBe("POST")
+                                    await 
+                                        _ D.actions.child.resolve("ACTION FETCH")
+                                    _ expect(t.router.state.fetchers.get("key")?.formMethod).toBeUndefined()
+            _ describe
+                @ "action errors"
+                => 
+                    _ describe
+                        @ "with an error boundary in the action route"
+                        => 
+                            _ it
+                                @ "uses the action route's error boundary"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ hasErrorBoundary true
+                                                                @ action true
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                                @ gosh "dang"
+                                    await 
+                                        _ A.actions.child.reject(Error("Kaboom!"))
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ child new Error("Kaboom!")
+                            _ it
+                                @ "loads parent data, but not action data"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        @ loader true
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ hasErrorBoundary true
+                                                                @ loader true
+                                                                @ action true
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                                @ gosh "dang"
+                                    await 
+                                        _ A.actions.child.reject(Error("Kaboom!"))
+                                    _ expect(A.loaders.parent.stub.mock.calls.length).toBe(1)
+                                    _ expect(A.loaders.child.stub.mock.calls.length).toBe(0)
+                                    await 
+                                        _ A.loaders.parent.resolve("PARENT LOADER")
+                                    _ expect(t.router.state).toMatchObject
+                                        { 
+                                            { loaderData
+                                                @ parent "PARENT LOADER"
+                                            @ actionData null
+                                            { errors
+                                                @ child new Error("Kaboom!")
+                    _ describe
+                        @ "with an error boundary above the action route"
+                        => 
+                            _ it
+                                @ "uses the nearest error boundary"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        @ hasErrorBoundary true
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ action true
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                                @ gosh "dang"
+                                    await 
+                                        _ A.actions.child.reject(Error("Kaboom!"))
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ parent new Error("Kaboom!")
+                    _ describe
+                        @ "with a parent loader that throws also, good grief!"
+                        => 
+                            _ it
+                                @ "uses action error but nearest errorBoundary to parent"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "root"
+                                                        @ hasErrorBoundary true
+                                                        [ children
+                                                            { 
+                                                                @ path "/parent"
+                                                                @ id "parent"
+                                                                @ loader true
+                                                                [ children
+                                                                    { 
+                                                                        @ path "/parent/child"
+                                                                        @ id "child"
+                                                                        @ action true
+                                                                        @ hasErrorBoundary true
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/parent/child"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                                @ gosh "dang"
+                                    await 
+                                        _ A.actions.child.reject(Error("Kaboom!"))
+                                    await 
+                                        _ A.loaders.parent.reject(Error("Should not see this!"))
+                                    _ expect(t.router.state).toMatchObject
+                                        { 
+                                            { loaderData
+                                            { actionData
+                                            { errors
+                                                @ root new Error("Kaboom!")
+                    _ describe
+                        @ "with no corresponding action"
+                        => 
+                            _ it
+                                @ "throws a 405 ErrorResponse"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ hasErrorBoundary true
+                                    let spy
+                                        _ jest.spyOn(console, "warn").mockImplementation
+                                            => 
+                                    await 
+                                        _ t.navigate
+                                            @ "/child"
+                                            { 
+                                                @ formMethod "post"
+                                                @ formData
+                                                    _ createFormData
+                                                        { 
+                                                            @ gosh "dang"
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ child new ErrorResponseImpl(405, "Method Not Allowed", Error('You made a POST request to "/child" but did not provide an ' + '`action` for route "child", so there is no way to handle the request.'), true)
+                                    _ spy.mockReset()
+                            _ it
+                                @ "still calls appropriate loaders after 405 ErrorResponse"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        @ loader true
+                                                        [ children
+                                                            { 
+                                                                @ path "child"
+                                                                @ id "child"
+                                                                @ loader true
+                                                                [ children
+                                                                    { 
+                                                                        @ path "grandchild"
+                                                                        @ id "grandchild"
+                                                                        @ loader true
+                                                                        @ hasErrorBoundary true
+                                                                            # no action to post to
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ parent "PARENT DATA"
+                                    let A
+                                        await 
+                                            _ t.navigate
+                                                @ "/child/grandchild"
+                                                { 
+                                                    @ formMethod "post"
+                                                    @ formData
+                                                        _ createFormData
+                                                            { 
+                                                                @ gosh "dang"
+                                    _ expect(t.router.state.errors).toBe(null)
+                                    _ expect(A.loaders.parent.stub.mock.calls.length).toBe(1)
+                                        # called again for revalidation
+                                    _ expect(A.loaders.child.stub.mock.calls.length).toBe(1)
+                                        # called again for revalidation
+                                        # called because it's above error
+                                    _ expect(A.loaders.grandchild.stub.mock.calls.length).toBe(0)
+                                        # called because it's above error
+                                        # don't call due to error
+                                    await 
+                                        _ A.loaders.parent.resolve("PARENT DATA*")
+                                        # don't call due to error
+                                    await 
+                                        _ A.loaders.child.resolve("CHILD DATA")
+                                    _ expect(t.router.state.loaderData).toEqual
+                                        { 
+                                            @ parent "PARENT DATA*"
+                                            @ child "CHILD DATA"
+                                    _ expect(t.router.state.actionData).toBe(null)
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ grandchild new ErrorResponseImpl(405, "Method Not Allowed", Error('You made a POST request to "/child/grandchild" but did not ' + 'provide an `action` for route "grandchild", so there is no way ' + "to handle the request."), true)
+                    _ it
+                        @ "clears previous actionData at the throwing route"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "parent"
+                                                @ loader true
+                                                [ children
+                                                    { 
+                                                        @ path "/child"
+                                                        @ id "child"
+                                                        @ hasErrorBoundary true
+                                                        @ action true
+                                                        @ loader true
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ nav.actions.child.resolve("ACTION")
+                            await 
+                                _ nav.loaders.parent.resolve("PARENT")
+                            await 
+                                _ nav.loaders.child.resolve("CHILD")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ child "ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ parent "PARENT"
+                                    @ child "CHILD"
+                            _ expect(t.router.state.errors).toEqual(null)
+                            let nav2
+                                await 
+                                    _ t.navigate
+                                        @ "/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key2 "value2"
+                            await 
+                                _ nav2.actions.child.reject(Error("Kaboom!"))
+                            await 
+                                _ nav2.loaders.parent.resolve("PARENT2")
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ parent "PARENT2"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ child new Error("Kaboom!")
+                    _ it
+                        @ "does not clear previous loaderData at the handling route"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "parent"
+                                                @ loader true
+                                                @ hasErrorBoundary true
+                                                [ children
+                                                    { 
+                                                        @ path "/child"
+                                                        @ id "child"
+                                                        @ action true
+                                                        @ loader true
+                            let nav
+                                await 
+                                    _ t.navigate("/child")
+                            await 
+                                _ nav.loaders.parent.resolve("PARENT")
+                            await 
+                                _ nav.loaders.child.resolve("CHILD")
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ parent "PARENT"
+                                    @ child "CHILD"
+                            _ expect(t.router.state.errors).toEqual(null)
+                            let nav2
+                                await 
+                                    _ t.navigate
+                                        @ "/child"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key2 "value2"
+                            await 
+                                _ nav2.actions.child.reject(Error("Kaboom!"))
+                            _ expect(t.router.state.actionData).toEqual(null)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ parent "PARENT"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ parent new Error("Kaboom!")
+            _ describe
+                @ "submission encTypes"
+                => 
+                    async-function validateFormDataSubmission
+                        param body
+                            :any 
+                        param includeFormEncType
+                            :boolean 
+                        let t
+                            _ setup
+                                { 
+                                    [ routes
+                                        { 
+                                            @ id "root"
+                                            @ path "/"
+                                            @ action true
+                        let nav
+                            await 
+                                _ t.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        ... 
+                                            ( 
+                                                iif includeFormEncType
+                                                    then
+                                                        { 
+                                                            @ formEncType "application/x-www-form-urlencoded"
+                                                    else
+                                                        { 
+                                        @ body
+                        _ expect(t.router.state.navigation.text).toBeUndefined()
+                        _ expect(t.router.state.navigation.formData?.get?.("a")).toBe("1")
+                        _ expect(t.router.state.navigation.formData?.get?.("b")).toBe("2")
+                        _ expect(t.router.state.navigation.json).toBeUndefined()
+                        await 
+                            _ nav.actions.root.resolve("ACTION")
+                        _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                            { 
+                                { params
+                                @ request expect.any(Request)
+                        let request = nav.actions.root.stub.mock.calls[0][0].request
+                        _ expect(request.method).toBe("POST")
+                        _ expect(request.url).toBe("http://localhost/")
+                        _ expect(request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded;charset=UTF-8")
+                        let fd
+                            await 
+                                _ request.formData()
+                        _ expect(fd.get("a")).toBe("1")
+                        _ expect(fd.get("b")).toBe("2")
+                    async-function validateJsonObjectSubmission
+                        param body
+                            :any 
+                        let t
+                            _ setup
+                                { 
+                                    [ routes
+                                        { 
+                                            @ id "root"
+                                            @ path "/"
+                                            @ action true
+                        let nav
+                            await 
+                                _ t.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formEncType "application/json"
+                                        @ body
+                        _ expect(t.router.state.navigation.text).toBeUndefined()
+                        _ expect(t.router.state.navigation.json?["a"]).toBe(1)
+                        _ expect(t.router.state.navigation.json?["b"]).toBe(2)
+                        _ expect(t.router.state.navigation.formData).toBeUndefined()
+                        await 
+                            _ nav.actions.root.resolve("ACTION")
+                        _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                            { 
+                                { params
+                                @ request expect.any(Request)
+                        let request = nav.actions.root.stub.mock.calls[0][0].request
+                        _ expect(request.method).toBe("POST")
+                        _ expect(request.url).toBe("http://localhost/")
+                        _ expect(request.headers.get("Content-Type")).toBe("application/json")
+                        let json
+                            await 
+                                _ request.json()
+                        _ expect(json["a"]).toBe(1)
+                        _ expect(json["b"]).toBe(2)
+                    async-function validateJsonArraySubmission
+                        param body
+                            :any 
+                        let t
+                            _ setup
+                                { 
+                                    [ routes
+                                        { 
+                                            @ id "root"
+                                            @ path "/"
+                                            @ action true
+                        let nav
+                            await 
+                                _ t.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formEncType "application/json"
+                                        @ body
+                        _ expect(t.router.state.navigation.text).toBeUndefined()
+                        _ expect(t.router.state.navigation.json?[0]).toBe(1)
+                        _ expect(t.router.state.navigation.json?[1]).toBe(2)
+                        _ expect(t.router.state.navigation.formData).toBeUndefined()
+                        await 
+                            _ nav.actions.root.resolve("ACTION")
+                        _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                            { 
+                                { params
+                                @ request expect.any(Request)
+                        let request = nav.actions.root.stub.mock.calls[0][0].request
+                        _ expect(request.method).toBe("POST")
+                        _ expect(request.url).toBe("http://localhost/")
+                        _ expect(request.headers.get("Content-Type")).toBe("application/json")
+                        let json
+                            await 
+                                _ request.json()
+                        _ expect(json[0]).toBe(1)
+                        _ expect(json[1]).toBe(2)
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as implicit application/x-www-form-urlencoded (object)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission
+                                    { 
+                                        @ a "1"
+                                        @ b "2"
+                                    @ false
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as implicit application/x-www-form-urlencoded (string)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission("a=1&b=2", false)
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as implicit application/x-www-form-urlencoded (string with leading ?)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission("?a=1&b=2", false)
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as implicit application/x-www-form-urlencoded (entries array)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission
+                                    [ 
+                                        [ 
+                                            @ "a"
+                                            @ "1"
+                                        [ 
+                                            @ "b"
+                                            @ "2"
+                                    @ false
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as explicit application/x-www-form-urlencoded (object)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission
+                                    { 
+                                        @ a "1"
+                                        @ b "2"
+                                    @ true
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as explicit application/x-www-form-urlencoded (string)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission("a=1&b=2", true)
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as explicit application/x-www-form-urlencoded (string with leading ?)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission("?a=1&b=2", true)
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as explicit application/x-www-form-urlencoded (entries array)"
+                        async=> 
+                            await 
+                                _ validateFormDataSubmission
+                                    [ 
+                                        [ 
+                                            @ "a"
+                                            @ "1"
+                                        [ 
+                                            @ "b"
+                                            @ "2"
+                                    @ true
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as application/json (object)"
+                        async=> 
+                            await 
+                                _ validateJsonObjectSubmission
+                                    { 
+                                        @ a 1
+                                        @ b 2
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as application/json (object string)"
+                        async=> 
+                            await 
+                                _ validateJsonObjectSubmission('{"a":1,"b":2}')
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as application/json (array)"
+                        async=> 
+                            await 
+                                _ validateJsonArraySubmission
+                                    [ 
+                                        @ 1
+                                        @ 2
+                        # eslint-disable-next-line jest/expect-expect
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as application/json (array string)"
+                        async=> 
+                            await 
+                                _ validateJsonArraySubmission("[1,2]")
+                        # eslint-disable-next-line jest/expect-expect
+                    _ it
+                        @ "serializes body as text/plain (string)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                            let body = "plain text"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formEncType "text/plain"
+                                            @ body
+                            _ expect(t.router.state.navigation.text).toBe(body)
+                            _ expect(t.router.state.navigation.formData).toBeUndefined()
+                            _ expect(t.router.state.navigation.json).toBeUndefined()
+                            await 
+                                _ nav.actions.root.resolve("ACTION")
+                            _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                            let request = nav.actions.root.stub.mock.calls[0][0].request
+                            _ expect(request.method).toBe("POST")
+                            _ expect(request.url).toBe("http://localhost/")
+                            _ expect(request.headers.get("Content-Type")).toBe("text/plain;charset=UTF-8")
+                            _ expect
+                                await 
+                                    _ request.text()
+                                ._ toEqual
+                                    @ body
+                    _ it
+                        @ "serializes body as text/plain (FormData)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                            let body = new FormData()
+                            _ body.append("a", "1")
+                            _ body.append("b", "2")
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formEncType "text/plain"
+                                            @ body
+                            _ expect(t.router.state.navigation.text).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     "a=1&lf;
+                                    + &nbsp;     b=2&lf;
+                                    + &nbsp;     "&lf;
+                                    + &nbsp;  &nbsp;
+                            _ expect(t.router.state.navigation.formData).toBeUndefined()
+                            _ expect(t.router.state.navigation.json).toBeUndefined()
+                            await 
+                                _ nav.actions.root.resolve("ACTION")
+                            _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                            let request = nav.actions.root.stub.mock.calls[0][0].request
+                            _ expect(request.method).toBe("POST")
+                            _ expect(request.url).toBe("http://localhost/")
+                            _ expect(request.headers.get("Content-Type")).toBe("text/plain;charset=UTF-8")
+                            _ expect
+                                await 
+                                    _ request.text()
+                                ._ toMatchInlineSnapshot
+                                    `lit 
+                                        + &lf;
+                                        + &nbsp;     "a=1&lf;
+                                        + &nbsp;     b=2&lf;
+                                        + &nbsp;     "&lf;
+                                        + &nbsp;  &nbsp;
+                    _ it
+                        @ "serializes body as FormData when encType=undefined"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                            let body
+                                { 
+                                    @ a "1"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ body
+                            _ expect(t.router.state.navigation.text).toBeUndefined()
+                            _ expect(t.router.state.navigation.formData?.get?.("a")).toBe("1")
+                            _ expect(t.router.state.navigation.json).toBeUndefined()
+                            await 
+                                _ nav.actions.root.resolve("ACTION")
+                            _ expect(nav.actions.root.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                            let request = nav.actions.root.stub.mock.calls[0][0].request
+                            _ expect(request.method).toBe("POST")
+                            _ expect
+                                _ 
+                                    _ request.formData()
+                                    ._ get
+                                        @ "a"
+                                ._ toBe
+                                    @ "1"
+                            _ expect(request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded;charset=UTF-8")
+                    _ it
+                        @ "throws on invalid URLSearchParams submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                            await 
+                                _ t.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formEncType "application/x-www-form-urlencoded"
+                                        [ body
+                                            @ "you"
+                                            @ "cant"
+                                            @ "do"
+                                            @ "this"
+                            _ expect(t.router.state.errors).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     {&lf;
+                                    + &nbsp;       "root": ErrorResponseImpl {&lf;
+                                    + &nbsp;         "data": "Error: Unable to encode submission body",&lf;
+                                    + &nbsp;         "error": [Error: Unable to encode submission body],&lf;
+                                    + &nbsp;         "internal": true,&lf;
+                                    + &nbsp;         "status": 400,&lf;
+                                    + &nbsp;         "statusText": "Bad Request",&lf;
+                                    + &nbsp;       },&lf;
+                                    + &nbsp;     }&lf;
+                                    + &nbsp;  &nbsp;
+                    _ it
+                        @ "throws on invalid JSON submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                            await 
+                                _ t.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formEncType "application/json"
+                                        @ body '{ not: "valid }'
+                            _ expect(t.router.state.errors).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;     {&lf;
+                                    + &nbsp;       "root": ErrorResponseImpl {&lf;
+                                    + &nbsp;         "data": "Error: Unable to encode submission body",&lf;
+                                    + &nbsp;         "error": [Error: Unable to encode submission body],&lf;
+                                    + &nbsp;         "internal": true,&lf;
+                                    + &nbsp;         "status": 400,&lf;
+                                    + &nbsp;         "statusText": "Bad Request",&lf;
+                                    + &nbsp;       },&lf;
+                                    + &nbsp;     }&lf;
+                                    + &nbsp;  &nbsp;

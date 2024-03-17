@@ -1,0 +1,17 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom"
+    import 
+        @ BrowserRouter
+        from "react-router-dom"
+    import App from "./App"
+    import "./index.css"
+    _ ReactDOM.render
+        < React.StrictMode 
+            < BrowserRouter 
+                < App 
+        _ document.getElementById("root")

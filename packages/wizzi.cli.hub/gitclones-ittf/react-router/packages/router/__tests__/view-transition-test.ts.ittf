@@ -1,0 +1,108 @@
+module
+    import 
+        @ IDLE_NAVIGATION
+        from "../router"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    _ describe
+        @ "view transitions"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ it
+                @ "only enables view transitions when specified for the navigation"
+                => 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                    { 
+                                        @ path "/a"
+                                    { 
+                                        @ path "/b"
+                    let spy = jest.fn()
+                    let unsubscribe = t.router.subscribe(spy)
+                        # PUSH / -> /a - w/o transition
+                    _ t.navigate("/a")
+                        # PUSH / -> /a - w/o transition
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ navigation IDLE_NAVIGATION
+                                @ location
+                                    _ expect.objectContaining
+                                        { 
+                                            @ pathname "/a"
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_viewTransitionOpts undefined
+                        # PUSH /a -> /b - w/ transition
+                    _ t.navigate
+                        @ "/b"
+                        { 
+                            @ unstable_viewTransition true
+                        # PUSH /a -> /b - w/ transition
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ navigation IDLE_NAVIGATION
+                                @ location
+                                    _ expect.objectContaining
+                                        { 
+                                            @ pathname "/b"
+                        _ expect.objectContaining
+                            { 
+                                { unstable_viewTransitionOpts
+                                    @ currentLocation
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/a"
+                                    @ nextLocation
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/b"
+                        # POP /b -> /a - w/ transition (cached from above)
+                    _ t.navigate(-1)
+                        # POP /b -> /a - w/ transition (cached from above)
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ navigation IDLE_NAVIGATION
+                                @ location
+                                    _ expect.objectContaining
+                                        { 
+                                            @ pathname "/a"
+                        _ expect.objectContaining
+                            { 
+                                { unstable_viewTransitionOpts
+                                    @ currentLocation
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/a"
+                                        # Args reversed on POP so same hooks apply
+                                    @ nextLocation
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/b"
+                        # POP /a -> / - No transition
+                    _ t.navigate(-1)
+                        # POP /a -> / - No transition
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.objectContaining
+                            { 
+                                @ navigation IDLE_NAVIGATION
+                                @ location
+                                    _ expect.objectContaining
+                                        { 
+                                            @ pathname "/"
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_viewTransitionOpts undefined
+                    _ unsubscribe()
+                    _ t.router.dispose()

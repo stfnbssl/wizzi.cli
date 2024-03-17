@@ -1,0 +1,235 @@
+module
+    import 
+        @ createMemoryHistory
+        @ createRouter
+        from "../index"
+        #
+            # *
+            # * @jest-environment node
+            # 
+        # This suite of tests specifically runs in the node jest environment to catch
+        # issues when window is not present
+    _ describe
+        @ "a memory router"
+        => 
+            _ it
+                @ "initializes properly"
+                async=> 
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                @ history createMemoryHistory()
+                    _ expect(router.state).toEqual
+                        { 
+                            @ historyAction "POP"
+                            { loaderData
+                            @ actionData null
+                            @ errors null
+                            { location
+                                @ hash ""
+                                @ key expect.any(String)
+                                @ pathname "/"
+                                @ search ""
+                                @ state null
+                            [ matches
+                                { 
+                                    { params
+                                    @ pathname "/"
+                                    @ pathnameBase "/"
+                                    { route
+                                        @ id "0"
+                                        @ hasErrorBoundary false
+                                        @ path "/"
+                            @ initialized true
+                            { navigation
+                                @ location undefined
+                                @ state "idle"
+                            @ preventScrollReset false
+                            @ restoreScrollPosition null
+                            @ revalidation "idle"
+                            @ fetchers new Map()
+                            @ blockers new Map()
+                    _ router.dispose()
+            _ it
+                @ "can create Requests without window"
+                async=> 
+                    let loaderSpy = jest.fn()
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                    { 
+                                        @ path "/a"
+                                        @ loader loaderSpy
+                                @ history createMemoryHistory()
+                    _ router.navigate("/a")
+                    _ expect(loaderSpy.mock.calls[0][0].request.url).toBe("http://localhost/a")
+                    _ router.dispose()
+            _ it
+                @ "can create URLs without window"
+                async=> 
+                    let shouldRevalidateSpy = jest.fn()
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ loader
+                                            => 
+                                                + "ROOT"
+                                        @ shouldRevalidate shouldRevalidateSpy
+                                        [ children
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ path "a"
+                                @ history createMemoryHistory()
+                                { hydrationData
+                                    { loaderData
+                                        @ "0" "ROOT"
+                    _ router.navigate("/a")
+                    _ expect(shouldRevalidateSpy.mock.calls[0][0].currentUrl.toString()).toBe("http://localhost/")
+                    _ expect(shouldRevalidateSpy.mock.calls[0][0].nextUrl.toString()).toBe("http://localhost/a")
+                    _ router.dispose()
+            _ it
+                @ "properly handles same-origin absolute URLs"
+                async=> 
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        [ children
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ path "a"
+                                                @ loader
+                                                    => 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 302
+                                                                { headers
+                                                                    @ Location "http://localhost/b"
+                                            { 
+                                                @ path "b"
+                                @ history createMemoryHistory()
+                    await 
+                        _ router.navigate("/a")
+                    _ expect(router.state.location).toMatchObject
+                        { 
+                            @ hash ""
+                            @ pathname "/b"
+                            @ search ""
+            _ it
+                @ "properly handles protocol-less same-origin absolute URLs"
+                async=> 
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        [ children
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ path "a"
+                                                @ loader
+                                                    => 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 302
+                                                                { headers
+                                                                    @ Location "//localhost/b"
+                                            { 
+                                                @ path "b"
+                                @ history createMemoryHistory()
+                    await 
+                        _ router.navigate("/a")
+                    _ expect(router.state.location).toMatchObject
+                        { 
+                            @ hash ""
+                            @ pathname "/b"
+                            @ search ""
+            _ it
+                @ "can submit non-FormData values without window"
+                async=> 
+                    let actionSpy = jest.fn()
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ action actionSpy
+                                @ history createMemoryHistory()
+                    _ router.navigate
+                        @ "/"
+                        { 
+                            @ formMethod "post"
+                            @ formEncType "application/json"
+                            { body
+                                @ key "value"
+                    let request = actionSpy.mock.calls[0][0].request
+                    _ expect
+                        await 
+                            _ request.json()
+                        ._ toEqual
+                            { 
+                                @ key "value"
+                    _ router.navigate
+                        @ "/"
+                        { 
+                            @ formMethod "post"
+                            @ formEncType "text/plain"
+                            @ body "body"
+                    set request = actionSpy.mock.calls[1][0].request
+                    _ expect
+                        await 
+                            _ request.text()
+                        ._ toEqual
+                            @ "body"
+                    _ router.dispose()
+            _ it
+                @ "throws on submitting FormData when it's not available"
+                async=> 
+                    if global.FormData
+                        _ expect(true).toBe(true)
+                            # This is globally available in Node 18, this test is primarily for Node 16
+                            # eslint-disable-next-line jest/no-conditional-expect
+                        return 
+                    let actionSpy = jest.fn()
+                    let router
+                        _ createRouter
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ action actionSpy
+                                @ history createMemoryHistory()
+                    await 
+                        _ expect
+                            => 
+                                _ router.navigate
+                                    @ "/"
+                                    { 
+                                        @ formMethod "post"
+                                        { body
+                                            @ key "value"
+                            . rejects
+                            ._ toThrowErrorMatchingInlineSnapshot
+                                `lit 
+                                    + "FormData is not available in this environment"
+                    _ router.dispose()
+        # This suite of tests specifically runs in the node jest environment to catch
+        # issues when window is not present

@@ -1,0 +1,96 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "A <Route>"
+        => 
+            _ it
+                @ "renders its `element` prop"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "renders its `Component` prop"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ Component
+                                                    => 
+                                                        h1 
+                                                            + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "renders its child routes when no `element` prop is given"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/app/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "app"
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        h1 
+                                                            + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;

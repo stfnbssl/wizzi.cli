@@ -1,0 +1,247 @@
+module
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    _ describe
+        @ "flushSync"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ it
+                @ "supports GET navigations with flushSync"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                    { 
+                                        @ id "a"
+                                        @ path "/a"
+                                        @ loader true
+                                    { 
+                                        @ id "b"
+                                        @ path "/b"
+                                        @ loader true
+                    let spy = jest.fn()
+                    let unsubscribe = t.router.subscribe(spy)
+                    let A
+                        await 
+                            _ t.navigate("/a")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    await 
+                        _ A.loaders.a.resolve("A")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    let B
+                        await 
+                            _ t.navigate
+                                @ "/b"
+                                { 
+                                    @ unstable_flushSync true
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync true
+                    await 
+                        _ B.loaders.b.resolve("B")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ unsubscribe()
+                    _ t.router.dispose()
+            _ it
+                @ "supports POST navigations with flushSync"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                    { 
+                                        @ id "a"
+                                        @ path "/a"
+                                        @ action true
+                                    { 
+                                        @ id "b"
+                                        @ path "/b"
+                                        @ action true
+                    let spy = jest.fn()
+                    let unsubscribe = t.router.subscribe(spy)
+                    let A
+                        await 
+                            _ t.navigate
+                                @ "/a"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    await 
+                        _ A.actions.a.resolve("A")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    let B
+                        await 
+                            _ t.navigate
+                                @ "/b"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                    @ unstable_flushSync true
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync true
+                    await 
+                        _ B.actions.b.resolve("B")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ unsubscribe()
+                    _ t.router.dispose()
+            _ it
+                @ "supports fetch loads with flushSync"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                        @ loader true
+                    let spy = jest.fn()
+                    let unsubscribe = t.router.subscribe(spy)
+                    let key = "key"
+                    let A
+                        await 
+                            _ t.fetch("/", key)
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                    await 
+                        _ A.loaders.root.resolve("ROOT")
+                    _ expect(t.router.state.fetchers.get(key)?.data).toBe("ROOT")
+                    let B
+                        await 
+                            _ t.fetch
+                                @ "/"
+                                @ key
+                                { 
+                                    @ unstable_flushSync true
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync true
+                    _ expect(t.router.state.fetchers.get(key)?.state).toBe("loading")
+                    await 
+                        _ B.loaders.root.resolve("ROOT2")
+                    _ expect(t.router.state.fetchers.get(key)?.data).toBe("ROOT2")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ unsubscribe()
+                    _ t.router.dispose()
+            _ it
+                @ "supports fetch submissions with flushSync"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                        @ action true
+                    let spy = jest.fn()
+                    let unsubscribe = t.router.subscribe(spy)
+                    let key = "key"
+                    let A
+                        await 
+                            _ t.fetch
+                                @ "/"
+                                @ key
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                    await 
+                        _ A.actions.root.resolve("ROOT")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ expect(t.router.state.fetchers.get(key)?.data).toBe("ROOT")
+                    let B
+                        await 
+                            _ t.fetch
+                                @ "/"
+                                @ key
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                    @ unstable_flushSync true
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync true
+                    _ expect(t.router.state.fetchers.get(key)?.state).toBe("submitting")
+                    await 
+                        _ B.actions.root.resolve("ROOT2")
+                    _ expect(t.router.state.fetchers.get(key)?.data).toBe("ROOT2")
+                    _ expect(spy).toHaveBeenLastCalledWith
+                        _ expect.anything()
+                        _ expect.objectContaining
+                            { 
+                                @ unstable_flushSync false
+                    _ unsubscribe()
+                    _ t.router.dispose()

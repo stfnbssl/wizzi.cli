@@ -1,0 +1,61 @@
+module
+    kind react
+    import localforage from "localforage"
+    export 
+        async-function getNotes
+            let notes
+                await 
+                    _ localforage.getItem("notes")
+            if !notes
+                set notes = []
+            return notes
+    export 
+        async-function createNote
+            { 
+                @ title
+                @ content
+            let id = Math.random().toString(36).substring(2, 9)
+            let note
+                { 
+                    @ id
+                    @ title
+                    @ content
+            let notes
+                await 
+                    _ getNotes()
+            _ notes.unshift(note)
+            await 
+                _ set(notes)
+            return note
+    export 
+        async-function getNote
+            param id
+            let notes
+                await 
+                    _ localforage.getItem("notes")
+            let note
+                _ notes.find
+                    => 
+                        param note
+                        set note.id === id
+            return note ?? null
+    export 
+        async-function deleteNote
+            param id
+            let notes
+                await 
+                    _ localforage.getItem("notes")
+            let index
+                _ notes.findIndex
+                    => 
+                        param note
+                        set note.id === id
+            if index > -1
+                _ notes.splice(index, 1)
+                await 
+                    _ set(notes)
+                return true
+            return false
+    function set
+        param notes
+        return localforage.setItem("notes", notes)

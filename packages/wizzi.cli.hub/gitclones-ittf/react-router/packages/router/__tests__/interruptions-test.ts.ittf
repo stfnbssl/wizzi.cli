@@ -1,0 +1,456 @@
+module
+    :import-type 
+        @ HydrationState
+        from "../index"
+        #
+            # eslint-disable jest/valid-title
+    import 
+        @ IDLE_NAVIGATION
+        from "../index"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    function initializeTest
+        param init
+            :{ 
+                :p url
+                    :optional 
+                    :string 
+                :p hydrationData
+                    :optional 
+                    :ref HydrationState
+            :optional 
+        return 
+            _ setup
+                { 
+                    [ routes
+                        { 
+                            @ path ""
+                            @ id "root"
+                            @ hasErrorBoundary true
+                            @ loader true
+                            [ children
+                                { 
+                                    @ path "/"
+                                    @ id "index"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/foo"
+                                    @ id "foo"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/bar"
+                                    @ id "bar"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/baz"
+                                    @ id "baz"
+                                    @ loader true
+                                    @ action true
+                    @ hydrationData
+                        || 
+                            + init?.hydrationData
+                            { 
+                                { loaderData
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                    ... 
+                        ( 
+                            iif init?.url
+                                then
+                                    { 
+                                        [ initialEntries
+                                            @ init.url
+                                else
+                                    { 
+    _ beforeEach
+        => 
+            _ jest.spyOn(console, "warn").mockImplementation
+                => 
+        # Detect any failures inside the router navigate code
+    _ afterEach
+        => 
+            _ cleanup()
+                # @ts-ignore
+            _ console.warn.mockReset()
+                # @ts-ignore
+        # Detect any failures inside the router navigate code
+    _ describe
+        @ "interruptions"
+        => 
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) GET /foo |---X&lf;
+                    + &nbsp;     B) GET /bar     |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous load"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            _ t.navigate("/bar")
+                            _ expect(A.loaders.foo.stub.mock.calls.length).toBe(1)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) GET  /foo |---X&lf;
+                    + &nbsp;     B) POST /bar     |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous load"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ t.navigate
+                                    @ "/bar"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData new FormData()
+                            _ expect(A.loaders.foo.signal.aborted).toBe(true)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |---X&lf;
+                    + &nbsp;     B) POST /bar     |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous action"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            await 
+                                _ t.navigate
+                                    @ "/bar"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData new FormData()
+                            _ expect(A.actions.foo.signal.aborted).toBe(true)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |--|--X&lf;
+                    + &nbsp;     B) GET  /bar       |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous action reload"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            await 
+                                _ A.actions.foo.resolve("A ACTION")
+                            await 
+                                _ t.navigate("/bar")
+                            _ expect(A.loaders.foo.signal.aborted).toBe(true)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |--|--X&lf;
+                    + &nbsp;     B) POST /bar       |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous action reload"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            await 
+                                _ A.actions.foo.resolve("A ACTION")
+                            await 
+                                _ t.navigate
+                                    @ "/bar"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData new FormData()
+                            _ expect(A.loaders.foo.signal.aborted).toBe(true)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) GET /foo |--/bar--X&lf;
+                    + &nbsp;     B) GET /baz          |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous action redirect load"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            let AR
+                                await 
+                                    _ A.loaders.foo.redirect("/bar")
+                            _ t.navigate("/baz")
+                            _ expect(AR.loaders.bar.stub.mock.calls.length).toBe(1)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |--/bar--X&lf;
+                    + &nbsp;     B) GET  /baz          |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous action redirect load"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            let AR
+                                await 
+                                    _ A.actions.foo.redirect("/bar")
+                            await 
+                                _ t.navigate("/baz")
+                            _ expect(AR.loaders.bar.signal.aborted).toBe(true)
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) GET /foo |---X&lf;
+                    + &nbsp;     B) GET /bar     |---X&lf;
+                    + &nbsp;     C) GET /baz         |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts multiple subsequent loads"
+                        async=> 
+                            let t = initializeTest()
+                                # Start A navigation and immediately interrupt
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Start A navigation and immediately interrupt
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # resolve A then interrupt B - ensure the A resolution doesn't clear
+                                # the new pendingNavigationController which is now reflecting B's nav
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                                # resolve A then interrupt B - ensure the A resolution doesn't clear
+                                # the new pendingNavigationController which is now reflecting B's nav
+                            let C
+                                await 
+                                    _ t.navigate("/baz")
+                            await 
+                                _ B.loaders.bar.resolve("B")
+                            await 
+                                _ C.loaders.baz.resolve("C")
+                            _ expect(A.loaders.foo.stub.mock.calls.length).toBe(1)
+                            _ expect(A.loaders.foo.signal.aborted).toBe(true)
+                            _ expect(B.loaders.bar.stub.mock.calls.length).toBe(1)
+                            _ expect(B.loaders.bar.signal.aborted).toBe(true)
+                            _ expect(C.loaders.baz.stub.mock.calls.length).toBe(1)
+                            _ expect(C.loaders.baz.signal.aborted).toBe(false)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                                    @ baz "C"
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |---X&lf;
+                    + &nbsp;     B) POST /bar     |---X&lf;
+                    + &nbsp;     C) POST /baz         |---O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "aborts previous load"
+                        async=> 
+                            let t = initializeTest()
+                                # Start A navigation and immediately interrupt
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                                # Start A navigation and immediately interrupt
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                                # resolve A then interrupt B - ensure the A resolution doesn't clear
+                                # the new pendingNavigationController which is now reflecting B's nav
+                            await 
+                                _ A.actions.foo.resolve("A")
+                                # resolve A then interrupt B - ensure the A resolution doesn't clear
+                                # the new pendingNavigationController which is now reflecting B's nav
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/baz"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData new FormData()
+                            await 
+                                _ B.actions.bar.resolve("B")
+                            await 
+                                _ C.actions.baz.resolve("C")
+                            _ expect(A.actions.foo.stub.mock.calls.length).toBe(1)
+                            _ expect(A.actions.foo.signal.aborted).toBe(true)
+                            _ expect(B.actions.bar.stub.mock.calls.length).toBe(1)
+                            _ expect(B.actions.bar.signal.aborted).toBe(true)
+                            _ expect(C.actions.baz.stub.mock.calls.length).toBe(1)
+                            _ expect(C.actions.baz.signal.aborted).toBe(false)
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ baz "C"
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |--X&lf;
+                    + &nbsp;     B) GET  /bar    |-----O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "forces all loaders to revalidate on interrupted submission"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Interrupting the submission should cause the next load to call all loaders
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Interrupting the submission should cause the next load to call all loaders
+                            await 
+                                _ A.actions.foo.resolve("A ACTION")
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { location
+                                        @ pathname "/bar"
+                                    @ actionData null
+                                    { loaderData
+                                        @ root "ROOT*"
+                                        @ bar "BAR"
+            _ describe
+                `lit 
+                    + &lf;
+                    + &nbsp;     A) POST /foo |--|--X&lf;
+                    + &nbsp;     B) GET  /bar       |-----O&lf;
+                    + &nbsp;  &nbsp;
+                => 
+                    _ it
+                        @ "forces all loaders to revalidate on interrupted actionReload"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ A.actions.foo.resolve("A ACTION")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                                # Interrupting the actionReload should cause the next load to call all loaders
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Interrupting the actionReload should cause the next load to call all loaders
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { location
+                                        @ pathname "/bar"
+                                    @ actionData null
+                                    { loaderData
+                                        @ root "ROOT*"
+                                        @ bar "BAR"
+                    _ it
+                        @ "forces all loaders to revalidate on interrupted submissionRedirect"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ A.actions.foo.redirect("/baz")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                                # Interrupting the submissionRedirect should cause the next load to call all loaders
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Interrupting the submissionRedirect should cause the next load to call all loaders
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { location
+                                        @ pathname "/bar"
+                                    { loaderData
+                                        @ root "ROOT*"
+                                        @ bar "BAR"

@@ -1,0 +1,55 @@
+module
+    :interface AuthProvider
+        :p isAuthenticated
+            :boolean 
+        :p username
+            :union 
+                :null 
+                :string 
+        :m signin
+            :ref Promise
+                :param void
+            param username
+                :string 
+        :m signout
+            :ref Promise
+                :param void
+        #
+            # *
+            # * This represents some generic auth provider API, like Firebase.
+            # 
+    export 
+        const fakeAuthProvider
+            :ref AuthProvider
+            =
+                { 
+                    @ isAuthenticated false
+                    @ username null
+                    m signin
+                        async
+                        param username
+                            :string 
+                        await 
+                            new Promise
+                                => 
+                                    param r
+                                    _ setTimeout(r, 500)
+                            # fake delay
+                        set fakeAuthProvider.isAuthenticated = true
+                            # fake delay
+                        set fakeAuthProvider.username = username
+                    m signout
+                        async
+                        await 
+                            new Promise
+                                => 
+                                    param r
+                                    _ setTimeout(r, 500)
+                            # fake delay
+                        set fakeAuthProvider.isAuthenticated = false
+                            # fake delay
+                        set fakeAuthProvider.username = ""
+        #
+            # *
+            # * This represents some generic auth provider API, like Firebase.
+            # 

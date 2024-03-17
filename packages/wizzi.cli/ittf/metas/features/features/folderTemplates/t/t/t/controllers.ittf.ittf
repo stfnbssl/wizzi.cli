@@ -1,0 +1,4 @@
+$group
+    $file features/wizzi/controllers/production.ts.ittf.ittf
+       module
+           ${'$'}include features/features/wizzi/controllers/production.ts

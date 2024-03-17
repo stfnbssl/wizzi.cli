@@ -1,0 +1,327 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Route
+        @ createRoutesFromChildren
+        from "react-router"
+    _ describe
+        @ "creating routes from JSX"
+        => 
+            _ it
+                @ "creates a route config of nested JavaScript objects"
+                => 
+                    _ expect
+                        _ createRoutesFromChildren
+                            < Route 
+                                @ path "/"
+                                < Route 
+                                    @ path "home"
+                                    @ element
+                                        h1 
+                                            + home
+                                < Route 
+                                    @ path "about"
+                                    @ element
+                                        h1 
+                                            + about
+                                < Route 
+                                    @ path "users"
+                                    < Route 
+                                        @ index
+                                        @ element
+                                            h1 
+                                                + users index
+                                    < Route 
+                                        @ path ":id"
+                                        @ element
+                                            h1 
+                                                + user profile
+                        ._ toMatchInlineSnapshot
+                            `lit 
+                                + &lf;
+                                + &nbsp;     [&lf;
+                                + &nbsp;       {&lf;
+                                + &nbsp;         "Component": undefined,&lf;
+                                + &nbsp;         "ErrorBoundary": undefined,&lf;
+                                + &nbsp;         "action": undefined,&lf;
+                                + &nbsp;         "caseSensitive": undefined,&lf;
+                                + &nbsp;         "children": [&lf;
+                                + &nbsp;           {&lf;
+                                + &nbsp;             "Component": undefined,&lf;
+                                + &nbsp;             "ErrorBoundary": undefined,&lf;
+                                + &nbsp;             "action": undefined,&lf;
+                                + &nbsp;             "caseSensitive": undefined,&lf;
+                                + &nbsp;             "element": <h1>&lf;
+                                + &nbsp;               home&lf;
+                                + &nbsp;             </h1>,&lf;
+                                + &nbsp;             "errorElement": undefined,&lf;
+                                + &nbsp;             "handle": undefined,&lf;
+                                + &nbsp;             "hasErrorBoundary": false,&lf;
+                                + &nbsp;             "id": "0-0",&lf;
+                                + &nbsp;             "index": undefined,&lf;
+                                + &nbsp;             "lazy": undefined,&lf;
+                                + &nbsp;             "loader": undefined,&lf;
+                                + &nbsp;             "path": "home",&lf;
+                                + &nbsp;             "shouldRevalidate": undefined,&lf;
+                                + &nbsp;           },&lf;
+                                + &nbsp;           {&lf;
+                                + &nbsp;             "Component": undefined,&lf;
+                                + &nbsp;             "ErrorBoundary": undefined,&lf;
+                                + &nbsp;             "action": undefined,&lf;
+                                + &nbsp;             "caseSensitive": undefined,&lf;
+                                + &nbsp;             "element": <h1>&lf;
+                                + &nbsp;               about&lf;
+                                + &nbsp;             </h1>,&lf;
+                                + &nbsp;             "errorElement": undefined,&lf;
+                                + &nbsp;             "handle": undefined,&lf;
+                                + &nbsp;             "hasErrorBoundary": false,&lf;
+                                + &nbsp;             "id": "0-1",&lf;
+                                + &nbsp;             "index": undefined,&lf;
+                                + &nbsp;             "lazy": undefined,&lf;
+                                + &nbsp;             "loader": undefined,&lf;
+                                + &nbsp;             "path": "about",&lf;
+                                + &nbsp;             "shouldRevalidate": undefined,&lf;
+                                + &nbsp;           },&lf;
+                                + &nbsp;           {&lf;
+                                + &nbsp;             "Component": undefined,&lf;
+                                + &nbsp;             "ErrorBoundary": undefined,&lf;
+                                + &nbsp;             "action": undefined,&lf;
+                                + &nbsp;             "caseSensitive": undefined,&lf;
+                                + &nbsp;             "children": [&lf;
+                                + &nbsp;               {&lf;
+                                + &nbsp;                 "Component": undefined,&lf;
+                                + &nbsp;                 "ErrorBoundary": undefined,&lf;
+                                + &nbsp;                 "action": undefined,&lf;
+                                + &nbsp;                 "caseSensitive": undefined,&lf;
+                                + &nbsp;                 "element": <h1>&lf;
+                                + &nbsp;                   users index&lf;
+                                + &nbsp;                 </h1>,&lf;
+                                + &nbsp;                 "errorElement": undefined,&lf;
+                                + &nbsp;                 "handle": undefined,&lf;
+                                + &nbsp;                 "hasErrorBoundary": false,&lf;
+                                + &nbsp;                 "id": "0-2-0",&lf;
+                                + &nbsp;                 "index": true,&lf;
+                                + &nbsp;                 "lazy": undefined,&lf;
+                                + &nbsp;                 "loader": undefined,&lf;
+                                + &nbsp;                 "path": undefined,&lf;
+                                + &nbsp;                 "shouldRevalidate": undefined,&lf;
+                                + &nbsp;               },&lf;
+                                + &nbsp;               {&lf;
+                                + &nbsp;                 "Component": undefined,&lf;
+                                + &nbsp;                 "ErrorBoundary": undefined,&lf;
+                                + &nbsp;                 "action": undefined,&lf;
+                                + &nbsp;                 "caseSensitive": undefined,&lf;
+                                + &nbsp;                 "element": <h1>&lf;
+                                + &nbsp;                   user profile&lf;
+                                + &nbsp;                 </h1>,&lf;
+                                + &nbsp;                 "errorElement": undefined,&lf;
+                                + &nbsp;                 "handle": undefined,&lf;
+                                + &nbsp;                 "hasErrorBoundary": false,&lf;
+                                + &nbsp;                 "id": "0-2-1",&lf;
+                                + &nbsp;                 "index": undefined,&lf;
+                                + &nbsp;                 "lazy": undefined,&lf;
+                                + &nbsp;                 "loader": undefined,&lf;
+                                + &nbsp;                 "path": ":id",&lf;
+                                + &nbsp;                 "shouldRevalidate": undefined,&lf;
+                                + &nbsp;               },&lf;
+                                + &nbsp;             ],&lf;
+                                + &nbsp;             "element": undefined,&lf;
+                                + &nbsp;             "errorElement": undefined,&lf;
+                                + &nbsp;             "handle": undefined,&lf;
+                                + &nbsp;             "hasErrorBoundary": false,&lf;
+                                + &nbsp;             "id": "0-2",&lf;
+                                + &nbsp;             "index": undefined,&lf;
+                                + &nbsp;             "lazy": undefined,&lf;
+                                + &nbsp;             "loader": undefined,&lf;
+                                + &nbsp;             "path": "users",&lf;
+                                + &nbsp;             "shouldRevalidate": undefined,&lf;
+                                + &nbsp;           },&lf;
+                                + &nbsp;         ],&lf;
+                                + &nbsp;         "element": undefined,&lf;
+                                + &nbsp;         "errorElement": undefined,&lf;
+                                + &nbsp;         "handle": undefined,&lf;
+                                + &nbsp;         "hasErrorBoundary": false,&lf;
+                                + &nbsp;         "id": "0",&lf;
+                                + &nbsp;         "index": undefined,&lf;
+                                + &nbsp;         "lazy": undefined,&lf;
+                                + &nbsp;         "loader": undefined,&lf;
+                                + &nbsp;         "path": "/",&lf;
+                                + &nbsp;         "shouldRevalidate": undefined,&lf;
+                                + &nbsp;       },&lf;
+                                + &nbsp;     ]&lf;
+                                + &nbsp;  &nbsp;
+            _ it
+                @ "creates a data-aware route config of nested JavaScript objects"
+                => 
+                    _ expect
+                        _ createRoutesFromChildren
+                            < Route 
+                                @ errorElement
+                                    h1 
+                                        + 💥
+                                @ path "/"
+                                < Route 
+                                    @ path "home"
+                                    @ loader
+                                        async=> 
+                                    @ shouldRevalidate
+                                        => 
+                                            + true
+                                    @ element
+                                        h1 
+                                            + home
+                                < Route 
+                                    @ path "users"
+                                    < Route 
+                                        @ index
+                                        @ action
+                                            async=> 
+                                        @ element
+                                            h1 
+                                                + users index
+                        ._ toMatchInlineSnapshot
+                            `lit 
+                                + &lf;
+                                + &nbsp;     [&lf;
+                                + &nbsp;       {&lf;
+                                + &nbsp;         "Component": undefined,&lf;
+                                + &nbsp;         "ErrorBoundary": undefined,&lf;
+                                + &nbsp;         "action": undefined,&lf;
+                                + &nbsp;         "caseSensitive": undefined,&lf;
+                                + &nbsp;         "children": [&lf;
+                                + &nbsp;           {&lf;
+                                + &nbsp;             "Component": undefined,&lf;
+                                + &nbsp;             "ErrorBoundary": undefined,&lf;
+                                + &nbsp;             "action": undefined,&lf;
+                                + &nbsp;             "caseSensitive": undefined,&lf;
+                                + &nbsp;             "element": <h1>&lf;
+                                + &nbsp;               home&lf;
+                                + &nbsp;             </h1>,&lf;
+                                + &nbsp;             "errorElement": undefined,&lf;
+                                + &nbsp;             "handle": undefined,&lf;
+                                + &nbsp;             "hasErrorBoundary": false,&lf;
+                                + &nbsp;             "id": "0-0",&lf;
+                                + &nbsp;             "index": undefined,&lf;
+                                + &nbsp;             "lazy": undefined,&lf;
+                                + &nbsp;             "loader": [Function],&lf;
+                                + &nbsp;             "path": "home",&lf;
+                                + &nbsp;             "shouldRevalidate": [Function],&lf;
+                                + &nbsp;           },&lf;
+                                + &nbsp;           {&lf;
+                                + &nbsp;             "Component": undefined,&lf;
+                                + &nbsp;             "ErrorBoundary": undefined,&lf;
+                                + &nbsp;             "action": undefined,&lf;
+                                + &nbsp;             "caseSensitive": undefined,&lf;
+                                + &nbsp;             "children": [&lf;
+                                + &nbsp;               {&lf;
+                                + &nbsp;                 "Component": undefined,&lf;
+                                + &nbsp;                 "ErrorBoundary": undefined,&lf;
+                                + &nbsp;                 "action": [Function],&lf;
+                                + &nbsp;                 "caseSensitive": undefined,&lf;
+                                + &nbsp;                 "element": <h1>&lf;
+                                + &nbsp;                   users index&lf;
+                                + &nbsp;                 </h1>,&lf;
+                                + &nbsp;                 "errorElement": undefined,&lf;
+                                + &nbsp;                 "handle": undefined,&lf;
+                                + &nbsp;                 "hasErrorBoundary": false,&lf;
+                                + &nbsp;                 "id": "0-1-0",&lf;
+                                + &nbsp;                 "index": true,&lf;
+                                + &nbsp;                 "lazy": undefined,&lf;
+                                + &nbsp;                 "loader": undefined,&lf;
+                                + &nbsp;                 "path": undefined,&lf;
+                                + &nbsp;                 "shouldRevalidate": undefined,&lf;
+                                + &nbsp;               },&lf;
+                                + &nbsp;             ],&lf;
+                                + &nbsp;             "element": undefined,&lf;
+                                + &nbsp;             "errorElement": undefined,&lf;
+                                + &nbsp;             "handle": undefined,&lf;
+                                + &nbsp;             "hasErrorBoundary": false,&lf;
+                                + &nbsp;             "id": "0-1",&lf;
+                                + &nbsp;             "index": undefined,&lf;
+                                + &nbsp;             "lazy": undefined,&lf;
+                                + &nbsp;             "loader": undefined,&lf;
+                                + &nbsp;             "path": "users",&lf;
+                                + &nbsp;             "shouldRevalidate": undefined,&lf;
+                                + &nbsp;           },&lf;
+                                + &nbsp;         ],&lf;
+                                + &nbsp;         "element": undefined,&lf;
+                                + &nbsp;         "errorElement": <h1>&lf;
+                                + &nbsp;           💥&lf;
+                                + &nbsp;         </h1>,&lf;
+                                + &nbsp;         "handle": undefined,&lf;
+                                + &nbsp;         "hasErrorBoundary": true,&lf;
+                                + &nbsp;         "id": "0",&lf;
+                                + &nbsp;         "index": undefined,&lf;
+                                + &nbsp;         "lazy": undefined,&lf;
+                                + &nbsp;         "loader": undefined,&lf;
+                                + &nbsp;         "path": "/",&lf;
+                                + &nbsp;         "shouldRevalidate": undefined,&lf;
+                                + &nbsp;       },&lf;
+                                + &nbsp;     ]&lf;
+                                + &nbsp;  &nbsp;
+            _ it
+                @ "throws when the index route has children"
+                => 
+                    _ expect
+                        => 
+                            _ createRoutesFromChildren
+                                < Route 
+                                    @ path "/"
+                                    { 
+                                        # 
+                                            # @ts-expect-error
+                                    < Route 
+                                        @ index
+                                        < Route 
+                                            @ path "users"
+                        ._ toThrow
+                            @ "An index route cannot have child routes."
+            _ it
+                @ "supports react fragments for automatic ID generation"
+                => 
+                    _ expect
+                        _ createRoutesFromChildren
+                            < Route 
+                                @ path "/"
+                                < Route 
+                                    @ index
+                                < React.Fragment
+                                    < Route 
+                                        @ path "a"
+                                        < React.Fragment
+                                            < Route 
+                                                @ path "1"
+                                            < Route 
+                                                @ path "2"
+                                    < Route 
+                                        @ path "b"
+                        ._ toEqual
+                            [ 
+                                { 
+                                    @ id "0"
+                                    @ path "/"
+                                    @ hasErrorBoundary false
+                                    [ children
+                                        { 
+                                            @ id "0-0"
+                                            @ index true
+                                            @ hasErrorBoundary false
+                                        { 
+                                            @ id "0-1-0"
+                                            @ path "a"
+                                            @ hasErrorBoundary false
+                                            [ children
+                                                { 
+                                                    @ id "0-1-0-0-0"
+                                                    @ path "1"
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ id "0-1-0-0-1"
+                                                    @ path "2"
+                                                    @ hasErrorBoundary false
+                                        { 
+                                            @ id "0-1-1"
+                                            @ path "b"
+                                            @ hasErrorBoundary false

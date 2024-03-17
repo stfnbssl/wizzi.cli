@@ -1,0 +1,1864 @@
+module
+    import 
+        @ createMemoryHistory
+        from "../history"
+    import 
+        @ createRouter
+        from "../router"
+    import 
+        @ AbortedDeferredError
+        @ ErrorResponseImpl
+        @ defer
+        from "../utils"
+    import 
+        @ deferredData
+        @ trackedPromise
+        from "./utils/custom-matchers"
+    import 
+        @ cleanup
+        @ createDeferred
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        @ tick
+        from "./utils/utils"
+    :interface CustomMatchers
+        :< R
+        :m trackedPromise
+            :ref R
+            param data
+                :any 
+                :optional 
+            param error
+                :any 
+                :optional 
+            param aborted
+                :boolean 
+                :optional 
+        :m deferredData
+            :ref R
+            param done
+                :boolean 
+            param status
+                :number 
+                :optional 
+            param headers
+                :ref Record
+                    :param string
+                    :param string
+                :optional 
+    :declare 
+        :module global
+            :module jest
+                :interface Expect
+                    :extends CustomMatchers
+                :interface Matchers
+                    :< R
+                    :extends CustomMatchers
+                        :param 
+                            :ref R
+                :interface InverseAsymmetricMatchers
+                    :extends CustomMatchers
+    _ expect.extend
+        { 
+            @ deferredData
+            @ trackedPromise
+    _ describe
+        @ "deferred data"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+                # Detect any failures inside the router navigate code
+            _ it
+                @ "should not track deferred responses on naked objects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd = createDeferred()
+                    await 
+                        _ A.loaders.lazy.resolve
+                            { 
+                                @ critical "1"
+                                @ lazy dfd.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical "1"
+                                @ lazy expect.any(Promise)
+                    _ expect(t.router.state.loaderData.lazy.lazy._tracked).toBeUndefined()
+            _ it
+                @ "should support returning deferred responses"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd1 = createDeferred()
+                    let dfd2 = createDeferred()
+                    let dfd3 = createDeferred()
+                    _ dfd1.resolve("Immediate data")
+                    await 
+                        _ A.loaders.lazy.resolve
+                            _ defer
+                                { 
+                                    @ critical1 "1"
+                                    @ critical2 "2"
+                                    @ lazy1 dfd1.promise
+                                    @ lazy2 dfd2.promise
+                                    @ lazy3 dfd3.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical1 "1"
+                                @ critical2 "2"
+                                @ lazy1 expect.trackedPromise("Immediate data")
+                                @ lazy2 expect.trackedPromise()
+                                @ lazy3 expect.trackedPromise()
+                    await 
+                        _ dfd2.resolve("2")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical1 "1"
+                                @ critical2 "2"
+                                @ lazy1 expect.trackedPromise("Immediate data")
+                                @ lazy2 expect.trackedPromise("2")
+                                @ lazy3 expect.trackedPromise()
+                    await 
+                        _ dfd3.resolve("3")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical1 "1"
+                                @ critical2 "2"
+                                @ lazy1 expect.trackedPromise("Immediate data")
+                                @ lazy2 expect.trackedPromise("2")
+                                @ lazy3 expect.trackedPromise("3")
+                        # Should proxy values through
+                    let data = t.router.state.loaderData.lazy
+                        # Should proxy values through
+                    await 
+                        _ expect(data.lazy1).resolves.toBe("Immediate data")
+                    await 
+                        _ expect(data.lazy2).resolves.toBe("2")
+                    await 
+                        _ expect(data.lazy3).resolves.toBe("3")
+            _ it
+                @ "should cancel outstanding deferreds on a new navigation"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd1 = createDeferred()
+                    let dfd2 = createDeferred()
+                    await 
+                        _ A.loaders.lazy.resolve
+                            _ defer
+                                { 
+                                    @ critical1 "1"
+                                    @ critical2 "2"
+                                    @ lazy1 dfd1.promise
+                                    @ lazy2 dfd2.promise
+                        # Interrupt pending deferred's from /lazy navigation
+                    let navPromise = t.navigate("/")
+                        # Interrupt pending deferred's from /lazy navigation
+                        # Cancelled promises should reject immediately
+                    let data = t.router.state.loaderData.lazy
+                        # Cancelled promises should reject immediately
+                    await 
+                        _ expect(data.lazy1).rejects.toBeInstanceOf(AbortedDeferredError)
+                    await 
+                        _ expect(data.lazy2).rejects.toBeInstanceOf(AbortedDeferredError)
+                    await 
+                        _ expect(data.lazy1).rejects.toThrowError("Deferred data aborted")
+                    await 
+                        _ expect(data.lazy2).rejects.toThrowError("Deferred data aborted")
+                    let B
+                        await 
+                            @id navPromise
+                        # During navigation - deferreds remain as promises
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical1 "1"
+                                @ critical2 "2"
+                                @ lazy1 expect.trackedPromise(null, null, true)
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                        # During navigation - deferreds remain as promises
+                        # But they are frozen - no re-paints on resolve/reject!
+                    await 
+                        _ dfd1.resolve("a")
+                        # But they are frozen - no re-paints on resolve/reject!
+                    await 
+                        _ dfd2.reject(Error("b"))
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical1 "1"
+                                @ critical2 "2"
+                                @ lazy1 expect.trackedPromise(null, null, true)
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                    await 
+                        _ B.loaders.index.resolve("INDEX*")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            @ index "INDEX*"
+            _ it
+                @ "should not cancel outstanding deferreds on reused routes"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                    let parentDfd = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                        # Navigate such that we reuse the parent route
+                    let B
+                        await 
+                            _ t.navigate("/parent/b")
+                        # Navigate such that we reuse the parent route
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise()
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise()
+                        # This should reflect in loaderData
+                    await 
+                        _ parentDfd.resolve("LAZY PARENT")
+                        # This should reflect in loaderData
+                        # This should not
+                    await 
+                        _ aDfd.resolve("LAZY A")
+                        # This should not
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise("LAZY PARENT")
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                                    # No re-paint!
+                        # Complete the navigation
+                    await 
+                        _ B.loaders.b.resolve("B DATA")
+                        # Complete the navigation
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise("LAZY PARENT")
+                            @ b "B DATA"
+            _ it
+                @ "should handle promise rejections"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd = createDeferred()
+                    await 
+                        _ A.loaders.lazy.resolve
+                            _ defer
+                                { 
+                                    @ critical "1"
+                                    @ lazy dfd.promise
+                    await 
+                        _ dfd.reject(Error("Kaboom!"))
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical "1"
+                                @ lazy expect.trackedPromise(undefined, Error("Kaboom!"))
+                        # should proxy the error through
+                    let data = t.router.state.loaderData.lazy
+                        # should proxy the error through
+                    await 
+                        _ expect(data.lazy).rejects.toEqual(Error("Kaboom!"))
+            _ it
+                @ "should cancel all outstanding deferreds on router.revalidate()"
+                async=> 
+                    let shouldRevalidateSpy
+                        _ jest.fn
+                            => 
+                                + false
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ shouldRevalidate shouldRevalidateSpy
+                                        [ children
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/parent")
+                    let parentDfd = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                    let indexDfd = createDeferred()
+                    await 
+                        _ A.loaders.index.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL INDEX"
+                                    @ lazy indexDfd.promise
+                        # Trigger a revalidation which should cancel outstanding deferreds
+                    let R
+                        await 
+                            _ t.revalidate()
+                        # Trigger a revalidation which should cancel outstanding deferreds
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise()
+                            { index
+                                @ critical "CRITICAL INDEX"
+                                @ lazy expect.trackedPromise()
+                        # Neither should reflect in loaderData
+                    await 
+                        _ parentDfd.resolve("Nope!")
+                        # Neither should reflect in loaderData
+                    await 
+                        _ indexDfd.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { index
+                                @ critical "CRITICAL INDEX"
+                                @ lazy expect.trackedPromise(null, null, true)
+                        # Complete the revalidation
+                    let parentDfd2 = createDeferred()
+                        # Complete the revalidation
+                    await 
+                        _ R.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT 2"
+                                    @ lazy parentDfd2.promise
+                    let indexDfd2 = createDeferred()
+                    await 
+                        _ R.loaders.index.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL INDEX 2"
+                                    @ lazy indexDfd2.promise
+                        # Revalidations await all deferreds, so we're still in a loading
+                        # state with the prior loaderData here
+                    _ expect(t.router.state.navigation.state).toBe("idle")
+                        # Revalidations await all deferreds, so we're still in a loading
+                        # state with the prior loaderData here
+                    _ expect(t.router.state.revalidation).toBe("loading")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { index
+                                @ critical "CRITICAL INDEX"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    await 
+                        _ indexDfd2.resolve("LAZY INDEX 2")
+                        # Not done yet!
+                    _ expect(t.router.state.navigation.state).toBe("idle")
+                        # Not done yet!
+                    _ expect(t.router.state.revalidation).toBe("loading")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { index
+                                @ critical "CRITICAL INDEX"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    await 
+                        _ parentDfd2.resolve("LAZY PARENT 2")
+                        # Done now that all deferreds have resolved
+                    _ expect(t.router.state.navigation.state).toBe("idle")
+                        # Done now that all deferreds have resolved
+                    _ expect(t.router.state.revalidation).toBe("idle")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT 2"
+                                @ lazy expect.trackedPromise("LAZY PARENT 2")
+                            { index
+                                @ critical "CRITICAL INDEX 2"
+                                @ lazy expect.trackedPromise("LAZY INDEX 2")
+                    _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+            _ it
+                @ "cancels correctly on revalidations chains"
+                async=> 
+                    let shouldRevalidateSpy
+                        _ jest.fn
+                            => 
+                                + false
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                    { 
+                                        @ id "foo"
+                                        @ path "foo"
+                                        @ loader true
+                                        @ shouldRevalidate shouldRevalidateSpy
+                    let A
+                        await 
+                            _ t.navigate("/foo")
+                    let dfda = createDeferred()
+                    await 
+                        _ A.loaders.foo.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy dfda.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise()
+                    let B
+                        await 
+                            _ t.revalidate()
+                    let dfdb = createDeferred()
+                        # This B data will _never_ make it through - since we will await all of
+                        # it and we'll revalidate before it resolves
+                    await 
+                        _ B.loaders.foo.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL B"
+                                    @ lazy dfdb.promise
+                        # This B data will _never_ make it through - since we will await all of
+                        # it and we'll revalidate before it resolves
+                        # The initial revalidation cancelled the navigation deferred
+                    await 
+                        _ dfda.resolve("Nope!")
+                        # The initial revalidation cancelled the navigation deferred
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    let C
+                        await 
+                            _ t.revalidate()
+                    let dfdc = createDeferred()
+                    await 
+                        _ C.loaders.foo.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL C"
+                                    @ lazy dfdc.promise
+                        # The second revalidation should have cancelled the first revalidation
+                        # deferred
+                    await 
+                        _ dfdb.resolve("Nope!")
+                        # The second revalidation should have cancelled the first revalidation
+                        # deferred
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                        # Resolve the final revalidation which should make it into loaderData
+                    await 
+                        _ dfdc.resolve("Yep!")
+                        # Resolve the final revalidation which should make it into loaderData
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL C"
+                                @ lazy expect.trackedPromise("Yep!")
+                    _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+            _ it
+                @ "cancels correctly on revalidations interrupted by navigations"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                    { 
+                                        @ id "foo"
+                                        @ path "foo"
+                                        @ loader true
+                                    { 
+                                        @ id "bar"
+                                        @ path "bar"
+                                        @ loader true
+                    let A
+                        await 
+                            _ t.navigate("/foo")
+                    let dfda = createDeferred()
+                    await 
+                        _ A.loaders.foo.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy dfda.promise
+                    await 
+                        _ dfda.resolve("LAZY A")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise("LAZY A")
+                    let B
+                        await 
+                            _ t.revalidate()
+                    let dfdb = createDeferred()
+                    await 
+                        _ B.loaders.foo.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL B"
+                                    @ lazy dfdb.promise
+                        # B not reflected because its got existing loaderData
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { foo
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise("LAZY A")
+                        # B not reflected because its got existing loaderData
+                    let C
+                        await 
+                            _ t.navigate("/bar")
+                    let dfdc = createDeferred()
+                    await 
+                        _ C.loaders.bar.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL C"
+                                    @ lazy dfdc.promise
+                        # The second revalidation should have cancelled the first revalidation
+                        # deferred
+                    await 
+                        _ dfdb.resolve("Nope!")
+                        # The second revalidation should have cancelled the first revalidation
+                        # deferred
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { bar
+                                @ critical "CRITICAL C"
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfdc.resolve("Yep!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { bar
+                                @ critical "CRITICAL C"
+                                @ lazy expect.trackedPromise("Yep!")
+            _ it
+                @ "cancels pending deferreds on 404 navigations"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd = createDeferred()
+                    await 
+                        _ A.loaders.lazy.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL"
+                                    @ lazy dfd.promise
+                    await 
+                        _ t.navigate("/not-found")
+                        # Navigation completes immediately and deferreds are cancelled
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                        # Navigation completes immediately and deferreds are cancelled
+                        # Resolution doesn't do anything
+                    await 
+                        _ dfd.resolve("Nope!")
+                        # Resolution doesn't do anything
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+            _ it
+                @ "cancels pending deferreds on errored GET submissions (w/ reused routes)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ hasErrorBoundary true
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                        # Navigate to /parent/a and kick off a deferred's for both
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                        # Navigate to /parent/a and kick off a deferred's for both
+                    let parentDfd = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise()
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise()
+                        # Perform an invalid navigation to /parent/b which will be handled
+                        # using parent's error boundary.  Parent's deferred should be left alone
+                        # while A's should be cancelled since they will no longer be rendered
+                    let B
+                        await 
+                            _ t.navigate("/parent/b")
+                        # Perform an invalid navigation to /parent/b which will be handled
+                        # using parent's error boundary.  Parent's deferred should be left alone
+                        # while A's should be cancelled since they will no longer be rendered
+                    await 
+                        _ B.loaders.b.reject
+                            new Response
+                                @ "broken"
+                                { 
+                                    @ status 400
+                                    @ statusText "Bad Request"
+                        # Navigation completes immediately with an error at the boundary
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise()
+                        # Navigation completes immediately with an error at the boundary
+                    _ expect(t.router.state.errors).toEqual
+                        { 
+                            @ parent new ErrorResponseImpl(400, "Bad Request", "broken", false)
+                    await 
+                        _ parentDfd.resolve("Yep!")
+                    await 
+                        _ aDfd.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise("Yep!")
+            _ it
+                @ "cancels pending deferreds on errored GET submissions (w/o reused routes)"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "a"
+                                        @ path "a"
+                                        @ loader true
+                                        [ children
+                                            { 
+                                                @ id "aChild"
+                                                @ path "child"
+                                                @ loader true
+                                    { 
+                                        @ id "b"
+                                        @ path "b"
+                                        @ loader true
+                                        [ children
+                                            { 
+                                                @ id "bChild"
+                                                @ path "child"
+                                                @ loader true
+                                                @ hasErrorBoundary true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                        # Navigate to /parent/a and kick off deferred's for both
+                    let A
+                        await 
+                            _ t.navigate("/a/child")
+                        # Navigate to /parent/a and kick off deferred's for both
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                    let aChildDfd = createDeferred()
+                    await 
+                        _ A.loaders.aChild.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A CHILD"
+                                    @ lazy aChildDfd.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise()
+                            { aChild
+                                @ critical "CRITICAL A CHILD"
+                                @ lazy expect.trackedPromise()
+                        # Perform an invalid navigation to /b/child which should cancel all
+                        # pending deferred's since nothing is reused.  It should not call bChild's
+                        # loader since it's below the boundary but should call b's loader.
+                    let B
+                        await 
+                            _ t.navigate("/b/child")
+                        # Perform an invalid navigation to /b/child which should cancel all
+                        # pending deferred's since nothing is reused.  It should not call bChild's
+                        # loader since it's below the boundary but should call b's loader.
+                    await 
+                        _ B.loaders.bChild.reject
+                            new Response
+                                @ "broken"
+                                { 
+                                    @ status 400
+                                    @ statusText "Bad Request"
+                        # Both should be cancelled
+                    await 
+                        _ aDfd.resolve("Nope!")
+                        # Both should be cancelled
+                    await 
+                        _ aChildDfd.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { aChild
+                                @ critical "CRITICAL A CHILD"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    await 
+                        _ B.loaders.b.resolve("B LOADER")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            @ b "B LOADER"
+                    _ expect(t.router.state.errors).toEqual
+                        { 
+                            @ bChild new ErrorResponseImpl(400, "Bad Request", "broken", false)
+            _ it
+                @ "does not cancel pending deferreds on hash change only navigations"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "lazy"
+                                        @ path "lazy"
+                                        @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/lazy")
+                    let dfd = createDeferred()
+                    await 
+                        _ A.loaders.lazy.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL"
+                                    @ lazy dfd.promise
+                    await 
+                        _ t.navigate("/lazy#hash")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical "CRITICAL"
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfd.resolve("Yep!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { lazy
+                                @ critical "CRITICAL"
+                                @ lazy expect.trackedPromise("Yep!")
+            _ it
+                @ "cancels pending deferreds on action submissions"
+                async=> 
+                    let shouldRevalidateSpy
+                        _ jest.fn
+                            => 
+                                + false
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ shouldRevalidate shouldRevalidateSpy
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ action true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                    let parentDfd = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                        # Action submission causes all to be cancelled, even reused ones, and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    let B
+                        await 
+                            _ t.navigate
+                                @ "/parent/b"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                        # Action submission causes all to be cancelled, even reused ones, and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    await 
+                        _ parentDfd.resolve("Nope!")
+                    await 
+                        _ aDfd.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    await 
+                        _ B.actions.b.resolve("ACTION")
+                    let parentDfd2 = createDeferred()
+                    await 
+                        _ B.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT 2"
+                                    @ lazy parentDfd2.promise
+                    _ expect(t.router.state.actionData).toEqual
+                        { 
+                            @ b "ACTION"
+                        # Since we still have outstanding deferreds on the revalidation, we're
+                        # still in the loading state and showing the old data
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                        # Since we still have outstanding deferreds on the revalidation, we're
+                        # still in the loading state and showing the old data
+                    await 
+                        _ parentDfd2.resolve("Yep!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT 2"
+                                @ lazy expect.trackedPromise("Yep!")
+                    _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+            _ it
+                @ "does not put resolved deferred's back into a loading state during revalidation"
+                async=> 
+                    let shouldRevalidateSpy
+                        _ jest.fn
+                            => 
+                                + false
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ shouldRevalidate shouldRevalidateSpy
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ action true
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                        # Route to /parent/a and return and resolve deferred's for both
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                        # Route to /parent/a and return and resolve deferred's for both
+                    let parentDfd1 = createDeferred()
+                    let parentDfd2 = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy1 parentDfd1.promise
+                                    @ lazy2 parentDfd2.promise
+                    let aDfd1 = createDeferred()
+                    let aDfd2 = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy1 aDfd1.promise
+                                    @ lazy2 aDfd2.promise
+                        # Resolve one of the deferred for each prior to the action submission
+                    await 
+                        _ parentDfd1.resolve("LAZY PARENT 1")
+                        # Resolve one of the deferred for each prior to the action submission
+                    await 
+                        _ aDfd1.resolve("LAZY A 1")
+                        # Action submission causes all to be cancelled, even reused ones, and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    let B
+                        await 
+                            _ t.navigate
+                                @ "/parent/b"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                        # Action submission causes all to be cancelled, even reused ones, and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    await 
+                        _ parentDfd2.resolve("Nope!")
+                    await 
+                        _ aDfd2.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy1 expect.trackedPromise("LAZY PARENT 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy1 expect.trackedPromise("LAZY A 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                    await 
+                        _ B.actions.b.resolve("ACTION")
+                    let parentDfd1Revalidation = createDeferred()
+                    let parentDfd2Revalidation = createDeferred()
+                    await 
+                        _ B.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT*"
+                                    @ lazy1 parentDfd1Revalidation.promise
+                                    @ lazy2 parentDfd2Revalidation.promise
+                    await 
+                        _ B.loaders.b.resolve("B")
+                        # At this point, we resolved the action and the loaders - however the
+                        # parent loader returned a deferred so we stay in the "loading" state
+                        # until everything resolves
+                    _ expect(t.router.state.navigation.state).toBe("loading")
+                        # At this point, we resolved the action and the loaders - however the
+                        # parent loader returned a deferred so we stay in the "loading" state
+                        # until everything resolves
+                    _ expect(t.router.state.actionData).toEqual
+                        { 
+                            @ b "ACTION"
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy1 expect.trackedPromise("LAZY PARENT 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy1 expect.trackedPromise("LAZY A 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                        # Resolve the first deferred - should not complete the navigation yet
+                    await 
+                        _ parentDfd1Revalidation.resolve("LAZY PARENT 1*")
+                        # Resolve the first deferred - should not complete the navigation yet
+                    _ expect(t.router.state.navigation.state).toBe("loading")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy1 expect.trackedPromise("LAZY PARENT 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy1 expect.trackedPromise("LAZY A 1")
+                                @ lazy2 expect.trackedPromise(null, null, true)
+                    await 
+                        _ parentDfd2Revalidation.resolve("LAZY PARENT 2*")
+                    _ expect(t.router.state.navigation.state).toBe("idle")
+                    _ expect(t.router.state.actionData).toEqual
+                        { 
+                            @ b "ACTION"
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT*"
+                                @ lazy1 expect.trackedPromise("LAZY PARENT 1*")
+                                @ lazy2 expect.trackedPromise("LAZY PARENT 2*")
+                            @ b "B"
+                    _ expect(shouldRevalidateSpy).not.toHaveBeenCalled()
+            _ it
+                @ "triggers fallbacks on new dynamic route instances"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "invoice"
+                                        @ path "invoices/:id"
+                                        @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/invoices/1")
+                    let dfd1 = createDeferred()
+                    await 
+                        _ A.loaders.invoice.resolve
+                            _ defer
+                                { 
+                                    @ lazy dfd1.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfd1.resolve("DATA 1")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise("DATA 1")
+                        # Goes back into a loading state since this is a new instance of the
+                        # invoice route
+                    let B
+                        await 
+                            _ t.navigate("/invoices/2")
+                        # Goes back into a loading state since this is a new instance of the
+                        # invoice route
+                    let dfd2 = createDeferred()
+                    await 
+                        _ B.loaders.invoice.resolve
+                            _ defer
+                                { 
+                                    @ lazy dfd2.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfd2.resolve("DATA 2")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise("DATA 2")
+            _ it
+                @ "triggers fallbacks on new splat route instances"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "invoices"
+                                        @ path "invoices"
+                                        [ children
+                                            { 
+                                                @ id "invoice"
+                                                @ path "*"
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/invoices/1")
+                    let dfd1 = createDeferred()
+                    await 
+                        _ A.loaders.invoice.resolve
+                            _ defer
+                                { 
+                                    @ lazy dfd1.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfd1.resolve("DATA 1")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise("DATA 1")
+                        # Goes back into a loading state since this is a new instance of the
+                        # invoice route
+                    let B
+                        await 
+                            _ t.navigate("/invoices/2")
+                        # Goes back into a loading state since this is a new instance of the
+                        # invoice route
+                    let dfd2 = createDeferred()
+                    await 
+                        _ B.loaders.invoice.resolve
+                            _ defer
+                                { 
+                                    @ lazy dfd2.promise
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ dfd2.resolve("DATA 2")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { invoice
+                                @ lazy expect.trackedPromise("DATA 2")
+            _ it
+                @ "cancels awaited reused deferreds on subsequent navigations"
+                async=> 
+                    let shouldRevalidateSpy
+                        _ jest.fn
+                            => 
+                                + false
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ shouldRevalidate shouldRevalidateSpy
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ action true
+                                                @ loader true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                        # Route to /parent/a and return and resolve deferred's for both
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                        # Route to /parent/a and return and resolve deferred's for both
+                    let parentDfd = createDeferred()
+                        # Never resolves in this test
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                        # Never resolves in this test
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                        # Action submission to cancel deferreds
+                    let B
+                        await 
+                            _ t.navigate
+                                @ "/parent/b"
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                        # Action submission to cancel deferreds
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise()
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise()
+                    await 
+                        _ B.actions.b.resolve("ACTION")
+                    let parentDfd2 = createDeferred()
+                        # Never resolves in this test
+                    await 
+                        _ B.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT*"
+                                    @ lazy parentDfd2.promise
+                        # Never resolves in this test
+                    await 
+                        _ B.loaders.b.resolve("B")
+                        # Still in loading state due to revalidation deferred
+                    _ expect(t.router.state.navigation.state).toBe("loading")
+                        # Still in loading state due to revalidation deferred
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                        # Navigate elsewhere - should cancel/abort revalidation deferreds
+                    let C
+                        await 
+                            _ t.navigate("/")
+                        # Navigate elsewhere - should cancel/abort revalidation deferreds
+                    await 
+                        _ C.loaders.index.resolve("INDEX*")
+                    _ expect(t.router.state.navigation.state).toBe("idle")
+                    _ expect(t.router.state.actionData).toEqual(null)
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            @ index "INDEX*"
+            _ it
+                @ "does not support deferred data on fetcher loads"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "fetch"
+                                        @ path "fetch"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let key = "key"
+                    let A
+                        await 
+                            _ t.fetch("/fetch", key)
+                        # deferred in a fetcher awaits all data in the loading state
+                    let dfd = createDeferred()
+                        # deferred in a fetcher awaits all data in the loading state
+                    await 
+                        _ A.loaders.fetch.resolve
+                            _ defer
+                                { 
+                                    @ critical "1"
+                                    @ lazy dfd.promise
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data undefined
+                    await 
+                        _ dfd.resolve("2")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            { data
+                                @ critical "1"
+                                @ lazy "2"
+                        # Trigger a revalidation for the same fetcher
+                    let B
+                        await 
+                            _ t.revalidate("fetch", "fetch")
+                        # Trigger a revalidation for the same fetcher
+                    _ expect(t.router.state.revalidation).toBe("loading")
+                    let dfd2 = createDeferred()
+                    await 
+                        _ B.loaders.fetch.resolve
+                            _ defer
+                                { 
+                                    @ critical "3"
+                                    @ lazy dfd2.promise
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            { data
+                                @ critical "1"
+                                @ lazy "2"
+                    await 
+                        _ dfd2.resolve("4")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            { data
+                                @ critical "3"
+                                @ lazy "4"
+            _ it
+                @ "triggers error boundaries if fetcher deferred data rejects"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "fetch"
+                                        @ path "fetch"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let key = "key"
+                    let A
+                        await 
+                            _ t.fetch("/fetch", key)
+                    let dfd = createDeferred()
+                    await 
+                        _ A.loaders.fetch.resolve
+                            _ defer
+                                { 
+                                    @ critical "1"
+                                    @ lazy dfd.promise
+                    await 
+                        _ dfd.reject(Error("Kaboom!"))
+                    _ expect(t.router.state.errors).toMatchObject
+                        { 
+                            @ index new Error("Kaboom!")
+                    _ expect(t.router.state.fetchers.get(key)).toBeUndefined()
+            _ it
+                @ "cancels pending deferreds on fetcher reloads"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                    { 
+                                        @ id "fetch"
+                                        @ path "fetch"
+                                        @ loader true
+                                [ initialEntries
+                                    @ "/"
+                    let key = "key"
+                    let A
+                        await 
+                            _ t.fetch("/fetch", key)
+                        # deferred in a fetcher awaits all data in the loading state
+                    let dfd1 = createDeferred()
+                        # deferred in a fetcher awaits all data in the loading state
+                    let loaderPromise1
+                        _ A.loaders.fetch.resolve
+                            _ defer
+                                { 
+                                    @ critical "1"
+                                    @ lazy dfd1.promise
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data undefined
+                        # Fetch again
+                    let B
+                        await 
+                            _ t.fetch("/fetch", key)
+                        # Fetch again
+                    let dfd2 = createDeferred()
+                    let loaderPromise2
+                        _ B.loaders.fetch.resolve
+                            _ defer
+                                { 
+                                    @ critical "3"
+                                    @ lazy dfd2.promise
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data undefined
+                        # Resolving the second finishes us up
+                    await 
+                        _ dfd1.resolve("2")
+                        # Resolving the second finishes us up
+                    await 
+                        _ dfd2.resolve("4")
+                    await 
+                        @id loaderPromise1
+                    await 
+                        @id loaderPromise2
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            { data
+                                @ critical "3"
+                                @ lazy "4"
+            _ it
+                @ "cancels pending deferreds on fetcher action submissions"
+                async=> 
+                    let t
+                        _ setup
+                            { 
+                                [ routes
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader true
+                                    { 
+                                        @ id "parent"
+                                        @ path "parent"
+                                        @ loader true
+                                        @ shouldRevalidate
+                                            => 
+                                                + false
+                                        [ children
+                                            { 
+                                                @ id "a"
+                                                @ path "a"
+                                                @ loader true
+                                            { 
+                                                @ id "b"
+                                                @ path "b"
+                                                @ action true
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                                [ initialEntries
+                                    @ "/"
+                    let A
+                        await 
+                            _ t.navigate("/parent/a")
+                    let parentDfd = createDeferred()
+                    await 
+                        _ A.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT"
+                                    @ lazy parentDfd.promise
+                    let aDfd = createDeferred()
+                    await 
+                        _ A.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A"
+                                    @ lazy aDfd.promise
+                        # Fetcher action submission causes all to be cancelled and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    let key = "key"
+                        # Fetcher action submission causes all to be cancelled and
+                        # ignores shouldRevalidate since the cancelled active deferred means we
+                        # are missing data
+                    let B
+                        await 
+                            _ t.fetch
+                                @ "/parent/b"
+                                @ key
+                                { 
+                                    @ formMethod "post"
+                                    @ formData
+                                        _ createFormData
+                                            { 
+                                                @ key "value"
+                    await 
+                        _ parentDfd.resolve("Nope!")
+                    await 
+                        _ aDfd.resolve("Nope!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                    await 
+                        _ B.actions.b.resolve("ACTION")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data "ACTION"
+                    await 
+                        _ B.actions.b.resolve("ACTION")
+                    let parentDfd2 = createDeferred()
+                    await 
+                        _ B.loaders.parent.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL PARENT 2"
+                                    @ lazy parentDfd2.promise
+                    let aDfd2 = createDeferred()
+                    await 
+                        _ B.loaders.a.resolve
+                            _ defer
+                                { 
+                                    @ critical "CRITICAL A 2"
+                                    @ lazy aDfd2.promise
+                        # Still showing old data while we wait on revalidation deferreds to
+                        # complete
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT"
+                                @ lazy expect.trackedPromise(null, null, true)
+                            { a
+                                @ critical "CRITICAL A"
+                                @ lazy expect.trackedPromise(null, null, true)
+                        # Still showing old data while we wait on revalidation deferreds to
+                        # complete
+                    await 
+                        _ parentDfd2.resolve("Yep!")
+                    await 
+                        _ aDfd2.resolve("Yep!")
+                    _ expect(t.router.state.loaderData).toEqual
+                        { 
+                            { parent
+                                @ critical "CRITICAL PARENT 2"
+                                @ lazy expect.trackedPromise("Yep!")
+                            { a
+                                @ critical "CRITICAL A 2"
+                                @ lazy expect.trackedPromise("Yep!")
+                    _ expect(t.router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "ACTION"
+            _ it
+                @ "differentiates between navigation and fetcher deferreds on cancellations"
+                async=> 
+                    let dfds
+                        :ref Array
+                            :param 
+                                :ref ReturnType
+                                    :param 
+                                        :typeof createDeferred
+                        = []
+                    let signals
+                        :ref Array
+                            :param 
+                                :ref AbortSignal
+                        = []
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                    _ createMemoryHistory
+                                        { 
+                                            [ initialEntries
+                                                @ "/"
+                                [ routes
+                                    { 
+                                        @ id "root"
+                                        @ path "/"
+                                        @ loader
+                                            => 
+                                                { 
+                                                    @ request
+                                                let dfd = createDeferred()
+                                                _ dfds.push(dfd)
+                                                _ signals.push(request.signal)
+                                                return 
+                                                    _ defer
+                                                        { 
+                                                            @ value dfd.promise
+                                { hydrationData
+                                    { loaderData
+                                        { root
+                                            @ value -1
+                        # navigate to root, kicking off a reload of the root loader
+                    let key = "key"
+                        # navigate to root, kicking off a reload of the root loader
+                    _ router.navigate("/")
+                    _ router.fetch(key, "root", "/")
+                    await 
+                        _ tick()
+                    _ expect(router.state.navigation.state).toBe("loading")
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            { root
+                                @ value -1
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data undefined
+                        # Interrupt with a revalidation
+                    _ router.revalidate()
+                        # Interrupt with a revalidation
+                        # Original deferreds should do nothing on resolution
+                    _ dfds[0].resolve(0)
+                        # Original deferreds should do nothing on resolution
+                    _ dfds[1].resolve(1)
+                    await 
+                        _ tick()
+                    _ expect(router.state.navigation.state).toBe("loading")
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            { root
+                                @ value -1
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "loading"
+                            @ data undefined
+                        # New deferreds should complete the revalidation
+                    _ dfds[2].resolve(2)
+                        # New deferreds should complete the revalidation
+                    _ dfds[3].resolve(3)
+                    await 
+                        _ tick()
+                    _ expect(router.state.navigation.state).toBe("idle")
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            { root
+                                @ value expect.trackedPromise(2)
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            { data
+                                @ value 3
+                        # Assert that both the route loader and fetcher loader were aborted
+                    _ expect(signals[0].aborted).toBe(true)
+                        # Assert that both the route loader and fetcher loader were aborted
+                        # initial route
+                    _ expect(signals[1].aborted).toBe(true)
+                        # initial route
+                        # initial fetcher
+                    _ expect(signals[2].aborted).toBe(false)
+                        # initial fetcher
+                        # revalidating route
+                    _ expect(signals[3].aborted).toBe(false)
+                        # revalidating route
+                        # revalidating fetcher
+                    _ expect(router._internalActiveDeferreds.size).toBe(0)
+                        # revalidating fetcher
+                    _ expect(router._internalFetchControllers.size).toBe(0)
+                    _ router.dispose()

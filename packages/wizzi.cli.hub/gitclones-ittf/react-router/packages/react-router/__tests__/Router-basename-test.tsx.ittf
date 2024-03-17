@@ -1,0 +1,161 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        from "react-router"
+    _ describe
+        @ "<Router basename>"
+        => 
+            let consoleWarn
+                :ref jest.SpyInstance
+            _ beforeEach
+                => 
+                    set consoleWarn =
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+            _ afterEach
+                => 
+                    _ consoleWarn.mockRestore()
+            _ it
+                @ "renders null and issues a warning when the URL does not match the basename"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/app"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + App
+                    _ expect(renderer.toJSON()).toBeNull()
+                    _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                    _ expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining("<Router> won't render anything"))
+            _ it
+                @ "renders the first route that matches the URL"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/home"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "does not render a 2nd route that also matches the URL"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/app"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/app/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    h1 
+                                                        + Something else
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "matches regardless of basename casing"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/HoME"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "matches regardless of URL casing"
+                => 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ basename "/home"
+                                        @ initialEntries
+                                            [ 
+                                                @ "/hOmE"
+                                        < Routes 
+                                            < Route 
+                                                @ path "/"
+                                                @ element
+                                                    h1 
+                                                        + Home
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       Home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;

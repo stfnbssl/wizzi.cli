@@ -1,0 +1,221 @@
+module
+    :import-type 
+        @ LoaderFunctionArgs
+        from "react-router-dom"
+    import 
+        @ Form
+        @ Link
+        @ Outlet
+        @ RouterProvider
+        @ createBrowserRouter
+        @ redirect
+        @ useActionData
+        @ useFetcher
+        @ useLocation
+        @ useNavigation
+        @ useRouteLoaderData
+        from "react-router-dom"
+    import 
+        @ fakeAuthProvider
+        from "./auth"
+    const router
+        _ createBrowserRouter
+            [ 
+                { 
+                    @ id "root"
+                    @ path "/"
+                    m loader
+                        return 
+                            { 
+                                @ user fakeAuthProvider.username
+                            # Our root route always provides the user, if logged in
+                    @ Component Layout
+                    [ children
+                        { 
+                            @ index true
+                            @ Component PublicPage
+                        { 
+                            @ path "login"
+                            @ action loginAction
+                            @ loader loginLoader
+                            @ Component LoginPage
+                        { 
+                            @ path "protected"
+                            @ loader protectedLoader
+                            @ Component ProtectedPage
+                { 
+                    @ path "/logout"
+                    m action
+                        async
+                        await 
+                            _ fakeAuthProvider.signout()
+                            # We signout in a "resource route" that we can hit from a fetcher.Form
+                        return redirect("/")
+    export-default 
+        function App
+            return 
+                < RouterProvider 
+                    @ router {router}
+                    @ fallbackElement
+                        p 
+                            + Initial Load...
+    function Layout
+        return 
+            div 
+                h1 
+                    + Auth Example using RouterProvider
+                p 
+                    + This example demonstrates a simple login flow with three pages: a public&lf;        page, a protected page, and a login page. In order to see the protected&lf;        page, you must first login. Pretty standard stuff.
+                p 
+                    + First, visit the public page. Then, visit the protected page. You're not&lf;        yet logged in, so you are redirected to the login page. After you login,&lf;        you are redirected back to the protected page.
+                p 
+                    + Notice the URL change each time. If you click the back button at this&lf;        point, would you expect to go back to the login page? No! You're already&lf;        logged in. Try it out, and you'll see you go back to the page you&lf;        visited just *before* logging in, the public page.
+                < AuthStatus 
+                ul 
+                    li 
+                        < Link 
+                            @ to "/"
+                            + Public Page
+                    li 
+                        < Link 
+                            @ to "/protected"
+                            + Protected Page
+                < Outlet 
+    function AuthStatus
+        let 
+            { 
+                @ user
+            =
+                _ useRouteLoaderData("root")
+                    :as 
+                        :{ 
+                            :p user
+                                :union 
+                                    :string 
+                                    :null 
+            # Get our logged in user, if they exist, from the root route loader data
+        let fetcher = useFetcher()
+        if !user
+            return 
+                p 
+                    + You are not logged in.
+        let isLoggingOut = fetcher.formData != null
+        return 
+            div 
+                p 
+                    + Welcome
+                    + {user}
+                    + !
+                < fetcher.Form 
+                    @ method "post"
+                    @ action "/logout"
+                    button 
+                        @ type "submit"
+                        @ disabled {isLoggingOut}
+                        { 
+                            iif isLoggingOut
+                                then "Signing out..."
+                                else "Sign out"
+    async-function loginAction
+        { 
+            @ request
+            :ref LoaderFunctionArgs
+        let formData
+            await 
+                _ request.formData()
+        let username
+            _ formData.get("username")
+                :as 
+                    :union 
+                        :string 
+                        :null 
+            # Validate our form inputs and return validation errors via useActionData()
+        if !username
+            return 
+                { 
+                    @ error "You must provide a username to log in"
+        try 
+            await 
+                _ fakeAuthProvider.signin(username)
+        catch error
+            return 
+                { 
+                    @ error "Invalid login attempt"
+                # Unused as of now but this is how you would handle invalid
+                # username/password combinations - just like validating the inputs
+                # above
+        let redirectTo
+            _ formData.get("redirectTo")
+                :as 
+                    :union 
+                        :string 
+                        :null 
+        return redirect(redirectTo || "/")
+    async-function loginLoader
+        if fakeAuthProvider.isAuthenticated
+            return redirect("/")
+        return null
+    function LoginPage
+        let location = useLocation()
+        let params = new URLSearchParams(location.search)
+        let from = params.get("from") || "/"
+        let navigation = useNavigation()
+        let isLoggingIn = navigation.formData?.get?.("username") != null
+        let actionData
+            _ useActionData()
+                :as 
+                    :union 
+                        :{ 
+                            :p error
+                                :string 
+                        :undefined 
+        return 
+            div 
+                p 
+                    + You must log in to view the page at
+                    + {from}
+                < Form 
+                    @ method "post"
+                    @ replace
+                    input 
+                        @ type "hidden"
+                        @ name "redirectTo"
+                        @ value {from}
+                    label 
+                        + Username:
+                        input 
+                            @ name "username"
+                    + {" "}
+                    button 
+                        @ type "submit"
+                        @ disabled {isLoggingIn}
+                        { 
+                            iif isLoggingIn
+                                then "Logging in..."
+                                else "Login"
+                    { 
+                        iif actionData && actionData.error
+                            then
+                                p 
+                                    @ style
+                                        { 
+                                            @ color "red"
+                                    + {actionData.error}
+                            else null
+    function PublicPage
+        return 
+            h3 
+                + Public
+    function protectedLoader
+        { 
+            @ request
+            :ref LoaderFunctionArgs
+        if !fakeAuthProvider.isAuthenticated
+            let params = new URLSearchParams()
+            _ params.set("from", new URL(request.url).pathname)
+            return redirect("/login?" + params.toString())
+        return null
+    function ProtectedPage
+        return 
+            h3 
+                + Protected

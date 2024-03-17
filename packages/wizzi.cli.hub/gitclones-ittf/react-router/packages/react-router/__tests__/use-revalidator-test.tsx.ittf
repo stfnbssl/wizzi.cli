@@ -1,0 +1,357 @@
+module
+    import "@testing-library/jest-dom"
+    import 
+        @ fireEvent
+        @ queryByText
+        @ render
+        @ screen
+        @ waitFor
+        from "@testing-library/react"
+    import 
+        as React
+        from "react"
+    import 
+        @ Outlet
+        @ Route
+        @ RouterProvider
+        @ createMemoryRouter
+        @ createRoutesFromElements
+        @ useLoaderData
+        @ useNavigation
+        @ useRevalidator
+        @ useRouteError
+        from "react-router"
+    import MemoryNavigate from "./utils/MemoryNavigate"
+    import getHtml from "./utils/getHtml"
+    _ describe
+        @ "useRevalidator"
+        => 
+            _ it
+                @ "reloads data using useRevalidator"
+                async=> 
+                    let count = 1
+                    let router
+                        _ createMemoryRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ element
+                                        < Layout 
+                                    < Route 
+                                        @ path "foo"
+                                        @ loader
+                                            async=> 
+                                                `lit 
+                                                    + count=
+                                                    ++op ++count
+                                                    + 
+                                        @ element
+                                            < Foo 
+                            { 
+                                [ initialEntries
+                                    @ "/foo"
+                                { hydrationData
+                                    { loaderData
+                                        @ "0-0" "count=1"
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                < RouterProvider 
+                                    @ router {router}
+                    function Layout
+                        let navigation = useNavigation()
+                        let 
+                            { 
+                                @ revalidate
+                                @ state
+                            = useRevalidator()
+                        return 
+                            div 
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ revalidate()
+                                    + Revalidate
+                                p 
+                                    + {navigation.state}
+                                p 
+                                    + {state}
+                                < Outlet 
+                    function Foo
+                        let data
+                            _ useLoaderData()
+                                :as 
+                                    :string 
+                        return 
+                            p 
+                                + {data}
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;   "<div>&lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       <button>&lf;
+                            + &nbsp;         Revalidate&lf;
+                            + &nbsp;       </button>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         idle&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         idle&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         count=1&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;   </div>"&lf;
+                            + &nbsp;&nbsp;
+                    _ fireEvent.click(screen.getByText("Revalidate"))
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;   "<div>&lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       <button>&lf;
+                            + &nbsp;         Revalidate&lf;
+                            + &nbsp;       </button>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         idle&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         loading&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         count=1&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;   </div>"&lf;
+                            + &nbsp;&nbsp;
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("count=2")
+                    _ expect(getHtml(container)).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;   "<div>&lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       <button>&lf;
+                            + &nbsp;         Revalidate&lf;
+                            + &nbsp;       </button>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         idle&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         idle&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;       <p>&lf;
+                            + &nbsp;         count=2&lf;
+                            + &nbsp;       </p>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;   </div>"&lf;
+                            + &nbsp;&nbsp;
+            _ it
+                @ "allows a successful useRevalidator to resolve the error boundary (loader + child boundary)"
+                async=> 
+                    let shouldFail = true
+                    let router
+                        _ createMemoryRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ Component
+                                        => 
+                                            < React.Fragment
+                                                < MemoryNavigate 
+                                                    @ to "child"
+                                                    + /child
+                                                < Outlet 
+                                    < Route 
+                                        @ path "child"
+                                        @ loader
+                                            => 
+                                                if shouldFail
+                                                    set shouldFail = false
+                                                    throw new Error("Broken")
+                                                else
+                                                    return "Fixed"
+                                        @ Component
+                                            => 
+                                                p 
+                                                    set ("Child:" + useLoaderData())
+                                                        :as 
+                                                            :string 
+                                        @ ErrorBoundary
+                                            => 
+                                                let 
+                                                    { 
+                                                        @ revalidate
+                                                    = useRevalidator()
+                                                return 
+                                                    < React.Fragment
+                                                        p 
+                                                            op+ 
+                                                                + "Error:"
+                                                                @expr 
+                                                                    ( 
+                                                                        _ useRouteError()
+                                                                            :as 
+                                                                                :ref Error
+                                                                    . message
+                                                        button 
+                                                            @ onClick
+                                                                => 
+                                                                    _ revalidate()
+                                                            + Try again
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                div 
+                                    < RouterProvider 
+                                        @ router {router}
+                    _ fireEvent.click(screen.getByText("/child"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Error:Broken")
+                    _ expect(getHtml(container)).toMatch("Error:Broken")
+                    _ expect(router.state.errors).not.toBe(null)
+                    _ fireEvent.click(screen.getByText("Try again"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ expect(queryByText(container, "Child:Fixed")).toBeInTheDocument()
+                    _ expect(getHtml(container)).toMatch("Child:Fixed")
+                    _ expect(router.state.errors).toBe(null)
+            _ it
+                @ "allows a successful useRevalidator to resolve the error boundary (loader + parent boundary)"
+                async=> 
+                    let shouldFail = true
+                    let router
+                        _ createMemoryRouter
+                            _ createRoutesFromElements
+                                < Route 
+                                    @ path "/"
+                                    @ Component
+                                        => 
+                                            < React.Fragment
+                                                < MemoryNavigate 
+                                                    @ to "child"
+                                                    + /child
+                                                < Outlet 
+                                    @ ErrorBoundary
+                                        => 
+                                            let 
+                                                { 
+                                                    @ revalidate
+                                                = useRevalidator()
+                                            return 
+                                                < React.Fragment
+                                                    p 
+                                                        op+ 
+                                                            + "Error:"
+                                                            @expr 
+                                                                ( 
+                                                                    _ useRouteError()
+                                                                        :as 
+                                                                            :ref Error
+                                                                . message
+                                                    button 
+                                                        @ onClick
+                                                            => 
+                                                                _ revalidate()
+                                                        + Try again
+                                    < Route 
+                                        @ path "child"
+                                        @ loader
+                                            => 
+                                                if shouldFail
+                                                    set shouldFail = false
+                                                    throw new Error("Broken")
+                                                else
+                                                    return "Fixed"
+                                        @ Component
+                                            => 
+                                                p 
+                                                    set ("Child:" + useLoaderData())
+                                                        :as 
+                                                            :string 
+                    let 
+                        { 
+                            @ container
+                        =
+                            _ render
+                                div 
+                                    < RouterProvider 
+                                        @ router {router}
+                    _ fireEvent.click(screen.getByText("/child"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Error:Broken")
+                    _ expect(getHtml(container)).toMatch("Error:Broken")
+                    _ expect(router.state.errors).not.toBe(null)
+                    _ fireEvent.click(screen.getByText("Try again"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ expect(queryByText(container, "Child:Fixed")).toBeInTheDocument()
+                    _ expect(getHtml(container)).toMatch("Child:Fixed")
+                    _ expect(router.state.errors).toBe(null)
+            _ it
+                @ "is stable across location changes"
+                async=> 
+                    let count = 0
+                    let router
+                        _ createMemoryRouter
+                            [ 
+                                { 
+                                    @ path "/"
+                                    m Component
+                                        let revalidator = useRevalidator()
+                                        _ React.useEffect
+                                            => 
+                                                set count++
+                                            [ 
+                                                @ revalidator
+                                        return 
+                                            div 
+                                                < MemoryNavigate 
+                                                    @ to "/"
+                                                    + Link to Home
+                                                + {" "}
+                                                < MemoryNavigate 
+                                                    @ to "/foo"
+                                                    + Link to Foo
+                                                < Outlet 
+                                    [ children
+                                        { 
+                                            @ index true
+                                            m Component
+                                                return 
+                                                    h1 
+                                                        + Home Page
+                                        { 
+                                            @ path "foo"
+                                            m Component
+                                                return 
+                                                    h1 
+                                                        + Foo Page
+                    _ render
+                        < RouterProvider 
+                            @ router {router}
+                    _ fireEvent.click(screen.getByText("Link to Foo"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Foo Page")
+                    _ fireEvent.click(screen.getByText("Link to Home"))
+                    await 
+                        _ waitFor
+                            => 
+                                _ screen.getByText("Home Page")
+                    _ expect(count).toBe(1)

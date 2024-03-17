@@ -1,0 +1,1700 @@
+module
+    :import-type 
+        @ HydrationState
+        from "../index"
+    import 
+        @ json
+        from "../index"
+    import 
+        @ cleanup
+        @ setup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        from "./utils/utils"
+    function initializeTest
+        param init
+            :{ 
+                :p url
+                    :optional 
+                    :string 
+                :p hydrationData
+                    :optional 
+                    :ref HydrationState
+            :optional 
+        return 
+            _ setup
+                { 
+                    [ routes
+                        { 
+                            @ path ""
+                            @ id "root"
+                            @ hasErrorBoundary true
+                            @ loader true
+                            [ children
+                                { 
+                                    @ path "/"
+                                    @ id "index"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/foo"
+                                    @ id "foo"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/foo/bar"
+                                    @ id "foobar"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/bar"
+                                    @ id "bar"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/baz"
+                                    @ id "baz"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/p/:param"
+                                    @ id "param"
+                                    @ loader true
+                                    @ action true
+                    @ hydrationData
+                        || 
+                            + init?.hydrationData
+                            { 
+                                { loaderData
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                    ... 
+                        ( 
+                            iif init?.url
+                                then
+                                    { 
+                                        [ initialEntries
+                                            @ init.url
+                                else
+                                    { 
+    _ describe
+        @ "navigations"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+            _ describe
+                @ "normal navigation"
+                => 
+                    _ it
+                        @ "fetches data on navigation"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.loaderData).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       {&lf;
+                                    + &nbsp;         "foo": "FOO",&lf;
+                                    + &nbsp;         "root": "ROOT",&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "allows `null` as a valid data value"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve(null)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo null
+                    _ it
+                        @ "unwraps non-redirect json Responses"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    new Response
+                                        _ JSON.stringify
+                                            { 
+                                                @ key "value"
+                                        { 
+                                            @ status 200
+                                            { headers
+                                                @ "Content-Type" "application/json"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    { foo
+                                        @ key "value"
+                    _ it
+                        @ "unwraps non-redirect json Responses (json helper)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    _ json
+                                        { 
+                                            @ key "value"
+                                        @ 200
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    { foo
+                                        @ key "value"
+                        # See: https://github.com/remix-run/react-router/issues/11145
+                    _ it
+                        @ "does not attempt to deserialize empty json responses"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    new Response
+                                        @ null
+                                        { 
+                                            { headers
+                                                @ "Content-Type" "application/json"
+                            _ expect(t.router.state.errors).toBeNull()
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo null
+                        # See: https://github.com/remix-run/react-router/issues/11145
+                    _ it
+                        @ "unwraps non-redirect text Responses"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    new Response
+                                        @ "FOO"
+                                        { 
+                                            @ status 200
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo "FOO"
+                    _ it
+                        @ "handles errors when unwrapping Responses"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                [ children
+                                                    { 
+                                                        @ id "foo"
+                                                        @ path "foo"
+                                                        @ hasErrorBoundary true
+                                                        @ loader true
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    new Response
+                                        @ '{"key":"value"}}}}}'
+                                        { 
+                                            @ status 200
+                                            { headers
+                                                @ "Content-Type" "application/json"
+                                        # Invalid JSON
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            _ expect(t.router.state.errors).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       {&lf;
+                                    + &nbsp;         "foo": [SyntaxError: Unexpected token } in JSON at position 15],&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "bubbles errors when unwrapping Responses"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ hasErrorBoundary true
+                                                [ children
+                                                    { 
+                                                        @ id "foo"
+                                                        @ path "foo"
+                                                        @ loader true
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve
+                                    new Response
+                                        @ '{"key":"value"}}}}}'
+                                        { 
+                                            @ status 200
+                                            { headers
+                                                @ "Content-Type" "application/json"
+                                        # Invalid JSON
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            _ expect(t.router.state.errors).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       {&lf;
+                                    + &nbsp;         "root": [SyntaxError: Unexpected token } in JSON at position 15],&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;    &nbsp;
+                    _ it
+                        @ "does not fetch unchanging layout data"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData.root).toBe("ROOT")
+                    _ it
+                        @ "reloads all routes on search changes"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo?q=1")
+                            await 
+                                _ A.loaders.root.resolve("ROOT1")
+                            await 
+                                _ A.loaders.foo.resolve("1")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT1"
+                                    @ foo "1"
+                            let B
+                                await 
+                                    _ t.navigate("/foo?q=2")
+                            await 
+                                _ B.loaders.root.resolve("ROOT2")
+                            await 
+                                _ B.loaders.foo.resolve("2")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT2"
+                                    @ foo "2"
+                    _ it
+                        @ "does not reload all routes when search does not change"
+                        async=> 
+                            let t = initializeTest()
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/foo?q=1")
+                            await 
+                                _ A.loaders.root.resolve("ROOT1")
+                            await 
+                                _ A.loaders.foo.resolve("1")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT1"
+                                    @ foo "1"
+                            let B
+                                await 
+                                    _ t.navigate("/foo/bar?q=1")
+                            await 
+                                _ B.loaders.foobar.resolve("2")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT1"
+                                    @ foobar "2"
+                    _ it
+                        @ "reloads only routes with changed params"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/p/one")
+                            await 
+                                _ A.loaders.param.resolve("one")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ param "one"
+                            let B
+                                await 
+                                    _ t.navigate("/p/two")
+                            await 
+                                _ B.loaders.param.resolve("two")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ param "two"
+                    _ it
+                        @ "reloads all routes on refresh"
+                        async=> 
+                            let t = initializeTest()
+                            let url = "/p/same"
+                            let A
+                                await 
+                                    _ t.navigate(url)
+                            await 
+                                _ A.loaders.param.resolve("1")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ param "1"
+                            let B
+                                await 
+                                    _ t.navigate(url)
+                            await 
+                                _ B.loaders.root.resolve("ROOT2")
+                            await 
+                                _ B.loaders.param.resolve("2")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT2"
+                                    @ param "2"
+                    _ it
+                        @ "does not run loaders on hash change only navigations (no hash -> hash)"
+                        async=> 
+                            let t = initializeTest()
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/#bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                    _ it
+                        @ "does not run loaders on hash change only navigations (hash -> new hash)"
+                        async=> 
+                            let t
+                                _ initializeTest
+                                    { 
+                                        @ url "/#foo"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/#bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                    _ it
+                        @ "does not run loaders on same-hash navigations"
+                        async=> 
+                            let t
+                                _ initializeTest
+                                    { 
+                                        @ url "/#bar"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/#bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(A.loaders.index.stub.mock.calls.length).toBe(0)
+                    _ it
+                        @ "runs loaders on same-hash navigations to new paths"
+                        async=> 
+                            let t
+                                _ initializeTest
+                                    { 
+                                        @ url "/#bar"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/foo#bar")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(A.loaders.foo.stub.mock.calls.length).toBe(1)
+                    _ it
+                        @ "runs loaders on hash removal navigations (same path)"
+                        async=> 
+                            let t
+                                _ initializeTest
+                                    { 
+                                        @ url "/#bar"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(A.loaders.index.stub.mock.calls.length).toBe(1)
+                    _ it
+                        @ "runs loaders on hash removal navigations (nested path)"
+                        async=> 
+                            let t
+                                _ initializeTest
+                                    { 
+                                        @ url "/#bar"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(A.loaders.foo.stub.mock.calls.length).toBe(1)
+                    _ it
+                        @ 'does not load anything on hash change only empty <Form method="get"> navigations'
+                        async=> 
+                            let t = initializeTest()
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/#bar"
+                                        { 
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                    _ it
+                        @ 'runs loaders on hash change only non-empty <Form method="get"> navigations'
+                        async=> 
+                            let t = initializeTest()
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/#bar"
+                                        { 
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ A.loaders.root.resolve("ROOT 2")
+                            await 
+                                _ A.loaders.index.resolve("INDEX 2")
+                            _ expect(t.router.state.location.search).toBe("?key=value")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT 2"
+                                    @ index "INDEX 2"
+                    _ it
+                        @ 'runs action/loaders on hash change only <Form method="post"> navigations'
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo#bar")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo "A"
+                                # Submit while we have an active hash causing us to lose it
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                # Submit while we have an active hash causing us to lose it
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            await 
+                                _ B.actions.foo.resolve("ACTION")
+                            await 
+                                _ B.loaders.root.resolve("ROOT 2")
+                            await 
+                                _ B.loaders.foo.resolve("B")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.actionData).toMatchObject
+                                { 
+                                    @ foo "ACTION"
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT 2"
+                                    @ foo "B"
+                    _ it
+                        @ "sets all right states on hash change only"
+                        async=> 
+                            let t = initializeTest()
+                            let key = t.router.state.location.key
+                            _ t.navigate("/#bar")
+                                # hash changes are synchronous but force a key change
+                            _ expect(t.router.state.location.key).not.toBe(key)
+                                # hash changes are synchronous but force a key change
+                            _ expect(t.router.state.location.hash).toBe("#bar")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                    _ it
+                        @ "loads new data on new routes even if there's also a hash change"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo#bar")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo "A"
+                    _ it
+                        @ "redirects from loaders (throw)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/bar")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/bar")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let B
+                                await 
+                                    _ A.loaders.bar.redirect("/baz")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/baz")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            await 
+                                _ B.loaders.baz.resolve("B")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location.pathname).toBe("/baz")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ baz "B"
+                    _ it
+                        @ "redirects from loaders (return)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/bar")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/bar")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let B
+                                await 
+                                    _ A.loaders.bar.redirectReturn("/baz")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/baz")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            await 
+                                _ B.loaders.baz.resolve("B")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location.pathname).toBe("/baz")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ baz "B"
+                    _ it
+                        @ "reloads all routes if X-Remix-Revalidate was set in a loader redirect header"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/foo")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let B
+                                await 
+                                    _ A.loaders.foo.redirectReturn
+                                        @ "/bar"
+                                        @ undefined
+                                        { 
+                                            @ "X-Remix-Revalidate" "yes"
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location?.pathname).toBe("/bar")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location.pathname).toBe("/bar")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT*"
+                                    @ bar "BAR"
+                    _ it
+                        @ "reloads all routes if X-Remix-Revalidate was set in a loader redirect header (chained redirects)"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            _ expect(A.loaders.root.stub.mock.calls.length).toBe(0)
+                                # Reused on navigation
+                            let B
+                                await 
+                                    _ A.loaders.foo.redirectReturn
+                                        @ "/bar"
+                                        @ undefined
+                                        { 
+                                            @ "X-Remix-Revalidate" "yes"
+                                # Reused on navigation
+                            await 
+                                _ B.loaders.root.resolve("ROOT*")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                                # No cookie on second redirect
+                            let C
+                                await 
+                                    _ B.loaders.bar.redirectReturn("/baz")
+                                # No cookie on second redirect
+                            _ expect(C.loaders.root.stub.mock.calls.length).toBe(1)
+                            await 
+                                _ C.loaders.root.resolve("ROOT**")
+                            await 
+                                _ C.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location.pathname).toBe("/baz")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT**"
+                                    @ baz "BAZ"
+            _ describe
+                @ "errors on navigation"
+                => 
+                    _ describe
+                        @ "with an error boundary in the throwing route"
+                        => 
+                            _ it
+                                @ "uses the throwing route's error boundary"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ hasErrorBoundary true
+                                                                @ loader true
+                                    let nav
+                                        await 
+                                            _ t.navigate("/child")
+                                    await 
+                                        _ nav.loaders.child.reject(Error("Kaboom!"))
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ child new Error("Kaboom!")
+                            _ it
+                                @ "clears previous loaderData at that route"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        @ loader true
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ hasErrorBoundary true
+                                                                @ loader true
+                                    let nav
+                                        await 
+                                            _ t.navigate("/child")
+                                    await 
+                                        _ nav.loaders.parent.resolve("PARENT")
+                                    await 
+                                        _ nav.loaders.child.resolve("CHILD")
+                                    _ expect(t.router.state.loaderData).toEqual
+                                        { 
+                                            @ parent "PARENT"
+                                            @ child "CHILD"
+                                    _ expect(t.router.state.errors).toEqual(null)
+                                    let nav2
+                                        await 
+                                            _ t.navigate("/child")
+                                    await 
+                                        _ nav2.loaders.parent.resolve("PARENT2")
+                                    await 
+                                        _ nav2.loaders.child.reject(Error("Kaboom!"))
+                                    _ expect(t.router.state.loaderData).toEqual
+                                        { 
+                                            @ parent "PARENT2"
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ child new Error("Kaboom!")
+                    _ describe
+                        @ "with an error boundary above the throwing route"
+                        => 
+                            _ it
+                                @ "uses the nearest error boundary"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path "/"
+                                                        @ id "parent"
+                                                        @ hasErrorBoundary true
+                                                        [ children
+                                                            { 
+                                                                @ path "/child"
+                                                                @ id "child"
+                                                                @ loader true
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ parent "stuff"
+                                    let nav
+                                        await 
+                                            _ t.navigate("/child")
+                                    await 
+                                        _ nav.loaders.child.reject(Error("Kaboom!"))
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ parent new Error("Kaboom!")
+                            _ it
+                                @ "clears out the error on new locations"
+                                async=> 
+                                    let t
+                                        _ setup
+                                            { 
+                                                [ routes
+                                                    { 
+                                                        @ path ""
+                                                        @ id "root"
+                                                        @ loader true
+                                                        [ children
+                                                            { 
+                                                                @ path "/"
+                                                                @ id "parent"
+                                                                [ children
+                                                                    { 
+                                                                        @ path "/child"
+                                                                        @ id "child"
+                                                                        @ hasErrorBoundary true
+                                                                        @ loader true
+                                                { hydrationData
+                                                    { loaderData
+                                                        @ root "ROOT"
+                                    let nav
+                                        await 
+                                            _ t.navigate("/child")
+                                    await 
+                                        _ nav.loaders.child.reject("Kaboom!")
+                                    _ expect(t.router.state.loaderData).toEqual
+                                        { 
+                                            @ root "ROOT"
+                                    _ expect(t.router.state.errors).toEqual
+                                        { 
+                                            @ child "Kaboom!"
+                                    await 
+                                        _ t.navigate("/")
+                                    _ expect(t.router.state.loaderData).toEqual
+                                        { 
+                                            @ root "ROOT"
+                                    _ expect(t.router.state.errors).toBe(null)
+                    _ it
+                        @ "loads data above error boundary route"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ id "a"
+                                                @ loader true
+                                                [ children
+                                                    { 
+                                                        @ path "/b"
+                                                        @ id "b"
+                                                        @ loader true
+                                                        @ hasErrorBoundary true
+                                                        [ children
+                                                            { 
+                                                                @ path "/b/c"
+                                                                @ id "c"
+                                                                @ loader true
+                                        { hydrationData
+                                            { loaderData
+                                                @ a "LOADER A"
+                            let nav
+                                await 
+                                    _ t.navigate("/b/c")
+                            await 
+                                _ nav.loaders.b.resolve("LOADER B")
+                            await 
+                                _ nav.loaders.c.reject("Kaboom!")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ a "LOADER A"
+                                    @ b "LOADER B"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ b "Kaboom!"
+            _ describe
+                @ "POP navigations"
+                => 
+                    _ it
+                        @ "does a normal load when backing into an action redirect"
+                        async=> 
+                            let t = initializeTest()
+                                # start at / (history stack: [/])
+                                # POST /foo, redirect /bar (history stack: [/, /bar])
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                                # POST /foo, redirect /bar (history stack: [/, /bar])
+                            let B
+                                await 
+                                    _ A.actions.foo.redirect("/bar")
+                            await 
+                                _ B.loaders.root.resolve("ROOT DATA")
+                            await 
+                                _ B.loaders.bar.resolve("B LOADER")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                            _ expect(B.loaders.root.stub.mock.calls.length).toBe(1)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT DATA"
+                                    @ bar "B LOADER"
+                                # Link to /baz (history stack: [/, /bar, /baz])
+                            let C
+                                await 
+                                    _ t.navigate("/baz")
+                                # Link to /baz (history stack: [/, /bar, /baz])
+                            await 
+                                _ C.loaders.baz.resolve("C LOADER")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                            _ expect(C.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT DATA"
+                                    @ baz "C LOADER"
+                                # POP /bar (history stack: [/, /bar])
+                            let D
+                                await 
+                                    _ t.navigate(-1)
+                                # POP /bar (history stack: [/, /bar])
+                            await 
+                                _ D.loaders.bar.resolve("D LOADER")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                            _ expect(D.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT DATA"
+                                    @ bar "D LOADER"
+                                # POP / (history stack: [/])
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP / (history stack: [/])
+                            await 
+                                _ E.loaders.index.resolve("E LOADER")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/")
+                            _ expect(E.loaders.root.stub.mock.calls.length).toBe(0)
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT DATA"
+                                    @ index "E LOADER"
+                    _ it
+                        @ "navigates correctly using POP navigations"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                            let C
+                                await 
+                                    _ t.navigate(-1)
+                            await 
+                                _ C.loaders.foo.resolve("FOO*")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                            let D
+                                await 
+                                    _ t.navigate
+                                        @ "/baz"
+                                        { 
+                                            @ replace true
+                            await 
+                                _ D.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to /
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /
+                            await 
+                                _ E.loaders.index.resolve("INDEX*")
+                            _ expect(t.router.state.location.pathname).toEqual("/")
+                    _ it
+                        @ "navigates correctly using POP navigations across actions"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /bar (should replace)
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Post to /bar (should replace)
+                            await 
+                                _ C.actions.bar.resolve("BAR ACTION")
+                            await 
+                                _ C.loaders.root.resolve("ROOT")
+                            await 
+                                _ C.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # POP to /foo
+                            let D
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /foo
+                            await 
+                                _ D.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                    _ it
+                        @ "navigates correctly using POP navigations across actions to new locations"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /baz (should not replace)
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/baz"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Post to /baz (should not replace)
+                            await 
+                                _ C.actions.baz.resolve("BAZ ACTION")
+                            await 
+                                _ C.loaders.root.resolve("ROOT")
+                            await 
+                                _ C.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to /bar
+                            let D
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /bar
+                            await 
+                                _ D.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                    _ it
+                        @ "navigates correctly using POP navigations across action errors"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /bar (should push due to our error)
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Post to /bar (should push due to our error)
+                            await 
+                                _ C.actions.bar.reject("BAR ERROR")
+                            await 
+                                _ C.loaders.root.resolve("ROOT")
+                            await 
+                                _ C.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # POP to /bar
+                            let D
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /bar
+                            await 
+                                _ D.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                    _ it
+                        @ "navigates correctly using POP navigations across loader redirects"
+                        async=> 
+                            let t = initializeTest()
+                                # Start at / (history stack: [/])
+                                # Navigate to /foo (history stack: [/, /foo])
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo (history stack: [/, /foo])
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                            let fooKey = t.router.state.location?.key
+                                # Navigate to /bar, redirect to /baz (history stack: [/, /foo, /baz])
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar, redirect to /baz (history stack: [/, /foo, /baz])
+                            let C
+                                await 
+                                    _ B.loaders.bar.redirect("/baz")
+                            await 
+                                _ C.loaders.root.resolve("ROOT")
+                            await 
+                                _ C.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to /foo (history stack: [/, /foo])
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /foo (history stack: [/, /foo])
+                            await 
+                                _ E.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                            _ expect(t.router.state.location.key).toBe(fooKey)
+                    _ it
+                        @ "navigates correctly using POP navigations across loader redirects with replace:true"
+                        async=> 
+                            let t = initializeTest()
+                                # Start at / (history stack: [/])
+                            let indexKey = t.router.state.location?.key
+                                # Navigate to /foo (history stack: [/, /foo])
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo (history stack: [/, /foo])
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar, redirect to /baz (history stack: [/, /baz])
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ replace true
+                                # Navigate to /bar, redirect to /baz (history stack: [/, /baz])
+                            let C
+                                await 
+                                    _ B.loaders.bar.redirect("/baz")
+                            await 
+                                _ C.loaders.root.resolve("ROOT")
+                            await 
+                                _ C.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.historyAction).toEqual("REPLACE")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to / (history stack: [/])
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to / (history stack: [/])
+                            await 
+                                _ E.loaders.index.resolve("INDEX")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/")
+                            _ expect(t.router.state.location.key).toBe(indexKey)
+                    _ it
+                        @ "navigates correctly using POP navigations across action redirects"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            let getBarKey = t.router.state.navigation.location?.key
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /bar, redirect to /baz
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Post to /bar, redirect to /baz
+                            let postBarKey = t.router.state.navigation.location?.key
+                            let D
+                                await 
+                                    _ C.actions.bar.redirect("/baz")
+                            await 
+                                _ D.loaders.root.resolve("ROOT")
+                            await 
+                                _ D.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to /bar
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /bar
+                            await 
+                                _ E.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                            _ expect(t.router.state.location.key).toBe(getBarKey)
+                            _ expect(t.router.state.location.key).not.toBe(postBarKey)
+                    _ it
+                        @ "navigates correctly using POP navigations across action redirects to the same location"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            let fooKey = t.router.state.navigation.location?.key
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /bar, redirect to /bar
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                # Post to /bar, redirect to /bar
+                            let postBarKey = t.router.state.navigation.location?.key
+                            let D
+                                await 
+                                    _ C.actions.bar.redirect("/bar")
+                            await 
+                                _ D.loaders.root.resolve("ROOT")
+                            await 
+                                _ D.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("REPLACE")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # POP to /foo
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /foo
+                            await 
+                                _ E.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                            _ expect(t.router.state.location.key).toBe(fooKey)
+                            _ expect(t.router.state.location.key).not.toBe(postBarKey)
+                    _ it
+                        @ "navigates correctly using POP navigations across <Form replace> redirects"
+                        async=> 
+                            let t = initializeTest()
+                                # Navigate to /foo
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Navigate to /foo
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # Navigate to /bar
+                            let B
+                                await 
+                                    _ t.navigate("/bar")
+                                # Navigate to /bar
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # Post to /bar, redirect to /baz
+                            let C
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                                            @ replace true
+                                # Post to /bar, redirect to /baz
+                            let D
+                                await 
+                                    _ C.actions.bar.redirect("/baz")
+                            await 
+                                _ D.loaders.root.resolve("ROOT")
+                            await 
+                                _ D.loaders.baz.resolve("BAZ")
+                            _ expect(t.router.state.historyAction).toEqual("REPLACE")
+                            _ expect(t.router.state.location.pathname).toEqual("/baz")
+                                # POP to /foo
+                            let E
+                                await 
+                                    _ t.navigate(-1)
+                                # POP to /foo
+                            await 
+                                _ E.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                    _ it
+                        @ "should respect explicit replace:false on non-redirected actions to new locations"
+                        async=> 
+                            let t = initializeTest()
+                                # start at / (history stack: [/])
+                                # Link to /foo (history stack: [/, /foo])
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Link to /foo (history stack: [/, /foo])
+                            await 
+                                _ A.loaders.root.resolve("ROOT")
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # POST /bar (history stack: [/, /foo, /bar])
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                                            @ replace false
+                                # POST /bar (history stack: [/, /foo, /bar])
+                            await 
+                                _ B.actions.bar.resolve("BAR")
+                            await 
+                                _ B.loaders.root.resolve("ROOT")
+                            await 
+                                _ B.loaders.bar.resolve("BAR")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/bar")
+                                # POP /foo (history stack: [GET /, GET /foo])
+                            let C
+                                await 
+                                    _ t.navigate(-1)
+                                # POP /foo (history stack: [GET /, GET /foo])
+                            await 
+                                _ C.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                    _ it
+                        @ "should respect explicit replace:false on non-redirected actions to the same location"
+                        async=> 
+                            let t = initializeTest()
+                                # start at / (history stack: [/])
+                                # Link to /foo (history stack: [/, /foo])
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                                # Link to /foo (history stack: [/, /foo])
+                            await 
+                                _ A.loaders.root.resolve("ROOT")
+                            await 
+                                _ A.loaders.foo.resolve("FOO")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # POST /foo (history stack: [/, /foo, /foo])
+                            let B
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                                            @ replace false
+                                # POST /foo (history stack: [/, /foo, /foo])
+                            await 
+                                _ B.actions.foo.resolve("FOO2 ACTION")
+                            await 
+                                _ B.loaders.root.resolve("ROOT2")
+                            await 
+                                _ B.loaders.foo.resolve("FOO2")
+                            _ expect(t.router.state.historyAction).toEqual("PUSH")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+                                # POP /foo (history stack: [/, /foo])
+                            let C
+                                await 
+                                    _ t.navigate(-1)
+                                # POP /foo (history stack: [/, /foo])
+                            await 
+                                _ C.loaders.root.resolve("ROOT3")
+                            await 
+                                _ C.loaders.foo.resolve("FOO3")
+                            _ expect(t.router.state.historyAction).toEqual("POP")
+                            _ expect(t.router.state.location.pathname).toEqual("/foo")
+            _ describe
+                @ "navigation states"
+                => 
+                    _ it
+                        @ "initialization"
+                        async=> 
+                            let t = initializeTest()
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "get"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/foo"
+                                    @ search ""
+                                    @ hash ""
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "get + redirect"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            let B
+                                await 
+                                    _ A.loaders.foo.redirect("/bar")
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location?.pathname).toBe("/bar")
+                            await 
+                                _ B.loaders.bar.resolve("B")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "action submission"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("submitting")
+                            _ expect
+                                _ new URLSearchParams(navigation.formData).toString()
+                                    # @ts-expect-error
+                                ._ toBe
+                                    @ "gosh=dang"
+                            _ expect(navigation.formMethod).toBe("post")
+                            _ expect(navigation.formEncType).toBe("application/x-www-form-urlencoded")
+                            _ expect(navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/foo"
+                                    @ search ""
+                                    @ hash ""
+                            await 
+                                _ A.actions.foo.resolve("A")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect
+                                _ new URLSearchParams(navigation.formData).toString()
+                                    # @ts-expect-error
+                                ._ toBe
+                                    @ "gosh=dang"
+                            _ expect(navigation.formMethod).toBe("post")
+                            _ expect(navigation.formEncType).toBe("application/x-www-form-urlencoded")
+                            _ expect(navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/foo"
+                                    @ search ""
+                                    @ hash ""
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            await 
+                                _ A.loaders.root.resolve("B")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "action submission + redirect"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            let B
+                                await 
+                                    _ A.actions.foo.redirect("/bar")
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect
+                                _ new URLSearchParams(navigation.formData).toString()
+                                    # @ts-expect-error
+                                ._ toBe
+                                    @ "gosh=dang"
+                            _ expect(navigation.formMethod).toBe("post")
+                            _ expect(navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/bar"
+                                    @ search ""
+                                    @ hash ""
+                            await 
+                                _ B.loaders.bar.resolve("B")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            await 
+                                _ B.loaders.root.resolve("C")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "loader submission"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect(navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                            _ expect(navigation.formMethod).toBe("get")
+                            _ expect(navigation.formEncType).toBe("application/x-www-form-urlencoded")
+                            _ expect(navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/foo"
+                                    @ search "?gosh=dang"
+                                    @ hash ""
+                            await 
+                                _ A.loaders.root.resolve("ROOT")
+                            await 
+                                _ A.loaders.foo.resolve("A")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()
+                    _ it
+                        @ "loader submission + redirect"
+                        async=> 
+                            let t = initializeTest()
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ gosh "dang"
+                            await 
+                                _ A.loaders.root.resolve("ROOT")
+                            let B
+                                await 
+                                    _ A.loaders.foo.redirect("/bar")
+                            let navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("loading")
+                            _ expect(navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                            _ expect(navigation.formMethod).toBe("get")
+                            _ expect(navigation.formEncType).toBe("application/x-www-form-urlencoded")
+                            _ expect(navigation.location?.pathname).toBe("/bar")
+                            await 
+                                _ B.loaders.bar.resolve("B")
+                            set navigation = t.router.state.navigation
+                            _ expect(navigation.state).toBe("idle")
+                            _ expect(navigation.formData).toBeUndefined()
+                            _ expect(navigation.location).toBeUndefined()

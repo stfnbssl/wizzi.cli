@@ -1,0 +1,42 @@
+module
+    import 
+        @ TextEncoder
+            as NodeTextEncoder
+        @ TextDecoder
+            as NodeTextDecoder
+        from "util"
+    import 
+        @ fetch
+        @ Request
+        @ Response
+        @ Headers
+        from "@remix-run/web-fetch"
+    import 
+        @ AbortController
+            as NodeAbortController
+        from "abort-controller"
+    if !globalThis.fetch
+        set globalThis.fetch = fetch
+            # Built-in lib.dom.d.ts expects `fetch(Request | string, ...)` but the web
+            # fetch API allows a URL so @remix-run/web-fetch defines
+            # `fetch(string | URL | Request, ...)`
+            # @ts-expect-error
+            # Same as above, lib.dom.d.ts doesn't allow a URL to the Request constructor
+            # @ts-expect-error
+        set globalThis.Request = Request
+            # Same as above, lib.dom.d.ts doesn't allow a URL to the Request constructor
+            # @ts-expect-error
+            # web-std/fetch Response does not currently implement Response.error()
+            # @ts-expect-error
+        set globalThis.Response = Response
+            # web-std/fetch Response does not currently implement Response.error()
+            # @ts-expect-error
+        set globalThis.Headers = Headers
+    if !globalThis.AbortController
+        set globalThis.AbortController = NodeAbortController
+            # @ts-expect-error
+    if !globalThis.TextEncoder || !globalThis.TextDecoder
+        set globalThis.TextEncoder = NodeTextEncoder
+            # @ts-expect-error
+        set globalThis.TextDecoder = NodeTextDecoder
+            # @ts-expect-error

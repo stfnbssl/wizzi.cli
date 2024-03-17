@@ -1,0 +1,24 @@
+module
+    :declare 
+        :module "jsurl"
+            :type Nullable
+                :< T
+                :union 
+                    :ref T
+                    :null 
+                    :undefined 
+            export 
+                :function stringify
+                    param input
+                        :any 
+                    :return
+                        :string 
+            export 
+                :function parse
+                    param input
+                        :ref Nullable
+                            :param string
+                        :optional 
+                    :return
+                        :ref Nullable
+                            :param any

@@ -1,0 +1,194 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    :import-type 
+        @ PathMatch
+        from "react-router"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useMatch
+        from "react-router"
+    function ShowMatch
+        { 
+            @ pattern
+            :{ 
+                :p pattern
+                    :string 
+        return 
+            pre 
+                + {JSON.stringify(useMatch(pattern), null, 2)}
+    _ describe
+        @ "useMatch"
+        => 
+            _ describe
+                @ "when the path matches the current URL"
+                => 
+                    _ it
+                        @ "returns the match"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < ShowMatch 
+                                                                @ pattern "home"
+                                                        < Route 
+                                                            @ path "/home"
+                                                            @ element
+                                                                h1 
+                                                                    + Home
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {&lf;
+                                    + &nbsp;         "params": {},&lf;
+                                    + &nbsp;         "pathname": "/home",&lf;
+                                    + &nbsp;         "pathnameBase": "/home",&lf;
+                                    + &nbsp;         "pattern": {&lf;
+                                    + &nbsp;           "path": "home",&lf;
+                                    + &nbsp;           "caseSensitive": false,&lf;
+                                    + &nbsp;           "end": true&lf;
+                                    + &nbsp;         }&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the current URL ends with a slash"
+                => 
+                    _ it
+                        @ "returns the match.pathname with the trailing slash"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home/"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < ShowMatch 
+                                                                @ pattern "home"
+                                                        < Route 
+                                                            @ path "/home"
+                                                            @ element
+                                                                h1 
+                                                                    + Home
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         {&lf;
+                                    + &nbsp;         "params": {},&lf;
+                                    + &nbsp;         "pathname": "/home/",&lf;
+                                    + &nbsp;         "pathnameBase": "/home",&lf;
+                                    + &nbsp;         "pattern": {&lf;
+                                    + &nbsp;           "path": "home",&lf;
+                                    + &nbsp;           "caseSensitive": false,&lf;
+                                    + &nbsp;           "end": true&lf;
+                                    + &nbsp;         }&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when the path does not match the current URL"
+                => 
+                    _ it
+                        @ "returns null"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "/"
+                                                        @ element
+                                                            < ShowMatch 
+                                                                @ pattern "about"
+                                                        < Route 
+                                                            @ path "/home"
+                                                            @ element
+                                                                h1 
+                                                                    + Home
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         null&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "when re-rendered with the same URL"
+                => 
+                    _ it
+                        @ "returns the memoized match"
+                        => 
+                            let path = "/home"
+                            let match
+                                :ref PathMatch
+                                    :param string
+                            let firstMatch
+                                :ref PathMatch
+                                    :param string
+                            function HomePage
+                                set match = useMatch(path)
+                                if !firstMatch
+                                    set firstMatch = match
+                                return null
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ path
+                                                < Routes 
+                                                    < Route 
+                                                        @ path {path}
+                                                        @ element
+                                                            < HomePage 
+                            _ TestRenderer.act
+                                => 
+                                    _ renderer.update
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ path
+                                            < Routes 
+                                                < Route 
+                                                    @ path {path}
+                                                    @ element
+                                                        < HomePage 
+                            _ expect(match).toBe(firstMatch)

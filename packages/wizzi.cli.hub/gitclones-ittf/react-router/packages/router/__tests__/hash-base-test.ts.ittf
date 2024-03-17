@@ -1,0 +1,70 @@
+module
+    import 
+        @ JSDOM
+        from "jsdom"
+    :import-type 
+        @ HashHistory
+        from "@remix-run/router"
+    import 
+        @ createHashHistory
+        from "@remix-run/router"
+    _ describe
+        @ "a hash history on a page with a <base> tag"
+        => 
+            let history
+                :ref HashHistory
+            let base
+                :ref HTMLBaseElement
+            let window
+                :ref Window
+            let document
+                :ref Document
+            _ beforeEach
+                => 
+                    let dom
+                        new JSDOM
+                            `lit 
+                                + <!DOCTYPE html><p>History Example</p>
+                            { 
+                                @ url "https://example.org/"
+                        # Need to use our own custom DOM in order to get a working history
+                    set window =
+                        @expr
+                            @expr dom.window
+                                :as 
+                                    :unknown 
+                            :as 
+                                :ref Window
+                    set document = window.document
+                    _ window.history.replaceState(null, "", "#/")
+                    set base = document.createElement("base")
+                    _ base.setAttribute("href", "/prefix")
+                    _ document.head.appendChild(base)
+                    set history =
+                        _ createHashHistory
+                            { 
+                                @ window
+                                    @expr
+                                        @expr dom.window
+                                            :as 
+                                                :unknown 
+                                        :as 
+                                            :ref Window
+            _ afterEach
+                => 
+                    _ document.head.removeChild(base)
+            _ it
+                @ "knows how to create hrefs"
+                => 
+                    const hashIndex = window.location.href.indexOf("#")
+                    const upToHash
+                        iif hashIndex === -1
+                            then window.location.href
+                            else window.location.href.slice(0, hashIndex)
+                    const href
+                        _ history.createHref
+                            { 
+                                @ pathname "/the/path"
+                                @ search "?the=query"
+                                @ hash "#the-hash"
+                    _ expect(href).toEqual(upToHash + "#/the/path?the=query#the-hash")

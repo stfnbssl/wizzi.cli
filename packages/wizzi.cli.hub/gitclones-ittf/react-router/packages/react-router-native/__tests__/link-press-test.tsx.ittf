@@ -1,0 +1,160 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Text
+        @ TouchableHighlight
+        @ View
+        from "react-native"
+    import 
+        @ Link
+        @ NativeRouter
+        @ Routes
+        @ Route
+        from "react-router-native"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ press
+        from "./utils"
+    _ describe
+        @ "A <Link> press"
+        => 
+            _ it
+                @ "navigates to the new view"
+                => 
+                    function Home
+                        return 
+                            < View 
+                                < Text 
+                                    + Home
+                                < Link 
+                                    @ to "../about"
+                                    < Text 
+                                        + About
+                    function About
+                        return 
+                            < View 
+                                < Text 
+                                    + About
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < NativeRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "about"
+                                                @ element
+                                                    < About 
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+                    let touchable = renderer.root.findByType(TouchableHighlight)
+                    _ TestRenderer.act
+                        => 
+                            _ press(touchable)
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+            _ it
+                @ "calls the custom onPress handler"
+                => 
+                    let spy = jest.fn()
+                    function Home
+                        return 
+                            < View 
+                                < Text 
+                                    + Home
+                                < Link 
+                                    @ to "../about"
+                                    @ onPress {spy}
+                                    < Text 
+                                        + About
+                    function About
+                        return 
+                            < View 
+                                < Text 
+                                    + About
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < NativeRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < Routes 
+                                            < Route 
+                                                @ path "home"
+                                                @ element
+                                                    < Home 
+                                            < Route 
+                                                @ path "about"
+                                                @ element
+                                                    < About 
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+                    let touchable = renderer.root.findByType(TouchableHighlight)
+                    let pressEvent
+                    _ TestRenderer.act
+                        => 
+                            set pressEvent = press(touchable)
+                    _ expect(spy).toHaveBeenCalledWith(pressEvent)
+            _ describe
+                @ "when event.preventDefault() is used in the onPress handler"
+                => 
+                    _ it
+                        @ "does not navigate to the new view"
+                        => 
+                            function Home
+                                return 
+                                    < View 
+                                        < Text 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            @ onPress
+                                                => 
+                                                    param event
+                                                    _ event.preventDefault()
+                                            < Text 
+                                                + About
+                            function About
+                                return 
+                                    < View 
+                                        < Text 
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < NativeRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            _ expect(renderer.toJSON()).toMatchSnapshot()
+                            let touchable = renderer.root.findByType(TouchableHighlight)
+                            _ TestRenderer.act
+                                => 
+                                    _ press(touchable)
+                            _ expect(renderer.toJSON()).toMatchSnapshot()

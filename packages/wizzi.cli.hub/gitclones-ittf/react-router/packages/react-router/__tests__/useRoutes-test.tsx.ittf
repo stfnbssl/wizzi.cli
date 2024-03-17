@@ -1,0 +1,298 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    :import-type 
+        @ RouteObject
+        from "react-router"
+    import 
+        @ MemoryRouter
+        @ useRoutes
+        from "react-router"
+    _ describe
+        @ "useRoutes"
+        => 
+            _ it
+                @ "returns the matching element from a route config"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "home"
+                                @ element
+                                    h1 
+                                        + home
+                            { 
+                                @ path "about"
+                                @ element
+                                    h1 
+                                        + about
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/home"
+                                        < RoutesRenderer 
+                                            @ routes {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       home&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ describe
+                @ "when some routes are missing elements"
+                => 
+                    _ it
+                        @ "defaults to rendering their children"
+                        => 
+                            let routes
+                                [ 
+                                    { 
+                                        @ path "users"
+                                        [ children
+                                            { 
+                                                @ path ":id"
+                                                @ element
+                                                    h1 
+                                                        + user profile
+                                    { 
+                                        @ path "about"
+                                        @ element
+                                            h1 
+                                                + about
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/users/mj"
+                                                < RoutesRenderer 
+                                                    @ routes {routes}
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <h1>&lf;
+                                    + &nbsp;         user profile&lf;
+                                    + &nbsp;       </h1>&lf;
+                                    + &nbsp;    &nbsp;
+            _ it
+                @ "Uses the `location` prop instead of context location`"
+                => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "one"
+                                @ element
+                                    h1 
+                                        + one
+                            { 
+                                @ path "two"
+                                @ element
+                                    h1 
+                                        + two
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/one"
+                                        < RoutesRenderer 
+                                            @ routes {routes}
+                                            @ location
+                                                { 
+                                                    @ pathname "/two"
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <h1>&lf;
+                            + &nbsp;       two&lf;
+                            + &nbsp;     </h1>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "returns null when no route matches"
+                => 
+                    let spy
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "one"
+                                @ element
+                                    h1 
+                                        + one
+                    const NullRenderer
+                        => 
+                            param props
+                                :{ 
+                                    :p routes
+                                        :[ 
+                                            :ref RouteObject
+                            const element = useRoutes(props.routes)
+                            return 
+                                iif element === null
+                                    then
+                                        div 
+                                            + is null
+                                    else
+                                        div 
+                                            + is not null
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/two"
+                                        < NullRenderer 
+                                            @ routes {routes}
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       is null&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+                    _ spy.mockRestore()
+            _ it
+                @ "returns null when no route matches and a `location` prop is passed"
+                => 
+                    let spy
+                        _ jest.spyOn(console, "warn").mockImplementation
+                            => 
+                    let routes
+                        [ 
+                            { 
+                                @ path "one"
+                                @ element
+                                    h1 
+                                        + one
+                    const NullRenderer
+                        => 
+                            param props
+                                :{ 
+                                    :p routes
+                                        :[ 
+                                            :ref RouteObject
+                                    :p location
+                                        :optional 
+                                        :intersect 
+                                            :ref Partial
+                                                :param 
+                                                    :ref Location
+                                            :{ 
+                                                :p pathname
+                                                    :string 
+                            const element = useRoutes(props.routes, props.location)
+                            return 
+                                iif element === null
+                                    then
+                                        div 
+                                            + is null
+                                    else
+                                        div 
+                                            + is not null
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/two"
+                                        < NullRenderer 
+                                            @ routes {routes}
+                                            @ location
+                                                { 
+                                                    @ pathname "/three"
+                                                    @ search ""
+                                                    @ hash ""
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div>&lf;
+                            + &nbsp;       is null&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;
+                    _ spy.mockRestore()
+            _ describe
+                @ "warns"
+                => 
+                    let consoleWarn
+                        :ref jest.SpyInstance
+                    _ beforeEach
+                        => 
+                            set consoleWarn =
+                                _ jest.spyOn(console, "warn").mockImplementation
+                                    => 
+                    _ afterEach
+                        => 
+                            _ consoleWarn.mockRestore()
+                    _ it
+                        @ "for no element on leaf route"
+                        => 
+                            let routes
+                                [ 
+                                    { 
+                                        @ path "layout"
+                                        [ children
+                                            { 
+                                                @ path "two"
+                                                @ element
+                                                    h1 
+                                                        + two
+                            _ TestRenderer.act
+                                => 
+                                    _ TestRenderer.create
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/layout"
+                                            < RoutesRenderer 
+                                                @ routes {routes}
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(consoleWarn).toHaveBeenCalledWith
+                                _ expect.stringContaining
+                                    `lit 
+                                        + Matched leaf route at location "/layout" does not have an element
+    function RoutesRenderer
+        { 
+            @ routes
+            @ location
+            :{ 
+                :p routes
+                    :[ 
+                        :ref RouteObject
+                :p location
+                    :optional 
+                    :intersect 
+                        :ref Partial
+                            :param 
+                                :ref Location
+                        :{ 
+                            :p pathname
+                                :string 
+        return useRoutes(routes, location)

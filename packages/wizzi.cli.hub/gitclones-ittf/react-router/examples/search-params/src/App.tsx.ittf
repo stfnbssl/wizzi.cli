@@ -1,0 +1,163 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Link
+        @ Route
+        @ Routes
+        @ useSearchParams
+        from "react-router-dom"
+    export-default 
+        function App
+            return 
+                div 
+                    h1 
+                        + Search Params Example
+                    p 
+                        + This example demonstrates a simple search page that makes a request for&lf;        user data to the GitHub API and displays information for that user on&lf;        the page. The example uses the
+                        code 
+                            + useSearchParams()
+                        + hook to&lf;        read and write the URL query string.
+                    < Routes 
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Home 
+                        < Route 
+                            @ path "*"
+                            @ element
+                                < NoMatch 
+    function randomUser
+        let users
+            [ 
+                @ "chaance"
+                @ "jacob-ebey"
+                @ "mcansh"
+                @ "mjackson"
+                @ "ryanflorence"
+        return users[Math.floor(Math.random() * users.length)]
+    function Home
+        let [searchParams, setSearchParams] = useSearchParams()
+            # searchParams is a URLSearchParams object.
+            # See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+        let user = searchParams.get("user")
+            # searchParams is a URLSearchParams object.
+            # See https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+        let [userData, setUserData]
+            _ React.useState
+                :param any
+                @ null
+        _ React.useEffect
+            => 
+                let abortController = new AbortController()
+                async-function getGitHubUser
+                    let response
+                        await 
+                            _ fetch
+                                `lit 
+                                    + https://api.github.com/users/
+                                    @ user
+                                    + 
+                                { 
+                                    @ signal abortController.signal
+                    if !abortController.signal.aborted
+                        let data
+                            await 
+                                _ response.json()
+                        _ setUserData(data)
+                if user
+                    _ getGitHubUser()
+                return 
+                    => 
+                        _ abortController.abort()
+            [ 
+                @ user
+        function handleSubmit
+            param event
+                :ref React.FormEvent
+                    :param 
+                        :ref HTMLFormElement
+            _ event.preventDefault()
+            let formData = new FormData(event.currentTarget)
+            let newUser
+                _ formData.get("user")
+                    :as 
+                        :string 
+            if !newUser
+                return 
+            _ setSearchParams
+                { 
+                    @ user newUser
+        function handleRandomSubmit
+            param event
+                :ref React.FormEvent
+                    :param 
+                        :ref HTMLFormElement
+            _ event.preventDefault()
+            let newUser = randomUser()
+                # our new random user is the same as our current one, let's try again
+            if newUser === user
+                _ handleRandomSubmit(event)
+            else
+                _ setSearchParams
+                    { 
+                        @ user newUser
+        return 
+            div 
+                div 
+                    @ style
+                        { 
+                            @ display "flex"
+                    form 
+                        @ onSubmit {handleSubmit}
+                        label 
+                            input 
+                                @ defaultValue {user ?? undefined}
+                                @ type "text"
+                                @ name "user"
+                        button 
+                            @ type "submit"
+                            + Search
+                    form 
+                        @ onSubmit {handleRandomSubmit}
+                        input 
+                            @ type "hidden"
+                            @ name "random"
+                        button 
+                            @ type "submit"
+                            + Random
+                { 
+                    && 
+                        + userData
+                        div 
+                            @ style
+                                { 
+                                    @ padding "24px"
+                                    @ margin "24px 0"
+                                    @ borderTop "1px solid #eaeaea"
+                                    @ display "flex"
+                                    @ alignItems "center"
+                                    @ gap "16px"
+                            img 
+                                @ style
+                                    { 
+                                        @ borderRadius "50%"
+                                @ width {200}
+                                @ height {200}
+                                @ src {userData.avatar_url}
+                                @ alt {userData.login}
+                            div 
+                                h2 
+                                    + {userData.name}
+                                p 
+                                    + {userData.bio}
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

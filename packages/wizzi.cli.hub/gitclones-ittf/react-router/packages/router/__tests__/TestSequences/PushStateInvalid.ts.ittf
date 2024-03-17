@@ -1,0 +1,30 @@
+module
+    :import-type 
+        @ DOMWindow
+        from "jsdom"
+    :import-type 
+        @ History
+        from "../../history"
+    export-default 
+        function PushState
+            param history
+                :ref History
+            param window
+                :ref DOMWindow
+            let err = new DOMException("ERROR", "DataCloneError")
+            _ jest.spyOn(window.history, "pushState").mockImplementation
+                => 
+                    throw err
+            _ expect(history.location).toMatchObject
+                { 
+                    @ pathname "/"
+            _ expect
+                => 
+                    _ history.push
+                        @ "/home?the=query#the-hash"
+                        { 
+                            @ invalid
+                                => 
+                ._ toThrow
+                    @ err
+            _ expect(history.location.pathname).toBe("/")

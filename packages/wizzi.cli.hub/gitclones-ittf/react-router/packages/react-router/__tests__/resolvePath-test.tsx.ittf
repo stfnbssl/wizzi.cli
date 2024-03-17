@@ -1,0 +1,55 @@
+module
+    import 
+        @ resolvePath
+        from "react-router"
+    _ describe
+        @ "resolvePath"
+        => 
+            _ it
+                @ 'resolves absolute paths irrespective of the "from" pathname'
+                => 
+                    _ expect(resolvePath("/search", "/inbox")).toMatchObject
+                        { 
+                            @ pathname "/search"
+            _ it
+                @ "resolves relative paths"
+                => 
+                    _ expect(resolvePath("../search", "/inbox")).toMatchObject
+                        { 
+                            @ pathname "/search"
+                    _ expect(resolvePath("./search", "/inbox")).toMatchObject
+                        { 
+                            @ pathname "/inbox/search"
+                    _ expect(resolvePath("./search/../123", "/inbox")).toMatchObject
+                        { 
+                            @ pathname "/inbox/123"
+                    _ expect(resolvePath("search", "/inbox")).toMatchObject
+                        { 
+                            @ pathname "/inbox/search"
+            _ it
+                @ 'ignores trailing slashes on the "from" pathname when resolving relative paths'
+                => 
+                    _ expect(resolvePath("../search", "/inbox/")).toMatchObject
+                        { 
+                            @ pathname "/search"
+            _ it
+                @ 'uses the "from" pathname when the "to" value has no pathname'
+                => 
+                    _ expect(resolvePath("?q=react", "/search")).toMatchObject
+                        { 
+                            @ pathname "/search"
+                            @ search "?q=react"
+            _ it
+                @ "normalizes search and hash values"
+                => 
+                    _ expect
+                        _ resolvePath
+                            { 
+                                @ pathname "/search"
+                                @ search "q=react"
+                                @ hash "results"
+                        ._ toEqual
+                            { 
+                                @ pathname "/search"
+                                @ search "?q=react"
+                                @ hash "#results"

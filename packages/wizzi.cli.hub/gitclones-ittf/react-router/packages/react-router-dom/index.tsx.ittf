@@ -1,0 +1,2949 @@
+module
+    import 
+        as React
+        from "react"
+        #
+            # *
+            # * NOTE: If you refactor this to split up the modules into separate files,
+            # * you'll need to update the rollup config for react-router-dom-v5-compat.
+            # 
+    import 
+        as ReactDOM
+        from "react-dom"
+    :import-type 
+        @ DataRouteObject
+        @ FutureConfig
+        @ Location
+        @ NavigateOptions
+        @ NavigationType
+        @ Navigator
+        @ RelativeRoutingType
+        @ RouteObject
+        @ RouterProviderProps
+        @ To
+        from "react-router"
+    import 
+        @ Router
+        @ createPath
+        @ useHref
+        @ useLocation
+        @ useMatches
+        @ useNavigate
+        @ useNavigation
+        @ useResolvedPath
+        @ useBlocker
+        @ UNSAFE_DataRouterContext
+            as DataRouterContext
+        @ UNSAFE_DataRouterStateContext
+            as DataRouterStateContext
+        @ UNSAFE_NavigationContext
+            as NavigationContext
+        @ UNSAFE_RouteContext
+            as RouteContext
+        @ UNSAFE_mapRouteProperties
+            as mapRouteProperties
+        @ UNSAFE_useRouteId
+            as useRouteId
+        @ UNSAFE_useRoutesImpl
+            as useRoutesImpl
+        from "react-router"
+    :import-type 
+        @ BrowserHistory
+        @ Fetcher
+        @ FormEncType
+        @ FormMethod
+        @ FutureConfig
+            as RouterFutureConfig
+        @ GetScrollRestorationKeyFunction
+        @ HashHistory
+        @ History
+        @ HTMLFormMethod
+        @ HydrationState
+        @ Router
+            as RemixRouter
+        @ V7_FormMethod
+        @ RouterState
+        @ RouterSubscriber
+        @ BlockerFunction
+        from "@remix-run/router"
+    import 
+        @ createRouter
+        @ createBrowserHistory
+        @ createHashHistory
+        @ joinPaths
+        @ stripBasename
+        @ UNSAFE_ErrorResponseImpl
+            as ErrorResponseImpl
+        @ UNSAFE_invariant
+            as invariant
+        @ UNSAFE_warning
+            as warning
+        @ matchPath
+        @ IDLE_FETCHER
+        from "@remix-run/router"
+    :import-type 
+        @ SubmitOptions
+        @ ParamKeyValuePair
+        @ URLSearchParamsInit
+        @ SubmitTarget
+        from "./dom"
+    import 
+        @ createSearchParams
+        @ defaultMethod
+        @ getFormSubmissionInfo
+        @ getSearchParamsForLocation
+        @ shouldProcessLinkClick
+        from "./dom"
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Re-exports
+        # //////////////////////////////////////////////////////////////////////////////
+    export 
+        @ FormEncType
+        @ FormMethod
+        @ GetScrollRestorationKeyFunction
+        @ ParamKeyValuePair
+        @ SubmitOptions
+        @ URLSearchParamsInit
+        @ V7_FormMethod
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Re-exports
+        # //////////////////////////////////////////////////////////////////////////////
+    export 
+        @ createSearchParams
+        # Note: Keep in sync with react-router exports!
+    export 
+        @ ActionFunction
+        @ ActionFunctionArgs
+        @ AwaitProps
+        @ Blocker
+        @ BlockerFunction
+        @ DataRouteMatch
+        @ DataRouteObject
+        @ ErrorResponse
+        @ Fetcher
+        @ FutureConfig
+        @ Hash
+        @ IndexRouteObject
+        @ IndexRouteProps
+        @ JsonFunction
+        @ LazyRouteFunction
+        @ LayoutRouteProps
+        @ LoaderFunction
+        @ LoaderFunctionArgs
+        @ Location
+        @ MemoryRouterProps
+        @ NavigateFunction
+        @ NavigateOptions
+        @ NavigateProps
+        @ Navigation
+        @ Navigator
+        @ NonIndexRouteObject
+        @ OutletProps
+        @ Params
+        @ ParamParseKey
+        @ Path
+        @ PathMatch
+        @ Pathname
+        @ PathParam
+        @ PathPattern
+        @ PathRouteProps
+        @ RedirectFunction
+        @ RelativeRoutingType
+        @ RouteMatch
+        @ RouteObject
+        @ RouteProps
+        @ RouterProps
+        @ RouterProviderProps
+        @ RoutesProps
+        @ Search
+        @ ShouldRevalidateFunction
+        @ ShouldRevalidateFunctionArgs
+        @ To
+        @ UIMatch
+        from "react-router"
+        # Note: Keep in sync with react-router exports!
+    export 
+        @ AbortedDeferredError
+        @ Await
+        @ MemoryRouter
+        @ Navigate
+        @ NavigationType
+        @ Outlet
+        @ Route
+        @ Router
+        @ Routes
+        @ createMemoryRouter
+        @ createPath
+        @ createRoutesFromChildren
+        @ createRoutesFromElements
+        @ defer
+        @ isRouteErrorResponse
+        @ generatePath
+        @ json
+        @ matchPath
+        @ matchRoutes
+        @ parsePath
+        @ redirect
+        @ redirectDocument
+        @ renderMatches
+        @ resolvePath
+        @ useActionData
+        @ useAsyncError
+        @ useAsyncValue
+        @ useBlocker
+        @ useHref
+        @ useInRouterContext
+        @ useLoaderData
+        @ useLocation
+        @ useMatch
+        @ useMatches
+        @ useNavigate
+        @ useNavigation
+        @ useNavigationType
+        @ useOutlet
+        @ useOutletContext
+        @ useParams
+        @ useResolvedPath
+        @ useRevalidator
+        @ useRouteError
+        @ useRouteLoaderData
+        @ useRoutes
+        from "react-router"
+        # /////////////////////////////////////////////////////////////////////////////
+        # DANGER! PLEASE READ ME!
+        # We provide these exports as an escape hatch in the event that you need any
+        # routing data that we don't provide an explicit API for. With that said, we
+        # want to cover your use case if we can, so if you feel the need to use these
+        # we want to hear from you. Let us know what you're building and we'll do our
+        # best to make sure we can support you!
+        # 
+        # We consider these exports an implementation detail and do not guarantee
+        # against any breaking changes, regardless of the semver release. Use with
+        # extreme caution and only if you understand the consequences. Godspeed.
+        # /////////////////////////////////////////////////////////////////////////////
+        #
+            # * @internal
+    export 
+        @ UNSAFE_DataRouterContext
+        @ UNSAFE_DataRouterStateContext
+        @ UNSAFE_NavigationContext
+        @ UNSAFE_LocationContext
+        @ UNSAFE_RouteContext
+        @ UNSAFE_useRouteId
+        from "react-router"
+        # /////////////////////////////////////////////////////////////////////////////
+        # DANGER! PLEASE READ ME!
+        # We provide these exports as an escape hatch in the event that you need any
+        # routing data that we don't provide an explicit API for. With that said, we
+        # want to cover your use case if we can, so if you feel the need to use these
+        # we want to hear from you. Let us know what you're building and we'll do our
+        # best to make sure we can support you!
+        # 
+        # We consider these exports an implementation detail and do not guarantee
+        # against any breaking changes, regardless of the semver release. Use with
+        # extreme caution and only if you understand the consequences. Godspeed.
+        # /////////////////////////////////////////////////////////////////////////////
+        #
+            # * @internal
+        # #endregion
+    :declare 
+        :module global
+            var __staticRouterHydrationData
+                :union 
+                    :ref HydrationState
+                    :undefined 
+            var __reactRouterVersion
+                :string 
+            :interface Document
+                :m startViewTransition
+                    :ref ViewTransition
+                    param cb
+                        :=> 
+                            :union 
+                                :ref Promise
+                                    :param void
+                                :void 
+        # #endregion
+        # HEY YOU! DON'T TOUCH THIS VARIABLE!
+        # 
+        # It is replaced with the proper version at build time via a babel plugin in
+        # the rollup config.
+        # 
+        # Export a global property onto the window for React Router detection by the
+        # Core Web Vitals Technology Report.  This way they can configure the `wappalyzer`
+        # to detect and properly classify live websites as being built with React Router:
+        # https://github.com/HTTPArchive/wappalyzer/blob/main/src/technologies/r.json
+    const REACT_ROUTER_VERSION = "0"
+        # HEY YOU! DON'T TOUCH THIS VARIABLE!
+        # 
+        # It is replaced with the proper version at build time via a babel plugin in
+        # the rollup config.
+        # 
+        # Export a global property onto the window for React Router detection by the
+        # Core Web Vitals Technology Report.  This way they can configure the `wappalyzer`
+        # to detect and properly classify live websites as being built with React Router:
+        # https://github.com/HTTPArchive/wappalyzer/blob/main/src/technologies/r.json
+    try 
+        set window.__reactRouterVersion = REACT_ROUTER_VERSION
+    catch e
+    :interface DOMRouterOpts
+        :p basename
+            :optional 
+            :string 
+        :p future
+            :optional 
+            :ref Partial
+                :param 
+                    :ref Omit
+                        :param 
+                            :ref RouterFutureConfig
+                        :param 
+                            :literal "v7_prependBasename"
+        :p hydrationData
+            :optional 
+            :ref HydrationState
+        :p window
+            :optional 
+            :ref Window
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Routers
+        # //////////////////////////////////////////////////////////////////////////////
+    export 
+        function createBrowserRouter
+            param routes
+                :[ 
+                    :ref RouteObject
+            param opts
+                :ref DOMRouterOpts
+                :optional 
+            :return
+                :ref RemixRouter
+            return 
+                _ createRouter
+                    { 
+                        @ basename opts?.basename
+                        { future
+                            @ ...opts?.future
+                            @ v7_prependBasename true
+                        @ history
+                            _ createBrowserHistory
+                                { 
+                                    @ window opts?.window
+                        @ hydrationData opts?.hydrationData || parseHydrationData()
+                        @ routes
+                        @ mapRouteProperties
+                        @ window opts?.window
+                    ._ initialize
+    export 
+        function createHashRouter
+            param routes
+                :[ 
+                    :ref RouteObject
+            param opts
+                :ref DOMRouterOpts
+                :optional 
+            :return
+                :ref RemixRouter
+            return 
+                _ createRouter
+                    { 
+                        @ basename opts?.basename
+                        { future
+                            @ ...opts?.future
+                            @ v7_prependBasename true
+                        @ history
+                            _ createHashHistory
+                                { 
+                                    @ window opts?.window
+                        @ hydrationData opts?.hydrationData || parseHydrationData()
+                        @ routes
+                        @ mapRouteProperties
+                        @ window opts?.window
+                    ._ initialize
+    function parseHydrationData
+        :return
+            :union 
+                :ref HydrationState
+                :undefined 
+        let state = window?.__staticRouterHydrationData
+        if state && state.errors
+            set state =
+                { 
+                    @ ...state
+                    @ errors deserializeErrors(state.errors)
+        return state
+    function deserializeErrors
+        param errors
+            :[] 
+                :[] 
+                    :ref RemixRouter
+                    :literal "state"
+                :literal "errors"
+        :return
+            :[] 
+                :[] 
+                    :ref RemixRouter
+                    :literal "state"
+                :literal "errors"
+        if !errors
+            return null
+        let entries = Object.entries(errors)
+        let serialized
+            :[] 
+                :[] 
+                    :ref RemixRouter
+                    :literal "state"
+                :literal "errors"
+            =
+                { 
+        for 
+            left
+                let [key, val]
+            of entries
+            if val && val.__type === "RouteErrorResponse"
+                set serialized[key] = new ErrorResponseImpl(val.status, val.statusText, val.data, val.internal === true)
+            else
+                if val && val.__type === "Error"
+                    if val.__subType
+                        let ErrorConstructor = window[val.__subType]
+                        if typeof ErrorConstructor === "function"
+                            try 
+                                let error = new ErrorConstructor(val.message)
+                                    # @ts-expect-error
+                                    # Wipe away the client-side stack trace.  Nothing to fill it in with
+                                    # because we don't serialize SSR stack traces for security reasons
+                                set error.stack = ""
+                                    # Wipe away the client-side stack trace.  Nothing to fill it in with
+                                    # because we don't serialize SSR stack traces for security reasons
+                                set serialized[key] = error
+                            catch e
+                    if serialized[key] == null
+                        let error = new Error(val.message)
+                            # Wipe away the client-side stack trace.  Nothing to fill it in with
+                            # because we don't serialize SSR stack traces for security reasons
+                        set error.stack = ""
+                            # Wipe away the client-side stack trace.  Nothing to fill it in with
+                            # because we don't serialize SSR stack traces for security reasons
+                        set serialized[key] = error
+                else
+                    set serialized[key] = val
+        return serialized
+        # #endregion
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Contexts
+        # //////////////////////////////////////////////////////////////////////////////
+    :type ViewTransitionContextObject
+        :union 
+            :{ 
+                :p isTransitioning
+                    :literal false
+            :{ 
+                :p isTransitioning
+                    :literal true
+                :p flushSync
+                    :boolean 
+                :p currentLocation
+                    :ref Location
+                :p nextLocation
+                    :ref Location
+        # #endregion
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Contexts
+        # //////////////////////////////////////////////////////////////////////////////
+    const ViewTransitionContext
+        _ React.createContext
+            :param 
+                :ref ViewTransitionContextObject
+            { 
+                @ isTransitioning false
+    if __DEV__
+        set ViewTransitionContext.displayName = "ViewTransition"
+    export 
+        @ ViewTransitionContext
+            as UNSAFE_ViewTransitionContext
+        # TODO: (v7) Change the useFetcher data from `any` to `unknown`
+    :type FetchersContextObject
+        :ref Map
+            :param string
+            :param any
+        # TODO: (v7) Change the useFetcher data from `any` to `unknown`
+    const FetchersContext
+        _ React.createContext
+            :param 
+                :ref FetchersContextObject
+            new Map
+    if __DEV__
+        set FetchersContext.displayName = "Fetchers"
+    export 
+        @ FetchersContext
+            as UNSAFE_FetchersContext
+        # #endregion
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Components
+        # //////////////////////////////////////////////////////////////////////////////
+        #
+            # *
+            # Webpack + React 17 fails to compile on any of the following because webpack
+            # complains that `startTransition` doesn't exist in `React`:
+            # * import { startTransition } from "react"
+            # * import * as React from from "react";
+            # "startTransition" in React ? React.startTransition(() => setState()) : setState()
+            # * import * as React from from "react";
+            # "startTransition" in React ? React["startTransition"](() => setState()) : setState()
+            # 
+            # Moving it to a constant such as the following solves the Webpack/React 17 issue:
+            # * import * as React from from "react";
+            # const START_TRANSITION = "startTransition";
+            # START_TRANSITION in React ? React[START_TRANSITION](() => setState()) : setState()
+            # 
+            # However, that introduces webpack/terser minification issues in production builds
+            # in React 18 where minification/obfuscation ends up removing the call of
+            # React.startTransition entirely from the first half of the ternary.  Grabbing
+            # this exported reference once up front resolves that issue.
+            # 
+            # See https://github.com/remix-run/react-router/issues/10579
+            # 
+    const START_TRANSITION = "startTransition"
+        # #endregion
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Components
+        # //////////////////////////////////////////////////////////////////////////////
+        #
+            # *
+            # Webpack + React 17 fails to compile on any of the following because webpack
+            # complains that `startTransition` doesn't exist in `React`:
+            # * import { startTransition } from "react"
+            # * import * as React from from "react";
+            # "startTransition" in React ? React.startTransition(() => setState()) : setState()
+            # * import * as React from from "react";
+            # "startTransition" in React ? React["startTransition"](() => setState()) : setState()
+            # 
+            # Moving it to a constant such as the following solves the Webpack/React 17 issue:
+            # * import * as React from from "react";
+            # const START_TRANSITION = "startTransition";
+            # START_TRANSITION in React ? React[START_TRANSITION](() => setState()) : setState()
+            # 
+            # However, that introduces webpack/terser minification issues in production builds
+            # in React 18 where minification/obfuscation ends up removing the call of
+            # React.startTransition entirely from the first half of the ternary.  Grabbing
+            # this exported reference once up front resolves that issue.
+            # 
+            # See https://github.com/remix-run/react-router/issues/10579
+            # 
+    const startTransitionImpl = React[START_TRANSITION]
+    const FLUSH_SYNC = "flushSync"
+    const flushSyncImpl = ReactDOM[FLUSH_SYNC]
+    const USE_ID = "useId"
+    const useIdImpl = React[USE_ID]
+    function startTransitionSafe
+        param cb
+            :=> 
+                :void 
+        if startTransitionImpl
+            _ startTransitionImpl(cb)
+        else
+            _ cb()
+    function flushSyncSafe
+        param cb
+            :=> 
+                :void 
+        if flushSyncImpl
+            _ flushSyncImpl(cb)
+        else
+            _ cb()
+    :interface ViewTransition
+        :p finished
+            :ref Promise
+                :param void
+        :p ready
+            :ref Promise
+                :param void
+        :p updateCallbackDone
+            :ref Promise
+                :param void
+        :m skipTransition
+            :void 
+    class Deferred
+        :< T
+        p status
+            :union 
+                :literal "pending"
+                :literal "resolved"
+                :literal "rejected"
+            = "pending"
+        p promise
+            :ref Promise
+                :param 
+                    :ref T
+            # @ts-expect-error - no initializer
+        p resolve
+            :=> 
+                :void 
+                param value
+                    :ref T
+            # @ts-expect-error - no initializer
+            # @ts-expect-error - no initializer
+        p reject
+            :=> 
+                :void 
+                param reason
+                    :unknown 
+                    :optional 
+            # @ts-expect-error - no initializer
+        ctor 
+            set this.promise =
+                new Promise
+                    => 
+                        param resolve
+                        param reject
+                        set this.resolve =
+                            => 
+                                param value
+                                if this.status === "pending"
+                                    set this.status = "resolved"
+                                    _ resolve(value)
+                        set this.reject =
+                            => 
+                                param reason
+                                if this.status === "pending"
+                                    set this.status = "rejected"
+                                    _ reject(reason)
+        #
+            # *
+            # * Given a Remix Router instance, render the appropriate UI
+            # 
+    export 
+        function RouterProvider
+            { 
+                @ fallbackElement
+                @ router
+                @ future
+                :ref RouterProviderProps
+            :return
+                :ref React.ReactElement
+            let [state, setStateImpl] = React.useState(router.state)
+            let [pendingState, setPendingState]
+                _ React.useState
+                    :param 
+                        :ref RouterState
+            let [vtContext, setVtContext]
+                _ React.useState
+                    :param 
+                        :ref ViewTransitionContextObject
+                    { 
+                        @ isTransitioning false
+            let [renderDfd, setRenderDfd]
+                _ React.useState
+                    :param 
+                        :ref Deferred
+                            :param void
+            let [transition, setTransition]
+                _ React.useState
+                    :param 
+                        :ref ViewTransition
+            let [interruption, setInterruption]
+                _ React.useState
+                    :param 
+                        :{ 
+                            :p state
+                                :ref RouterState
+                            :p currentLocation
+                                :ref Location
+                            :p nextLocation
+                                :ref Location
+            let fetcherData
+                _ React.useRef
+                    :param 
+                        :ref Map
+                            :param string
+                            :param any
+                    new Map
+            let 
+                { 
+                    @ v7_startTransition
+                =
+                    || 
+                        + future
+                        { 
+            let optInStartTransition
+                _ React.useCallback
+                    => 
+                        param cb
+                            :=> 
+                                :void 
+                        if v7_startTransition
+                            _ startTransitionSafe(cb)
+                        else
+                            _ cb()
+                    [ 
+                        @ v7_startTransition
+            let setState
+                _ React.useCallback
+                    :param 
+                        :ref RouterSubscriber
+                    => 
+                        param newState
+                            :ref RouterState
+                        { 
+                            @ deletedFetchers
+                            @ unstable_flushSync flushSync
+                            @ unstable_viewTransitionOpts viewTransitionOpts
+                        _ deletedFetchers.forEach
+                            => 
+                                param key
+                                _ fetcherData.current.delete(key)
+                        _ newState.fetchers.forEach
+                            => 
+                                param fetcher
+                                param key
+                                if fetcher.data !== undefined
+                                    _ fetcherData.current.set(key, fetcher.data)
+                        let isViewTransitionUnavailable = router.window == null || typeof router.window.document.startViewTransition !== "function"
+                            # If this isn't a view transition or it's not available in this browser,
+                            # just update and be done with it
+                        if !viewTransitionOpts || isViewTransitionUnavailable
+                            if flushSync
+                                _ flushSyncSafe
+                                    => 
+                                        _ setStateImpl(newState)
+                            else
+                                _ optInStartTransition
+                                    => 
+                                        _ setStateImpl(newState)
+                            return 
+                        if flushSync
+                            _ flushSyncSafe
+                                => 
+                                    if transition
+                                        @expr renderDfd && renderDfd.resolve()
+                                        _ transition.skipTransition()
+                                    _ setVtContext
+                                        { 
+                                            @ isTransitioning true
+                                            @ flushSync true
+                                            @ currentLocation viewTransitionOpts.currentLocation
+                                            @ nextLocation viewTransitionOpts.nextLocation
+                                # Flush through the context to mark DOM elements as transition=ing
+                                # Update the DOM
+                            let t
+                                _ 
+                                    @expr router.window
+                                    . document
+                                    ._ startViewTransition
+                                        => 
+                                            _ flushSyncSafe
+                                                => 
+                                                    _ setStateImpl(newState)
+                                # Update the DOM
+                                # Clean up after the animation completes
+                            _ t.finished.finally
+                                => 
+                                    _ flushSyncSafe
+                                        => 
+                                            _ setRenderDfd(undefined)
+                                            _ setTransition(undefined)
+                                            _ setPendingState(undefined)
+                                            _ setVtContext
+                                                { 
+                                                    @ isTransitioning false
+                                # Clean up after the animation completes
+                            _ flushSyncSafe
+                                => 
+                                    _ setTransition(t)
+                            return 
+                        if transition
+                            @expr renderDfd && renderDfd.resolve()
+                                # Interrupting an in-progress transition, cancel and let everything flush
+                                # out, and then kick off a new transition from the interruption state
+                            _ transition.skipTransition()
+                            _ setInterruption
+                                { 
+                                    @ state newState
+                                    @ currentLocation viewTransitionOpts.currentLocation
+                                    @ nextLocation viewTransitionOpts.nextLocation
+                        else
+                            _ setPendingState(newState)
+                                # Completed navigation update with opted-in view transitions, let 'er rip
+                            _ setVtContext
+                                { 
+                                    @ isTransitioning true
+                                    @ flushSync false
+                                    @ currentLocation viewTransitionOpts.currentLocation
+                                    @ nextLocation viewTransitionOpts.nextLocation
+                    [ 
+                        @ router.window
+                        @ transition
+                        @ renderDfd
+                        @ fetcherData
+                        @ optInStartTransition
+                # Need to use a layout effect here so we are subscribed early enough to
+                # pick up on any render-driven redirects/navigations (useEffect/<Navigate>)
+            _ React.useLayoutEffect
+                => 
+                    _ router.subscribe(setState)
+                [ 
+                    @ router
+                    @ setState
+                # Need to use a layout effect here so we are subscribed early enough to
+                # pick up on any render-driven redirects/navigations (useEffect/<Navigate>)
+                # When we start a view transition, create a Deferred we can use for the
+                # eventual "completed" render
+            _ React.useEffect
+                => 
+                    if vtContext.isTransitioning && !vtContext.flushSync
+                        _ setRenderDfd
+                            new Deferred
+                                :param void
+                [ 
+                    @ vtContext
+                # When we start a view transition, create a Deferred we can use for the
+                # eventual "completed" render
+                # Once the deferred is created, kick off startViewTransition() to update the
+                # DOM and then wait on the Deferred to resolve (indicating the DOM update has
+                # happened)
+            _ React.useEffect
+                => 
+                    if renderDfd && pendingState && router.window
+                        let newState = pendingState
+                        let renderPromise = renderDfd.promise
+                        let transition
+                            _ router.window.document.startViewTransition
+                                async=> 
+                                    _ optInStartTransition
+                                        => 
+                                            _ setStateImpl(newState)
+                                    await 
+                                        @id renderPromise
+                        _ transition.finished.finally
+                            => 
+                                _ setRenderDfd(undefined)
+                                _ setTransition(undefined)
+                                _ setPendingState(undefined)
+                                _ setVtContext
+                                    { 
+                                        @ isTransitioning false
+                        _ setTransition(transition)
+                [ 
+                    @ optInStartTransition
+                    @ pendingState
+                    @ renderDfd
+                    @ router.window
+                # Once the deferred is created, kick off startViewTransition() to update the
+                # DOM and then wait on the Deferred to resolve (indicating the DOM update has
+                # happened)
+                # When the new location finally renders and is committed to the DOM, this
+                # effect will run to resolve the transition
+            _ React.useEffect
+                => 
+                    if renderDfd && pendingState && state.location.key === pendingState.location.key
+                        _ renderDfd.resolve()
+                [ 
+                    @ renderDfd
+                    @ transition
+                    @ state.location
+                    @ pendingState
+                # When the new location finally renders and is committed to the DOM, this
+                # effect will run to resolve the transition
+                # If we get interrupted with a new navigation during a transition, we skip
+                # the active transition, let it cleanup, then kick it off again here
+            _ React.useEffect
+                => 
+                    if !vtContext.isTransitioning && interruption
+                        _ setPendingState(interruption.state)
+                        _ setVtContext
+                            { 
+                                @ isTransitioning true
+                                @ flushSync false
+                                @ currentLocation interruption.currentLocation
+                                @ nextLocation interruption.nextLocation
+                        _ setInterruption(undefined)
+                [ 
+                    @ vtContext.isTransitioning
+                    @ interruption
+                # If we get interrupted with a new navigation during a transition, we skip
+                # the active transition, let it cleanup, then kick it off again here
+            _ React.useEffect
+                => 
+                    _ warning(fallbackElement == null || !router.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using " + "`v7_partialHydration`, use a `HydrateFallback` component instead")
+                        # Only log this once on initial mount
+                        # eslint-disable-next-line react-hooks/exhaustive-deps
+                [ 
+            let navigator
+                _ React.useMemo
+                    => 
+                        :return
+                            :ref Navigator
+                        return 
+                            { 
+                                @ createHref router.createHref
+                                @ encodeLocation router.encodeLocation
+                                @ go
+                                    => 
+                                        param n
+                                        _ router.navigate(n)
+                                @ push
+                                    => 
+                                        param to
+                                        param state
+                                        param opts
+                                        _ router.navigate
+                                            @ to
+                                            { 
+                                                @ state
+                                                @ preventScrollReset opts?.preventScrollReset
+                                @ replace
+                                    => 
+                                        param to
+                                        param state
+                                        param opts
+                                        _ router.navigate
+                                            @ to
+                                            { 
+                                                @ replace true
+                                                @ state
+                                                @ preventScrollReset opts?.preventScrollReset
+                    [ 
+                        @ router
+            let basename = router.basename || "/"
+            let dataRouterContext
+                _ React.useMemo
+                    => 
+                        (
+                            { 
+                                @ router
+                                @ navigator
+                                @ static false
+                                @ basename
+                    [ 
+                        @ router
+                        @ navigator
+                        @ basename
+                # The fragment and {null} here are important!  We need them to keep React 18's
+                # useId happy when we are server-rendering since we may have a <script> here
+                # containing the hydrated server-side staticContext (from StaticRouterProvider).
+                # useId relies on the component tree structure to generate deterministic id's
+                # so we need to ensure it remains the same on the client even though
+                # we don't need the <script> tag
+            return 
+                < React.Fragment
+                    < DataRouterContext.Provider 
+                        @ value {dataRouterContext}
+                        < DataRouterStateContext.Provider 
+                            @ value {state}
+                            < FetchersContext.Provider 
+                                @ value {fetcherData.current}
+                                < ViewTransitionContext.Provider 
+                                    @ value {vtContext}
+                                    < Router 
+                                        @ basename {basename}
+                                        @ location {state.location}
+                                        @ navigationType {state.historyAction}
+                                        @ navigator {navigator}
+                                        @ future
+                                            { 
+                                                @ v7_relativeSplatPath router.future.v7_relativeSplatPath
+                                        { 
+                                            iif state.initialized || router.future.v7_partialHydration
+                                                then
+                                                    < DataRoutes 
+                                                        @ routes {router.routes}
+                                                        @ future {router.future}
+                                                        @ state {state}
+                                                else fallbackElement
+                    + {null}
+                # The fragment and {null} here are important!  We need them to keep React 18's
+                # useId happy when we are server-rendering since we may have a <script> here
+                # containing the hydrated server-side staticContext (from StaticRouterProvider).
+                # useId relies on the component tree structure to generate deterministic id's
+                # so we need to ensure it remains the same on the client even though
+                # we don't need the <script> tag
+        #
+            # *
+            # * Given a Remix Router instance, render the appropriate UI
+            # 
+    function DataRoutes
+        { 
+            @ routes
+            @ future
+            @ state
+            :{ 
+                :p routes
+                    :[ 
+                        :ref DataRouteObject
+                :p future
+                    :[] 
+                        :ref RemixRouter
+                        :literal "future"
+                :p state
+                    :ref RouterState
+        :return
+            :union 
+                :ref React.ReactElement
+                :null 
+        return useRoutesImpl(routes, undefined, state, future)
+    export 
+        :interface BrowserRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref FutureConfig
+            :p window
+                :optional 
+                :ref Window
+        #
+            # *
+            # * A `<Router>` for use in web browsers. Provides the cleanest URLs.
+            # 
+    export 
+        function BrowserRouter
+            { 
+                @ basename
+                @ children
+                @ future
+                @ window
+                :ref BrowserRouterProps
+            let historyRef
+                _ React.useRef
+                    :param 
+                        :ref BrowserHistory
+            if historyRef.current == null
+                set historyRef.current =
+                    _ createBrowserHistory
+                        { 
+                            @ window
+                            @ v5Compat true
+            let history = historyRef.current
+            let [state, setStateImpl]
+                _ React.useState
+                    { 
+                        @ action history.action
+                        @ location history.location
+            let 
+                { 
+                    @ v7_startTransition
+                =
+                    || 
+                        + future
+                        { 
+            let setState
+                _ React.useCallback
+                    => 
+                        param newState
+                            :{ 
+                                :p action
+                                    :ref NavigationType
+                                :p location
+                                    :ref Location
+                        iif v7_startTransition && startTransitionImpl
+                            then
+                                _ startTransitionImpl
+                                    => 
+                                        _ setStateImpl(newState)
+                            else setStateImpl(newState)
+                    [ 
+                        @ setStateImpl
+                        @ v7_startTransition
+            _ React.useLayoutEffect
+                => 
+                    _ history.listen(setState)
+                [ 
+                    @ history
+                    @ setState
+            return 
+                < Router 
+                    @ basename {basename}
+                    @ children {children}
+                    @ location {state.location}
+                    @ navigationType {state.action}
+                    @ navigator {history}
+                    @ future {future}
+        #
+            # *
+            # * A `<Router>` for use in web browsers. Provides the cleanest URLs.
+            # 
+    export 
+        :interface HashRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref FutureConfig
+            :p window
+                :optional 
+                :ref Window
+        #
+            # *
+            # * A `<Router>` for use in web browsers. Stores the location in the hash
+            # * portion of the URL so it is not sent to the server.
+            # 
+    export 
+        function HashRouter
+            { 
+                @ basename
+                @ children
+                @ future
+                @ window
+                :ref HashRouterProps
+            let historyRef
+                _ React.useRef
+                    :param 
+                        :ref HashHistory
+            if historyRef.current == null
+                set historyRef.current =
+                    _ createHashHistory
+                        { 
+                            @ window
+                            @ v5Compat true
+            let history = historyRef.current
+            let [state, setStateImpl]
+                _ React.useState
+                    { 
+                        @ action history.action
+                        @ location history.location
+            let 
+                { 
+                    @ v7_startTransition
+                =
+                    || 
+                        + future
+                        { 
+            let setState
+                _ React.useCallback
+                    => 
+                        param newState
+                            :{ 
+                                :p action
+                                    :ref NavigationType
+                                :p location
+                                    :ref Location
+                        iif v7_startTransition && startTransitionImpl
+                            then
+                                _ startTransitionImpl
+                                    => 
+                                        _ setStateImpl(newState)
+                            else setStateImpl(newState)
+                    [ 
+                        @ setStateImpl
+                        @ v7_startTransition
+            _ React.useLayoutEffect
+                => 
+                    _ history.listen(setState)
+                [ 
+                    @ history
+                    @ setState
+            return 
+                < Router 
+                    @ basename {basename}
+                    @ children {children}
+                    @ location {state.location}
+                    @ navigationType {state.action}
+                    @ navigator {history}
+                    @ future {future}
+        #
+            # *
+            # * A `<Router>` for use in web browsers. Stores the location in the hash
+            # * portion of the URL so it is not sent to the server.
+            # 
+    export 
+        :interface HistoryRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p future
+                :optional 
+                :ref FutureConfig
+            :p history
+                :ref History
+        #
+            # *
+            # * A `<Router>` that accepts a pre-instantiated history object. It's important
+            # * to note that using your own history object is highly discouraged and may add
+            # * two versions of the history library to your bundles unless you use the same
+            # * version of the history library that React Router uses internally.
+            # 
+    function HistoryRouter
+        { 
+            @ basename
+            @ children
+            @ future
+            @ history
+            :ref HistoryRouterProps
+        let [state, setStateImpl]
+            _ React.useState
+                { 
+                    @ action history.action
+                    @ location history.location
+        let 
+            { 
+                @ v7_startTransition
+            =
+                || 
+                    + future
+                    { 
+        let setState
+            _ React.useCallback
+                => 
+                    param newState
+                        :{ 
+                            :p action
+                                :ref NavigationType
+                            :p location
+                                :ref Location
+                    iif v7_startTransition && startTransitionImpl
+                        then
+                            _ startTransitionImpl
+                                => 
+                                    _ setStateImpl(newState)
+                        else setStateImpl(newState)
+                [ 
+                    @ setStateImpl
+                    @ v7_startTransition
+        _ React.useLayoutEffect
+            => 
+                _ history.listen(setState)
+            [ 
+                @ history
+                @ setState
+        return 
+            < Router 
+                @ basename {basename}
+                @ children {children}
+                @ location {state.location}
+                @ navigationType {state.action}
+                @ navigator {history}
+                @ future {future}
+        #
+            # *
+            # * A `<Router>` that accepts a pre-instantiated history object. It's important
+            # * to note that using your own history object is highly discouraged and may add
+            # * two versions of the history library to your bundles unless you use the same
+            # * version of the history library that React Router uses internally.
+            # 
+    if __DEV__
+        set HistoryRouter.displayName = "unstable_HistoryRouter"
+    export 
+        @ HistoryRouter
+            as unstable_HistoryRouter
+    export 
+        :interface LinkProps
+            :extends Omit
+                :param 
+                    :ref React.AnchorHTMLAttributes
+                        :param 
+                            :ref HTMLAnchorElement
+                :param 
+                    :literal "href"
+            :p reloadDocument
+                :optional 
+                :boolean 
+            :p replace
+                :optional 
+                :boolean 
+            :p state
+                :optional 
+                :any 
+            :p preventScrollReset
+                :optional 
+                :boolean 
+            :p relative
+                :optional 
+                :ref RelativeRoutingType
+            :p to
+                :ref To
+            :p unstable_viewTransition
+                :optional 
+                :boolean 
+    const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined" && typeof window.document.createElement !== "undefined"
+    const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i
+        #
+            # *
+            # * The public API for rendering a history-aware `<a>`.
+            # 
+    export 
+        const Link
+            _ React.forwardRef
+                :param 
+                    :ref HTMLAnchorElement
+                :param 
+                    :ref LinkProps
+                function LinkWithRef
+                    { 
+                        @ onClick
+                        @ relative
+                        @ reloadDocument
+                        @ replace
+                        @ state
+                        @ target
+                        @ to
+                        @ preventScrollReset
+                        @ unstable_viewTransition
+                        ... rest
+                    param ref
+                    let 
+                        { 
+                            @ basename
+                        = React.useContext(NavigationContext)
+                        # Rendered into <a href> for absolute URLs
+                    let absoluteHref
+                        # Rendered into <a href> for absolute URLs
+                    let isExternal = false
+                    if typeof to === "string" && ABSOLUTE_URL_REGEX.test(to)
+                        set absoluteHref = to
+                            # Render the absolute href server- and client-side
+                            # Only check for external origins client-side
+                        if isBrowser
+                            try 
+                                let currentUrl = new URL(window.location.href)
+                                let targetUrl
+                                    iif to.startsWith("//")
+                                        then new URL(currentUrl.protocol + to)
+                                        else new URL(to)
+                                let path = stripBasename(targetUrl.pathname, basename)
+                                if targetUrl.origin === currentUrl.origin && path != null
+                                    set to = path + targetUrl.search + targetUrl.hash
+                                        # Strip the protocol/origin/basename for same-origin absolute URLs
+                                else
+                                    set isExternal = true
+                            catch e
+                                _ warning
+                                    @ false
+                                    op+ 
+                                        `lit 
+                                            + <Link to="
+                                            @ to
+                                            + "> contains an invalid URL which will probably break&nbsp;
+                                        `lit 
+                                            + when clicked - please update to a valid URL path.
+                                    # We can't do external URL detection without a valid URL
+                    let href
+                        _ useHref
+                            @ to
+                            { 
+                                @ relative
+                        # Rendered into <a href> for relative URLs
+                    let internalOnClick
+                        _ useLinkClickHandler
+                            @ to
+                            { 
+                                @ replace
+                                @ state
+                                @ target
+                                @ preventScrollReset
+                                @ relative
+                                @ unstable_viewTransition
+                    function handleClick
+                        param event
+                            :ref React.MouseEvent
+                                :param 
+                                    :ref HTMLAnchorElement
+                                :param 
+                                    :ref MouseEvent
+                        if onClick
+                            _ onClick(event)
+                        if !event.defaultPrevented
+                            _ internalOnClick(event)
+                    return 
+                        a 
+                            @ {...rest}
+                            @ href {absoluteHref || href}
+                            @ onClick
+                                iif isExternal || reloadDocument
+                                    then onClick
+                                    else handleClick
+                            @ ref {ref}
+                            @ target {target}
+                            # eslint-disable-next-line jsx-a11y/anchor-has-content
+        #
+            # *
+            # * The public API for rendering a history-aware `<a>`.
+            # 
+    if __DEV__
+        set Link.displayName = "Link"
+    :type NavLinkRenderProps
+        :{ 
+            :p isActive
+                :boolean 
+            :p isPending
+                :boolean 
+            :p isTransitioning
+                :boolean 
+    export 
+        :interface NavLinkProps
+            :extends Omit
+                :param 
+                    :ref LinkProps
+                :param 
+                    :union 
+                        :literal "className"
+                        :literal "style"
+                        :literal "children"
+            :p children
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :paren 
+                        :=> 
+                            :ref React.ReactNode
+                            param props
+                                :ref NavLinkRenderProps
+            :p caseSensitive
+                :optional 
+                :boolean 
+            :p className
+                :optional 
+                :union 
+                    :string 
+                    :paren 
+                        :=> 
+                            :union 
+                                :string 
+                                :undefined 
+                            param props
+                                :ref NavLinkRenderProps
+            :p end
+                :optional 
+                :boolean 
+            :p style
+                :optional 
+                :union 
+                    :ref React.CSSProperties
+                    :paren 
+                        :=> 
+                            :union 
+                                :ref React.CSSProperties
+                                :undefined 
+                            param props
+                                :ref NavLinkRenderProps
+        #
+            # *
+            # * A `<Link>` wrapper that knows if it's "active" or not.
+            # 
+    export 
+        const NavLink
+            _ React.forwardRef
+                :param 
+                    :ref HTMLAnchorElement
+                :param 
+                    :ref NavLinkProps
+                function NavLinkWithRef
+                    { 
+                        @ "aria-current"
+                            = "page"
+                        @ caseSensitive
+                            = false
+                        @ className
+                            = ""
+                        @ end
+                            = false
+                        @ style styleProp
+                        @ to
+                        @ unstable_viewTransition
+                        @ children
+                        ... rest
+                    param ref
+                    let path
+                        _ useResolvedPath
+                            @ to
+                            { 
+                                @ relative rest.relative
+                    let location = useLocation()
+                    let routerState = React.useContext(DataRouterStateContext)
+                    let 
+                        { 
+                            @ navigator
+                            @ basename
+                        = React.useContext(NavigationContext)
+                    let isTransitioning = routerState != null && useViewTransitionState(path) && unstable_viewTransition === true
+                    let toPathname
+                        iif navigator.encodeLocation
+                            then navigator.encodeLocation(path).pathname
+                            else path.pathname
+                    let locationPathname = location.pathname
+                    let nextLocationPathname
+                        iif routerState && routerState.navigation && routerState.navigation.location
+                            then routerState.navigation.location.pathname
+                            else null
+                    if !caseSensitive
+                        set locationPathname = locationPathname.toLowerCase()
+                        set nextLocationPathname =
+                            iif nextLocationPathname
+                                then nextLocationPathname.toLowerCase()
+                                else null
+                        set toPathname = toPathname.toLowerCase()
+                    if nextLocationPathname && basename
+                        set nextLocationPathname = stripBasename(nextLocationPathname, basename) || nextLocationPathname
+                    const endSlashPosition
+                        iif toPathname !== "/" && toPathname.endsWith("/")
+                            then toPathname.length - 1
+                            else toPathname.length
+                        # If the `to` has a trailing slash, look at that exact spot.  Otherwise,
+                        # we're looking for a slash _after_ what's in `to`.  For example:
+                        # 
+                        # <NavLink to="/users"> and <NavLink to="/users/">
+                        # both want to look for a / at index 6 to match URL `/users/matt`
+                    let isActive = locationPathname === toPathname || (!end && locationPathname.startsWith(toPathname) && locationPathname.charAt(endSlashPosition) === "/")
+                    let isPending = nextLocationPathname != null && (nextLocationPathname === toPathname || (!end && nextLocationPathname.startsWith(toPathname) && nextLocationPathname.charAt(toPathname.length) === "/"))
+                    let renderProps
+                        { 
+                            @ isActive
+                            @ isPending
+                            @ isTransitioning
+                    let ariaCurrent
+                        iif isActive
+                            then ariaCurrentProp
+                            else undefined
+                    let className
+                        :union 
+                            :string 
+                            :undefined 
+                    if typeof classNameProp === "function"
+                        set className = classNameProp(renderProps)
+                    else
+                        set className =
+                            [ 
+                                @ classNameProp
+                                iif isActive
+                                    then "active"
+                                    else null
+                                iif isPending
+                                    then "pending"
+                                    else null
+                                iif isTransitioning
+                                    then "transitioning"
+                                    else null
+                                ._ filter
+                                    @ Boolean
+                                ._ join
+                                    @ " "
+                            # If the className prop is not a function, we use a default `active`
+                            # class for <NavLink />s that are active. In v5 `active` was the default
+                            # value for `activeClassName`, but we are removing that API and can still
+                            # use the old default behavior for a cleaner upgrade path and keep the
+                            # simple styling rules working as they currently do.
+                    let style
+                        iif typeof styleProp === "function"
+                            then styleProp(renderProps)
+                            else styleProp
+                    return 
+                        < Link 
+                            @ {...rest}
+                            @ aria-current {ariaCurrent}
+                            @ className {className}
+                            @ ref {ref}
+                            @ style {style}
+                            @ to {to}
+                            @ unstable_viewTransition {unstable_viewTransition}
+                            { 
+                                iif typeof children === "function"
+                                    then children(renderProps)
+                                    else children
+        #
+            # *
+            # * A `<Link>` wrapper that knows if it's "active" or not.
+            # 
+    if __DEV__
+        set NavLink.displayName = "NavLink"
+    export 
+        :interface FetcherFormProps
+            :extends React.FormHTMLAttributes
+                :param 
+                    :ref HTMLFormElement
+            :p method
+                :optional 
+                :ref HTMLFormMethod
+                #
+                    # *
+                    # * The HTTP verb to use when the form is submit. Supports "get", "post",
+                    # * "put", "delete", "patch".
+                    # 
+                #
+                    # *
+                    # * `<form encType>` - enhancing beyond the normal string type and limiting
+                    # * to the built-in browser supported values
+                    # 
+            :p encType
+                :optional 
+                :union 
+                    :literal "application/x-www-form-urlencoded"
+                    :literal "multipart/form-data"
+                    :literal "text/plain"
+                #
+                    # *
+                    # * `<form encType>` - enhancing beyond the normal string type and limiting
+                    # * to the built-in browser supported values
+                    # 
+                #
+                    # *
+                    # * Normal `<form action>` but supports React Router's relative paths.
+                    # 
+            :p action
+                :optional 
+                :string 
+                #
+                    # *
+                    # * Normal `<form action>` but supports React Router's relative paths.
+                    # 
+                #
+                    # *
+                    # * Determines whether the form action is relative to the route hierarchy or
+                    # * the pathname.  Use this if you want to opt out of navigating the route
+                    # * hierarchy and want to instead route based on /-delimited URL segments
+                    # 
+            :p relative
+                :optional 
+                :ref RelativeRoutingType
+                #
+                    # *
+                    # * Determines whether the form action is relative to the route hierarchy or
+                    # * the pathname.  Use this if you want to opt out of navigating the route
+                    # * hierarchy and want to instead route based on /-delimited URL segments
+                    # 
+                #
+                    # *
+                    # * Prevent the scroll position from resetting to the top of the viewport on
+                    # * completion of the navigation when using the <ScrollRestoration> component
+                    # 
+            :p preventScrollReset
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Prevent the scroll position from resetting to the top of the viewport on
+                    # * completion of the navigation when using the <ScrollRestoration> component
+                    # 
+                #
+                    # *
+                    # * A function to call when the form is submitted. If you call
+                    # * `event.preventDefault()` then this form will not do anything.
+                    # 
+            :p onSubmit
+                :optional 
+                :ref React.FormEventHandler
+                    :param 
+                        :ref HTMLFormElement
+                #
+                    # *
+                    # * A function to call when the form is submitted. If you call
+                    # * `event.preventDefault()` then this form will not do anything.
+                    # 
+    export 
+        :interface FormProps
+            :extends FetcherFormProps
+            :p fetcherKey
+                :optional 
+                :string 
+                #
+                    # *
+                    # * Indicate a specific fetcherKey to use when using navigate=false
+                    # 
+                #
+                    # *
+                    # * navigate=false will use a fetcher instead of a navigation
+                    # 
+            :p navigate
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * navigate=false will use a fetcher instead of a navigation
+                    # 
+                #
+                    # *
+                    # * Forces a full document navigation instead of a fetch.
+                    # 
+            :p reloadDocument
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Forces a full document navigation instead of a fetch.
+                    # 
+                #
+                    # *
+                    # * Replaces the current entry in the browser history stack when the form
+                    # * navigates. Use this if you don't want the user to be able to click "back"
+                    # * to the page with the form on it.
+                    # 
+            :p replace
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Replaces the current entry in the browser history stack when the form
+                    # * navigates. Use this if you don't want the user to be able to click "back"
+                    # * to the page with the form on it.
+                    # 
+                #
+                    # *
+                    # * State object to add to the history stack entry for this navigation
+                    # 
+            :p state
+                :optional 
+                :any 
+                #
+                    # *
+                    # * State object to add to the history stack entry for this navigation
+                    # 
+                #
+                    # *
+                    # * Enable view transitions on this Form navigation
+                    # 
+            :p unstable_viewTransition
+                :optional 
+                :boolean 
+                #
+                    # *
+                    # * Enable view transitions on this Form navigation
+                    # 
+    :type HTMLSubmitEvent
+        :ref React.BaseSyntheticEvent
+            :param 
+                :ref SubmitEvent
+            :param 
+                :ref Event
+            :param 
+                :ref HTMLFormElement
+    :type HTMLFormSubmitter
+        :union 
+            :ref HTMLButtonElement
+            :ref HTMLInputElement
+        #
+            # *
+            # * A `@remix-run/router`-aware `<form>`. It behaves like a normal form except
+            # * that the interaction with the server is with `fetch` instead of new document
+            # * requests, allowing components to add nicer UX to the page as the form is
+            # * submitted and returns with data.
+            # 
+    export 
+        const Form
+            _ React.forwardRef
+                :param 
+                    :ref HTMLFormElement
+                :param 
+                    :ref FormProps
+                => 
+                    { 
+                        @ fetcherKey
+                        @ navigate
+                        @ reloadDocument
+                        @ replace
+                        @ state
+                        @ method
+                            = defaultMethod
+                        @ action
+                        @ onSubmit
+                        @ relative
+                        @ preventScrollReset
+                        @ unstable_viewTransition
+                        ... props
+                    param forwardedRef
+                    let submit = useSubmit()
+                    let formAction
+                        _ useFormAction
+                            @ action
+                            { 
+                                @ relative
+                    let formMethod
+                        :ref HTMLFormMethod
+                        =
+                            iif method.toLowerCase() === "get"
+                                then "get"
+                                else "post"
+                    let submitHandler
+                        :ref React.FormEventHandler
+                            :param 
+                                :ref HTMLFormElement
+                        =
+                            => 
+                                param event
+                                @expr onSubmit && onSubmit(event)
+                                if event.defaultPrevented
+                                    return 
+                                _ event.preventDefault()
+                                let submitter
+                                    @expr
+                                        @expr 
+                                            ( 
+                                                @expr
+                                                    + event
+                                                        :as 
+                                                            :unknown 
+                                                    :as 
+                                                        :ref HTMLSubmitEvent
+                                            . nativeEvent
+                                            . submitter
+                                        :as 
+                                            :union 
+                                                :ref HTMLFormSubmitter
+                                                :null 
+                                let submitMethod
+                                    || 
+                                        ( 
+                                            _ submitter?.getAttribute?.("formmethod")
+                                                :as 
+                                                    :union 
+                                                        :ref HTMLFormMethod
+                                                        :undefined 
+                                        + method
+                                _ submit
+                                    @expr submitter || event.currentTarget
+                                    { 
+                                        @ fetcherKey
+                                        @ method submitMethod
+                                        @ navigate
+                                        @ replace
+                                        @ state
+                                        @ relative
+                                        @ preventScrollReset
+                                        @ unstable_viewTransition
+                    return 
+                        form 
+                            @ ref {forwardedRef}
+                            @ method {formMethod}
+                            @ action {formAction}
+                            @ onSubmit
+                                iif reloadDocument
+                                    then onSubmit
+                                    else submitHandler
+                            @ {...props}
+        #
+            # *
+            # * A `@remix-run/router`-aware `<form>`. It behaves like a normal form except
+            # * that the interaction with the server is with `fetch` instead of new document
+            # * requests, allowing components to add nicer UX to the page as the form is
+            # * submitted and returns with data.
+            # 
+    if __DEV__
+        set Form.displayName = "Form"
+    export 
+        :interface ScrollRestorationProps
+            :p getKey
+                :optional 
+                :ref GetScrollRestorationKeyFunction
+            :p storageKey
+                :optional 
+                :string 
+        #
+            # *
+            # * This component will emulate the browser's scroll restoration on location
+            # * changes.
+            # 
+    export 
+        function ScrollRestoration
+            { 
+                @ getKey
+                @ storageKey
+                :ref ScrollRestorationProps
+            _ useScrollRestoration
+                { 
+                    @ getKey
+                    @ storageKey
+            return null
+        #
+            # *
+            # * This component will emulate the browser's scroll restoration on location
+            # * changes.
+            # 
+    if __DEV__
+        set ScrollRestoration.displayName = "ScrollRestoration"
+    :enum DataRouterHook
+        @ UseScrollRestoration "useScrollRestoration"
+        @ UseSubmit "useSubmit"
+        @ UseSubmitFetcher "useSubmitFetcher"
+        @ UseFetcher "useFetcher"
+        @ useViewTransitionState "useViewTransitionState"
+        # #endregion
+        # //////////////////////////////////////////////////////////////////////////////
+        # #region Hooks
+        # //////////////////////////////////////////////////////////////////////////////
+    :enum DataRouterStateHook
+        @ UseFetcher "useFetcher"
+        @ UseFetchers "useFetchers"
+        @ UseScrollRestoration "useScrollRestoration"
+        # Internal hooks
+    function getDataRouterConsoleError
+        param hookName
+            :union 
+                :ref DataRouterHook
+                :ref DataRouterStateHook
+        return 
+            `lit 
+                + 
+                @ hookName
+                + &nbsp;must be used within a data router.  See https://reactrouter.com/routers/picking-a-router.
+        # Internal hooks
+    function useDataRouterContext
+        param hookName
+            :ref DataRouterHook
+        let ctx = React.useContext(DataRouterContext)
+        _ invariant(ctx, getDataRouterConsoleError(hookName))
+        return ctx
+    function useDataRouterState
+        param hookName
+            :ref DataRouterStateHook
+        let state = React.useContext(DataRouterStateContext)
+        _ invariant(state, getDataRouterConsoleError(hookName))
+        return state
+        # External hooks
+        #
+            # *
+            # * Handles the click behavior for router `<Link>` components. This is useful if
+            # * you need to create custom `<Link>` components with the same click behavior we
+            # * use in our exported `<Link>`.
+            # 
+    export 
+        function useLinkClickHandler
+            :< E
+                :ref Element
+            param to
+                :ref To
+            param 
+                @ target
+                @ replace replaceProp
+                @ state
+                @ preventScrollReset
+                @ relative
+                @ unstable_viewTransition
+                :{ 
+                    :p target
+                        :optional 
+                        :ref React.HTMLAttributeAnchorTarget
+                    :p replace
+                        :optional 
+                        :boolean 
+                    :p state
+                        :optional 
+                        :any 
+                    :p preventScrollReset
+                        :optional 
+                        :boolean 
+                    :p relative
+                        :optional 
+                        :ref RelativeRoutingType
+                    :p unstable_viewTransition
+                        :optional 
+                        :boolean 
+                = 
+            :return
+                :=> 
+                    :void 
+                    param event
+                        :ref React.MouseEvent
+                            :param 
+                                :ref E
+                            :param 
+                                :ref MouseEvent
+            let navigate = useNavigate()
+            let location = useLocation()
+            let path
+                _ useResolvedPath
+                    @ to
+                    { 
+                        @ relative
+            return 
+                _ React.useCallback
+                    => 
+                        param event
+                            :ref React.MouseEvent
+                                :param 
+                                    :ref E
+                                :param 
+                                    :ref MouseEvent
+                        if shouldProcessLinkClick(event, target)
+                            _ event.preventDefault()
+                                # If the URL hasn't changed, a regular <a> will do a replace instead of
+                                # a push, so do the same here unless the replace prop is explicitly set
+                            let replace
+                                iif replaceProp !== undefined
+                                    then replaceProp
+                                    else createPath(location) === createPath(path)
+                                # If the URL hasn't changed, a regular <a> will do a replace instead of
+                                # a push, so do the same here unless the replace prop is explicitly set
+                            _ navigate
+                                @ to
+                                { 
+                                    @ replace
+                                    @ state
+                                    @ preventScrollReset
+                                    @ relative
+                                    @ unstable_viewTransition
+                    [ 
+                        @ location
+                        @ navigate
+                        @ path
+                        @ replaceProp
+                        @ state
+                        @ target
+                        @ to
+                        @ preventScrollReset
+                        @ relative
+                        @ unstable_viewTransition
+        # External hooks
+        #
+            # *
+            # * Handles the click behavior for router `<Link>` components. This is useful if
+            # * you need to create custom `<Link>` components with the same click behavior we
+            # * use in our exported `<Link>`.
+            # 
+        #
+            # *
+            # * A convenient wrapper for reading and writing search parameters via the
+            # * URLSearchParams interface.
+            # 
+    export 
+        function useSearchParams
+            param defaultInit
+                :ref URLSearchParamsInit
+                :optional 
+            :return
+                :tuple 
+                    :ref URLSearchParams
+                    :ref SetURLSearchParams
+            _ warning
+                set typeof URLSearchParams !== "undefined"
+                op+ 
+                    op+ 
+                        op+ 
+                            op+ 
+                                op+ 
+                                    op+ 
+                                        op+ 
+                                            `lit 
+                                                + You cannot use the \`useSearchParams\` hook in a browser that does not&nbsp;
+                                            `lit 
+                                                + support the URLSearchParams API. If you need to support Internet&nbsp;
+                                        `lit 
+                                            + Explorer 11, we recommend you load a polyfill such as&nbsp;
+                                    `lit 
+                                        + https://github.com/ungap/url-search-params\n\n
+                                `lit 
+                                    + If you're unsure how to load polyfills, we recommend you check out&nbsp;
+                            `lit 
+                                + https://polyfill.io/v3/ which provides some recommendations about how&nbsp;
+                        `lit 
+                            + to load polyfills only for users that need them, instead of for every&nbsp;
+                    `lit 
+                        + user.
+            let defaultSearchParamsRef = React.useRef(createSearchParams(defaultInit))
+            let hasSetSearchParamsRef = React.useRef(false)
+            let location = useLocation()
+            let searchParams
+                _ React.useMemo
+                    => 
+                        _ getSearchParamsForLocation
+                            @expr location.search
+                            iif hasSetSearchParamsRef.current
+                                then null
+                                else defaultSearchParamsRef.current
+                            # Only merge in the defaults if we haven't yet called setSearchParams.
+                            # Once we call that we want those to take precedence, otherwise you can't
+                            # remove a param with setSearchParams({}) if it has an initial value
+                    [ 
+                        @ location.search
+            let navigate = useNavigate()
+            let setSearchParams
+                _ React.useCallback
+                    :param 
+                        :ref SetURLSearchParams
+                    => 
+                        param nextInit
+                        param navigateOptions
+                        const newSearchParams
+                            _ createSearchParams
+                                iif typeof nextInit === "function"
+                                    then nextInit(searchParams)
+                                    else nextInit
+                        set hasSetSearchParamsRef.current = true
+                        _ navigate("?" + newSearchParams, navigateOptions)
+                    [ 
+                        @ navigate
+                        @ searchParams
+            return 
+                [ 
+                    @ searchParams
+                    @ setSearchParams
+        #
+            # *
+            # * A convenient wrapper for reading and writing search parameters via the
+            # * URLSearchParams interface.
+            # 
+    export 
+        :type SetURLSearchParams
+            :=> 
+                :void 
+                param nextInit
+                    :union 
+                        :ref URLSearchParamsInit
+                        :paren 
+                            :=> 
+                                :ref URLSearchParamsInit
+                                param prev
+                                    :ref URLSearchParams
+                    :optional 
+                param navigateOpts
+                    :ref NavigateOptions
+                    :optional 
+        #
+            # *
+            # * Submits a HTML `<form>` to the server without reloading the page.
+            # 
+    export 
+        :interface SubmitFunction
+            :call 
+                :void 
+                param target
+                    :ref SubmitTarget
+                    #
+                        # *
+                        # * Specifies the `<form>` to be submitted to the server, a specific
+                        # * `<button>` or `<input type="submit">` to use to submit the form, or some
+                        # * arbitrary data to submit.
+                        # *
+                        # * Note: When using a `<button>` its `name` and `value` will also be
+                        # * included in the form data that is submitted.
+                        # 
+                param options
+                    :ref SubmitOptions
+                    :optional 
+                    #
+                        # *
+                        # * Options that override the `<form>`'s own attributes. Required when
+                        # * submitting arbitrary data without a backing `<form>`.
+                        # 
+        #
+            # *
+            # * Submits a HTML `<form>` to the server without reloading the page.
+            # 
+        #
+            # *
+            # * Submits a fetcher `<form>` to the server without reloading the page.
+            # 
+    export 
+        :interface FetcherSubmitFunction
+            :call 
+                :void 
+                param target
+                    :ref SubmitTarget
+                param options
+                    :ref Omit
+                        :param 
+                            :ref SubmitOptions
+                        :param 
+                            :union 
+                                :literal "replace"
+                                :literal "state"
+                    :optional 
+                    # Fetchers cannot replace or set state because they are not navigation events
+        #
+            # *
+            # * Submits a fetcher `<form>` to the server without reloading the page.
+            # 
+    function validateClientSideSubmission
+        if typeof document === "undefined"
+            throw new Error("You are calling submit during the server render. " + "Try calling submit within a `useEffect` or callback instead.")
+    let fetcherId = 0
+    let getUniqueFetcherId
+        => 
+            `lit 
+                + __
+                _ String(++fetcherId)
+                + __
+        #
+            # *
+            # * Returns a function that may be used to programmatically submit a form (or
+            # * some arbitrary data) to the server.
+            # 
+    export 
+        function useSubmit
+            :return
+                :ref SubmitFunction
+            let 
+                { 
+                    @ router
+                = useDataRouterContext(DataRouterHook.UseSubmit)
+            let 
+                { 
+                    @ basename
+                = React.useContext(NavigationContext)
+            let currentRouteId = useRouteId()
+            return 
+                _ React.useCallback
+                    :param 
+                        :ref SubmitFunction
+                    => 
+                        param target
+                        param options
+                            =
+                                { 
+                        _ validateClientSideSubmission()
+                        let 
+                            { 
+                                @ action
+                                @ method
+                                @ encType
+                                @ formData
+                                @ body
+                            = getFormSubmissionInfo(target, basename)
+                        if options.navigate === false
+                            let key = options.fetcherKey || getUniqueFetcherId()
+                            _ router.fetch
+                                @ key
+                                @ currentRouteId
+                                @expr options.action || action
+                                { 
+                                    @ preventScrollReset options.preventScrollReset
+                                    @ formData
+                                    @ body
+                                    @ formMethod
+                                        || 
+                                            + options.method
+                                            ( 
+                                                + method
+                                                    :as 
+                                                        :ref HTMLFormMethod
+                                    @ formEncType
+                                        || 
+                                            + options.encType
+                                            ( 
+                                                + encType
+                                                    :as 
+                                                        :ref FormEncType
+                                    @ unstable_flushSync options.unstable_flushSync
+                        else
+                            _ router.navigate
+                                @expr options.action || action
+                                { 
+                                    @ preventScrollReset options.preventScrollReset
+                                    @ formData
+                                    @ body
+                                    @ formMethod
+                                        || 
+                                            + options.method
+                                            ( 
+                                                + method
+                                                    :as 
+                                                        :ref HTMLFormMethod
+                                    @ formEncType
+                                        || 
+                                            + options.encType
+                                            ( 
+                                                + encType
+                                                    :as 
+                                                        :ref FormEncType
+                                    @ replace options.replace
+                                    @ state options.state
+                                    @ fromRouteId currentRouteId
+                                    @ unstable_flushSync options.unstable_flushSync
+                                    @ unstable_viewTransition options.unstable_viewTransition
+                    [ 
+                        @ router
+                        @ basename
+                        @ currentRouteId
+        #
+            # *
+            # * Returns a function that may be used to programmatically submit a form (or
+            # * some arbitrary data) to the server.
+            # 
+        # v7: Eventually we should deprecate this entirely in favor of using the
+        # router method directly?
+    export 
+        function useFormAction
+            param action
+                :string 
+                :optional 
+            param 
+                @ relative
+                :{ 
+                    :p relative
+                        :optional 
+                        :ref RelativeRoutingType
+                = 
+            :return
+                :string 
+            let 
+                { 
+                    @ basename
+                = React.useContext(NavigationContext)
+            let routeContext = React.useContext(RouteContext)
+            _ invariant(routeContext, "useFormAction must be used inside a RouteContext")
+            let [match] = routeContext.matches.slice(-1)
+                # Shallow clone path so we can modify it below, otherwise we modify the
+                # object referenced by useMemo inside useResolvedPath
+            let path
+                { 
+                    _ ...useResolvedPath
+                        iif action
+                            then action
+                            else "."
+                        { 
+                            @ relative
+                # Shallow clone path so we can modify it below, otherwise we modify the
+                # object referenced by useMemo inside useResolvedPath
+                # If no action was specified, browsers will persist current search params
+                # when determining the path, so match that behavior
+                # https://github.com/remix-run/remix/issues/927
+            let location = useLocation()
+                # If no action was specified, browsers will persist current search params
+                # when determining the path, so match that behavior
+                # https://github.com/remix-run/remix/issues/927
+            if action == null
+                set path.search = location.search
+                    # Safe to write to this directly here since if action was undefined, we
+                    # would have called useResolvedPath(".") which will never include a search
+                    # When grabbing search params from the URL, remove any included ?index param
+                    # since it might not apply to our contextual route.  We add it back based
+                    # on match.route.index below
+                let params = new URLSearchParams(path.search)
+                    # When grabbing search params from the URL, remove any included ?index param
+                    # since it might not apply to our contextual route.  We add it back based
+                    # on match.route.index below
+                if params.has("index") && params.get("index") === ""
+                    _ params.delete("index")
+                    set path.search =
+                        iif params.toString()
+                            then
+                                `lit 
+                                    + ?
+                                    _ params.toString()
+                                    + 
+                            else ""
+            if (!action || action === ".") && match.route.index
+                set path.search =
+                    iif path.search
+                        then path.search.replace(/^\?/, "?index&")
+                        else "?index"
+            if basename !== "/"
+                set path.pathname =
+                    iif path.pathname === "/"
+                        then basename
+                        else
+                            _ joinPaths
+                                [ 
+                                    @ basename
+                                    @ path.pathname
+            return createPath(path)
+        # v7: Eventually we should deprecate this entirely in favor of using the
+        # router method directly?
+    export 
+        :type FetcherWithComponents
+            :< TData
+            :intersect 
+                :ref Fetcher
+                    :param 
+                        :ref TData
+                :{ 
+                    :p Form
+                        :ref React.ForwardRefExoticComponent
+                            :param 
+                                :intersect 
+                                    :ref FetcherFormProps
+                                    :ref React.RefAttributes
+                                        :param 
+                                            :ref HTMLFormElement
+                    :p submit
+                        :ref FetcherSubmitFunction
+                    :p load
+                        :=> 
+                            :void 
+                            param href
+                                :string 
+                            param opts
+                                :{ 
+                                    :p unstable_flushSync
+                                        :optional 
+                                        :boolean 
+                                :optional 
+        # TODO: (v7) Change the useFetcher generic default from `any` to `unknown`
+        #
+            # *
+            # * Interacts with route loaders and actions without causing a navigation. Great
+            # * for any interaction that stays on the same page.
+            # 
+    export 
+        function useFetcher
+            :< TData
+            param 
+                @ key
+                :{ 
+                    :p key
+                        :optional 
+                        :string 
+                = 
+            :return
+                :ref FetcherWithComponents
+                    :param 
+                        :ref TData
+            let 
+                { 
+                    @ router
+                = useDataRouterContext(DataRouterHook.UseFetcher)
+            let state = useDataRouterState(DataRouterStateHook.UseFetcher)
+            let fetcherData = React.useContext(FetchersContext)
+            let route = React.useContext(RouteContext)
+            let routeId = route.matches[route.matches.length - 1]?.route?.id
+            _ invariant
+                @ fetcherData
+                `lit 
+                    + useFetcher must be used inside a FetchersContext
+            _ invariant
+                @ route
+                `lit 
+                    + useFetcher must be used inside a RouteContext
+            _ invariant
+                set routeId != null
+                `lit 
+                    + useFetcher can only be used on routes that contain a unique "id"
+                # Fetcher key handling
+                # OK to call conditionally to feature detect `useId`
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+            let defaultKey
+                iif useIdImpl
+                    then useIdImpl()
+                    else ""
+                # Fetcher key handling
+                # OK to call conditionally to feature detect `useId`
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+            let [fetcherKey, setFetcherKey]
+                _ React.useState
+                    :param string
+                    @expr key || defaultKey
+            if key && key !== fetcherKey
+                _ setFetcherKey(key)
+            else
+                if !fetcherKey
+                    _ setFetcherKey(getUniqueFetcherId())
+            _ React.useEffect
+                => 
+                    _ router.getFetcher(fetcherKey)
+                    return 
+                        => 
+                            _ router.deleteFetcher(fetcherKey)
+                                # Tell the router we've unmounted - if v7_fetcherPersist is enabled this
+                                # will not delete immediately but instead queue up a delete after the
+                                # fetcher returns to an `idle` state
+                [ 
+                    @ router
+                    @ fetcherKey
+                # Registration/cleanup
+                # Fetcher additions
+            let load
+                _ React.useCallback
+                    => 
+                        param href
+                            :string 
+                        param opts
+                            :{ 
+                                :p unstable_flushSync
+                                    :optional 
+                                    :boolean 
+                            :optional 
+                        _ invariant(routeId, "No routeId available for fetcher.load()")
+                        _ router.fetch(fetcherKey, routeId, href, opts)
+                    [ 
+                        @ fetcherKey
+                        @ routeId
+                        @ router
+                # Fetcher additions
+            let submitImpl = useSubmit()
+            let submit
+                _ React.useCallback
+                    :param 
+                        :ref FetcherSubmitFunction
+                    => 
+                        param target
+                        param opts
+                        _ submitImpl
+                            @ target
+                            { 
+                                @ ...opts
+                                @ navigate false
+                                @ fetcherKey
+                    [ 
+                        @ fetcherKey
+                        @ submitImpl
+            let FetcherForm
+                _ React.useMemo
+                    => 
+                        let FetcherForm
+                            _ React.forwardRef
+                                :param 
+                                    :ref HTMLFormElement
+                                :param 
+                                    :ref FetcherFormProps
+                                => 
+                                    param props
+                                    param ref
+                                    return 
+                                        < Form 
+                                            @ {...props}
+                                            @ navigate {false}
+                                            @ fetcherKey {fetcherKey}
+                                            @ ref {ref}
+                        if __DEV__
+                            set FetcherForm.displayName = "fetcher.Form"
+                        return FetcherForm
+                    [ 
+                        @ fetcherKey
+                # Exposed FetcherWithComponents
+            let fetcher = state.fetchers.get(fetcherKey) || IDLE_FETCHER
+                # Exposed FetcherWithComponents
+            let data = fetcherData.get(fetcherKey)
+            let fetcherWithComponents
+                _ React.useMemo
+                    => 
+                        (
+                            { 
+                                @ Form FetcherForm
+                                @ submit
+                                @ load
+                                @ ...fetcher
+                                @ data
+                    [ 
+                        @ FetcherForm
+                        @ submit
+                        @ load
+                        @ fetcher
+                        @ data
+            return fetcherWithComponents
+        # TODO: (v7) Change the useFetcher generic default from `any` to `unknown`
+        #
+            # *
+            # * Interacts with route loaders and actions without causing a navigation. Great
+            # * for any interaction that stays on the same page.
+            # 
+        #
+            # *
+            # * Provides all fetchers currently on the page. Useful for layouts and parent
+            # * routes that need to provide pending/optimistic UI regarding the fetch.
+            # 
+    export 
+        function useFetchers
+            :return
+                :[ 
+                    :paren 
+                        :intersect 
+                            :ref Fetcher
+                            :{ 
+                                :p key
+                                    :string 
+            let state = useDataRouterState(DataRouterStateHook.UseFetchers)
+            return 
+                _ Array.from(state.fetchers.entries()).map
+                    => 
+                        param [key, fetcher]
+                        (
+                            { 
+                                @ ...fetcher
+                                @ key
+        #
+            # *
+            # * Provides all fetchers currently on the page. Useful for layouts and parent
+            # * routes that need to provide pending/optimistic UI regarding the fetch.
+            # 
+    const SCROLL_RESTORATION_STORAGE_KEY = "react-router-scroll-positions"
+    let savedScrollPositions
+        :ref Record
+            :param string
+            :param number
+        =
+            { 
+        #
+            # *
+            # * When rendered inside a RouterProvider, will restore scroll positions on navigations
+            # 
+    function useScrollRestoration
+        param 
+            @ getKey
+            @ storageKey
+            :{ 
+                :p getKey
+                    :optional 
+                    :ref GetScrollRestorationKeyFunction
+                :p storageKey
+                    :optional 
+                    :string 
+            = 
+        let 
+            { 
+                @ router
+            = useDataRouterContext(DataRouterHook.UseScrollRestoration)
+        let 
+            { 
+                @ restoreScrollPosition
+                @ preventScrollReset
+            = useDataRouterState(DataRouterStateHook.UseScrollRestoration)
+        let 
+            { 
+                @ basename
+            = React.useContext(NavigationContext)
+        let location = useLocation()
+        let matches = useMatches()
+        let navigation = useNavigation()
+            # Trigger manual scroll restoration while we're active
+        _ React.useEffect
+            => 
+                set window.history.scrollRestoration = "manual"
+                return 
+                    => 
+                        set window.history.scrollRestoration = "auto"
+            [ 
+            # Trigger manual scroll restoration while we're active
+            # Save positions on pagehide
+        _ usePageHide
+            _ React.useCallback
+                => 
+                    if navigation.state === "idle"
+                        let key
+                            || 
+                                ( 
+                                    iif getKey
+                                        then getKey(location, matches)
+                                        else null
+                                + location.key
+                        set savedScrollPositions[key] = window.scrollY
+                    try 
+                        _ sessionStorage.setItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY, JSON.stringify(savedScrollPositions))
+                    catch error
+                        _ warning
+                            @ false
+                            `lit 
+                                + Failed to save scroll positions in sessionStorage, <ScrollRestoration /> will not work properly (
+                                @ error
+                                + ).
+                    set window.history.scrollRestoration = "auto"
+                [ 
+                    @ storageKey
+                    @ getKey
+                    @ navigation.state
+                    @ location
+                    @ matches
+            # Save positions on pagehide
+            # Read in any saved scroll locations
+        if typeof document !== "undefined"
+            _ React.useLayoutEffect
+                => 
+                    try 
+                        let sessionPositions = sessionStorage.getItem(storageKey || SCROLL_RESTORATION_STORAGE_KEY)
+                        if sessionPositions
+                            set savedScrollPositions = JSON.parse(sessionPositions)
+                    catch e
+                [ 
+                    @ storageKey
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+                # Enable scroll restoration in the router
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+            _ React.useLayoutEffect
+                => 
+                    let getKeyWithoutBasename
+                        :union 
+                            :ref GetScrollRestorationKeyFunction
+                            :undefined 
+                        =
+                            iif getKey && basename !== "/"
+                                then
+                                    => 
+                                        param location
+                                        param matches
+                                        _ getKey
+                                            { 
+                                                @ ...location
+                                                @ pathname stripBasename(location.pathname, basename) || location.pathname
+                                                # Strip the basename to match useLocation()
+                                            @ matches
+                                else getKey
+                    let disableScrollRestoration
+                        _ router?.enableScrollRestoration?.
+                            @ savedScrollPositions
+                            => 
+                                +
+                                    @expr window.scrollY
+                            @ getKeyWithoutBasename
+                    return 
+                        => 
+                            @expr disableScrollRestoration && disableScrollRestoration()
+                [ 
+                    @ router
+                    @ basename
+                    @ getKey
+                # Enable scroll restoration in the router
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+                # Restore scrolling when state.restoreScrollPosition changes
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+            _ React.useLayoutEffect
+                => 
+                    if restoreScrollPosition === false
+                        return 
+                    if typeof restoreScrollPosition === "number"
+                        _ window.scrollTo(0, restoreScrollPosition)
+                        return 
+                    if location.hash
+                        let el = document.getElementById(decodeURIComponent(location.hash.slice(1)))
+                        if el
+                            _ el.scrollIntoView()
+                            return 
+                    if preventScrollReset === true
+                        return 
+                    _ window.scrollTo(0, 0)
+                        # otherwise go to the top on new locations
+                [ 
+                    @ location
+                    @ restoreScrollPosition
+                    @ preventScrollReset
+                # Restore scrolling when state.restoreScrollPosition changes
+                # eslint-disable-next-line react-hooks/rules-of-hooks
+        #
+            # *
+            # * When rendered inside a RouterProvider, will restore scroll positions on navigations
+            # 
+    export 
+        @ useScrollRestoration
+            as UNSAFE_useScrollRestoration
+        #
+            # *
+            # * Setup a callback to be fired on the window's `beforeunload` event. This is
+            # * useful for saving some data to `window.localStorage` just before the page
+            # * refreshes.
+            # *
+            # * Note: The `callback` argument should be a function created with
+            # * `React.useCallback()`.
+            # 
+    export 
+        function useBeforeUnload
+            param callback
+                :=> 
+                    :any 
+                    param event
+                        :ref BeforeUnloadEvent
+            param options
+                :{ 
+                    :p capture
+                        :optional 
+                        :boolean 
+                :optional 
+            :return
+                :void 
+            let 
+                { 
+                    @ capture
+                =
+                    || 
+                        + options
+                        { 
+            _ React.useEffect
+                => 
+                    let opts
+                        iif capture != null
+                            then
+                                { 
+                                    @ capture
+                            else undefined
+                    _ window.addEventListener("beforeunload", callback, opts)
+                    return 
+                        => 
+                            _ window.removeEventListener("beforeunload", callback, opts)
+                [ 
+                    @ callback
+                    @ capture
+        #
+            # *
+            # * Setup a callback to be fired on the window's `beforeunload` event. This is
+            # * useful for saving some data to `window.localStorage` just before the page
+            # * refreshes.
+            # *
+            # * Note: The `callback` argument should be a function created with
+            # * `React.useCallback()`.
+            # 
+        #
+            # *
+            # * Setup a callback to be fired on the window's `pagehide` event. This is
+            # * useful for saving some data to `window.localStorage` just before the page
+            # * refreshes.  This event is better supported than beforeunload across browsers.
+            # *
+            # * Note: The `callback` argument should be a function created with
+            # * `React.useCallback()`.
+            # 
+    function usePageHide
+        param callback
+            :=> 
+                :any 
+                param event
+                    :ref PageTransitionEvent
+        param options
+            :{ 
+                :p capture
+                    :optional 
+                    :boolean 
+            :optional 
+        :return
+            :void 
+        let 
+            { 
+                @ capture
+            =
+                || 
+                    + options
+                    { 
+        _ React.useEffect
+            => 
+                let opts
+                    iif capture != null
+                        then
+                            { 
+                                @ capture
+                        else undefined
+                _ window.addEventListener("pagehide", callback, opts)
+                return 
+                    => 
+                        _ window.removeEventListener("pagehide", callback, opts)
+            [ 
+                @ callback
+                @ capture
+        #
+            # *
+            # * Setup a callback to be fired on the window's `pagehide` event. This is
+            # * useful for saving some data to `window.localStorage` just before the page
+            # * refreshes.  This event is better supported than beforeunload across browsers.
+            # *
+            # * Note: The `callback` argument should be a function created with
+            # * `React.useCallback()`.
+            # 
+        #
+            # *
+            # * Wrapper around useBlocker to show a window.confirm prompt to users instead
+            # * of building a custom UI with useBlocker.
+            # *
+            # * Warning: This has *a lot of rough edges* and behaves very differently (and
+            # * very incorrectly in some cases) across browsers if user click addition
+            # * back/forward navigations while the confirm is open.  Use at your own risk.
+            # 
+    function usePrompt
+        { 
+            @ when
+            @ message
+            :{ 
+                :p when
+                    :union 
+                        :boolean 
+                        :ref BlockerFunction
+                :p message
+                    :string 
+        let blocker = useBlocker(when)
+        _ React.useEffect
+            => 
+                if blocker.state === "blocked"
+                    let proceed = window.confirm(message)
+                    if proceed
+                        _ setTimeout(blocker.proceed, 0)
+                    else
+                        _ blocker.reset()
+            [ 
+                @ blocker
+                @ message
+        _ React.useEffect
+            => 
+                if blocker.state === "blocked" && !when
+                    _ blocker.reset()
+            [ 
+                @ blocker
+                @ when
+        #
+            # *
+            # * Wrapper around useBlocker to show a window.confirm prompt to users instead
+            # * of building a custom UI with useBlocker.
+            # *
+            # * Warning: This has *a lot of rough edges* and behaves very differently (and
+            # * very incorrectly in some cases) across browsers if user click addition
+            # * back/forward navigations while the confirm is open.  Use at your own risk.
+            # 
+    export 
+        @ usePrompt
+            as unstable_usePrompt
+        #
+            # *
+            # * Return a boolean indicating if there is an active view transition to the
+            # * given href.  You can use this value to render CSS classes or viewTransitionName
+            # * styles onto your elements
+            # *
+            # * @param href The destination href
+            # * @param [opts.relative] Relative routing type ("route" | "path")
+            # 
+    function useViewTransitionState
+        param to
+            :ref To
+        param opts
+            :{ 
+                :p relative
+                    :optional 
+                    :ref RelativeRoutingType
+            = 
+        let vtContext = React.useContext(ViewTransitionContext)
+        _ invariant(vtContext != null, "`unstable_useViewTransitionState` must be used within `react-router-dom`'s `RouterProvider`.  " + "Did you accidentally import `RouterProvider` from `react-router`?")
+        let 
+            { 
+                @ basename
+            = useDataRouterContext(DataRouterHook.useViewTransitionState)
+        let path
+            _ useResolvedPath
+                @ to
+                { 
+                    @ relative opts.relative
+        if !vtContext.isTransitioning
+            return false
+        let currentPath = stripBasename(vtContext.currentLocation.pathname, basename) || vtContext.currentLocation.pathname
+        let nextPath = stripBasename(vtContext.nextLocation.pathname, basename) || vtContext.nextLocation.pathname
+            # Transition is active if we're going to or coming from the indicated
+            # destination.  This ensures that other PUSH navigations that reverse
+            # an indicated transition apply.  I.e., on the list view you have:
+            # 
+            # <NavLink to="/details/1" unstable_viewTransition>
+            # 
+            # If you click the breadcrumb back to the list view:
+            # 
+            # <NavLink to="/list" unstable_viewTransition>
+            # 
+            # We should apply the transition because it's indicated as active going
+            # from /list -> /details/1 and therefore should be active on the reverse
+            # (even though this isn't strictly a POP reverse)
+        return (matchPath(path.pathname, nextPath) != null || matchPath(path.pathname, currentPath) != null)
+            # Transition is active if we're going to or coming from the indicated
+            # destination.  This ensures that other PUSH navigations that reverse
+            # an indicated transition apply.  I.e., on the list view you have:
+            # 
+            # <NavLink to="/details/1" unstable_viewTransition>
+            # 
+            # If you click the breadcrumb back to the list view:
+            # 
+            # <NavLink to="/list" unstable_viewTransition>
+            # 
+            # We should apply the transition because it's indicated as active going
+            # from /list -> /details/1 and therefore should be active on the reverse
+            # (even though this isn't strictly a POP reverse)
+        #
+            # *
+            # * Return a boolean indicating if there is an active view transition to the
+            # * given href.  You can use this value to render CSS classes or viewTransitionName
+            # * styles onto your elements
+            # *
+            # * @param href The destination href
+            # * @param [opts.relative] Relative routing type ("route" | "path")
+            # 
+    export 
+        @ useViewTransitionState
+            as unstable_useViewTransitionState
+        # #endregion

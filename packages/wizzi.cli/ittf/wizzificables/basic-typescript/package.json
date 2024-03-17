@@ -1,0 +1,21 @@
+{
+  "name": "basic-typescript",
+  "version": "1.0.0",
+  "description": "Starter wizzi package for typescript",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./build.js",
+    "start": "node ./serve.js",
+    "analyze": "node ./analyze.js"
+  },
+  "author": "stfn.bssl@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.20.1",
+    "esbuild-plugin-tsc": "^0.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

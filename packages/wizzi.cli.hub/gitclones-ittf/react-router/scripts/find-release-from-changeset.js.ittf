@@ -1,0 +1,41 @@
+module
+    kind react
+    function findReleaseFromChangeset
+        param publishedPackages
+        param packageVersionToFollow
+        if !publishedPackages
+            throw new Error("No published packages found")
+        let packages = JSON.parse(publishedPackages)
+        if !Array.isArray(packages)
+            throw new Error("Published packages is not an array")
+        let typed
+            _ packages.filter
+                => 
+                    param pkg
+                    @expr "name" in pkg && "version" in pkg
+            #
+                # * @see https://github.com/changesets/action#outputs
+            #
+                # * @type { { name: string; version: string }[] }
+        let found
+            _ typed.find
+                => 
+                    param pkg
+                    set pkg.name === packageVersionToFollow
+        if !found
+            throw 
+                new Error
+                    `lit 
+                        + 
+                        @ packageVersionToFollow
+                        + &nbsp;was not found in the published packages
+        _ console.log(found.version)
+        return found.version
+        #
+            # *
+            # *
+            # * @param {string | undefined} publishedPackages
+            # * @param {string | undefined} packageVersionToFollow
+            # * @returns {string | undefined}
+            # 
+    _ findReleaseFromChangeset(process.env.PUBLISHED_PACKAGES, process.env.PACKAGE_VERSION_TO_FOLLOW)

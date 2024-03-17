@@ -18,9 +18,15 @@
 		node ">=8"
 	preferGlobal true
     { scripts
-		metify:starters "node index metify -s ittf\metificables\wizziStarters -d ittf\metas\def"
+		artifact:basic "node index -s ittf\artifacts\basic\index.html.ittf -d ittf\artifacts\basic -c ittf\artifacts\basic\index"
+		artifact:withContext "node index -s ittf\artifacts\withContext -d ittf\artifacts\withContext -c ittf\artifacts\withContext\index --ctx ittf\artifacts\withContext\wzCtx.json.ittf"
+		folder:basic "node index -s ittf\folders\basic -d ittf\folders\basic_generated -c ittf\folders\basic\index"
+		folder:withContext "node index -s ittf\folders\withContext -d ittf\folders\withContext_generated -c ittf\folders\withContext\index --ctx ittf\folders\withContext\wzCtx.json.ittf"
 		job:basic "node index job -c ittf\jobs\basic.job"
-		wizzify:folder "node index fy -s ittf\wizzificables -d ittf\wizzified"
+		wizzify:default "node index fy -s ittf\wizzificables -d ittf\wizzified"
+		wizzify:logbot "node index fy -s C:\My\wizzi\stfnbssl\lavori\logbot\materiale-stefano-fede -d C:\My\wizzi\stfnbssl\lavori\logbot\ittf"
+		folder:logbot "node index -s C:\My\wizzi\stfnbssl\lavori\logbot\ittf -d C:\My\wizzi\stfnbssl\lavori\logbot\yaml-from-ittf"
+		metify:starters "node index metify -s ittf\metificables\wizziStarters -d ittf\metas\def"
 	{ bin
 		wz "bin/wz.js"
 	{ dependencies

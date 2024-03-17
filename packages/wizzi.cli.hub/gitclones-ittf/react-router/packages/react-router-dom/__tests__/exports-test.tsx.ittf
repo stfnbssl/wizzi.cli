@@ -1,0 +1,49 @@
+module
+    import 
+        as ReactRouter
+        from "react-router"
+    import 
+        as ReactRouterDOM
+        from "react-router-dom"
+    let nonReExportedKeys
+        new Set
+            [ 
+                @ "UNSAFE_mapRouteProperties"
+                @ "UNSAFE_useRoutesImpl"
+    let modifiedExports
+        new Set
+            [ 
+                @ "RouterProvider"
+    _ describe
+        @ "react-router-dom"
+        => 
+            for 
+                left
+                    let key
+                in ReactRouter
+                if nonReExportedKeys.has(key)
+                    _ it
+                        `lit 
+                            + does not re-export&nbsp;
+                            @ key
+                            + &nbsp;from react-router
+                        => 
+                            _ expect(ReactRouterDOM[key]).toBe(undefined)
+                else
+                    if modifiedExports.has(key)
+                        _ it
+                            `lit 
+                                + re-exports a different version of&nbsp;
+                                @ key
+                                + 
+                            => 
+                                _ expect(ReactRouterDOM[key]).toBeDefined()
+                                _ expect(ReactRouterDOM[key]).not.toBe(ReactRouter[key])
+                    else
+                        _ it
+                            `lit 
+                                + re-exports&nbsp;
+                                @ key
+                                + &nbsp;from react-router
+                            => 
+                                _ expect(ReactRouterDOM[key]).toBe(ReactRouter[key])

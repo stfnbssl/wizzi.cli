@@ -1,0 +1,1260 @@
+module
+    :import-type 
+        @ InitialEntry
+        @ LazyRouteFunction
+        @ Location
+        @ MemoryHistory
+        @ RelativeRoutingType
+        @ Router
+            as RemixRouter
+        @ RouterState
+        @ RouterSubscriber
+        @ To
+        @ TrackedPromise
+        from "@remix-run/router"
+    import 
+        @ AbortedDeferredError
+        @ Action
+            as NavigationType
+        @ createMemoryHistory
+        @ UNSAFE_getResolveToMatches
+            as getResolveToMatches
+        @ UNSAFE_invariant
+            as invariant
+        @ parsePath
+        @ resolveTo
+        @ stripBasename
+        @ UNSAFE_warning
+            as warning
+        from "@remix-run/router"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ DataRouteObject
+        @ IndexRouteObject
+        @ Navigator
+        @ NonIndexRouteObject
+        @ RouteMatch
+        @ RouteObject
+        from "./context"
+    import 
+        @ AwaitContext
+        @ DataRouterContext
+        @ DataRouterStateContext
+        @ LocationContext
+        @ NavigationContext
+        @ RouteContext
+        from "./context"
+    import 
+        @ _renderMatches
+        @ useAsyncValue
+        @ useInRouterContext
+        @ useLocation
+        @ useNavigate
+        @ useOutlet
+        @ useRoutes
+        @ useRoutesImpl
+        from "./hooks"
+    export 
+        :interface FutureConfig
+            :p v7_relativeSplatPath
+                :boolean 
+            :p v7_startTransition
+                :boolean 
+    export 
+        :interface RouterProviderProps
+            :p fallbackElement
+                :optional 
+                :ref React.ReactNode
+            :p router
+                :ref RemixRouter
+                # Only accept future flags relevant to rendering behavior
+                # routing flags should be accessed via router.future
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref Pick
+                            :param 
+                                :ref FutureConfig
+                            :param 
+                                :literal "v7_startTransition"
+                # Only accept future flags relevant to rendering behavior
+                # routing flags should be accessed via router.future
+        #
+            # *
+            # Webpack + React 17 fails to compile on any of the following because webpack
+            # complains that `startTransition` doesn't exist in `React`:
+            # * import { startTransition } from "react"
+            # * import * as React from from "react";
+            # "startTransition" in React ? React.startTransition(() => setState()) : setState()
+            # * import * as React from from "react";
+            # "startTransition" in React ? React["startTransition"](() => setState()) : setState()
+            # 
+            # Moving it to a constant such as the following solves the Webpack/React 17 issue:
+            # * import * as React from from "react";
+            # const START_TRANSITION = "startTransition";
+            # START_TRANSITION in React ? React[START_TRANSITION](() => setState()) : setState()
+            # 
+            # However, that introduces webpack/terser minification issues in production builds
+            # in React 18 where minification/obfuscation ends up removing the call of
+            # React.startTransition entirely from the first half of the ternary.  Grabbing
+            # this exported reference once up front resolves that issue.
+            # 
+            # See https://github.com/remix-run/react-router/issues/10579
+            # 
+    const START_TRANSITION = "startTransition"
+        #
+            # *
+            # Webpack + React 17 fails to compile on any of the following because webpack
+            # complains that `startTransition` doesn't exist in `React`:
+            # * import { startTransition } from "react"
+            # * import * as React from from "react";
+            # "startTransition" in React ? React.startTransition(() => setState()) : setState()
+            # * import * as React from from "react";
+            # "startTransition" in React ? React["startTransition"](() => setState()) : setState()
+            # 
+            # Moving it to a constant such as the following solves the Webpack/React 17 issue:
+            # * import * as React from from "react";
+            # const START_TRANSITION = "startTransition";
+            # START_TRANSITION in React ? React[START_TRANSITION](() => setState()) : setState()
+            # 
+            # However, that introduces webpack/terser minification issues in production builds
+            # in React 18 where minification/obfuscation ends up removing the call of
+            # React.startTransition entirely from the first half of the ternary.  Grabbing
+            # this exported reference once up front resolves that issue.
+            # 
+            # See https://github.com/remix-run/react-router/issues/10579
+            # 
+    const startTransitionImpl = React[START_TRANSITION]
+        #
+            # *
+            # * Given a Remix Router instance, render the appropriate UI
+            # 
+    export 
+        function RouterProvider
+            { 
+                @ fallbackElement
+                @ router
+                @ future
+                :ref RouterProviderProps
+            :return
+                :ref React.ReactElement
+            let [state, setStateImpl] = React.useState(router.state)
+            let 
+                { 
+                    @ v7_startTransition
+                =
+                    || 
+                        + future
+                        { 
+            let setState
+                _ React.useCallback
+                    :param 
+                        :ref RouterSubscriber
+                    => 
+                        param newState
+                            :ref RouterState
+                        if v7_startTransition && startTransitionImpl
+                            _ startTransitionImpl
+                                => 
+                                    _ setStateImpl(newState)
+                        else
+                            _ setStateImpl(newState)
+                    [ 
+                        @ setStateImpl
+                        @ v7_startTransition
+                # Need to use a layout effect here so we are subscribed early enough to
+                # pick up on any render-driven redirects/navigations (useEffect/<Navigate>)
+            _ React.useLayoutEffect
+                => 
+                    _ router.subscribe(setState)
+                [ 
+                    @ router
+                    @ setState
+                # Need to use a layout effect here so we are subscribed early enough to
+                # pick up on any render-driven redirects/navigations (useEffect/<Navigate>)
+            _ React.useEffect
+                => 
+                    _ warning(fallbackElement == null || !router.future.v7_partialHydration, "`<RouterProvider fallbackElement>` is deprecated when using " + "`v7_partialHydration`, use a `HydrateFallback` component instead")
+                        # Only log this once on initial mount
+                        # eslint-disable-next-line react-hooks/exhaustive-deps
+                [ 
+            let navigator
+                _ React.useMemo
+                    => 
+                        :return
+                            :ref Navigator
+                        return 
+                            { 
+                                @ createHref router.createHref
+                                @ encodeLocation router.encodeLocation
+                                @ go
+                                    => 
+                                        param n
+                                        _ router.navigate(n)
+                                @ push
+                                    => 
+                                        param to
+                                        param state
+                                        param opts
+                                        _ router.navigate
+                                            @ to
+                                            { 
+                                                @ state
+                                                @ preventScrollReset opts?.preventScrollReset
+                                @ replace
+                                    => 
+                                        param to
+                                        param state
+                                        param opts
+                                        _ router.navigate
+                                            @ to
+                                            { 
+                                                @ replace true
+                                                @ state
+                                                @ preventScrollReset opts?.preventScrollReset
+                    [ 
+                        @ router
+            let basename = router.basename || "/"
+            let dataRouterContext
+                _ React.useMemo
+                    => 
+                        (
+                            { 
+                                @ router
+                                @ navigator
+                                @ static false
+                                @ basename
+                    [ 
+                        @ router
+                        @ navigator
+                        @ basename
+                # The fragment and {null} here are important!  We need them to keep React 18's
+                # useId happy when we are server-rendering since we may have a <script> here
+                # containing the hydrated server-side staticContext (from StaticRouterProvider).
+                # useId relies on the component tree structure to generate deterministic id's
+                # so we need to ensure it remains the same on the client even though
+                # we don't need the <script> tag
+            return 
+                < React.Fragment
+                    < DataRouterContext.Provider 
+                        @ value {dataRouterContext}
+                        < DataRouterStateContext.Provider 
+                            @ value {state}
+                            < Router 
+                                @ basename {basename}
+                                @ location {state.location}
+                                @ navigationType {state.historyAction}
+                                @ navigator {navigator}
+                                @ future
+                                    { 
+                                        @ v7_relativeSplatPath router.future.v7_relativeSplatPath
+                                { 
+                                    iif state.initialized || router.future.v7_partialHydration
+                                        then
+                                            < DataRoutes 
+                                                @ routes {router.routes}
+                                                @ future {router.future}
+                                                @ state {state}
+                                        else fallbackElement
+                    + {null}
+                # The fragment and {null} here are important!  We need them to keep React 18's
+                # useId happy when we are server-rendering since we may have a <script> here
+                # containing the hydrated server-side staticContext (from StaticRouterProvider).
+                # useId relies on the component tree structure to generate deterministic id's
+                # so we need to ensure it remains the same on the client even though
+                # we don't need the <script> tag
+        #
+            # *
+            # * Given a Remix Router instance, render the appropriate UI
+            # 
+    function DataRoutes
+        { 
+            @ routes
+            @ future
+            @ state
+            :{ 
+                :p routes
+                    :[ 
+                        :ref DataRouteObject
+                :p future
+                    :[] 
+                        :ref RemixRouter
+                        :literal "future"
+                :p state
+                    :ref RouterState
+        :return
+            :union 
+                :ref React.ReactElement
+                :null 
+        return useRoutesImpl(routes, undefined, state, future)
+    export 
+        :interface MemoryRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p initialEntries
+                :optional 
+                :[ 
+                    :ref InitialEntry
+            :p initialIndex
+                :optional 
+                :number 
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref FutureConfig
+        #
+            # *
+            # * A `<Router>` that stores all entries in memory.
+            # *
+            # * @see https://reactrouter.com/router-components/memory-router
+            # 
+    export 
+        function MemoryRouter
+            { 
+                @ basename
+                @ children
+                @ initialEntries
+                @ initialIndex
+                @ future
+                :ref MemoryRouterProps
+            :return
+                :ref React.ReactElement
+            let historyRef
+                _ React.useRef
+                    :param 
+                        :ref MemoryHistory
+            if historyRef.current == null
+                set historyRef.current =
+                    _ createMemoryHistory
+                        { 
+                            @ initialEntries
+                            @ initialIndex
+                            @ v5Compat true
+            let history = historyRef.current
+            let [state, setStateImpl]
+                _ React.useState
+                    { 
+                        @ action history.action
+                        @ location history.location
+            let 
+                { 
+                    @ v7_startTransition
+                =
+                    || 
+                        + future
+                        { 
+            let setState
+                _ React.useCallback
+                    => 
+                        param newState
+                            :{ 
+                                :p action
+                                    :ref NavigationType
+                                :p location
+                                    :ref Location
+                        iif v7_startTransition && startTransitionImpl
+                            then
+                                _ startTransitionImpl
+                                    => 
+                                        _ setStateImpl(newState)
+                            else setStateImpl(newState)
+                    [ 
+                        @ setStateImpl
+                        @ v7_startTransition
+            _ React.useLayoutEffect
+                => 
+                    _ history.listen(setState)
+                [ 
+                    @ history
+                    @ setState
+            return 
+                < Router 
+                    @ basename {basename}
+                    @ children {children}
+                    @ location {state.location}
+                    @ navigationType {state.action}
+                    @ navigator {history}
+                    @ future {future}
+        #
+            # *
+            # * A `<Router>` that stores all entries in memory.
+            # *
+            # * @see https://reactrouter.com/router-components/memory-router
+            # 
+    export 
+        :interface NavigateProps
+            :p to
+                :ref To
+            :p replace
+                :optional 
+                :boolean 
+            :p state
+                :optional 
+                :any 
+            :p relative
+                :optional 
+                :ref RelativeRoutingType
+        #
+            # *
+            # * Changes the current location.
+            # *
+            # * Note: This API is mostly useful in React.Component subclasses that are not
+            # * able to use hooks. In functional components, we recommend you use the
+            # * `useNavigate` hook instead.
+            # *
+            # * @see https://reactrouter.com/components/navigate
+            # 
+    export 
+        function Navigate
+            { 
+                @ to
+                @ replace
+                @ state
+                @ relative
+                :ref NavigateProps
+            :return
+                :null 
+            _ invariant
+                _ useInRouterContext()
+                `lit 
+                    + <Navigate> may be used only in the context of a <Router> component.
+                    # TODO: This error is probably because they somehow have 2 versions of
+                    # the router loaded. We can help them understand how to avoid that.
+            let 
+                { 
+                    @ future
+                    @ static isStatic
+                = React.useContext(NavigationContext)
+            _ warning
+                op! isStatic
+                op+ 
+                    op+ 
+                        `lit 
+                            + <Navigate> must not be used on the initial render in a <StaticRouter>.&nbsp;
+                        `lit 
+                            + This is a no-op, but you should modify your code so the <Navigate> is&nbsp;
+                    `lit 
+                        + only ever rendered in response to some user interaction or state change.
+            let 
+                { 
+                    @ matches
+                = React.useContext(RouteContext)
+            let 
+                { 
+                    @ pathname locationPathname
+                = useLocation()
+            let navigate = useNavigate()
+                # Resolve the path outside of the effect so that when effects run twice in
+                # StrictMode they navigate to the same place
+            let path = resolveTo(to, getResolveToMatches(matches, future.v7_relativeSplatPath), locationPathname, relative === "path")
+                # Resolve the path outside of the effect so that when effects run twice in
+                # StrictMode they navigate to the same place
+            let jsonPath = JSON.stringify(path)
+            _ React.useEffect
+                => 
+                    _ navigate
+                        _ JSON.parse(jsonPath)
+                        { 
+                            @ replace
+                            @ state
+                            @ relative
+                [ 
+                    @ navigate
+                    @ jsonPath
+                    @ relative
+                    @ replace
+                    @ state
+            return null
+        #
+            # *
+            # * Changes the current location.
+            # *
+            # * Note: This API is mostly useful in React.Component subclasses that are not
+            # * able to use hooks. In functional components, we recommend you use the
+            # * `useNavigate` hook instead.
+            # *
+            # * @see https://reactrouter.com/components/navigate
+            # 
+    export 
+        :interface OutletProps
+            :p context
+                :optional 
+                :unknown 
+        #
+            # *
+            # * Renders the child route's element, if there is one.
+            # *
+            # * @see https://reactrouter.com/components/outlet
+            # 
+    export 
+        function Outlet
+            param props
+                :ref OutletProps
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            return useOutlet(props.context)
+        #
+            # *
+            # * Renders the child route's element, if there is one.
+            # *
+            # * @see https://reactrouter.com/components/outlet
+            # 
+    export 
+        :interface PathRouteProps
+            :p caseSensitive
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "caseSensitive"
+            :p path
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "path"
+            :p id
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "id"
+            :p lazy
+                :optional 
+                :ref LazyRouteFunction
+                    :param 
+                        :ref NonIndexRouteObject
+            :p loader
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "loader"
+            :p action
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "action"
+            :p hasErrorBoundary
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "hasErrorBoundary"
+            :p shouldRevalidate
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "shouldRevalidate"
+            :p handle
+                :optional 
+                :[] 
+                    :ref NonIndexRouteObject
+                    :literal "handle"
+            :p index
+                :optional 
+                :literal false
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p element
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p hydrateFallbackElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p errorElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p Component
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p HydrateFallback
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p ErrorBoundary
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+    export 
+        :interface LayoutRouteProps
+            :extends PathRouteProps
+    export 
+        :interface IndexRouteProps
+            :p caseSensitive
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "caseSensitive"
+            :p path
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "path"
+            :p id
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "id"
+            :p lazy
+                :optional 
+                :ref LazyRouteFunction
+                    :param 
+                        :ref IndexRouteObject
+            :p loader
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "loader"
+            :p action
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "action"
+            :p hasErrorBoundary
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "hasErrorBoundary"
+            :p shouldRevalidate
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "shouldRevalidate"
+            :p handle
+                :optional 
+                :[] 
+                    :ref IndexRouteObject
+                    :literal "handle"
+            :p index
+                :literal true
+            :p children
+                :optional 
+                :undefined 
+            :p element
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p hydrateFallbackElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p errorElement
+                :optional 
+                :union 
+                    :ref React.ReactNode
+                    :null 
+            :p Component
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p HydrateFallback
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+            :p ErrorBoundary
+                :optional 
+                :union 
+                    :ref React.ComponentType
+                    :null 
+    export 
+        :type RouteProps
+            :union 
+                :ref PathRouteProps
+                :ref LayoutRouteProps
+                :ref IndexRouteProps
+        #
+            # *
+            # * Declares an element that should be rendered at a certain URL path.
+            # *
+            # * @see https://reactrouter.com/components/route
+            # 
+    export 
+        function Route
+            param _props
+                :ref RouteProps
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            _ invariant
+                @ false
+                op+ 
+                    `lit 
+                        + A <Route> is only ever to be used as the child of <Routes> element,&nbsp;
+                    `lit 
+                        + never rendered directly. Please wrap your <Route> in a <Routes>.
+        #
+            # *
+            # * Declares an element that should be rendered at a certain URL path.
+            # *
+            # * @see https://reactrouter.com/components/route
+            # 
+    export 
+        :interface RouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p location
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+            :p navigationType
+                :optional 
+                :ref NavigationType
+            :p navigator
+                :ref Navigator
+            :p static
+                :optional 
+                :boolean 
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref Pick
+                            :param 
+                                :ref FutureConfig
+                            :param 
+                                :literal "v7_relativeSplatPath"
+        #
+            # *
+            # * Provides location context for the rest of the app.
+            # *
+            # * Note: You usually won't render a `<Router>` directly. Instead, you'll render a
+            # * router that is more specific to your environment such as a `<BrowserRouter>`
+            # * in web browsers or a `<StaticRouter>` for server rendering.
+            # *
+            # * @see https://reactrouter.com/router-components/router
+            # 
+    export 
+        function Router
+            { 
+                @ basename
+                    = "/"
+                @ children
+                    = null
+                @ location locationProp
+                @ navigationType
+                    = NavigationType.Pop
+                @ navigator
+                @ static
+                    = false
+                @ future
+                :ref RouterProps
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            _ invariant
+                op! useInRouterContext()
+                op+ 
+                    `lit 
+                        + You cannot render a <Router> inside another <Router>.
+                    `lit 
+                        + &nbsp;You should never have more than one in your app.
+                # Preserve trailing slashes on basename, so we can let the user control
+                # the enforcement of trailing slashes throughout the app
+            let basename = basenameProp.replace(/^\/*/, "/")
+                # Preserve trailing slashes on basename, so we can let the user control
+                # the enforcement of trailing slashes throughout the app
+            let navigationContext
+                _ React.useMemo
+                    => 
+                        (
+                            { 
+                                @ basename
+                                @ navigator
+                                @ static staticProp
+                                { future
+                                    @ v7_relativeSplatPath false
+                                    @ ...future
+                    [ 
+                        @ basename
+                        @ future
+                        @ navigator
+                        @ staticProp
+            if typeof locationProp === "string"
+                set locationProp = parsePath(locationProp)
+            let 
+                { 
+                    @ pathname
+                        = "/"
+                    @ search
+                        = ""
+                    @ hash
+                        = ""
+                    @ state
+                        = null
+                    @ key
+                        = "default"
+                = locationProp
+            let locationContext
+                _ React.useMemo
+                    => 
+                        let trailingPathname = stripBasename(pathname, basename)
+                        if trailingPathname == null
+                            return null
+                        return 
+                            { 
+                                { location
+                                    @ pathname trailingPathname
+                                    @ search
+                                    @ hash
+                                    @ state
+                                    @ key
+                                @ navigationType
+                    [ 
+                        @ basename
+                        @ pathname
+                        @ search
+                        @ hash
+                        @ state
+                        @ key
+                        @ navigationType
+            _ warning
+                set locationContext != null
+                op+ 
+                    op+ 
+                        `lit 
+                            + <Router basename="
+                            @ basename
+                            + "> is not able to match the URL&nbsp;
+                        `lit 
+                            + "
+                            @ pathname
+                            + 
+                            @ search
+                            + 
+                            @ hash
+                            + " because it does not start with the&nbsp;
+                    `lit 
+                        + basename, so the <Router> won't render anything.
+            if locationContext == null
+                return null
+            return 
+                < NavigationContext.Provider 
+                    @ value {navigationContext}
+                    < LocationContext.Provider 
+                        @ children {children}
+                        @ value {locationContext}
+        #
+            # *
+            # * Provides location context for the rest of the app.
+            # *
+            # * Note: You usually won't render a `<Router>` directly. Instead, you'll render a
+            # * router that is more specific to your environment such as a `<BrowserRouter>`
+            # * in web browsers or a `<StaticRouter>` for server rendering.
+            # *
+            # * @see https://reactrouter.com/router-components/router
+            # 
+    export 
+        :interface RoutesProps
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p location
+                :optional 
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+        #
+            # *
+            # * A container for a nested tree of `<Route>` elements that renders the branch
+            # * that best matches the current location.
+            # *
+            # * @see https://reactrouter.com/components/routes
+            # 
+    export 
+        function Routes
+            { 
+                @ children
+                @ location
+                :ref RoutesProps
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            return useRoutes(createRoutesFromChildren(children), location)
+        #
+            # *
+            # * A container for a nested tree of `<Route>` elements that renders the branch
+            # * that best matches the current location.
+            # *
+            # * @see https://reactrouter.com/components/routes
+            # 
+    export 
+        :interface AwaitResolveRenderFunction
+            :call 
+                :ref React.ReactNode
+                param data
+                    :ref Awaited
+                        :param any
+    export 
+        :interface AwaitProps
+            :p children
+                :union 
+                    :ref React.ReactNode
+                    :ref AwaitResolveRenderFunction
+            :p errorElement
+                :optional 
+                :ref React.ReactNode
+            :p resolve
+                :union 
+                    :ref TrackedPromise
+                    :any 
+        #
+            # *
+            # * Component to use for rendering lazily loaded data from returning defer()
+            # * in a loader function
+            # 
+    export 
+        function Await
+            { 
+                @ children
+                @ errorElement
+                @ resolve
+                :ref AwaitProps
+            return 
+                < AwaitErrorBoundary 
+                    @ resolve {resolve}
+                    @ errorElement {errorElement}
+                    < ResolveAwait 
+                        + {children}
+        #
+            # *
+            # * Component to use for rendering lazily loaded data from returning defer()
+            # * in a loader function
+            # 
+    :type AwaitErrorBoundaryProps
+        :ref React.PropsWithChildren
+            :param 
+                :{ 
+                    :p errorElement
+                        :optional 
+                        :ref React.ReactNode
+                    :p resolve
+                        :union 
+                            :ref TrackedPromise
+                            :any 
+    :type AwaitErrorBoundaryState
+        :{ 
+            :p error
+                :any 
+    :enum AwaitRenderStatus
+        @ pending
+        @ success
+        @ error
+    const neverSettledPromise
+        new Promise
+            => 
+    class AwaitErrorBoundary
+        super React.Component
+            :param 
+                :ref AwaitErrorBoundaryProps
+            :param 
+                :ref AwaitErrorBoundaryState
+        ctor 
+            param props
+                :ref AwaitErrorBoundaryProps
+            _ super(props)
+            set this.state =
+                { 
+                    @ error null
+        m getDerivedStateFromError
+            static
+            param error
+                :any 
+            return 
+                { 
+                    @ error
+        m componentDidCatch
+            param error
+                :any 
+            param errorInfo
+                :any 
+            _ console.error("<Await> caught the following error during render", error, errorInfo)
+        m render
+            let 
+                { 
+                    @ children
+                    @ errorElement
+                    @ resolve
+                = this.props
+            let promise
+                :union 
+                    :ref TrackedPromise
+                    :null 
+                = null
+            let status
+                :ref AwaitRenderStatus
+                = AwaitRenderStatus.pending
+            if !(resolve instanceof Promise)
+                set status = AwaitRenderStatus.success
+                    # Didn't get a promise - provide as a resolved promise
+                set promise = Promise.resolve()
+                _ Object.defineProperty
+                    @ promise
+                    @ "_tracked"
+                    { 
+                        @ get
+                            => 
+                                + true
+                _ Object.defineProperty
+                    @ promise
+                    @ "_data"
+                    { 
+                        @ get
+                            => 
+                                + resolve
+            else
+                if this.state.error
+                    set status = AwaitRenderStatus.error
+                        # Caught a render error, provide it as a rejected promise
+                    let renderError = this.state.error
+                    set promise =
+                        _ Promise.reject().catch
+                            => 
+                        # Avoid unhandled rejection warnings
+                    _ Object.defineProperty
+                        @ promise
+                        @ "_tracked"
+                        { 
+                            @ get
+                                => 
+                                    + true
+                        # Avoid unhandled rejection warnings
+                    _ Object.defineProperty
+                        @ promise
+                        @ "_error"
+                        { 
+                            @ get
+                                => 
+                                    + renderError
+                else
+                    if 
+                        test
+                            @expr 
+                                ( 
+                                    + resolve
+                                        :as 
+                                            :ref TrackedPromise
+                                . _tracked
+                        set promise = resolve
+                            # Already tracked promise - check contents
+                        set status =
+                            iif promise._error !== undefined
+                                then AwaitRenderStatus.error
+                                else
+                                    iif promise._data !== undefined
+                                        then AwaitRenderStatus.success
+                                        else AwaitRenderStatus.pending
+                    else
+                        set status = AwaitRenderStatus.pending
+                            # Raw (untracked) promise - track it
+                        _ Object.defineProperty
+                            @ resolve
+                            @ "_tracked"
+                            { 
+                                @ get
+                                    => 
+                                        + true
+                        set promise =
+                            _ resolve.then
+                                => 
+                                    param data
+                                        :any 
+                                    _ Object.defineProperty
+                                        @ resolve
+                                        @ "_data"
+                                        { 
+                                            @ get
+                                                => 
+                                                    + data
+                                => 
+                                    param error
+                                        :any 
+                                    _ Object.defineProperty
+                                        @ resolve
+                                        @ "_error"
+                                        { 
+                                            @ get
+                                                => 
+                                                    + error
+            if status === AwaitRenderStatus.error && promise._error instanceof AbortedDeferredError
+                throw neverSettledPromise
+                    # Freeze the UI by throwing a never resolved promise
+            if status === AwaitRenderStatus.error && !errorElement
+                throw promise._error
+                    # No errorElement, throw to the nearest route-level error boundary
+            if status === AwaitRenderStatus.error
+                return 
+                    < AwaitContext.Provider 
+                        @ value {promise}
+                        @ children {errorElement}
+                    # Render via our errorElement
+            if status === AwaitRenderStatus.success
+                return 
+                    < AwaitContext.Provider 
+                        @ value {promise}
+                        @ children {children}
+                    # Render children with resolved value
+            throw promise
+                # Throw to the suspense boundary
+        #
+            # *
+            # * @private
+            # * Indirection to leverage useAsyncValue for a render-prop API on `<Await>`
+            # 
+    function ResolveAwait
+        { 
+            @ children
+            :{ 
+                :p children
+                    :union 
+                        :ref React.ReactNode
+                        :ref AwaitResolveRenderFunction
+        let data = useAsyncValue()
+        let toRender
+            iif typeof children === "function"
+                then children(data)
+                else children
+        return 
+            < React.Fragment
+                + {toRender}
+        #
+            # *
+            # * @private
+            # * Indirection to leverage useAsyncValue for a render-prop API on `<Await>`
+            # 
+        # /////////////////////////////////////////////////////////////////////////////
+        # UTILS
+        # /////////////////////////////////////////////////////////////////////////////
+        #
+            # *
+            # * Creates a route config from a React "children" object, which is usually
+            # * either a `<Route>` element or an array of them. Used internally by
+            # * `<Routes>` to create a route config from its children.
+            # *
+            # * @see https://reactrouter.com/utils/create-routes-from-children
+            # 
+    export 
+        function createRoutesFromChildren
+            param children
+                :ref React.ReactNode
+            param parentPath
+                :[ 
+                    :number 
+                = 
+            :return
+                :[ 
+                    :ref RouteObject
+            let routes
+                :[ 
+                    :ref RouteObject
+                = []
+            _ React.Children.forEach
+                @ children
+                => 
+                    param element
+                    param index
+                    if !React.isValidElement(element)
+                        return 
+                            # Ignore non-elements. This allows people to more easily inline
+                            # conditionals in their route config.
+                    let treePath
+                        [ 
+                            @ ...parentPath
+                            @ index
+                    if element.type === React.Fragment
+                        _ routes.push.apply(routes, createRoutesFromChildren(element.props.children, treePath))
+                            # Transparently support React.Fragment and its children.
+                        return 
+                    _ invariant
+                        set element.type === Route
+                        `lit 
+                            + [
+                            iif typeof element.type === "string"
+                                then element.type
+                                else element.type.name
+                            + ] is not a <Route> component. All component children of <Routes> must be a <Route> or <React.Fragment>
+                    _ invariant(!element.props.index || !element.props.children, "An index route cannot have child routes.")
+                    let route
+                        :ref RouteObject
+                        =
+                            { 
+                                @ id element.props.id || treePath.join("-")
+                                @ caseSensitive element.props.caseSensitive
+                                @ element element.props.element
+                                @ Component element.props.Component
+                                @ index element.props.index
+                                @ path element.props.path
+                                @ loader element.props.loader
+                                @ action element.props.action
+                                @ errorElement element.props.errorElement
+                                @ ErrorBoundary element.props.ErrorBoundary
+                                @ hasErrorBoundary element.props.ErrorBoundary != null || element.props.errorElement != null
+                                @ shouldRevalidate element.props.shouldRevalidate
+                                @ handle element.props.handle
+                                @ lazy element.props.lazy
+                    if element.props.children
+                        set route.children = createRoutesFromChildren(element.props.children, treePath)
+                    _ routes.push(route)
+            return routes
+        # /////////////////////////////////////////////////////////////////////////////
+        # UTILS
+        # /////////////////////////////////////////////////////////////////////////////
+        #
+            # *
+            # * Creates a route config from a React "children" object, which is usually
+            # * either a `<Route>` element or an array of them. Used internally by
+            # * `<Routes>` to create a route config from its children.
+            # *
+            # * @see https://reactrouter.com/utils/create-routes-from-children
+            # 
+        #
+            # *
+            # * Renders the result of `matchRoutes()` into a React element.
+            # 
+    export 
+        function renderMatches
+            param matches
+                :union 
+                    :[ 
+                        :ref RouteMatch
+                    :null 
+            :return
+                :union 
+                    :ref React.ReactElement
+                    :null 
+            return _renderMatches(matches)
+        #
+            # *
+            # * Renders the result of `matchRoutes()` into a React element.
+            # 

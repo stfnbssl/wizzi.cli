@@ -1,0 +1,6 @@
+module
+    kind react
+    if process.env.NODE_ENV === "production"
+        set module.exports = require("./umd/react-router-dom.production.min.js")
+    else
+        set module.exports = require("./umd/react-router-dom.development.js")

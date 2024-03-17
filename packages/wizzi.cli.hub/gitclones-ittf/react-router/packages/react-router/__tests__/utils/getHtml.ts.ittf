@@ -1,0 +1,14 @@
+module
+    import 
+        @ prettyDOM
+        from "@testing-library/react"
+    export-default 
+        function getHtml
+            param container
+                :ref HTMLElement
+            return 
+                _ prettyDOM
+                    @ container
+                    @ undefined
+                    { 
+                        @ highlight false

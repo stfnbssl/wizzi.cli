@@ -1,0 +1,228 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom/client"
+    import 
+        @ act
+        from "react-dom/test-utils"
+    :import-type 
+        @ LinkProps
+        from "react-router-dom"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useHref
+        @ useLinkClickHandler
+        from "react-router-dom"
+    function CustomLink
+        { 
+            @ to
+            @ replace
+            @ state
+            @ target
+            ... rest
+            :ref LinkProps
+        let href = useHref(to)
+        let handleClick
+            _ useLinkClickHandler
+                @ to
+                { 
+                    @ target
+                    @ replace
+                    @ state
+        return 
+            a 
+                @ {...rest}
+                @ href {href}
+                @ onClick {handleClick}
+                @ target {target}
+                # eslint-disable-next-line jsx-a11y/anchor-has-content
+    _ describe
+        @ "Custom link with useLinkClickHandler"
+        => 
+            let node
+                :ref HTMLDivElement
+            _ beforeEach
+                => 
+                    set node = document.createElement("div")
+                    _ document.body.appendChild(node)
+            _ afterEach
+                => 
+                    _ document.body.removeChild(node)
+                    set node =
+                        :! null
+            _ it
+                @ "navigates to the new page"
+                => 
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/home"
+                                    < Routes 
+                                        < Route 
+                                            @ path "home"
+                                            @ element
+                                                div 
+                                                    h1 
+                                                        + Home
+                                                    < CustomLink 
+                                                        @ to "../about"
+                                                        + About
+                                        < Route 
+                                            @ path "about"
+                                            @ element
+                                                h1 
+                                                    + About
+                    let anchor = node.querySelector("a")
+                    _ expect(anchor).not.toBeNull()
+                    _ act
+                        => 
+                            _ anchor?.dispatchEvent?.
+                                new MouseEvent
+                                    @ "click"
+                                    { 
+                                        @ view window
+                                        @ bubbles true
+                                        @ cancelable true
+                    let h1 = node.querySelector("h1")
+                    _ expect(h1).not.toBeNull()
+                    _ expect(h1?.textContent).toEqual("About")
+            _ describe
+                @ "with a right click"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        div 
+                                                            h1 
+                                                                + Home
+                                                            < CustomLink 
+                                                                @ to "../about"
+                                                                + About
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    let RightMouseButton = 2
+                                        # https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+                                    _ anchor?.dispatchEvent?.
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                                                @ button RightMouseButton
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")
+            _ describe
+                @ "when the link is supposed to open in a new window"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        div 
+                                                            h1 
+                                                                + Home
+                                                            < CustomLink 
+                                                                @ to "../about"
+                                                                @ target "_blank"
+                                                                + About
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    _ anchor?.dispatchEvent?.
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")
+            _ describe
+                @ "when the modifier keys are used"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        div 
+                                                            h1 
+                                                                + Home
+                                                            < CustomLink 
+                                                                @ to "../about"
+                                                                + About
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    _ anchor?.dispatchEvent?.
+                                        new MouseEvent
+                                            @ "click"
+                                            { 
+                                                @ view window
+                                                @ bubbles true
+                                                @ cancelable true
+                                                @ ctrlKey true
+                                                    # The Ctrl key is pressed
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")

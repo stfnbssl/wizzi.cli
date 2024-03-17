@@ -1,0 +1,1232 @@
+module
+    import 
+        @ createMemoryHistory
+        @ createRouter
+        @ redirect
+        from "../index"
+    :import-type 
+        @ ShouldRevalidateFunctionArgs
+        from "../utils"
+    import 
+        @ urlMatch
+        from "./utils/custom-matchers"
+    import 
+        @ cleanup
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        @ tick
+        from "./utils/utils"
+    :interface CustomMatchers
+        :m urlMatch
+            param url
+                :string 
+    :declare 
+        :module global
+            :module jest
+                :interface Expect
+                    :extends CustomMatchers
+                :interface Matchers
+                    :extends CustomMatchers
+                :interface InverseAsymmetricMatchers
+                    :extends CustomMatchers
+    _ expect.extend
+        { 
+            @ urlMatch
+    _ describe
+        @ "shouldRevalidate"
+        => 
+            _ afterEach
+                => 
+                    _ cleanup()
+            _ it
+                @ "provides a default implementation"
+                async=> 
+                    let rootLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                + "ROOT"
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ loader
+                                            async=> 
+                                                param ...args
+                                                _ rootLoader(...args)
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                            { 
+                                                @ path "/child"
+                                                @ action
+                                                    async=> 
+                                                        + null
+                                            { 
+                                                @ path "/redirect"
+                                                @ action
+                                                    async=> 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 301
+                                                                { headers
+                                                                    @ location "/"
+                                            { 
+                                                @ path "/cookie"
+                                                @ loader
+                                                    async=> 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 301
+                                                                { headers
+                                                                    @ location "/"
+                                                                    @ "X-Remix-Revalidate" "1"
+                    _ router.initialize()
+                        # Initial load - no existing data, should always call loader
+                    await 
+                        _ tick()
+                        # Initial load - no existing data, should always call loader
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should not re-run on normal navigations re-using the loader
+                    _ router.navigate("/child")
+                        # Should not re-run on normal navigations re-using the loader
+                    await 
+                        _ tick()
+                    _ router.navigate("/")
+                    await 
+                        _ tick()
+                    _ router.navigate("/child")
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(0)
+                    _ rootLoader.mockClear()
+                        # Should call on same-path navigations
+                    _ router.navigate("/child")
+                        # Should call on same-path navigations
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call on query string changes
+                    _ router.navigate("/child?key=value")
+                        # Should call on query string changes
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after form submission revalidation
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                        # Should call after form submission revalidation
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after form submission redirect
+                    _ router.navigate
+                        @ "/redirect"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                        # Should call after form submission redirect
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after loader redirect with X-Remix-Revalidate
+                    _ router.navigate("/cookie")
+                        # Should call after loader redirect with X-Remix-Revalidate
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                    _ router.dispose()
+            _ it
+                @ "delegates to the route if it should reload or not"
+                async=> 
+                    let rootLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                + "ROOT"
+                    let childLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                + "CHILD"
+                    let paramsLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                + "PARAMS"
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                param args
+                                + false
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        @ loader
+                                            async=> 
+                                                param ...args
+                                                _ rootLoader(...args)
+                                        @ shouldRevalidate
+                                            => 
+                                                param args
+                                                set shouldRevalidate(args) === true
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                            { 
+                                                @ path "/child"
+                                                @ id "child"
+                                                @ loader
+                                                    async=> 
+                                                        param ...args
+                                                        _ childLoader(...args)
+                                                @ action
+                                                    async=> 
+                                                        (
+                                                            { 
+                                                                @ ok false
+                                            { 
+                                                @ path "/params/:a/:b"
+                                                @ id "params"
+                                                @ loader
+                                                    async=> 
+                                                        param ...args
+                                                        _ paramsLoader(...args)
+                    _ router.initialize()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    await 
+                        _ tick()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(0)
+                    _ rootLoader.mockClear()
+                    _ shouldRevalidate.mockClear()
+                        # Should not re-run on normal navigations re-using the loader
+                    _ router.navigate("/child")
+                        # Should not re-run on normal navigations re-using the loader
+                    await 
+                        _ tick()
+                    _ router.navigate("/")
+                    await 
+                        _ tick()
+                    _ router.navigate("/child")
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(0)
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(3)
+                    _ rootLoader.mockClear()
+                    _ shouldRevalidate.mockClear()
+                        # Check that we pass the right args to shouldRevalidate and respect it's answer
+                    _ shouldRevalidate.mockImplementation
+                        => 
+                            + true
+                        # Check that we pass the right args to shouldRevalidate and respect it's answer
+                    _ router.navigate("/params/aValue/bValue")
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    let expectedArg
+                        :ref ShouldRevalidateFunctionArgs
+                        =
+                            { 
+                                { currentParams
+                                @ currentUrl expect.urlMatch("http://localhost/child")
+                                { nextParams
+                                    @ a "aValue"
+                                    @ b "bValue"
+                                @ nextUrl expect.urlMatch("http://localhost/params/aValue/bValue")
+                                @ defaultShouldRevalidate false
+                                @ actionResult undefined
+                    _ expect(shouldRevalidate.mock.calls[0][0]).toMatchObject(expectedArg)
+                    _ rootLoader.mockClear()
+                    _ shouldRevalidate.mockClear()
+                        # On actions we send along the action result
+                    _ shouldRevalidate.mockImplementation
+                        => 
+                            { 
+                                @ actionResult
+                            set actionResult.ok === true
+                        # On actions we send along the action result
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(0)
+                    _ router.dispose()
+            _ it
+                @ "includes submissions on actions that return data"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                + true
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/child"
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + "ROOT"
+                                        @ shouldRevalidate
+                                        [ children
+                                            { 
+                                                @ path "child"
+                                                @ id "child"
+                                                @ loader
+                                                    => 
+                                                        + "CHILD"
+                                                @ action
+                                                    => 
+                                                        + "ACTION"
+                    _ router.initialize()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    await 
+                        _ tick()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                        # @ts-expect-error
+                    let expectedArg
+                        :ref ShouldRevalidateFunctionArgs
+                        =
+                            { 
+                                { currentParams
+                                @ currentUrl expect.urlMatch("http://localhost/child")
+                                { nextParams
+                                @ nextUrl expect.urlMatch("http://localhost/child")
+                                @ defaultShouldRevalidate true
+                                @ formMethod "post"
+                                @ formAction "/child"
+                                @ formEncType "application/x-www-form-urlencoded"
+                                @ actionResult "ACTION"
+                    _ expect(arg).toMatchObject(expectedArg)
+                        # @ts-expect-error
+                    _ expect(Object.fromEntries(arg.formData)).toEqual
+                        { 
+                            @ key "value"
+                        # @ts-expect-error
+                    _ router.dispose()
+            _ it
+                @ "includes submission on actions that return redirects"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                + true
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/child"
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + "ROOT"
+                                        @ shouldRevalidate
+                                        [ children
+                                            { 
+                                                @ path "child"
+                                                @ id "child"
+                                                @ loader
+                                                    => 
+                                                        + "CHILD"
+                                                @ action
+                                                    => 
+                                                        _ redirect("/")
+                    _ router.initialize()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    await 
+                        _ tick()
+                        # Initial load - no existing data, should always call loader and should
+                        # not give use ability to opt-out
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                        # @ts-expect-error
+                    let expectedArg
+                        :ref ShouldRevalidateFunctionArgs
+                        =
+                            { 
+                                { currentParams
+                                @ currentUrl expect.urlMatch("http://localhost/child")
+                                { nextParams
+                                @ nextUrl expect.urlMatch("http://localhost/")
+                                @ defaultShouldRevalidate true
+                                @ formMethod "post"
+                                @ formAction "/child"
+                                @ formEncType "application/x-www-form-urlencoded"
+                                @ actionResult undefined
+                    _ expect(arg).toMatchObject(expectedArg)
+                        # @ts-expect-error
+                    _ expect(Object.fromEntries(arg.formData)).toEqual
+                        { 
+                            @ key "value"
+                        # @ts-expect-error
+                    _ router.dispose()
+            _ it
+                @ "includes json submissions"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                + true
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + "ROOT*"
+                                        @ action
+                                            => 
+                                                + "ACTION"
+                                        @ shouldRevalidate
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT"
+                            ._ initialize
+                    await 
+                        _ tick()
+                    _ router.navigate
+                        @ null
+                        { 
+                            @ formMethod "post"
+                            @ formEncType "application/json"
+                            { body
+                                @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                        # @ts-expect-error
+                    let expectedArg
+                        :ref Partial
+                            :param 
+                                :ref ShouldRevalidateFunctionArgs
+                        =
+                            { 
+                                @ formMethod "post"
+                                @ formAction "/"
+                                @ formEncType "application/json"
+                                @ text undefined
+                                @ formData undefined
+                                { json
+                                    @ key "value"
+                                @ actionResult "ACTION"
+                    _ expect(arg).toMatchObject(expectedArg)
+                    _ router.dispose()
+            _ it
+                @ "includes text submissions"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                + true
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + "ROOT*"
+                                        @ action
+                                            => 
+                                                + "ACTION"
+                                        @ shouldRevalidate
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT"
+                            ._ initialize
+                    await 
+                        _ tick()
+                    _ router.navigate
+                        @ null
+                        { 
+                            @ formMethod "post"
+                            @ formEncType "text/plain"
+                            @ body "hello world"
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(1)
+                        # @ts-expect-error
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                        # @ts-expect-error
+                    let expectedArg
+                        :ref Partial
+                            :param 
+                                :ref ShouldRevalidateFunctionArgs
+                        =
+                            { 
+                                @ formMethod "post"
+                                @ formAction "/"
+                                @ formEncType "text/plain"
+                                @ text "hello world"
+                                @ formData undefined
+                                @ json undefined
+                                @ actionResult "ACTION"
+                    _ expect(arg).toMatchObject(expectedArg)
+                    _ router.dispose()
+            _ it
+                @ "provides the default implementation to the route function"
+                async=> 
+                    let rootLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                + "ROOT"
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ loader
+                                            async=> 
+                                                param ...args
+                                                _ rootLoader(...args)
+                                        @ shouldRevalidate
+                                            => 
+                                                { 
+                                                    @ defaultShouldRevalidate
+                                                + defaultShouldRevalidate
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                            { 
+                                                @ path "/child"
+                                                @ action
+                                                    async=> 
+                                                        + null
+                                            { 
+                                                @ path "/redirect"
+                                                @ action
+                                                    async=> 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 301
+                                                                { headers
+                                                                    @ location "/"
+                                            { 
+                                                @ path "/cookie"
+                                                @ loader
+                                                    async=> 
+                                                        new Response
+                                                            @ null
+                                                            { 
+                                                                @ status 301
+                                                                { headers
+                                                                    @ location "/"
+                                                                    @ "X-Remix-Revalidate" "1"
+                    _ router.initialize()
+                        # Initial load - no existing data, should always call loader
+                    await 
+                        _ tick()
+                        # Initial load - no existing data, should always call loader
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should not re-run on normal navigations re-using the loader
+                    _ router.navigate("/child")
+                        # Should not re-run on normal navigations re-using the loader
+                    await 
+                        _ tick()
+                    _ router.navigate("/")
+                    await 
+                        _ tick()
+                    _ router.navigate("/child")
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(0)
+                    _ rootLoader.mockClear()
+                        # Should call on same-path navigations
+                    _ router.navigate("/child")
+                        # Should call on same-path navigations
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call on query string changes
+                    _ router.navigate("/child?key=value")
+                        # Should call on query string changes
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after form submission revalidation
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                        # Should call after form submission revalidation
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after form submission redirect
+                    _ router.navigate
+                        @ "/redirect"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ gosh "dang"
+                        # Should call after form submission redirect
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                        # Should call after loader redirect with X-Remix-Revalidate
+                    _ router.navigate("/cookie")
+                        # Should call after loader redirect with X-Remix-Revalidate
+                    await 
+                        _ tick()
+                    _ expect(rootLoader.mock.calls.length).toBe(1)
+                    _ rootLoader.mockClear()
+                    _ router.dispose()
+            _ it
+                @ "applies to fetcher loads"
+                async=> 
+                    let count = 0
+                    let fetchLoader
+                        _ jest.fn
+                            => 
+                                param args
+                                `lit 
+                                    + FETCH&nbsp;
+                                    ++op ++count
+                                    + 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                param args
+                                + false
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                            { 
+                                                @ path "/child"
+                                                @ id "child"
+                                            { 
+                                                @ path "/fetch"
+                                                @ id "fetch"
+                                                @ loader
+                                                    async=> 
+                                                        param ...args
+                                                        _ fetchLoader(...args)
+                                                @ shouldRevalidate
+                                                    => 
+                                                        param args
+                                                        set shouldRevalidate(args) === true
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    let key = "key"
+                    _ router.fetch(key, "root", "/fetch")
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 1"
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(0)
+                        # Normal navigations should trigger fetcher shouldRevalidate with
+                        # defaultShouldRevalidate=false
+                    _ router.navigate("/child")
+                        # Normal navigations should trigger fetcher shouldRevalidate with
+                        # defaultShouldRevalidate=false
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(1)
+                    _ expect(shouldRevalidate.mock.calls[0][0]).toMatchObject
+                        { 
+                            { currentParams
+                            @ currentUrl expect.urlMatch("http://localhost/")
+                            { nextParams
+                            @ nextUrl expect.urlMatch("http://localhost/child")
+                            @ defaultShouldRevalidate false
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 1"
+                    _ router.navigate("/")
+                    await 
+                        _ tick()
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(2)
+                    _ expect(shouldRevalidate.mock.calls[1][0]).toMatchObject
+                        { 
+                            { currentParams
+                            @ currentUrl expect.urlMatch("http://localhost/child")
+                            { nextParams
+                            @ nextUrl expect.urlMatch("http://localhost/")
+                            @ defaultShouldRevalidate false
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 1"
+                        # Submission navigations should trigger fetcher shouldRevalidate with
+                        # defaultShouldRevalidate=true
+                    _ router.navigate
+                        @ "/child"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                        # Submission navigations should trigger fetcher shouldRevalidate with
+                        # defaultShouldRevalidate=true
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 1"
+                    _ expect(shouldRevalidate.mock.calls.length).toBe(3)
+                    _ expect(shouldRevalidate.mock.calls[2][0]).toMatchObject
+                        { 
+                            { currentParams
+                            @ currentUrl expect.urlMatch("http://localhost/")
+                            { nextParams
+                            @ nextUrl expect.urlMatch("http://localhost/child")
+                            @ formAction "/child"
+                            @ formData
+                                _ createFormData
+                                    { 
+                            @ formEncType "application/x-www-form-urlencoded"
+                            @ formMethod "post"
+                            @ defaultShouldRevalidate true
+                    _ router.dispose()
+            _ it
+                @ "applies to fetcher submissions and sends fetcher actionResult through"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                param args
+                                + true
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                                @ loader
+                                                    => 
+                                                        + "INDEX"
+                                                @ shouldRevalidate
+                                            { 
+                                                @ path "/fetch"
+                                                @ id "fetch"
+                                                @ action
+                                                    => 
+                                                        + "FETCH"
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    let key = "key"
+                    _ router.fetch
+                        @ key
+                        @ "root"
+                        @ "/fetch"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH"
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                    _ expect(arg).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     {&lf;
+                            + &nbsp;       "actionResult": "FETCH",&lf;
+                            + &nbsp;       "currentParams": {},&lf;
+                            + &nbsp;       "currentUrl": "http://localhost/",&lf;
+                            + &nbsp;       "defaultShouldRevalidate": true,&lf;
+                            + &nbsp;       "formAction": "/fetch",&lf;
+                            + &nbsp;       "formData": FormData {},&lf;
+                            + &nbsp;       "formEncType": "application/x-www-form-urlencoded",&lf;
+                            + &nbsp;       "formMethod": "post",&lf;
+                            + &nbsp;       "json": undefined,&lf;
+                            + &nbsp;       "nextParams": {},&lf;
+                            + &nbsp;       "nextUrl": "http://localhost/",&lf;
+                            + &nbsp;       "text": undefined,&lf;
+                            + &nbsp;     }&lf;
+                            + &nbsp;  &nbsp;
+                    _ expect(Object.fromEntries(arg.formData)).toEqual
+                        { 
+                            @ key "value"
+                    _ router.dispose()
+            _ it
+                @ "applies to fetcher submissions when action redirects"
+                async=> 
+                    let shouldRevalidate
+                        _ jest.fn
+                            => 
+                                param args
+                                + true
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                                @ loader
+                                                    => 
+                                                        + "INDEX"
+                                                @ shouldRevalidate
+                                            { 
+                                                @ path "/fetch"
+                                                @ id "fetch"
+                                                @ action
+                                                    => 
+                                                        _ redirect("/")
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    let key = "key"
+                    _ router.fetch
+                        @ key
+                        @ "root"
+                        @ "/fetch"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data undefined
+                    let arg = shouldRevalidate.mock.calls[0][0]
+                    _ expect(arg).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     {&lf;
+                            + &nbsp;       "actionResult": undefined,&lf;
+                            + &nbsp;       "currentParams": {},&lf;
+                            + &nbsp;       "currentUrl": "http://localhost/",&lf;
+                            + &nbsp;       "defaultShouldRevalidate": true,&lf;
+                            + &nbsp;       "formAction": "/fetch",&lf;
+                            + &nbsp;       "formData": FormData {},&lf;
+                            + &nbsp;       "formEncType": "application/x-www-form-urlencoded",&lf;
+                            + &nbsp;       "formMethod": "post",&lf;
+                            + &nbsp;       "json": undefined,&lf;
+                            + &nbsp;       "nextParams": {},&lf;
+                            + &nbsp;       "nextUrl": "http://localhost/",&lf;
+                            + &nbsp;       "text": undefined,&lf;
+                            + &nbsp;     }&lf;
+                            + &nbsp;  &nbsp;
+                    _ router.dispose()
+            _ it
+                @ "preserves non-revalidated loaderData on navigations"
+                async=> 
+                    let count = 0
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                `lit 
+                                                    + ROOT&nbsp;
+                                                    ++op ++count
+                                                    + 
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                                @ loader
+                                                    => 
+                                                        param args
+                                                        + "SHOULD NOT GET CALLED"
+                                                @ shouldRevalidate
+                                                    => 
+                                                        + false
+                                { hydrationData
+                                    { loaderData
+                                        @ root "ROOT 0"
+                                        @ index "INDEX"
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                        # Navigating to the same link would normally cause all loaders to re-run
+                    _ router.navigate("/")
+                        # Navigating to the same link would normally cause all loaders to re-run
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root "ROOT 1"
+                            @ index "INDEX"
+                    _ router.navigate("/")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root "ROOT 2"
+                            @ index "INDEX"
+                    _ router.dispose()
+            _ it
+                @ "preserves non-revalidated loaderData on fetches"
+                async=> 
+                    let count = 0
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        [ children
+                                            { 
+                                                @ path "/"
+                                                @ id "index"
+                                                @ loader
+                                                    => 
+                                                        + "SHOULD NOT GET CALLED"
+                                                @ shouldRevalidate
+                                                    => 
+                                                        + false
+                                            { 
+                                                @ path "/fetch"
+                                                @ id "fetch"
+                                                @ action
+                                                    => 
+                                                        `lit 
+                                                            + FETCH&nbsp;
+                                                            ++op ++count
+                                                            + 
+                                { hydrationData
+                                    { loaderData
+                                        @ index "INDEX"
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    let key = "key"
+                    _ router.fetch
+                        @ key
+                        @ "root"
+                        @ "/fetch"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 1"
+                    _ expect(router.state.loaderData).toMatchObject
+                        { 
+                            @ index "INDEX"
+                    _ router.fetch
+                        @ key
+                        @ "root"
+                        @ "/fetch"
+                        { 
+                            @ formMethod "post"
+                            @ formData
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    await 
+                        _ tick()
+                    _ expect(router.state.fetchers.get(key)).toMatchObject
+                        { 
+                            @ state "idle"
+                            @ data "FETCH 2"
+                    _ expect(router.state.loaderData).toMatchObject
+                        { 
+                            @ index "INDEX"
+                    _ router.dispose()
+            _ it
+                @ "requires an explicit false return value to override default true behavior"
+                async=> 
+                    let count = 0
+                    let returnValue = true
+                    let history = createMemoryHistory()
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path ""
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + ++count
+                                        @ shouldRevalidate
+                                            => 
+                                                + returnValue
+                                { hydrationData
+                                    { loaderData
+                                        @ root 0
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                    _ router.revalidate()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 1
+                        # @ts-expect-error
+                    set returnValue = undefined
+                        # @ts-expect-error
+                    _ router.revalidate()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 2
+                        # @ts-expect-error
+                    set returnValue = null
+                        # @ts-expect-error
+                    _ router.revalidate()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 3
+                        # @ts-expect-error
+                    set returnValue = ""
+                        # @ts-expect-error
+                    _ router.revalidate()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 4
+                    set returnValue = false
+                    _ router.revalidate()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 4
+                                # No revalidation
+                    _ router.dispose()
+            _ it
+                @ "requires an explicit true return value to override default false behavior"
+                async=> 
+                    let count = 0
+                    let returnValue = false
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/a"
+                    let router
+                        _ createRouter
+                            { 
+                                @ history
+                                [ routes
+                                    { 
+                                        @ path "/"
+                                        @ id "root"
+                                        @ loader
+                                            => 
+                                                + ++count
+                                        @ shouldRevalidate
+                                            => 
+                                                + returnValue
+                                        [ children
+                                            { 
+                                                @ path "a"
+                                                @ id "a"
+                                            { 
+                                                @ path "b"
+                                                @ id "b"
+                                { hydrationData
+                                    { loaderData
+                                        @ root 0
+                    _ router.initialize()
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                    _ router.navigate("/b")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                        # @ts-expect-error
+                    set returnValue = undefined
+                        # @ts-expect-error
+                    _ router.navigate("/a")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                        # @ts-expect-error
+                    set returnValue = null
+                        # @ts-expect-error
+                    _ router.navigate("/b")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                        # @ts-expect-error
+                    set returnValue = "truthy"
+                        # @ts-expect-error
+                    _ router.navigate("/a")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 0
+                    set returnValue = true
+                    _ router.navigate("/b")
+                    await 
+                        _ tick()
+                    _ expect(router.state.loaderData).toEqual
+                        { 
+                            @ root 1
+                    _ router.dispose()

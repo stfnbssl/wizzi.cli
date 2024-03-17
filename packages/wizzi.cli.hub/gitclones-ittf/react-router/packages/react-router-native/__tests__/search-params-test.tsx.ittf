@@ -1,0 +1,198 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ View
+        @ Text
+        @ TextInput
+        from "react-native"
+    import 
+        @ NativeRouter
+        @ Routes
+        @ Route
+        @ useSearchParams
+        from "react-router-native"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    _ describe
+        @ "useSearchParams"
+        => 
+            function SearchForm
+                { 
+                    @ children
+                    :{ 
+                        :p children
+                            :ref React.ReactNode
+                        :p onSubmit
+                            :optional 
+                            :any 
+                return 
+                    < View 
+                        + {children}
+            function Button
+                { 
+                    @ children
+                    :{ 
+                        :p children
+                            :ref React.ReactNode
+                        :p onClick
+                            :optional 
+                            :any 
+                return 
+                    < View 
+                        + {children}
+            _ it
+                @ "reads and writes the search string"
+                => 
+                    function SearchPage
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ q ""
+                        let [query, setQuery]
+                            _ React.useState
+                                :! 
+                                    _ searchParams.get("q")
+                        function handleSubmit
+                            _ setSearchParams
+                                { 
+                                    @ q query
+                        return 
+                            < View 
+                                < Text 
+                                    + The current query is "
+                                    + {searchParams.get("q")}
+                                    + ".
+                                < SearchForm 
+                                    @ onSubmit {handleSubmit}
+                                    < TextInput 
+                                        @ value {query}
+                                        @ onChangeText {setQuery}
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < NativeRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/search?q=Michael+Jackson"
+                                        < Routes 
+                                            < Route 
+                                                @ path "search"
+                                                @ element
+                                                    < SearchPage 
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+                    let textInput = renderer.root.findByType(TextInput)
+                    _ TestRenderer.act
+                        => 
+                            _ textInput.props.onChangeText("Ryan Florence")
+                    let searchForm = renderer.root.findByType(SearchForm)
+                    _ TestRenderer.act
+                        => 
+                            _ searchForm.props.onSubmit()
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+            _ it
+                @ "reads and writes the search string (functional update)"
+                => 
+                    function SearchPage
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ q ""
+                        let [query, setQuery]
+                            _ React.useState
+                                :! 
+                                    _ searchParams.get("q")
+                        function handleSubmit
+                            _ setSearchParams
+                                => 
+                                    param cur
+                                    _ cur.set
+                                        @ "q"
+                                        `lit 
+                                            + 
+                                            _ cur.get("q")
+                                            + &nbsp;- appended
+                                    _ cur.set("new", "Ryan Florence")
+                                    return cur
+                        return 
+                            < View 
+                                < Text 
+                                    + The current query is "
+                                    + {searchParams.get("q")}
+                                    + ".
+                                < Text 
+                                    + The new query is "
+                                    + {searchParams.get("new")}
+                                    + ".
+                                < SearchForm 
+                                    @ onSubmit {handleSubmit}
+                                    < TextInput 
+                                        @ value {query}
+                                        @ onChangeText {setQuery}
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < NativeRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/search?q=Michael+Jackson"
+                                        < Routes 
+                                            < Route 
+                                                @ path "search"
+                                                @ element
+                                                    < SearchPage 
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+                    let searchForm = renderer.root.findByType(SearchForm)
+                    _ TestRenderer.act
+                        => 
+                            _ searchForm.props.onSubmit()
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+            _ it
+                @ "allows removal of search params when a default is provided"
+                => 
+                    function SearchPage
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ value "initial"
+                        return 
+                            < View 
+                                < Text 
+                                    + The current query is "
+                                    + {searchParams.get("value")}
+                                    + ".
+                                < Button 
+                                    @ onClick
+                                        => 
+                                            _ setSearchParams
+                                                { 
+                                    + Click
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < NativeRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/search?value=initial"
+                                        < Routes 
+                                            < Route 
+                                                @ path "search"
+                                                @ element
+                                                    < SearchPage 
+                    _ expect(renderer.toJSON()).toMatchSnapshot()
+                    let button = renderer.root.findByType(Button)
+                    _ TestRenderer.act
+                        => 
+                            _ button.props.onClick()
+                    _ expect(renderer.toJSON()).toMatchSnapshot()

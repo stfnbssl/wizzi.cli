@@ -1,0 +1,252 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ RouteObject
+        from "react-router"
+    import 
+        @ matchRoutes
+        from "react-router"
+    function pickPaths
+        param routes
+            :[ 
+                :ref RouteObject
+        param pathname
+            :string 
+        param basename
+            :string 
+            :optional 
+        :return
+            :union 
+                :[ 
+                    :string 
+                :null 
+        let matches = matchRoutes(routes, pathname, basename)
+        return 
+            && 
+                + matches
+                _ matches.map
+                    => 
+                        param match
+                        @expr match.route.path || ""
+    _ describe
+        @ "matchRoutes"
+        => 
+            let userEditRoute
+                :ref RouteObject
+                =
+                    { 
+                        @ path "edit"
+                        @ element
+                            h1 
+                                + User Edit
+            let userProfileRoute
+                :ref RouteObject
+                =
+                    { 
+                        @ path ":id"
+                        @ element
+                            h1 
+                                + User Profile
+                        [ children
+                            @ userEditRoute
+            let usersRoute
+                :ref RouteObject
+                =
+                    { 
+                        @ path "/users"
+                        @ element
+                            h1 
+                                + Users
+                        [ children
+                            { 
+                                @ index true
+                                @ element
+                                    h1 
+                                        + Index
+                            @ userProfileRoute
+            let indexWithPathRoute
+                :ref RouteObject
+                =
+                    { 
+                        @ path "/withpath"
+                        @ index true
+            let layoutRouteIndex
+                :ref RouteObject
+                =
+                    { 
+                        @ path "/layout"
+                        @ index true
+                        @ element
+                            h1 
+                                + Layout
+            let layoutRoute
+                :ref RouteObject
+                =
+                    { 
+                        @ path "/layout"
+                        [ children
+                            { 
+                                @ path "item"
+                                @ element
+                                    h1 
+                                        + Item
+                            { 
+                                @ path ":id"
+                                @ element
+                                    h1 
+                                        + ID
+                            { 
+                                @ path "*"
+                                @ element
+                                    h1 
+                                        + Not Found
+            let routes
+                :[ 
+                    :ref RouteObject
+                =
+                    [ 
+                        { 
+                            @ path "/"
+                            @ element
+                                h1 
+                                    + Root Layout
+                        { 
+                            @ path "/home"
+                            @ element
+                                h1 
+                                    + Home
+                            [ children
+                                { 
+                                    @ index true
+                                    @ element
+                                        h1 
+                                            + Index
+                                { 
+                                    @ path "*"
+                                    @ element
+                                        h1 
+                                            + Not Found
+                        @ indexWithPathRoute
+                        @ layoutRoute
+                        @ layoutRouteIndex
+                        @ usersRoute
+                        { 
+                            @ path "*"
+                            @ element
+                                h1 
+                                    + Not Found
+            _ it
+                @ "matches root * routes correctly"
+                => 
+                    _ expect(pickPaths(routes, "/not-found")).toEqual
+                        [ 
+                            @ "*"
+                    _ expect(pickPaths(routes, "/hometypo")).toEqual
+                        [ 
+                            @ "*"
+            _ it
+                @ "matches index routes with path correctly"
+                => 
+                    _ expect(pickPaths(routes, "/withpath")).toEqual
+                        [ 
+                            @ "/withpath"
+            _ it
+                @ "matches index routes with path over layout"
+                => 
+                    _ expect(matchRoutes(routes, "/layout")?[0]?.route?.index).toBe(true)
+                    _ expect(pickPaths(routes, "/layout")).toEqual
+                        [ 
+                            @ "/layout"
+            _ it
+                @ "matches static path over index"
+                => 
+                    _ expect(pickPaths(routes, "/layout/item")).toEqual
+                        [ 
+                            @ "/layout"
+                            @ "item"
+            _ it
+                @ "matches dynamic layout path with param over index"
+                => 
+                    _ expect(pickPaths(routes, "/layout/id")).toEqual
+                        [ 
+                            @ "/layout"
+                            @ ":id"
+            _ it
+                @ "matches dynamic layout path with splat over index"
+                => 
+                    _ expect(pickPaths(routes, "/layout/id/more")).toEqual
+                        [ 
+                            @ "/layout"
+                            @ "*"
+            _ it
+                @ "matches nested index routes correctly"
+                => 
+                    _ expect(pickPaths(routes, "/users")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ""
+            _ it
+                @ "matches nested dynamic routes correctly"
+                => 
+                    _ expect(pickPaths(routes, "/users/mj")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ":id"
+                    _ expect(pickPaths(routes, "/users/mj/edit")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ":id"
+                            @ "edit"
+            _ it
+                @ "matches nested dynamic routes with params ending in = (e.x. base64 encoded Id)"
+                => 
+                    _ expect(pickPaths(routes, "/users/VXNlcnM6MQ==")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ":id"
+                    _ expect(pickPaths(routes, "/users/VXNlcnM6MQ==/edit")).toEqual
+                        [ 
+                            @ "/users"
+                            @ ":id"
+                            @ "edit"
+            _ it
+                @ "matches nested * routes correctly"
+                => 
+                    _ expect(pickPaths(routes, "/home/typo")).toEqual
+                        [ 
+                            @ "/home"
+                            @ "*"
+            _ it
+                @ "returns the same route object on match.route as the one that was passed in"
+                => 
+                    let matches
+                        :! 
+                            _ matchRoutes(routes, "/users/mj")
+                    _ expect(matches[0].route).toBe(usersRoute)
+                    _ expect(matches[1].route).toBe(userProfileRoute)
+            _ describe
+                @ "with a basename"
+                => 
+                    _ it
+                        @ "matches a pathname that starts with the basename"
+                        => 
+                            _ expect(pickPaths(routes, "/app/users/mj", "/app")).toEqual
+                                [ 
+                                    @ "/users"
+                                    @ ":id"
+                                # basename should not be case-sensitive
+                            _ expect(pickPaths(routes, "/APP/users/mj", "/app")).toEqual
+                                [ 
+                                    @ "/users"
+                                    @ ":id"
+                                # basename should not be case-sensitive
+                    _ it
+                        @ "does not match a pathname that does not start with the basename"
+                        => 
+                            _ expect(pickPaths(routes, "/home", "/app")).toBeNull()
+                    _ it
+                        @ "does not match a pathname that does not start with basename/"
+                        => 
+                            _ expect(pickPaths(routes, "/appextra/home", "/app")).toBeNull()

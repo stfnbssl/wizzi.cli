@@ -27,6 +27,8 @@ module
             _ checker.checkFolder
                 @ destFolder
                 @ 'destFolder'
+                {
+                    @ parentFolderMustExist true
             set compressFolders
                 _ checkCompressFolders
                     @ checker

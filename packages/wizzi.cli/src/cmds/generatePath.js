@@ -2,16 +2,16 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generatePath.js.ittf
-    utc time: Wed, 28 Feb 2024 20:31:32 GMT
+    utc time: Mon, 04 Mar 2024 21:42:47 GMT
 */
 'use strict';
 const path = require('path');
-const util = require('util');
-const fs = require('fs');
-const async = require('async');
-const chalk = require('chalk');
+const wizziUtils = require('@wizzi/utils');
+const file = wizziUtils.file;
+const verify = wizziUtils.verify;
 const wizzi = require('@wizzi/factory');
 const config = require('../utils/config');
+const factory = require('../factory');
 const commons = require('./commons');
 
 const kCommandName = "main";
@@ -29,7 +29,9 @@ module.exports = (args) => {
     let configInstance = null;
     
     checker.checkFile(sourcePath, 'sourcePath')
-    checker.checkFile(destPath, 'destPath')
+    checker.checkFile(destPath, 'destPath', {
+        parentFolderMustExist: true
+     })
     if (args.config || args.c) {
         checker.checkFile(path.join(currentDir, (args.config || args.c) + '.config.js'), "configPath")
         if (checker.isValid()) {
@@ -46,89 +48,152 @@ module.exports = (args) => {
             message: "in config file " + checker.configPath
          })
     }
-    if (!checker.checkOut()) {
-        return ;
+    if (!checker.isValid()) {
+        return checker.checkOut();
     }
-    return ;
-    const x_pluginsBaseFolder = configInstance.pluginsBaseFolder || __dirname;
-    if (!configInstance.pluginsBaseFolder) {
-        console.log(chalk.red('wizzi-cli.generate - pluginsBaseFolder not set'))
-        console.log(chalk.red('wizzi-cli.generate - pluginsBaseFolder defaulted to ' + x_pluginsBaseFolder))
+    if (checker.sourcePath_is_folder && !checker.destPath_is_folder && !checker.destPath_parent_only_exists) {
+        checker.optionError('Source path is a folder, destination path cannot be a filename: ' + checker.destPath)
+        return checker.checkOut();
     }
-    var x_pluginsItems = [];
-    if (configInstance.plugins && configInstance.plugins.length > 0) {
-        x_pluginsItems = configInstance.plugins;
+    
+    // At this point this cannot be invalid
+    if (!checker.sourcePath_is_folder && checker.destPath_is_folder) {
+        checker.checkFile(path.join(destPath, path.basename(sourcePath).substr(0, path.basename(sourcePath).length - 5)), 'destPath', {
+            parentFolderMustExist: true
+         })
+    }
+    if (verify.isArray(args.ctx) || verify.isNotEmpty(args.ctx)) {
+        if (!checker.isValid()) {
+            return ;
+        }
     }
     else {
-        chalk.red('wizzi.cli.generate - plugins not found in wizzi.config')
-        chalk.red('generation failed')
-        return ;
+        if (!checker.checkOut()) {
+            return ;
+        }
     }
-    wizzi.executeWizziJob({
-        storeKind: 'filesystem', 
-        config: {
-            wfBaseFolder: __dirname, 
-            plugins: x_pluginsItems, 
-            pluginsBaseFolder: x_pluginsBaseFolder
-         }, 
-        job: {
-            name: configInstance.wfjobName, 
-            ittfDocumentUri: configInstance.wfjobPath, 
-            productionOptions: wizzi.productionOptions({
-                indentSpaces: 4, 
-                basedir: __dirname, 
-                verbose: 2, 
-                dumps: {
-                    dumpsBaseFolder: path.join(__dirname, '_dumps'), 
-                    mTreeBuildupJsWizziScript: {
-                        dump: false
-                     }
-                 }
-             }), 
-            globalContext: configInstance.globalContext
-         }
-     }, function(err) {
+    
+    const contextFiles = [];
+    
+    // TODO create context
+    if (verify.isArray(args.ctx)) {
+        var i, i_items=args.ctx, i_len=args.ctx.length, item;
+        for (i=0; i<i_len; i++) {
+            item = args.ctx[i];
+            contextFiles.push(item)
+        }
+    }
+    else if (verify.isNotEmpty(args.ctx)) {
+        contextFiles.push(args.ctx)
+    }
+    loadContexts(contextFiles, {
+        items: checker.pluginsItems || factory.getDefaultPlugins(), 
+        pluginsBaseFolder: checker.pluginsBaseFolder || factory.getDefaultPluginsBaseFolder()
+     }, checker, (err, context) => {
+    
         if (err) {
-            return wizzi.printWizziJobError(configInstance.wfjobName, err);
+            console.log("[31m%s[0m", 'err', err);
+            throw new Error(err.message);
         }
-        if (configInstance.schemas && configInstance.schemas.length > 0) {
-            generateSchemas(configInstance.schemas, path.dirname(configInstance.wfjobPath), configInstance.destPath, configInstance.packageName || configInstance.wfjobName, {
-                items: x_pluginsItems, 
-                baseFolder: x_pluginsBaseFolder
-             })
+        if (context.__is_checkerError) {
+            return checker.checkOut();
         }
-    })
+        
+        checker.checkOut();
+        
+        factory.createWizziFactory({}, {
+            items: checker.pluginsItems || factory.getDefaultPlugins(), 
+            pluginsBaseFolder: checker.pluginsBaseFolder || factory.getDefaultPluginsBaseFolder()
+         }, (err, wf) => {
+        
+            if (err) {
+                console.log("[31m%s[0m", 'err', err);
+                throw new Error(err.message);
+            }
+            if (checker.sourcePath_is_folder) {
+                wf.generateFolderArtifacts(checker.sourcePath, {
+                    modelRequestContext: context || {}, 
+                    artifactRequestContext: {
+                        
+                     }
+                 }, {
+                    destFolder: checker.destPath
+                 }, (err, result) => {
+                
+                    if (err) {
+                        console.log("[31m%s[0m", 'err', err);
+                        throw new Error(err.message);
+                    }
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", 'Folder artifacts generation done, see', checker.destPath + ' file');
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", '');
+                }
+                )
+            }
+            else {
+                wf.loadModelAndGenerateArtifact(checker.sourcePath, {
+                    modelRequestContext: context || {}, 
+                    artifactRequestContext: {
+                        
+                     }
+                 }, null, (err, result) => {
+                
+                    if (err) {
+                        console.log("[31m%s[0m", 'err', err);
+                        throw new Error(err.message);
+                    }
+                    console.log('result', result, __filename);
+                    file.write(checker.destPath, result)
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", 'Single artifact generation done, see', checker.destPath + ' file');
+                    console.log("[32m%s[0m", '');
+                    console.log("[32m%s[0m", '');
+                }
+                )
+            }
+        }
+        )
+    }
+    )
 }
 ;
-function generateSchemas(schemasToGen, wfJobFolder, destPath, packageName, plugins) {
-    async.mapSeries(schemasToGen, function(schemaName, callback) {
-        // loog 'wizzi-cli.generate.Generating schema ' + schemaName
-        var options = {};
-        if (plugins) {
-            options = {
-                plugins: plugins.items, 
-                pluginsBaseFolder: plugins.baseFolder
-             };
+function loadContexts(contextFiles, plugins, checker, callback) {
+    
+    var i, i_items=contextFiles, i_len=contextFiles.length, contextFile;
+    for (i=0; i<i_len; i++) {
+        contextFile = contextFiles[i];
+        checker.checkFile(contextFile, contextFile)
+    }
+    if (!checker.isValid()) {
+        return callback(null, {
+                __is_checkerError: true
+             });
+    }
+    
+    const progressiveContext = {};
+    function doLoadContext(ndx) {
+        const contextFile = contextFiles[ndx];
+        if (!contextFile) {
+            console.log('progressiveContext', progressiveContext, __filename);
+            return callback(null, progressiveContext);
         }
-        wizzi.generateWizziModelTypes({
-            configOptions: options, 
-            wfschema: {
-                name: schemaName, 
-                ittfDocumentUri: path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wfschema.ittf'), 
-                outputPackageFolder: destPath
-             }
-         }, function(err, result) {
+        factory.createContextFromFile(checker[contextFile], progressiveContext, plugins, (err, context) => {
+        
             if (err) {
-                throw new Error('Package: ' + packageName + ' schema ' + schemaName + '  wizzi models production error: ' + (util.inspect(err, {
-                        depth: null
-                     })));
+                return callback(err);
             }
-            // loog 'wizzi-cli.generate.Generate schema result', result
-            callback(null, result);
-        })
-    }, function(err, result) {
-        if (err) {
-            wizzi.printWizziJobError($name, err);
+            const fileBasename = path.basename(contextFile);
+            const contextName = fileBasename.split('.')[0];
+            progressiveContext[contextName] = context;
+            checker.checkNotNullOrUndefined(context, contextName, {
+                message: "loaded context from " + contextFile
+             })
+            doLoadContext(ndx + 1)
         }
-    })
+        )
+    }
+    doLoadContext(0)
 }

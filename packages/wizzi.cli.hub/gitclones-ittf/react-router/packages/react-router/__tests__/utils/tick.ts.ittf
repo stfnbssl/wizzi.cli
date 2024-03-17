@@ -1,0 +1,8 @@
+module
+    export-default 
+        async-function tick
+            await 
+                new Promise
+                    => 
+                        param r
+                        _ setTimeout(r, 0)

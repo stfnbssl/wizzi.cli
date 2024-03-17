@@ -1,0 +1,555 @@
+module
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ Path
+        @ RevalidationState
+        @ Router
+            as RemixRouter
+        @ StaticHandlerContext
+        @ CreateStaticHandlerOptions
+            as RouterCreateStaticHandlerOptions
+        @ UNSAFE_RouteManifest
+            as RouteManifest
+        @ RouterState
+        @ FutureConfig
+            as RouterFutureConfig
+        from "@remix-run/router"
+    import 
+        @ IDLE_BLOCKER
+        @ IDLE_FETCHER
+        @ IDLE_NAVIGATION
+        @ Action
+        @ UNSAFE_invariant
+            as invariant
+        @ isRouteErrorResponse
+        @ createStaticHandler
+            as routerCreateStaticHandler
+        @ UNSAFE_convertRoutesToDataRoutes
+            as convertRoutesToDataRoutes
+        from "@remix-run/router"
+    import 
+        @ UNSAFE_mapRouteProperties
+            as mapRouteProperties
+        @ UNSAFE_useRoutesImpl
+            as useRoutesImpl
+        from "react-router"
+    :import-type 
+        @ DataRouteObject
+        @ FutureConfig
+        @ Location
+        @ RouteObject
+        @ To
+        from "react-router-dom"
+    import 
+        @ createPath
+        @ parsePath
+        @ Router
+        @ UNSAFE_DataRouterContext
+            as DataRouterContext
+        @ UNSAFE_DataRouterStateContext
+            as DataRouterStateContext
+        @ UNSAFE_FetchersContext
+            as FetchersContext
+        @ UNSAFE_ViewTransitionContext
+            as ViewTransitionContext
+        from "react-router-dom"
+    export 
+        :interface StaticRouterProps
+            :p basename
+                :optional 
+                :string 
+            :p children
+                :optional 
+                :ref React.ReactNode
+            :p location
+                :union 
+                    :ref Partial
+                        :param 
+                            :ref Location
+                    :string 
+            :p future
+                :optional 
+                :ref Partial
+                    :param 
+                        :ref FutureConfig
+        #
+            # *
+            # * A `<Router>` that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 
+    export 
+        function StaticRouter
+            { 
+                @ basename
+                @ children
+                @ location
+                    = "/"
+                @ future
+                :ref StaticRouterProps
+            if typeof locationProp === "string"
+                set locationProp = parsePath(locationProp)
+            let action = Action.Pop
+            let location
+                :ref Location
+                =
+                    { 
+                        @ pathname locationProp.pathname || "/"
+                        @ search locationProp.search || ""
+                        @ hash locationProp.hash || ""
+                        @ state locationProp.state || null
+                        @ key locationProp.key || "default"
+            let staticNavigator = getStatelessNavigator()
+            return 
+                < Router 
+                    @ basename {basename}
+                    @ children {children}
+                    @ location {location}
+                    @ navigationType {action}
+                    @ navigator {staticNavigator}
+                    @ future {future}
+                    @ static {true}
+        #
+            # *
+            # * A `<Router>` that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 
+    export 
+        @ StaticHandlerContext
+    export 
+        :interface StaticRouterProviderProps
+            :p context
+                :ref StaticHandlerContext
+            :p router
+                :ref RemixRouter
+            :p hydrate
+                :optional 
+                :boolean 
+            :p nonce
+                :optional 
+                :string 
+        #
+            # *
+            # * A Data Router that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 
+    export 
+        function StaticRouterProvider
+            { 
+                @ context
+                @ router
+                @ hydrate
+                    = true
+                @ nonce
+                :ref StaticRouterProviderProps
+            _ invariant(router && context, "You must provide `router` and `context` to <StaticRouterProvider>")
+            let dataRouterContext
+                { 
+                    @ router
+                    @ navigator getStatelessNavigator()
+                    @ static true
+                    @ staticContext context
+                    @ basename context.basename || "/"
+            let fetchersContext = new Map()
+            let hydrateScript = ""
+            if hydrate !== false
+                let data
+                    { 
+                        @ loaderData context.loaderData
+                        @ actionData context.actionData
+                        @ errors serializeErrors(context.errors)
+                    # Use JSON.parse here instead of embedding a raw JS object here to speed
+                    # up parsing on the client.  Dual-stringify is needed to ensure all quotes
+                    # are properly escaped in the resulting string.  See:
+                    # https://v8.dev/blog/cost-of-javascript-2019#json
+                let json = htmlEscape(JSON.stringify(JSON.stringify(data)))
+                    # Use JSON.parse here instead of embedding a raw JS object here to speed
+                    # up parsing on the client.  Dual-stringify is needed to ensure all quotes
+                    # are properly escaped in the resulting string.  See:
+                    # https://v8.dev/blog/cost-of-javascript-2019#json
+                set hydrateScript =
+                    `lit 
+                        + window.__staticRouterHydrationData = JSON.parse(
+                        @ json
+                        + );
+            let 
+                { 
+                    @ state
+                = dataRouterContext.router
+            return 
+                < React.Fragment
+                    < DataRouterContext.Provider 
+                        @ value {dataRouterContext}
+                        < DataRouterStateContext.Provider 
+                            @ value {state}
+                            < FetchersContext.Provider 
+                                @ value {fetchersContext}
+                                < ViewTransitionContext.Provider 
+                                    @ value
+                                        { 
+                                            @ isTransitioning false
+                                    < Router 
+                                        @ basename {dataRouterContext.basename}
+                                        @ location {state.location}
+                                        @ navigationType {state.historyAction}
+                                        @ navigator {dataRouterContext.navigator}
+                                        @ static {dataRouterContext.static}
+                                        @ future
+                                            { 
+                                                @ v7_relativeSplatPath router.future.v7_relativeSplatPath
+                                        < DataRoutes 
+                                            @ routes {router.routes}
+                                            @ future {router.future}
+                                            @ state {state}
+                    { 
+                        iif hydrateScript
+                            then
+                                script 
+                                    @ suppressHydrationWarning
+                                    @ nonce {nonce}
+                                    @ dangerouslySetInnerHTML
+                                        { 
+                                            @ __html hydrateScript
+                            else null
+        #
+            # *
+            # * A Data Router that may not navigate to any other location. This is useful
+            # * on the server where there is no stateful UI.
+            # 
+    function DataRoutes
+        { 
+            @ routes
+            @ future
+            @ state
+            :{ 
+                :p routes
+                    :[ 
+                        :ref DataRouteObject
+                :p future
+                    :[] 
+                        :ref RemixRouter
+                        :literal "future"
+                :p state
+                    :ref RouterState
+        :return
+            :union 
+                :ref React.ReactElement
+                :null 
+        return useRoutesImpl(routes, undefined, state, future)
+    function serializeErrors
+        param errors
+            :[] 
+                :ref StaticHandlerContext
+                :literal "errors"
+        :return
+            :[] 
+                :ref StaticHandlerContext
+                :literal "errors"
+        if !errors
+            return null
+        let entries = Object.entries(errors)
+        let serialized
+            :[] 
+                :ref StaticHandlerContext
+                :literal "errors"
+            =
+                { 
+        for 
+            left
+                let [key, val]
+            of entries
+            if isRouteErrorResponse(val)
+                set serialized[key] =
+                    { 
+                        @ ...val
+                        @ __type "RouteErrorResponse"
+            else
+                if val instanceof Error
+                    set serialized[key] =
+                        { 
+                            @ message val.message
+                            @ __type "Error"
+                            ... 
+                                ( 
+                                    iif val.name !== "Error"
+                                        then
+                                            { 
+                                                @ __subType val.name
+                                        else
+                                            { 
+                                # If this is a subclass (i.e., ReferenceError), send up the type so we
+                                # can re-create the same type during hydration.
+                        # Do not serialize stack traces from SSR for security reasons
+                else
+                    set serialized[key] = val
+        return serialized
+    function getStatelessNavigator
+        return 
+            { 
+                @ createHref
+                @ encodeLocation
+                m push
+                    param to
+                        :ref To
+                    throw 
+                        new Error
+                            op+ 
+                                op+ 
+                                    `lit 
+                                        + You cannot use navigator.push() on the server because it is a stateless&nbsp;
+                                    `lit 
+                                        + environment. This error was probably triggered when you did a&nbsp;
+                                `lit 
+                                    + \`navigate(
+                                    _ JSON.stringify(to)
+                                    + )\` somewhere in your app.
+                m replace
+                    param to
+                        :ref To
+                    throw 
+                        new Error
+                            op+ 
+                                op+ 
+                                    op+ 
+                                        `lit 
+                                            + You cannot use navigator.replace() on the server because it is a stateless&nbsp;
+                                        `lit 
+                                            + environment. This error was probably triggered when you did a&nbsp;
+                                    `lit 
+                                        + \`navigate(
+                                        _ JSON.stringify(to)
+                                        + , { replace: true })\` somewhere&nbsp;
+                                `lit 
+                                    + in your app.
+                m go
+                    param delta
+                        :number 
+                    throw 
+                        new Error
+                            op+ 
+                                op+ 
+                                    `lit 
+                                        + You cannot use navigator.go() on the server because it is a stateless&nbsp;
+                                    `lit 
+                                        + environment. This error was probably triggered when you did a&nbsp;
+                                `lit 
+                                    + \`navigate(
+                                    @ delta
+                                    + )\` somewhere in your app.
+                m back
+                    throw 
+                        new Error
+                            op+ 
+                                `lit 
+                                    + You cannot use navigator.back() on the server because it is a stateless&nbsp;
+                                `lit 
+                                    + environment.
+                m forward
+                    throw 
+                        new Error
+                            op+ 
+                                `lit 
+                                    + You cannot use navigator.forward() on the server because it is a stateless&nbsp;
+                                `lit 
+                                    + environment.
+    :type CreateStaticHandlerOptions
+        :ref Omit
+            :param 
+                :ref RouterCreateStaticHandlerOptions
+            :param 
+                :union 
+                    :literal "detectErrorBoundary"
+                    :literal "mapRouteProperties"
+    export 
+        function createStaticHandler
+            param routes
+                :[ 
+                    :ref RouteObject
+            param opts
+                :ref CreateStaticHandlerOptions
+                :optional 
+            return 
+                _ routerCreateStaticHandler
+                    @ routes
+                    { 
+                        @ ...opts
+                        @ mapRouteProperties
+    export 
+        function createStaticRouter
+            param routes
+                :[ 
+                    :ref RouteObject
+            param context
+                :ref StaticHandlerContext
+            param opts
+                :{ 
+                    :p future
+                        :optional 
+                        :ref Partial
+                            :param 
+                                :ref Pick
+                                    :param 
+                                        :ref RouterFutureConfig
+                                    :param 
+                                        :union 
+                                            :literal "v7_partialHydration"
+                                            :literal "v7_relativeSplatPath"
+                        # Only accept future flags that impact the server render
+                = 
+            :return
+                :ref RemixRouter
+            let manifest
+                :ref RouteManifest
+                =
+                    { 
+            let dataRoutes = convertRoutesToDataRoutes(routes, mapRouteProperties, undefined, manifest)
+                # Because our context matches may be from a framework-agnostic set of
+                # routes passed to createStaticHandler(), we update them here with our
+                # newly created/enhanced data routes
+            let matches
+                _ context.matches.map
+                    => 
+                        param match
+                        let route = manifest[match.route.id] || match.route
+                        return 
+                            { 
+                                @ ...match
+                                @ route
+                # Because our context matches may be from a framework-agnostic set of
+                # routes passed to createStaticHandler(), we update them here with our
+                # newly created/enhanced data routes
+            let msg
+                => 
+                    param method
+                        :string 
+                    `lit 
+                        + You cannot use router.
+                        @ method
+                        + () on the server because it is a stateless environment
+            return 
+                { 
+                    get basename
+                        return context.basename
+                    get future
+                        return 
+                            { 
+                                @ v7_fetcherPersist false
+                                @ v7_normalizeFormMethod false
+                                @ v7_partialHydration opts.future?.v7_partialHydration === true
+                                @ v7_prependBasename false
+                                @ v7_relativeSplatPath opts.future?.v7_relativeSplatPath === true
+                    get state
+                        return 
+                            { 
+                                @ historyAction Action.Pop
+                                @ location context.location
+                                @ matches
+                                @ loaderData context.loaderData
+                                @ actionData context.actionData
+                                @ errors context.errors
+                                @ initialized true
+                                @ navigation IDLE_NAVIGATION
+                                @ restoreScrollPosition null
+                                @ preventScrollReset false
+                                @ revalidation
+                                    + "idle"
+                                        :as 
+                                            :ref RevalidationState
+                                @ fetchers new Map()
+                                @ blockers new Map()
+                    get routes
+                        return dataRoutes
+                    get window
+                        return undefined
+                    m initialize
+                        throw msg("initialize")
+                    m subscribe
+                        throw msg("subscribe")
+                    m enableScrollRestoration
+                        throw msg("enableScrollRestoration")
+                    m navigate
+                        throw msg("navigate")
+                    m fetch
+                        throw msg("fetch")
+                    m revalidate
+                        throw msg("revalidate")
+                    @ createHref
+                    @ encodeLocation
+                    m getFetcher
+                        return IDLE_FETCHER
+                    m deleteFetcher
+                        throw msg("deleteFetcher")
+                    m dispose
+                        throw msg("dispose")
+                    m getBlocker
+                        return IDLE_BLOCKER
+                    m deleteBlocker
+                        throw msg("deleteBlocker")
+                    @ _internalFetchControllers new Map()
+                    @ _internalActiveDeferreds new Map()
+                    m _internalSetRoutes
+                        throw msg("_internalSetRoutes")
+    function createHref
+        param to
+            :ref To
+        return 
+            iif typeof to === "string"
+                then to
+                else createPath(to)
+    function encodeLocation
+        param to
+            :ref To
+        :return
+            :ref Path
+        let href
+            iif typeof to === "string"
+                then to
+                else createPath(to)
+            # Treating this as a full URL will strip any trailing spaces so we need to
+            # pre-encode them since they might be part of a matching splat param from
+            # an ancestor route
+        set href = href.replace(/ $/, "%20")
+            # Treating this as a full URL will strip any trailing spaces so we need to
+            # pre-encode them since they might be part of a matching splat param from
+            # an ancestor route
+        let encoded
+            iif ABSOLUTE_URL_REGEX.test(href)
+                then new URL(href)
+                else new URL(href, "http://localhost")
+        return 
+            { 
+                @ pathname encoded.pathname
+                @ search encoded.search
+                @ hash encoded.hash
+    const ABSOLUTE_URL_REGEX = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i
+        # This utility is based on https://github.com/zertosh/htmlescape
+        # License: https://github.com/zertosh/htmlescape/blob/0527ca7156a524d256101bb310a9f970f63078ad/LICENSE
+    const ESCAPE_LOOKUP
+        :{ 
+            :index 
+                :string 
+                param match
+                    :string 
+        =
+            { 
+                @ "&" "\\u0026"
+                @ ">" "\\u003e"
+                @ "<" "\\u003c"
+                @ "\u2028" "\\u2028"
+                @ "\u2029" "\\u2029"
+        # This utility is based on https://github.com/zertosh/htmlescape
+        # License: https://github.com/zertosh/htmlescape/blob/0527ca7156a524d256101bb310a9f970f63078ad/LICENSE
+    const ESCAPE_REGEX = /[&><\u2028\u2029]/g
+    function htmlEscape
+        param str
+            :string 
+        :return
+            :string 
+        return 
+            _ str.replace
+                @ ESCAPE_REGEX
+                => 
+                    param match
+                    +
+                        @expr ESCAPE_LOOKUP[match]

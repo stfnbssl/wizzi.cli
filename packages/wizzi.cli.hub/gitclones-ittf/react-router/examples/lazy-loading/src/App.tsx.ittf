@@ -1,0 +1,116 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        from "react-router-dom"
+    const About
+        _ React.lazy
+            => 
+                _ import
+                    @ "./pages/About"
+    const Dashboard
+        _ React.lazy
+            => 
+                _ import
+                    @ "./pages/Dashboard"
+    export-default 
+        function App
+            return 
+                div 
+                    h1 
+                        + Lazy Loading Example
+                    p 
+                        + This example demonstrates how to lazily load both route elements and&lf;        even entire portions of your route hierarchy on demand. To get the full&lf;        effect of this demo, be sure to open your Network tab and watch the new&lf;        bundles load dynamically as you navigate around.
+                    p 
+                        + The "About" page is not loaded until you click on the link. When you do,&lf;        a
+                        code 
+                            + <React.Suspense fallback>
+                        + renders while the code is&lf;        loaded via a dynamic
+                        code 
+                            + import()
+                        + statement. Once the code&lf;        loads, the fallback is replaced by the actual code for that page.
+                    p 
+                        + The "Dashboard" page does the same thing, but takes it even one step&lf;        further by
+                        em 
+                            + dynamically defining additional routes
+                        + once the page&lf;        loads! Since React Router lets you declare your routes as
+                        code 
+                            + <Route>
+                        + elements, you can easily define more routes&lf;        by placing an additional
+                        code 
+                            + <Routes>
+                        + element anywhere&lf;        further down the element tree. Just be sure the parent route ends with a
+                        + {" "}
+                        code 
+                            + *
+                        + like
+                        code 
+                            + <Route path="dashboard/*">
+                        + in&lf;        this case.
+                    < Routes 
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            < Route 
+                                @ index
+                                @ element
+                                    < Home 
+                            < Route 
+                                @ path "about"
+                                @ element
+                                    < React.Suspense 
+                                        @ fallback
+                                            < React.Fragment
+                                                + ...
+                                        < About 
+                            < Route 
+                                @ path "dashboard/*"
+                                @ element
+                                    < React.Suspense 
+                                        @ fallback
+                                            < React.Fragment
+                                                + ...
+                                        < Dashboard 
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+    function Layout
+        return 
+            div 
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/about"
+                                + About
+                        li 
+                            < Link 
+                                @ to "/dashboard/messages"
+                                + Messages (Dashboard)
+                hr 
+                < Outlet 
+    function Home
+        return 
+            div 
+                h2 
+                    + Home
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

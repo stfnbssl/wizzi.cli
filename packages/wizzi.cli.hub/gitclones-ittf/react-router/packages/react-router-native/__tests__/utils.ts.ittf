@@ -1,0 +1,65 @@
+module
+    :import-type 
+        as TestRenderer
+        from "react-test-renderer"
+    export 
+        class MockEvent
+            p type
+                :string 
+            p defaultPrevented
+                :boolean 
+            :index 
+                :any 
+                param k
+                    :string 
+            ctor 
+                param type
+                    :string 
+                param extraProps
+                    :any 
+                    :optional 
+                set this.type = type
+                set this.defaultPrevented = false
+                _ Object.assign(this, extraProps)
+            m preventDefault
+                set this.defaultPrevented = true
+    export 
+        function press
+            param element
+                :union 
+                    :ref React.ReactElement
+                    :ref TestRenderer.ReactTestInstance
+            param extraProps
+                :any 
+                :optional 
+            if !element.props.onPress
+                throw 
+                    new Error
+                        `lit 
+                            + Missing onPress prop for element in press(element)
+            let event = new MockEvent("press", extraProps)
+            _ element.props.onPress(event)
+            return event
+    export 
+        function mockPromiseThatResolvesImmediatelyWith
+            :< T
+            param value
+                :ref T
+                :optional 
+            return 
+                @expr
+                    { 
+                        m then
+                            param callback
+                                :=> 
+                                    :any 
+                                    param val
+                                        :union 
+                                            :ref T
+                                            :undefined 
+                                        :optional 
+                            _ callback(value)
+                    :as 
+                        :ref Promise
+                            :param 
+                                :ref T

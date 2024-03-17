@@ -1,0 +1,38 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom"
+    let StrictMode
+        :ref React.FC
+        =
+            function 
+                param props
+                return 
+                    || 
+                        + props.children
+                        ( 
+                            + null
+                                :as 
+                                    :any 
+    if React.StrictMode
+        set StrictMode = React.StrictMode
+    function renderStrict
+        param element
+            :union 
+                :ref React.FunctionComponentElement
+                    :param any
+                :[ 
+                    :ref React.FunctionComponentElement
+                        :param any
+        param node
+            :ref ReactDOM.Container
+        :return
+            :void 
+        _ ReactDOM.render
+            < StrictMode 
+                + {element}
+            @ node
+    export-default renderStrict

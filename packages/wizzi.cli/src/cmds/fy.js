@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: wizzi-js@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\fy.js.ittf
-    utc time: Wed, 28 Feb 2024 20:31:32 GMT
+    utc time: Mon, 04 Mar 2024 21:42:47 GMT
 */
 'use strict';
 const path = require('path');
@@ -42,13 +42,15 @@ module.exports = (args, accessToken) => {
     let destPath = args.dest || args.d;
     // loog 'fy.sourcePath.destPath', sourcePath, destPath
     checker.checkFile(sourcePath, 'sourcePath')
-    checker.checkFile(destPath, 'destPath')
+    checker.checkFile(destPath, 'destPath', {
+        parentFolderMustExist: true
+     })
     if (!checker.checkOut()) {
         return ;
     }
     // log 'source is folder', checker.sourcePath_is_folder
     // log 'dest is folder', checker.destPath_is_folder
-    if (checker.sourcePath_is_folder && !checker.destPath_is_folder) {
+    if (checker.sourcePath_is_folder && !checker.destPath_is_folder && !checker.destPath_parent_only_exists) {
         checker.optionError('Source path is a folder, destination path cannot be a filename: ' + checker.destPath)
         return checker.checkOut();
     }
@@ -248,7 +250,7 @@ function wizzifyFile(sourcePath, destPath, callback) {
     )
 }
 function getWizzifyName(sourcePath) {
-    var ext = path.extname(sourcePath).substr(1);
+    var ext = path.extname(sourcePath).substring(1);
     if (ext == 'tsx') {
         return 'ts';
     }

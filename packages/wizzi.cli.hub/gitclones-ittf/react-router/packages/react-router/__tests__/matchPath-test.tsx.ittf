@@ -1,0 +1,567 @@
+module
+    import 
+        @ matchPath
+        from "react-router"
+    _ describe
+        @ "matchPath"
+        => 
+            _ it
+                @ "matches the root / URL"
+                => 
+                    _ expect(matchPath("/", "/")).toMatchObject
+                        { 
+                            @ pathname "/"
+                            @ pathnameBase "/"
+            _ describe
+                @ "when the pattern has no leading slash"
+                => 
+                    _ it
+                        @ "fails to match a pathname that does not match"
+                        => 
+                            _ expect(matchPath("users", "/usersblah")).toBeNull()
+                    _ it
+                        @ "matches a pathname"
+                        => 
+                            _ expect(matchPath("users", "/users")).toMatchObject
+                                { 
+                                    @ pathname "/users"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments"
+                        => 
+                            _ expect(matchPath("users/mj", "/users/mj")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj"
+                                    @ pathnameBase "/users/mj"
+                    _ it
+                        @ "matches a pathname with a trailing slash"
+                        => 
+                            _ expect(matchPath("users", "/users/")).toMatchObject
+                                { 
+                                    @ pathname "/users/"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments and a trailing slash"
+                        => 
+                            _ expect(matchPath("users/mj", "/users/mj/")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj/"
+                                    @ pathnameBase "/users/mj"
+            _ describe
+                @ "when the pattern has a leading slash"
+                => 
+                    _ it
+                        @ "fails to match a pathname that does not match"
+                        => 
+                            _ expect(matchPath("/users", "/usersblah")).toBeNull()
+                    _ it
+                        @ "matches a pathname"
+                        => 
+                            _ expect(matchPath("/users", "/users")).toMatchObject
+                                { 
+                                    @ pathname "/users"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments"
+                        => 
+                            _ expect(matchPath("/users/mj", "/users/mj")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj"
+                                    @ pathnameBase "/users/mj"
+                    _ it
+                        @ "matches a pathname with a trailing slash"
+                        => 
+                            _ expect(matchPath("/users", "/users/")).toMatchObject
+                                { 
+                                    @ pathname "/users/"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments and a trailing slash"
+                        => 
+                            _ expect(matchPath("/users/mj", "/users/mj/")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj/"
+                                    @ pathnameBase "/users/mj"
+            _ describe
+                @ "when the pattern has a trailing slash"
+                => 
+                    _ it
+                        @ "fails to match a pathname that does not match"
+                        => 
+                            _ expect(matchPath("users/", "/usersblah")).toBeNull()
+                    _ it
+                        @ "matches a pathname"
+                        => 
+                            _ expect(matchPath("users/", "/users")).toMatchObject
+                                { 
+                                    @ pathname "/users"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments"
+                        => 
+                            _ expect(matchPath("users/mj/", "/users/mj")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj"
+                                    @ pathnameBase "/users/mj"
+                    _ it
+                        @ "matches a pathname with a trailing slash"
+                        => 
+                            _ expect(matchPath("users/", "/users/")).toMatchObject
+                                { 
+                                    @ pathname "/users/"
+                                    @ pathnameBase "/users"
+                    _ it
+                        @ "matches a pathname with multiple segments and a trailing slash"
+                        => 
+                            _ expect(matchPath("users/mj/", "/users/mj/")).toMatchObject
+                                { 
+                                    @ pathname "/users/mj/"
+                                    @ pathnameBase "/users/mj"
+            _ describe
+                @ "with { end: false }"
+                => 
+                    _ it
+                        @ "matches the beginning of a pathname"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users/"
+                                        @ end false
+                                    @ "/users"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                    _ it
+                        @ "matches the beginning of a pathname with a trailing slash"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users/"
+                                        @ end false
+                                    @ "/users/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                    _ it
+                        @ "matches the beginning of a pathname with multiple segments"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users/mj"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users/"
+                                        @ end false
+                                    @ "/users/mj"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                    _ it
+                        @ "matches the beginning of a pathname with multiple segments and a trailing slash"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users/mj/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users/"
+                                        @ end false
+                                    @ "/users/mj/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/users"
+                                        @ pathnameBase "/users"
+                    _ it
+                        @ "fails to match a pathname where the segments do not match"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users2"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users-2"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users~2"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users@2"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users"
+                                        @ end false
+                                    @ "/users.2"
+                                ._ toBeNull
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/users/mj"
+                                        @ end false
+                                    @ "/users/mj2"
+                                ._ toBeNull
+            _ describe
+                @ "with { end: false } and a / pattern"
+                => 
+                    _ it
+                        @ "matches a pathname"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/"
+                                        @ end false
+                                    @ "/users"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/"
+                                        @ pathnameBase "/"
+                    _ it
+                        @ "matches a pathname with multiple segments"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/"
+                                        @ end false
+                                    @ "/users/mj"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/"
+                                        @ pathnameBase "/"
+                    _ it
+                        @ "matches a pathname with a trailing slash"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/"
+                                        @ end false
+                                    @ "/users/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/"
+                                        @ pathnameBase "/"
+                    _ it
+                        @ "matches a pathname with multiple segments and a trailing slash"
+                        => 
+                            _ expect
+                                _ matchPath
+                                    { 
+                                        @ path "/"
+                                        @ end false
+                                    @ "/users/mj/"
+                                ._ toMatchObject
+                                    { 
+                                        @ pathname "/"
+                                        @ pathnameBase "/"
+            _ it
+                @ "is not case-sensitive by default"
+                => 
+                    _ expect(matchPath("/SystemDashboard", "/systemdashboard")).toMatchObject
+                        { 
+                            @ pathname "/systemdashboard"
+                            @ pathnameBase "/systemdashboard"
+            _ it
+                @ "matches a case-sensitive pathname"
+                => 
+                    _ expect
+                        _ matchPath
+                            { 
+                                @ path "/SystemDashboard"
+                                @ caseSensitive true
+                            @ "/SystemDashboard"
+                        ._ toMatchObject
+                            { 
+                                @ pathname "/SystemDashboard"
+                                @ pathnameBase "/SystemDashboard"
+            _ it
+                @ "does not match a case-sensitive pathname with the wrong case"
+                => 
+                    _ expect
+                        _ matchPath
+                            { 
+                                @ path "/SystemDashboard"
+                                @ caseSensitive true
+                            @ "/systemDashboard"
+                        ._ toBeNull
+            _ describe
+                @ "when the pattern has a trailing /*"
+                => 
+                    _ it
+                        @ "matches the remaining portion of the pathname"
+                        => 
+                            _ expect(matchPath("/files/*", "/files/mj.jpg")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" "mj.jpg"
+                                    @ pathname "/files/mj.jpg"
+                                    @ pathnameBase "/files"
+                            _ expect(matchPath("/files/*", "/files/")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" ""
+                                    @ pathname "/files/"
+                                    @ pathnameBase "/files"
+                            _ expect(matchPath("/files/*", "/files")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" ""
+                                    @ pathname "/files"
+                                    @ pathnameBase "/files"
+    _ describe
+        @ "matchPath optional segments"
+        => 
+            _ it
+                @ "should match when optional segment is provided"
+                => 
+                    const match = matchPath("/:lang?/user/:id", "/en/user/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang "en"
+                                @ id "123"
+            _ it
+                @ "should match when optional segment is *not* provided"
+                => 
+                    const match = matchPath("/:lang?/user/:id", "/user/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang undefined
+                                @ id "123"
+            _ it
+                @ "should match when middle optional segment is provided"
+                => 
+                    const match = matchPath("/user/:lang?/:id", "/user/en/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang "en"
+                                @ id "123"
+            _ it
+                @ "should match when middle optional segment is *not* provided"
+                => 
+                    const match = matchPath("/user/:lang?/:id", "/user/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang undefined
+                                @ id "123"
+            _ it
+                @ "should match when end optional segment is provided"
+                => 
+                    const match = matchPath("/user/:id/:lang?", "/user/123/en")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang "en"
+                                @ id "123"
+            _ it
+                @ "should match when end optional segment is *not* provided"
+                => 
+                    const match = matchPath("/user/:id/:lang?", "/user/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang undefined
+                                @ id "123"
+            _ it
+                @ "should match multiple optional segments and none are provided"
+                => 
+                    const match = matchPath("/:lang?/user/:id?", "/user")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang undefined
+                                @ id undefined
+            _ it
+                @ "should match multiple optional segments and one is provided"
+                => 
+                    const match = matchPath("/:lang?/user/:id?", "/en/user")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang "en"
+                                @ id undefined
+            _ it
+                @ "should match multiple optional segments and all are provided"
+                => 
+                    const match = matchPath("/:lang?/user/:id?", "/en/user/123")
+                    _ expect(match).toMatchObject
+                        { 
+                            { params
+                                @ lang "en"
+                                @ id "123"
+    _ describe
+        @ "matchPath *"
+        => 
+            _ it
+                @ "matches the root URL"
+                => 
+                    _ expect(matchPath("*", "/")).toMatchObject
+                        { 
+                            @ pathname "/"
+                            @ pathnameBase "/"
+                    _ expect(matchPath("/*", "/")).toMatchObject
+                        { 
+                            @ pathname "/"
+                            @ pathnameBase "/"
+            _ it
+                @ "matches a URL with a segment"
+                => 
+                    _ expect(matchPath("*", "/users")).toMatchObject
+                        { 
+                            @ pathname "/users"
+                            @ pathnameBase "/"
+                    _ expect(matchPath("/*", "/users")).toMatchObject
+                        { 
+                            @ pathname "/users"
+                            @ pathnameBase "/"
+            _ it
+                @ "matches a URL with a segment and a trailing slash"
+                => 
+                    _ expect(matchPath("*", "/users/")).toMatchObject
+                        { 
+                            @ pathname "/users/"
+                            @ pathnameBase "/"
+                    _ expect(matchPath("/*", "/users/")).toMatchObject
+                        { 
+                            @ pathname "/users/"
+                            @ pathnameBase "/"
+            _ it
+                @ "matches a URL with multiple segments"
+                => 
+                    _ expect(matchPath("*", "/users/mj")).toMatchObject
+                        { 
+                            @ pathname "/users/mj"
+                            @ pathnameBase "/"
+                    _ expect(matchPath("/*", "/users/mj")).toMatchObject
+                        { 
+                            @ pathname "/users/mj"
+                            @ pathnameBase "/"
+            _ it
+                @ "matches a URL with multiple segments and a trailing slash"
+                => 
+                    _ expect(matchPath("*", "/users/mj/")).toMatchObject
+                        { 
+                            @ pathname "/users/mj/"
+                            @ pathnameBase "/"
+                    _ expect(matchPath("/*", "/users/mj/")).toMatchObject
+                        { 
+                            @ pathname "/users/mj/"
+                            @ pathnameBase "/"
+            _ it
+                @ "resolves params containing '*' correctly"
+                => 
+                    _ expect(matchPath("/users/:name/*", "/users/foo*/splat")).toMatchObject
+                        { 
+                            { params
+                                @ name "foo*"
+                                @ "*" "splat"
+                            @ pathname "/users/foo*/splat"
+                            @ pathnameBase "/users/foo*"
+    _ describe
+        @ "matchPath warnings"
+        => 
+            let consoleWarn
+                :ref jest.SpyInstance
+                    :param void
+                    :param any
+            _ beforeEach
+                => 
+                    set consoleWarn = jest.spyOn(console, "warn").mockImplementation()
+            _ afterEach
+                => 
+                    _ consoleWarn.mockRestore()
+            _ describe
+                @ "when the pattern has a trailing *"
+                => 
+                    _ it
+                        @ "issues a warning and matches the remaining portion of the pathname"
+                        => 
+                            _ expect(matchPath("/files*", "/files/mj.jpg")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" "mj.jpg"
+                                    @ pathname "/files/mj.jpg"
+                                    @ pathnameBase "/files"
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(1)
+                            _ expect(matchPath("/files*", "/files/")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" ""
+                                    @ pathname "/files/"
+                                    @ pathnameBase "/files"
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(2)
+                            _ expect(matchPath("/files*", "/files")).toMatchObject
+                                { 
+                                    { params
+                                        @ "*" ""
+                                    @ pathname "/files"
+                                    @ pathnameBase "/files"
+                            _ expect(consoleWarn).toHaveBeenCalledTimes(3)

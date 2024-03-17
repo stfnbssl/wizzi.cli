@@ -1,0 +1,2702 @@
+module
+    :import-type 
+        @ HydrationState
+        from "../index"
+    import 
+        @ createMemoryHistory
+        @ createRouter
+        @ IDLE_NAVIGATION
+        from "../index"
+    :import-type 
+        @ AgnosticDataRouteObject
+        @ AgnosticRouteObject
+        from "../utils"
+    import 
+        @ ErrorResponseImpl
+        from "../utils"
+    import 
+        @ deferredData
+        @ trackedPromise
+        @ urlMatch
+        from "./utils/custom-matchers"
+    import 
+        @ cleanup
+        @ createDeferred
+        @ setup
+        @ TASK_ROUTES
+        from "./utils/data-router-setup"
+    import 
+        @ createFormData
+        @ tick
+        from "./utils/utils"
+    :interface CustomMatchers
+        :< R
+        :m urlMatch
+            param url
+                :string 
+        :m trackedPromise
+            :ref R
+            param data
+                :any 
+                :optional 
+            param error
+                :any 
+                :optional 
+            param aborted
+                :boolean 
+                :optional 
+        :m deferredData
+            :ref R
+            param done
+                :boolean 
+            param status
+                :number 
+                :optional 
+            param headers
+                :ref Record
+                    :param string
+                    :param string
+                :optional 
+    :declare 
+        :module global
+            :module jest
+                :interface Expect
+                    :extends CustomMatchers
+                :interface Matchers
+                    :< R
+                    :extends CustomMatchers
+                        :param 
+                            :ref R
+                :interface InverseAsymmetricMatchers
+                    :extends CustomMatchers
+    _ expect.extend
+        { 
+            @ deferredData
+            @ trackedPromise
+            @ urlMatch
+    function initializeTest
+        param init
+            :{ 
+                :p url
+                    :optional 
+                    :string 
+                :p hydrationData
+                    :optional 
+                    :ref HydrationState
+            :optional 
+        return 
+            _ setup
+                { 
+                    [ routes
+                        { 
+                            @ path ""
+                            @ id "root"
+                            @ hasErrorBoundary true
+                            @ loader true
+                            [ children
+                                { 
+                                    @ path "/"
+                                    @ id "index"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/foo"
+                                    @ id "foo"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/bar"
+                                    @ id "bar"
+                                    @ loader true
+                                    @ action true
+                                { 
+                                    @ path "/no-loader"
+                                    @ id "noLoader"
+                    @ hydrationData
+                        || 
+                            + init?.hydrationData
+                            { 
+                                { loaderData
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                    ... 
+                        ( 
+                            iif init?.url
+                                then
+                                    { 
+                                        [ initialEntries
+                                            @ init.url
+                                else
+                                    { 
+    _ beforeEach
+        => 
+            _ jest.spyOn(console, "warn").mockImplementation
+                => 
+        # Detect any failures inside the router navigate code
+    _ afterEach
+        => 
+            _ cleanup()
+                # @ts-ignore
+            _ console.warn.mockReset()
+                # @ts-ignore
+        # Detect any failures inside the router navigate code
+    _ describe
+        @ "a router"
+        => 
+            _ describe
+                @ "init"
+                => 
+                    _ it
+                        @ "requires routes"
+                        async=> 
+                            let history
+                                _ createMemoryHistory
+                                    { 
+                                        [ initialEntries
+                                            @ "/"
+                            _ expect
+                                => 
+                                    _ createRouter
+                                        { 
+                                            @ routes []
+                                            @ history
+                                            { hydrationData
+                                ._ toThrowErrorMatchingInlineSnapshot
+                                    `lit 
+                                        + "You must provide a non-empty routes array to createRouter"
+                    _ it
+                        @ "converts routes to data routes"
+                        async=> 
+                            let history
+                                _ createMemoryHistory
+                                    { 
+                                        [ initialEntries
+                                            @ "/child/grandchild"
+                            let routes
+                                [ 
+                                    { 
+                                        @ path "/"
+                                        [ children
+                                            { 
+                                                @ id "child-keep-me"
+                                                @ path "child"
+                                                [ children
+                                                    { 
+                                                        @ path "grandchild"
+                            let originalRoutes = JSON.parse(JSON.stringify(routes))
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ routes
+                                        @ history
+                                        { hydrationData
+                                # routes are not mutated in place
+                            _ expect(routes).toEqual(originalRoutes)
+                                # routes are not mutated in place
+                            _ expect(router.state.matches).toMatchObject
+                                [ 
+                                    { 
+                                        { route
+                                            @ id "0"
+                                    { 
+                                        { route
+                                            @ id "child-keep-me"
+                                    { 
+                                        { route
+                                            @ id "0-0-0"
+                    _ it
+                        @ "throws if it finds duplicate route ids"
+                        async=> 
+                            let history
+                                _ createMemoryHistory
+                                    { 
+                                        [ initialEntries
+                                            @ "/child/grandchild"
+                            let routes
+                                [ 
+                                    { 
+                                        @ path "/"
+                                        [ children
+                                            { 
+                                                @ id "child"
+                                                @ path "child"
+                                                [ children
+                                                    { 
+                                                        @ id "child"
+                                                        @ path "grandchild"
+                            _ expect
+                                => 
+                                    _ createRouter
+                                        { 
+                                            @ routes
+                                            @ history
+                                            { hydrationData
+                                ._ toThrowErrorMatchingInlineSnapshot
+                                    `lit 
+                                        + "Found a route id collision on id "child".  Route id's must be globally unique within Data Router usages"
+                    _ it
+                        @ "throws if it finds index routes with children"
+                        async=> 
+                            let routes
+                                :[ 
+                                    :ref AgnosticRouteObject
+                                =
+                                    [ 
+                                        { 
+                                            @ index true
+                                            [ children
+                                                { 
+                                                    @ path "nope"
+                                            # @ts-expect-error
+                            _ expect
+                                => 
+                                    _ createRouter
+                                        { 
+                                            @ routes
+                                            @ history createMemoryHistory()
+                                ._ toThrowErrorMatchingInlineSnapshot
+                                    `lit 
+                                        + "Cannot specify children on an index route"
+                    _ it
+                        @ "supports a basename prop for route matching"
+                        async=> 
+                            let history
+                                _ createMemoryHistory
+                                    { 
+                                        [ initialEntries
+                                            @ "/base/name/path"
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ basename "/base/name"
+                                        [ routes
+                                            { 
+                                                @ path "path"
+                                        @ history
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ hash ""
+                                        @ key expect.any(String)
+                                        @ pathname "/base/name/path"
+                                        @ search ""
+                                        @ state null
+                                    [ matches
+                                        { 
+                                            { params
+                                            @ pathname "/path"
+                                            @ pathnameBase "/path"
+                                            { route
+                                                @ id "0"
+                                                @ path "path"
+                                    @ initialized true
+                    _ it
+                        @ "supports subscribers"
+                        async=> 
+                            let history
+                                _ createMemoryHistory
+                                    { 
+                                        [ initialEntries
+                                            @ "/"
+                            let count = 0
+                            let router
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ hasErrorBoundary true
+                                                @ loader
+                                                    => 
+                                                        + ++count
+                                        @ history
+                                        { hydrationData
+                                            { loaderData
+                                                @ root 0
+                                    ._ initialize
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ root 0
+                            let subscriber = jest.fn()
+                            let unsubscribe = router.subscribe(subscriber)
+                            let subscriber2 = jest.fn()
+                            let unsubscribe2 = router.subscribe(subscriber2)
+                            await 
+                                _ router.navigate("/?key=a")
+                            _ expect(subscriber.mock.calls[0][0].navigation.state).toBe("loading")
+                            _ expect(subscriber.mock.calls[0][0].navigation.location.search).toBe("?key=a")
+                            _ expect(subscriber.mock.calls[1][0].navigation.state).toBe("idle")
+                            _ expect(subscriber.mock.calls[1][0].location.search).toBe("?key=a")
+                            _ expect(subscriber2.mock.calls[0][0].navigation.state).toBe("loading")
+                            _ expect(subscriber2.mock.calls[0][0].navigation.location.search).toBe("?key=a")
+                            _ expect(subscriber2.mock.calls[1][0].navigation.state).toBe("idle")
+                            _ expect(subscriber2.mock.calls[1][0].location.search).toBe("?key=a")
+                            _ unsubscribe2()
+                            await 
+                                _ router.navigate("/?key=b")
+                            _ expect(subscriber.mock.calls[2][0].navigation.state).toBe("loading")
+                            _ expect(subscriber.mock.calls[2][0].navigation.location.search).toBe("?key=b")
+                            _ expect(subscriber.mock.calls[3][0].navigation.state).toBe("idle")
+                            _ expect(subscriber.mock.calls[3][0].location.search).toBe("?key=b")
+                            _ unsubscribe()
+                            await 
+                                _ router.navigate("/?key=c")
+                            _ expect(subscriber).toHaveBeenCalledTimes(4)
+                            _ expect(subscriber2).toHaveBeenCalledTimes(2)
+            _ describe
+                @ "no route match"
+                => 
+                    _ it
+                        @ "navigations to root catch"
+                        => 
+                            let t = initializeTest()
+                            _ t.navigate("/not-found")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/not-found"'), true)
+                            _ expect(t.router.state.matches).toMatchObject
+                                [ 
+                                    { 
+                                        { params
+                                        @ pathname ""
+                                        { route
+                                            @ hasErrorBoundary true
+                                            @ children expect.any(Array)
+                                            @ id "root"
+                                            @ loader expect.any(Function)
+                                            @ path ""
+                    _ it
+                        @ "matches root pathless route"
+                        => 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                [ children
+                                                    { 
+                                                        @ path "foo"
+                            _ t.navigate("/not-found")
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/not-found"'), true)
+                            _ expect(t.router.state.matches).toMatchObject
+                                [ 
+                                    { 
+                                        { params
+                                        @ pathname ""
+                                        { route
+                                            @ id "root"
+                                            @ children expect.any(Array)
+                    _ it
+                        @ "clears prior loader/action data"
+                        async=> 
+                            let t = initializeTest()
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT"
+                                    @ index "INDEX"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/foo"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ key "value"
+                            await 
+                                _ A.actions.foo.resolve("ACTION")
+                            await 
+                                _ A.loaders.root.resolve("ROOT*")
+                            await 
+                                _ A.loaders.foo.resolve("LOADER")
+                            _ expect(t.router.state.actionData).toEqual
+                                { 
+                                    @ foo "ACTION"
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                    @ foo "LOADER"
+                            _ t.navigate("/not-found")
+                            _ expect(t.router.state.actionData).toBe(null)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/not-found"'), true)
+                            _ expect(t.router.state.matches).toMatchObject
+                                [ 
+                                    { 
+                                        { params
+                                        @ pathname ""
+                                        { route
+                                            @ hasErrorBoundary true
+                                            @ children expect.any(Array)
+                                            @ id "root"
+                                            @ loader expect.any(Function)
+                                            @ path ""
+            _ describe
+                @ "navigation (new)"
+                => 
+                    _ it
+                        @ "navigates through a history stack without data loading"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                            { 
+                                                @ id "tasks"
+                                                @ path "tasks"
+                                            { 
+                                                @ id "tasksId"
+                                                @ path "tasks/:id"
+                                        [ initialEntries
+                                            @ "/"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                        @ search ""
+                                        @ hash ""
+                                        @ state null
+                                        @ key expect.any(String)
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    [ matches
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ t.navigate("/tasks")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks"
+                                        @ search ""
+                                        @ hash ""
+                                        @ state null
+                                        @ key expect.any(String)
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    [ matches
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/tasks"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks")
+                            await 
+                                _ t.navigate
+                                    @ "/tasks/1"
+                                    { 
+                                        @ replace true
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "REPLACE"
+                                    { location
+                                        @ pathname "/tasks/1"
+                                        @ search ""
+                                        @ hash ""
+                                        @ state null
+                                        @ key expect.any(String)
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    [ matches
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/tasks/1"
+                            _ expect(t.history.action).toEqual("REPLACE")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                            _ t.router.navigate(-1)
+                            await 
+                                _ tick()
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                        @ search ""
+                                        @ hash ""
+                                        @ state null
+                                        @ key expect.any(String)
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    [ matches
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ t.navigate("/tasks?foo=bar#hash")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks"
+                                        @ search "?foo=bar"
+                                        @ hash "#hash"
+                                        @ state null
+                                        @ key expect.any(String)
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    [ matches
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/tasks"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location).toEqual
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search "?foo=bar"
+                                    @ hash "#hash"
+                                    @ state null
+                                    @ key expect.any(String)
+                    _ it
+                        @ "navigates through a history stack without data loading (with a basename)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ basename "/base/name"
+                                        [ routes
+                                            { 
+                                                @ id "index"
+                                                @ index true
+                                            { 
+                                                @ id "tasks"
+                                                @ path "tasks"
+                                            { 
+                                                @ id "tasksId"
+                                                @ path "tasks/:id"
+                                        [ initialEntries
+                                            @ "/base/name"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/base/name"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ id "index"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/base/name")
+                            await 
+                                _ t.navigate("/base/name/tasks")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/base/name/tasks"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ id "tasks"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/base/name/tasks")
+                            await 
+                                _ t.navigate("/base/name/tasks/1")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/base/name/tasks/1"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ id "tasksId"
+                            _ expect(t.history.location.pathname).toEqual("/base/name/tasks/1")
+                    _ it
+                        @ "handles 404 routes"
+                        => 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                            _ t.navigate("/junk")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/junk"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                    { errors
+                                        @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/junk"'), true)
+                    _ it
+                        @ "handles 404 routes when the root route contains a path (initialization)"
+                        => 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/path"
+                                                [ children
+                                                    { 
+                                                        @ index true
+                                        [ initialEntries
+                                            @ "/junk"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { errors
+                                        @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/junk"'), true)
+                                    @ initialized true
+                                    { location
+                                        @ pathname "/junk"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ id "root"
+                    _ it
+                        @ "handles 404 routes when the root route contains a path (navigation)"
+                        => 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/path"
+                                                [ children
+                                                    { 
+                                                        @ index true
+                                        [ initialEntries
+                                            @ "/path"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ errors null
+                            _ t.navigate("/junk")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { errors
+                                        @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/junk"'), true)
+                                    { location
+                                        @ pathname "/junk"
+                                    [ matches
+                                        { 
+                                            { route
+                                                @ id "root"
+                    _ it
+                        @ "converts formData to URLSearchParams for unspecified formMethod"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks"
+                                    { 
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                                    @ key "value"
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search "?key=value"
+                            _ expect(t.router.state.navigation.formMethod).toBe("get")
+                            _ expect(t.router.state.navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    _ it
+                        @ "converts formData to URLSearchParams for formMethod=get"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks"
+                                    { 
+                                        @ formMethod "get"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                                    @ key "value"
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search "?key=value"
+                            _ expect(t.router.state.navigation.formMethod).toBe("get")
+                            _ expect(t.router.state.navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ key "value"
+                    _ it
+                        @ "does not preserve existing 'action' URLSearchParams for formMethod='get'"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks?key=1"
+                                    { 
+                                        @ formMethod "get"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                                    @ key "2"
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search "?key=2"
+                            _ expect(t.router.state.navigation.formMethod).toBe("get")
+                            _ expect(t.router.state.navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ key "2"
+                    _ it
+                        @ "preserves existing 'action' URLSearchParams for formMethod='post'"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks?key=1"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                                    @ key "2"
+                            _ expect(t.router.state.navigation.state).toBe("submitting")
+                            _ expect(t.router.state.navigation.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search "?key=1"
+                            _ expect(t.router.state.navigation.formMethod).toBe("post")
+                            _ expect(t.router.state.navigation.formData).toEqual
+                                _ createFormData
+                                    { 
+                                        @ key "2"
+                    _ it
+                        @ "url-encodes File names on GET submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            let formData = new FormData()
+                            _ formData.append
+                                @ "blob"
+                                new Blob
+                                    [ 
+                                        @ "<h1>Some html file contents</h1>"
+                                    { 
+                                        @ type "text/html"
+                                @ "blob.html"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ formMethod "get"
+                                            @ formData
+                            let params = new URL(A.loaders.tasks.stub.mock.calls[0][0].request.url).searchParams
+                            _ expect(params.get("blob")).toEqual("blob.html")
+                    _ it
+                        @ "returns a 405 error if attempting to submit with method=HEAD"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            let formData = new FormData()
+                            _ formData.append
+                                @ "blob"
+                                new Blob
+                                    [ 
+                                        @ "<h1>Some html file contents</h1>"
+                                    { 
+                                        @ type "text/html"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks"
+                                    { 
+                                        @ formMethod "head"
+                                            # @ts-expect-error
+                                        @ formData
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search ""
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ tasks new ErrorResponseImpl(405, "Method Not Allowed", Error('Invalid request method "HEAD"'), true)
+                    _ it
+                        @ "returns a 405 error if attempting to submit with method=OPTIONS"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            let formData = new FormData()
+                            _ formData.append
+                                @ "blob"
+                                new Blob
+                                    [ 
+                                        @ "<h1>Some html file contents</h1>"
+                                    { 
+                                        @ type "text/html"
+                            await 
+                                _ t.navigate
+                                    @ "/tasks"
+                                    { 
+                                        @ formMethod "options"
+                                            # @ts-expect-error
+                                        @ formData
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.location).toMatchObject
+                                { 
+                                    @ pathname "/tasks"
+                                    @ search ""
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ tasks new ErrorResponseImpl(405, "Method Not Allowed", Error('Invalid request method "OPTIONS"'), true)
+            _ describe
+                @ "data loading (new)"
+                => 
+                    _ it
+                        @ "marks as initialized immediately when no loaders are present"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                        [ initialEntries
+                                            @ "/"
+                            _ expect(console.warn).not.toHaveBeenCalled()
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                    _ it
+                        @ "hydrates initial data"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            _ expect(console.warn).not.toHaveBeenCalled()
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT DATA"
+                                        @ index "INDEX DATA"
+                    _ it
+                        @ "kicks off initial data load if no hydration data is provided"
+                        async=> 
+                            let parentDfd = createDeferred()
+                            let parentSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr parentDfd.promise
+                            let childDfd = createDeferred()
+                            let childSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr childDfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                            _ router.initialize()
+                            _ expect(console.warn).not.toHaveBeenCalled()
+                            _ expect(parentSpy.mock.calls.length).toBe(1)
+                            _ expect(childSpy.mock.calls.length).toBe(1)
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/child"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ parentDfd.resolve("PARENT DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/child"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ childDfd.resolve("CHILD DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ "0" "PARENT DATA"
+                                        @ "0-0" "CHILD DATA"
+                            _ router.dispose()
+                    _ it
+                        @ "handles interruptions of initial data load"
+                        async=> 
+                            let parentDfd = createDeferred()
+                            let parentSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr parentDfd.promise
+                            let childDfd = createDeferred()
+                            let childSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr childDfd.promise
+                            let child2Dfd = createDeferred()
+                            let child2Spy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr child2Dfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader parentSpy
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader childSpy
+                                                    { 
+                                                        @ path "child2"
+                                                        @ loader child2Spy
+                            _ router.initialize()
+                            _ expect(console.warn).not.toHaveBeenCalled()
+                            _ expect(parentSpy.mock.calls.length).toBe(1)
+                            _ expect(childSpy.mock.calls.length).toBe(1)
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/child"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ parentDfd.resolve("PARENT DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/child"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            _ router.navigate("/child2")
+                            await 
+                                _ childDfd.resolve("CHILD DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/child2"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ child2Dfd.resolve("CHILD2 DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child2"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ "0" "PARENT DATA"
+                                        @ "0-1" "CHILD2 DATA"
+                            _ router.dispose()
+                    _ it
+                        @ "handles errors in initial data load"
+                        async=> 
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/child"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader
+                                                    => 
+                                                        _ Promise.reject("Kaboom!")
+                                                [ children
+                                                    { 
+                                                        @ path "child"
+                                                        @ loader
+                                                            => 
+                                                                _ Promise.resolve("child")
+                            _ router.initialize()
+                            await 
+                                _ tick()
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/child"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ "0-0" "child"
+                                    { errors
+                                        @ "0" "Kaboom!"
+                            _ router.dispose()
+                    _ it
+                        @ "kicks off initial data load when hash is present"
+                        async=> 
+                            let loaderDfd = createDeferred()
+                            let loaderSpy
+                                _ jest.fn
+                                    => 
+                                        +
+                                            @expr loaderDfd.promise
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ history
+                                            _ createMemoryHistory
+                                                { 
+                                                    [ initialEntries
+                                                        @ "/#hash"
+                                        [ routes
+                                            { 
+                                                @ path "/"
+                                                @ loader loaderSpy
+                            _ router.initialize()
+                            _ expect(console.warn).not.toHaveBeenCalled()
+                            _ expect(loaderSpy.mock.calls.length).toBe(1)
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/"
+                                                @ hash "#hash"
+                                    @ initialized false
+                                    { navigation
+                                        @ state "loading"
+                                        { location
+                                            @ pathname "/"
+                                            @ hash "#hash"
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                            await 
+                                _ loaderDfd.resolve("DATA")
+                            _ expect(router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    @ location
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/"
+                                                @ hash "#hash"
+                                    @ initialized true
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ "0" "DATA"
+                            _ router.dispose()
+                    _ it
+                        @ "executes loaders on push navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav1
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ nav1.loaders.tasks.resolve("TASKS_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasks "TASKS_DATA"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks")
+                            let nav2
+                                await 
+                                    _ t.navigate("/tasks/1")
+                            await 
+                                _ nav2.loaders.tasksId.resolve("TASKS_ID_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks/1"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasksId "TASKS_ID_DATA"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                    _ it
+                        @ "executes loaders on replace navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ replace true
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ nav.loaders.tasks.resolve("TASKS_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "REPLACE"
+                                    { location
+                                        @ pathname "/tasks"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasks "TASKS_DATA"
+                            _ expect(t.history.action).toEqual("REPLACE")
+                            _ expect(t.history.location.pathname).toEqual("/tasks")
+                    _ it
+                        @ "executes loaders on go navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                            @ "/tasks"
+                                        @ initialIndex 0
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                                # pop forward to /tasks
+                            let nav2
+                                await 
+                                    _ t.navigate(1)
+                                # pop forward to /tasks
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ index "INDEX_DATA"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/tasks")
+                            await 
+                                _ nav2.loaders.tasks.resolve("TASKS_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/tasks"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasks "TASKS_DATA"
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/tasks")
+                    _ it
+                        @ "persists location keys throughout navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            _ expect(t.router.state.location.key).toBe("default")
+                            let A
+                                await 
+                                    _ t.navigate("/tasks")
+                            let navigationKey = t.router.state.navigation.location?.key
+                            _ expect(t.router.state.location.key).toBe("default")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(navigationKey).not.toBe("default")
+                            _ expect(Number(navigationKey?.length) > 0).toBe(true)
+                            await 
+                                _ A.loaders.tasks.resolve("TASKS")
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                                # Make sure we keep the same location.key throughout the navigation and
+                                # history isn't creating a new one in history.push
+                            _ expect(t.router.state.location.key).toBe(navigationKey)
+                                # Make sure we keep the same location.key throughout the navigation and
+                                # history isn't creating a new one in history.push
+                            _ expect(t.history.location.key).toBe(navigationKey)
+                    _ it
+                        @ "sends proper arguments to loaders"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(nav.loaders.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request
+                                        new Request
+                                            @ "http://localhost/tasks"
+                                            { 
+                                                @ signal nav.loaders.tasks.stub.mock.calls[0][0].request.signal
+                            let nav2
+                                await 
+                                    _ t.navigate("/tasks/1")
+                            _ expect(nav2.loaders.tasksId.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                        @ id "1"
+                                    @ request
+                                        new Request
+                                            @ "http://localhost/tasks/1"
+                                            { 
+                                                @ signal nav2.loaders.tasksId.stub.mock.calls[0][0].request.signal
+                            let nav3
+                                await 
+                                    _ t.navigate("/tasks?foo=bar#hash")
+                            _ expect(nav3.loaders.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request
+                                        new Request
+                                            @ "http://localhost/tasks?foo=bar"
+                                            { 
+                                                @ signal nav3.loaders.tasks.stub.mock.calls[0][0].request.signal
+                            let nav4
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks#hash"
+                                        { 
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ foo "bar"
+                            _ expect(nav4.loaders.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request
+                                        new Request
+                                            @ "http://localhost/tasks?foo=bar"
+                                            { 
+                                                @ signal nav4.loaders.tasks.stub.mock.calls[0][0].request.signal
+                            _ expect(t.router.state.navigation.formAction).toBe("/tasks")
+                            _ expect(t.router.state.navigation?.location?.pathname).toBe("/tasks")
+                            _ expect(t.router.state.navigation?.location?.search).toBe("?foo=bar")
+                    _ it
+                        @ "handles errors thrown from loaders"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                                # Throw from tasks, handled by tasks
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                                # Throw from tasks, handled by tasks
+                            await 
+                                _ nav.loaders.tasks.reject("TASKS_ERROR")
+                            _ expect(t.router.state.navigation).toEqual(IDLE_NAVIGATION)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT_DATA"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ tasks "TASKS_ERROR"
+                                # Throw from index, handled by root
+                            let nav2
+                                await 
+                                    _ t.navigate("/")
+                                # Throw from index, handled by root
+                            await 
+                                _ nav2.loaders.index.reject("INDEX_ERROR")
+                            _ expect(t.router.state.navigation).toEqual(IDLE_NAVIGATION)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT_DATA"
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root "INDEX_ERROR"
+                    _ it
+                        @ "re-runs loaders on post-error navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { errors
+                                                @ root "ROOT_ERROR"
+                                # If a route has an error, we should call the loader if that route is
+                                # re-used on a navigation
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                                # If a route has an error, we should call the loader if that route is
+                                # re-used on a navigation
+                            await 
+                                _ nav.loaders.tasks.resolve("TASKS_DATA")
+                            _ expect(t.router.state.navigation.state).toEqual("loading")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                            _ expect(t.router.state.errors).toEqual
+                                { 
+                                    @ root "ROOT_ERROR"
+                            await 
+                                _ nav.loaders.root.resolve("ROOT_DATA")
+                            _ expect(t.router.state.navigation).toEqual(IDLE_NAVIGATION)
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT_DATA"
+                                    @ tasks "TASKS_DATA"
+                            _ expect(t.router.state.errors).toBe(null)
+                    _ it
+                        @ "handles interruptions during navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let historySpy = jest.spyOn(t.history, "push")
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(t.router.state.navigation.state).toEqual("loading")
+                            _ expect(t.router.state.location.pathname).toEqual("/")
+                            _ expect(nav.loaders.tasks.signal.aborted).toBe(false)
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                                # Interrupt and confirm prior loader was aborted
+                            let nav2
+                                await 
+                                    _ t.navigate("/tasks/1")
+                                # Interrupt and confirm prior loader was aborted
+                            _ expect(t.router.state.navigation.state).toEqual("loading")
+                            _ expect(t.router.state.location.pathname).toEqual("/")
+                            _ expect(nav.loaders.tasks.signal.aborted).toBe(true)
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                                # Complete second navigation
+                            await 
+                                _ nav2.loaders.tasksId.resolve("TASKS_ID_DATA")
+                                # Complete second navigation
+                            _ expect(t.router.state.navigation).toEqual(IDLE_NAVIGATION)
+                            _ expect(t.router.state.location.pathname).toEqual("/tasks/1")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT_DATA"
+                                    @ tasksId "TASKS_ID_DATA"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                                # Resolve first navigation - should no-op
+                            await 
+                                _ nav.loaders.tasks.resolve("TASKS_DATA")
+                                # Resolve first navigation - should no-op
+                            _ expect(t.router.state.navigation).toEqual(IDLE_NAVIGATION)
+                            _ expect(t.router.state.location.pathname).toEqual("/tasks/1")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT_DATA"
+                                    @ tasksId "TASKS_ID_DATA"
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                            _ expect(historySpy.mock.calls).toEqual
+                                [ 
+                                    [ 
+                                        _ expect.objectContaining
+                                            { 
+                                                @ pathname "/tasks/1"
+                                        @ null
+                    _ it
+                        @ "handles redirects thrown from loaders"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav1
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            let nav2
+                                await 
+                                    _ nav1.loaders.tasks.redirect("/tasks/1")
+                                # Should not abort if it redirected
+                            _ expect(nav1.loaders.tasks.signal.aborted).toBe(false)
+                                # Should not abort if it redirected
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks/1"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ nav2.loaders.tasksId.resolve("TASKS_ID_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks/1"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasksId "TASKS_ID_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                    _ it
+                        @ "handles redirects returned from loaders"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav1
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            let nav2
+                                await 
+                                    _ nav1.loaders.tasks.redirectReturn("/tasks/1")
+                                # Should not abort if it redirected
+                            _ expect(nav1.loaders.tasks.signal.aborted).toBe(false)
+                                # Should not abort if it redirected
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "POP"
+                                    { location
+                                        @ pathname "/"
+                                    { navigation
+                                        { location
+                                            @ pathname "/tasks/1"
+                                        @ state "loading"
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("POP")
+                            _ expect(t.history.location.pathname).toEqual("/")
+                            await 
+                                _ nav2.loaders.tasksId.resolve("TASKS_ID_DATA")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ historyAction "PUSH"
+                                    { location
+                                        @ pathname "/tasks/1"
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                        @ tasksId "TASKS_ID_DATA"
+                                    @ errors null
+                            _ expect(t.history.action).toEqual("PUSH")
+                            _ expect(t.history.location.pathname).toEqual("/tasks/1")
+                    _ it
+                        @ "handles thrown non-redirect Responses as ErrorResponse's (text)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                                # Throw from tasks, handled by tasks
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                                # Throw from tasks, handled by tasks
+                            await 
+                                _ nav.loaders.tasks.reject
+                                    new Response
+                                        @ "broken"
+                                        { 
+                                            @ status 400
+                                            @ statusText "Bad Request"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ actionData null
+                                    { errors
+                                        @ tasks new ErrorResponseImpl(400, "Bad Request", "broken")
+                    _ it
+                        @ "handles thrown non-redirect Responses as ErrorResponse's (json)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                                # Throw from tasks, handled by tasks
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                                # Throw from tasks, handled by tasks
+                            await 
+                                _ nav.loaders.tasks.reject
+                                    new Response
+                                        _ JSON.stringify
+                                            { 
+                                                @ key "value"
+                                        { 
+                                            @ status 400
+                                            @ statusText "Bad Request"
+                                            { headers
+                                                @ "Content-Type" "application/json"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ actionData null
+                                    { errors
+                                        @ tasks
+                                            new ErrorResponseImpl
+                                                @ 400
+                                                @ "Bad Request"
+                                                { 
+                                                    @ key "value"
+                    _ it
+                        @ "handles thrown non-redirect Responses as ErrorResponse's (json utf8)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                                # Throw from tasks, handled by tasks
+                            let nav
+                                await 
+                                    _ t.navigate("/tasks")
+                                # Throw from tasks, handled by tasks
+                            await 
+                                _ nav.loaders.tasks.reject
+                                    new Response
+                                        _ JSON.stringify
+                                            { 
+                                                @ key "value"
+                                        { 
+                                            @ status 400
+                                            @ statusText "Bad Request"
+                                            { headers
+                                                @ "Content-Type" "application/json; charset=utf-8"
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    @ navigation IDLE_NAVIGATION
+                                    { loaderData
+                                        @ root "ROOT_DATA"
+                                    @ actionData null
+                                    { errors
+                                        @ tasks
+                                            new ErrorResponseImpl
+                                                @ 400
+                                                @ "Bad Request"
+                                                { 
+                                                    @ key "value"
+                    _ it
+                        @ "sends proper arguments to actions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ query "params"
+                            _ expect(nav.actions.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            let request = nav.actions.tasks.stub.mock.calls[0][0].request
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            _ expect(request.method).toBe("POST")
+                            _ expect(request.url).toBe("http://localhost/tasks")
+                            _ expect(request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded;charset=UTF-8")
+                            _ expect
+                                _ 
+                                    _ request.formData()
+                                    ._ get
+                                        @ "query"
+                                ._ toBe
+                                    @ "params"
+                            await 
+                                _ nav.actions.tasks.resolve("TASKS ACTION")
+                            let rootLoaderRequest = nav.loaders.root.stub.mock.calls[0][0].request
+                            _ expect(rootLoaderRequest.method).toBe("GET")
+                            _ expect(rootLoaderRequest.url).toBe("http://localhost/tasks")
+                            let tasksLoaderRequest = nav.loaders.tasks.stub.mock.calls[0][0].request
+                            _ expect(tasksLoaderRequest.method).toBe("GET")
+                            _ expect(tasksLoaderRequest.url).toBe("http://localhost/tasks")
+                    _ it
+                        @ "sends proper arguments to actions (using query string)"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let formData
+                                _ createFormData
+                                    { 
+                                        @ query "params"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks?foo=bar"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                            _ expect(nav.actions.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            let request = nav.actions.tasks.stub.mock.calls[0][0].request
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            _ expect(request.url).toBe("http://localhost/tasks?foo=bar")
+                            _ expect(request.method).toBe("POST")
+                            _ expect(request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded;charset=UTF-8")
+                            _ expect
+                                _ 
+                                    _ request.formData()
+                                    ._ get
+                                        @ "query"
+                                ._ toBe
+                                    @ "params"
+                        # https://fetch.spec.whatwg.org/#concept-method
+                    _ it
+                        @ "properly handles method=PATCH weirdness"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                                                @ index "INDEX_DATA"
+                            let nav
+                                await 
+                                    _ t.navigate
+                                        @ "/tasks"
+                                        { 
+                                            @ formMethod "patch"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                                                        @ query "params"
+                            _ expect(nav.actions.tasks.stub).toHaveBeenCalledWith
+                                { 
+                                    { params
+                                    @ request expect.any(Request)
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            let request = nav.actions.tasks.stub.mock.calls[0][0].request
+                                # Assert request internals, cannot do a deep comparison above since some
+                                # internals aren't the same on separate creations
+                            _ expect(request.method).toBe("PATCH")
+                            _ expect(request.url).toBe("http://localhost/tasks")
+                            _ expect(request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded;charset=UTF-8")
+                            _ expect
+                                _ 
+                                    _ request.formData()
+                                    ._ get
+                                        @ "query"
+                                ._ toBe
+                                    @ "params"
+                            await 
+                                _ nav.actions.tasks.resolve("TASKS ACTION")
+                            let rootLoaderRequest = nav.loaders.root.stub.mock.calls[0][0].request
+                            _ expect(rootLoaderRequest.method).toBe("GET")
+                            _ expect(rootLoaderRequest.url).toBe("http://localhost/tasks")
+                            let tasksLoaderRequest = nav.loaders.tasks.stub.mock.calls[0][0].request
+                            _ expect(tasksLoaderRequest.method).toBe("GET")
+                            _ expect(tasksLoaderRequest.url).toBe("http://localhost/tasks")
+                        # https://fetch.spec.whatwg.org/#concept-method
+                    _ it
+                        @ "handles multipart/form-data submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                            let fd = new FormData()
+                            _ fd.append("key", "value")
+                            _ fd.append
+                                @ "file"
+                                new Blob
+                                    [ 
+                                        literal "1"
+                                        literal "2"
+                                        literal "3"
+                                @ "file.txt"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formEncType "multipart/form-data"
+                                            @ formData fd
+                            _ expect(A.actions.root.stub.mock.calls[0][0].request.headers.get("Content-Type")).toMatch(/^multipart\/form-data; boundary=NodeFetchFormDataBoundary[a-z0-9]+/)
+                    _ it
+                        @ "url-encodes File names on x-www-form-urlencoded submissions"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ id "root"
+                                                @ path "/"
+                                                @ action true
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT_DATA"
+                            let fd = new FormData()
+                            _ fd.append("key", "value")
+                            _ fd.append
+                                @ "file"
+                                new Blob
+                                    [ 
+                                        literal "1"
+                                        literal "2"
+                                        literal "3"
+                                @ "file.txt"
+                            let A
+                                await 
+                                    _ t.navigate
+                                        @ "/"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formEncType "application/x-www-form-urlencoded"
+                                            @ formData fd
+                            let req = A.actions.root.stub.mock.calls[0][0].request.clone()
+                            _ expect
+                                _ 
+                                    _ req.formData()
+                                    ._ get
+                                        @ "file"
+                                ._ toEqual
+                                    @ "file.txt"
+                    _ it
+                        @ "races actions and loaders against abort signals"
+                        async=> 
+                            let loaderDfd = createDeferred()
+                            let actionDfd = createDeferred()
+                            let router
+                                _ createRouter
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ path "foo"
+                                                @ loader
+                                                    => 
+                                                        +
+                                                            @expr loaderDfd.promise
+                                                @ action
+                                                    => 
+                                                        +
+                                                            @expr actionDfd.promise
+                                            { 
+                                                @ path "bar"
+                                        { hydrationData
+                                            { loaderData
+                                                @ "0" null
+                                        @ history createMemoryHistory()
+                            _ expect(router.state.initialized).toBe(true)
+                            let fooPromise = router.navigate("/foo")
+                            _ expect(router.state.navigation.state).toBe("loading")
+                            let barPromise = router.navigate("/bar")
+                                # This should resolve _without_ us resolving the loader
+                            await 
+                                @id fooPromise
+                                # This should resolve _without_ us resolving the loader
+                            await 
+                                @id barPromise
+                            _ expect(router.state.navigation.state).toBe("idle")
+                            _ expect(router.state.location.pathname).toBe("/bar")
+                            let fooPromise2
+                                _ router.navigate
+                                    @ "/foo"
+                                    { 
+                                        @ formMethod "post"
+                                        @ formData
+                                            _ createFormData
+                                                { 
+                                                    @ key "value"
+                            _ expect(router.state.navigation.state).toBe("submitting")
+                            let barPromise2 = router.navigate("/bar")
+                                # This should resolve _without_ us resolving the action
+                            await 
+                                @id fooPromise2
+                                # This should resolve _without_ us resolving the action
+                            await 
+                                @id barPromise2
+                            _ expect(router.state.navigation.state).toBe("idle")
+                            _ expect(router.state.location.pathname).toBe("/bar")
+                            _ router.dispose()
+                    _ it
+                        @ "throws an error if actions/loaders return undefined"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        [ routes
+                                            { 
+                                                @ index true
+                                            { 
+                                                @ id "path"
+                                                @ path "/path"
+                                                @ loader true
+                                                @ action true
+                            let nav1
+                                await 
+                                    _ t.navigate("/path")
+                            await 
+                                _ nav1.loaders.path.resolve(undefined)
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/path"
+                                    { errors
+                                        @ path new Error('You defined a loader for route "path" but didn\'t return anything ' + "from your `loader` function. Please return a value or `null`.")
+                            await 
+                                _ t.navigate("/")
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/"
+                                    { errors
+                            let nav3
+                                await 
+                                    _ t.navigate
+                                        @ "/path"
+                                        { 
+                                            @ formMethod "post"
+                                            @ formData
+                                                _ createFormData
+                                                    { 
+                            await 
+                                _ nav3.actions.path.resolve(undefined)
+                            _ expect(t.router.state).toMatchObject
+                                { 
+                                    { location
+                                        @ pathname "/path"
+                                    { errors
+                                        @ path new Error('You defined an action for route "path" but didn\'t return anything ' + "from your `action` function. Please return a value or `null`.")
+            _ describe
+                @ "router.enhanceRoutes"
+                => 
+                    _ afterEach
+                        => 
+                            _ cleanup()
+                        # Detect any failures inside the router navigate code
+                    _ it
+                        @ "should retain existing routes until revalidation completes on loader removal"
+                        async=> 
+                            let t = initializeTest()
+                            let ogRoutes = t.router.routes
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve("foo")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo "foo"
+                            let newRoutes
+                                _ t.enhanceRoutes
+                                    [ 
+                                        { 
+                                            @ path ""
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader true
+                                            [ children
+                                                { 
+                                                    @ path "/"
+                                                    @ id "index"
+                                                    @ loader true
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "/foo"
+                                                    @ id "foo"
+                                                    @ loader false
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                            _ t._internalSetRoutes(newRoutes)
+                                # Get a new revalidation helper that should use the updated routes
+                            let R
+                                await 
+                                    _ t.revalidate()
+                                # Get a new revalidation helper that should use the updated routes
+                            _ expect(t.router.state.revalidation).toBe("loading")
+                                # Should still expose be the og routes until revalidation completes
+                            _ expect(t.router.routes).toBe(ogRoutes)
+                                # Should still expose be the og routes until revalidation completes
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            await 
+                                _ R.loaders.root.resolve("ROOT*")
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            _ expect(t.router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(t.router.routes).not.toBe(ogRoutes)
+                                # Routes should be updated
+                            _ expect(t.router.routes).toEqual(newRoutes)
+                                # Loader data should be updated and foo removed
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                # Loader data should be updated and foo removed
+                            _ expect(t.router.state.errors).toEqual(null)
+                    _ it
+                        @ "should retain existing routes until revalidation completes on loader addition"
+                        async=> 
+                            let t = initializeTest()
+                            let ogRoutes = t.router.routes
+                            await 
+                                _ t.navigate("/no-loader")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                            let newRoutes
+                                _ t.enhanceRoutes
+                                    [ 
+                                        { 
+                                            @ path ""
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader true
+                                            [ children
+                                                { 
+                                                    @ path "/no-loader"
+                                                    @ id "noLoader"
+                                                    @ loader true
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                            _ t._internalSetRoutes(newRoutes)
+                                # Get a new revalidation helper that should use the updated routes
+                            let R
+                                await 
+                                    _ t.revalidate()
+                                # Get a new revalidation helper that should use the updated routes
+                            _ expect(t.router.state.revalidation).toBe("loading")
+                            _ expect(t.router.routes).toBe(ogRoutes)
+                                # Should still expose be the og routes until revalidation completes
+                            _ expect(t.router.routes).toBe(ogRoutes)
+                                # Should still expose be the og routes until revalidation completes
+                                # Resolve any loaders that should have ran
+                            await 
+                                _ R.loaders.root.resolve("ROOT*")
+                                # Resolve any loaders that should have ran
+                            await 
+                                _ R.loaders.noLoader.resolve("NO_LOADER*")
+                            _ expect(t.router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(t.router.routes).not.toBe(ogRoutes)
+                                # Routes should be updated
+                            _ expect(t.router.routes).toEqual(newRoutes)
+                                # Loader data should be updated
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                    @ noLoader "NO_LOADER*"
+                                # Loader data should be updated
+                            _ expect(t.router.state.errors).toEqual(null)
+                    _ it
+                        @ "should retain existing routes until interrupting navigation completes"
+                        async=> 
+                            let t = initializeTest()
+                            let ogRoutes = t.router.routes
+                            let A
+                                await 
+                                    _ t.navigate("/foo")
+                            await 
+                                _ A.loaders.foo.resolve("foo")
+                            _ expect(t.router.state.loaderData).toMatchObject
+                                { 
+                                    @ root "ROOT"
+                                    @ foo "foo"
+                            let newRoutes
+                                _ t.enhanceRoutes
+                                    [ 
+                                        { 
+                                            @ path ""
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader true
+                                            [ children
+                                                { 
+                                                    @ path "/"
+                                                    @ id "index"
+                                                    @ loader false
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "/foo"
+                                                    @ id "foo"
+                                                    @ loader false
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                            _ t._internalSetRoutes(newRoutes)
+                                # Revalidate and interrupt with a navigation
+                            let R
+                                await 
+                                    _ t.revalidate()
+                                # Revalidate and interrupt with a navigation
+                            let N
+                                await 
+                                    _ t.navigate("/?revalidate")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.revalidation).toBe("loading")
+                                # Should still expose be the og routes until navigation completes
+                            _ expect(t.router.routes).toBe(ogRoutes)
+                                # Should still expose be the og routes until navigation completes
+                                # Revalidation cancelled so this shouldn't make it through
+                            await 
+                                _ R.loaders.root.resolve("ROOT STALE")
+                                # Revalidation cancelled so this shouldn't make it through
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            await 
+                                _ N.loaders.root.resolve("ROOT*")
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(t.router.routes).not.toBe(ogRoutes)
+                                # Routes should be updated
+                            _ expect(t.router.routes).toEqual(newRoutes)
+                                # Loader data should be updated
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                # Loader data should be updated
+                            _ expect(t.router.state.errors).toEqual(null)
+                    _ it
+                        @ "should retain existing routes until interrupted navigation completes"
+                        async=> 
+                            let t = initializeTest()
+                            let ogRoutes = t.router.routes
+                            let N
+                                await 
+                                    _ t.navigate("/foo")
+                            let newRoutes
+                                _ t.enhanceRoutes
+                                    [ 
+                                        { 
+                                            @ path ""
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader true
+                                            [ children
+                                                { 
+                                                    @ path "/"
+                                                    @ id "index"
+                                                    @ loader false
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "/foo"
+                                                    @ id "foo"
+                                                    @ loader false
+                                                    @ action true
+                                                    @ hasErrorBoundary false
+                            _ t._internalSetRoutes(newRoutes)
+                                # Interrupt /foo navigation with a revalidation
+                            let R
+                                await 
+                                    _ t.revalidate()
+                                # Interrupt /foo navigation with a revalidation
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ expect(t.router.state.revalidation).toBe("loading")
+                                # Should still expose be the og routes until navigation completes
+                            _ expect(t.router.routes).toBe(ogRoutes)
+                                # Should still expose be the og routes until navigation completes
+                                # NAvigation interrupted so this shouldn't make it through
+                            await 
+                                _ N.loaders.root.resolve("ROOT STALE")
+                                # NAvigation interrupted so this shouldn't make it through
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            await 
+                                _ R.loaders.root.resolve("ROOT*")
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            _ expect(t.router.state.navigation.state).toBe("idle")
+                            _ expect(t.router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(t.router.routes).not.toBe(ogRoutes)
+                                # Routes should be updated
+                            _ expect(t.router.routes).toEqual(newRoutes)
+                                # Loader data should be updated
+                            _ expect(t.router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                # Loader data should be updated
+                            _ expect(t.router.state.errors).toEqual(null)
+                    _ it
+                        @ "should retain existing routes until revalidation completes on loader removal (fetch)"
+                        async=> 
+                            let rootDfd = createDeferred()
+                            let fooDfd = createDeferred()
+                            let ogRoutes
+                                :[ 
+                                    :ref AgnosticDataRouteObject
+                                =
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader
+                                                => 
+                                                    +
+                                                        @expr rootDfd.promise
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    @ id "index"
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "foo"
+                                                    @ id "foo"
+                                                    @ loader
+                                                        => 
+                                                            +
+                                                                @expr fooDfd.promise
+                                                    @ children undefined
+                                                    @ hasErrorBoundary false
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ routes ogRoutes
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT INITIAL"
+                            _ router.initialize()
+                            let key = "key"
+                            _ router.fetch(key, "root", "/foo")
+                            await 
+                                _ fooDfd.resolve("FOO")
+                            _ expect(router.state.fetchers.get("key")?.data).toBe("FOO")
+                            let rootDfd2 = createDeferred()
+                            let newRoutes
+                                :[ 
+                                    :ref AgnosticDataRouteObject
+                                =
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            @ id "root"
+                                            @ loader
+                                                => 
+                                                    +
+                                                        @expr rootDfd2.promise
+                                            @ hasErrorBoundary true
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    @ id "index"
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "foo"
+                                                    @ id "foo"
+                                                    @ children undefined
+                                                    @ hasErrorBoundary false
+                            _ router._internalSetRoutes(newRoutes)
+                                # Interrupt /foo navigation with a revalidation
+                            _ router.revalidate()
+                                # Interrupt /foo navigation with a revalidation
+                            _ expect(router.state.revalidation).toBe("loading")
+                                # Should still expose be the og routes until navigation completes
+                            _ expect(router.routes).toEqual(ogRoutes)
+                                # Should still expose be the og routes until navigation completes
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            await 
+                                _ rootDfd2.resolve("ROOT*")
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            _ expect(router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(router.routes).not.toEqual(ogRoutes)
+                                # Routes should be updated
+                            _ expect(router.routes).toEqual(newRoutes)
+                                # Loader data should be updated
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                # Loader data should be updated
+                                # Fetcher should have been revalidated but throw an error since the
+                                # loader was removed
+                            _ expect(router.state.fetchers.get("key")?.data).toBe(undefined)
+                                # Fetcher should have been revalidated but throw an error since the
+                                # loader was removed
+                            _ expect(router.state.errors).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       {&lf;
+                                    + &nbsp;         "root": ErrorResponseImpl {&lf;
+                                    + &nbsp;           "data": "Error: No route matches URL "/foo"",&lf;
+                                    + &nbsp;           "error": [Error: No route matches URL "/foo"],&lf;
+                                    + &nbsp;           "internal": true,&lf;
+                                    + &nbsp;           "status": 404,&lf;
+                                    + &nbsp;           "statusText": "Not Found",&lf;
+                                    + &nbsp;         },&lf;
+                                    + &nbsp;       }&lf;
+                                    + &nbsp;    &nbsp;
+                            _ cleanup(router)
+                    _ it
+                        @ "should retain existing routes until revalidation completes on route removal (fetch)"
+                        async=> 
+                            let rootDfd = createDeferred()
+                            let fooDfd = createDeferred()
+                            let ogRoutes
+                                :[ 
+                                    :ref AgnosticDataRouteObject
+                                =
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            @ id "root"
+                                            @ hasErrorBoundary true
+                                            @ loader
+                                                => 
+                                                    +
+                                                        @expr rootDfd.promise
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    @ id "index"
+                                                    @ hasErrorBoundary false
+                                                { 
+                                                    @ path "foo"
+                                                    @ id "foo"
+                                                    @ loader
+                                                        => 
+                                                            +
+                                                                @expr fooDfd.promise
+                                                    @ children undefined
+                                                    @ hasErrorBoundary false
+                            let router
+                                _ createRouter
+                                    { 
+                                        @ routes ogRoutes
+                                        @ history createMemoryHistory()
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT INITIAL"
+                            _ router.initialize()
+                            let key = "key"
+                            _ router.fetch(key, "root", "/foo")
+                            await 
+                                _ fooDfd.resolve("FOO")
+                            _ expect(router.state.fetchers.get("key")?.data).toBe("FOO")
+                            let rootDfd2 = createDeferred()
+                            let newRoutes
+                                :[ 
+                                    :ref AgnosticDataRouteObject
+                                =
+                                    [ 
+                                        { 
+                                            @ path "/"
+                                            @ id "root"
+                                            @ loader
+                                                => 
+                                                    +
+                                                        @expr rootDfd2.promise
+                                            @ hasErrorBoundary true
+                                            [ children
+                                                { 
+                                                    @ index true
+                                                    @ id "index"
+                                                    @ hasErrorBoundary false
+                            _ router._internalSetRoutes(newRoutes)
+                                # Interrupt /foo navigation with a revalidation
+                            _ router.revalidate()
+                                # Interrupt /foo navigation with a revalidation
+                            _ expect(router.state.revalidation).toBe("loading")
+                                # Should still expose be the og routes until navigation completes
+                            _ expect(router.routes).toEqual(ogRoutes)
+                                # Should still expose be the og routes until navigation completes
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            await 
+                                _ rootDfd2.resolve("ROOT*")
+                                # Resolve any loaders that should have ran (foo's loader has been removed)
+                            _ expect(router.state.revalidation).toBe("idle")
+                                # Routes should be updated
+                            _ expect(router.routes).not.toEqual(ogRoutes)
+                                # Routes should be updated
+                            _ expect(router.routes).toEqual(newRoutes)
+                                # Loader data should be updated
+                            _ expect(router.state.loaderData).toEqual
+                                { 
+                                    @ root "ROOT*"
+                                # Loader data should be updated
+                                # Fetcher should have been revalidated but theown a 404 wince the route was removed
+                            _ expect(router.state.fetchers.get("key")?.data).toBe(undefined)
+                                # Fetcher should have been revalidated but theown a 404 wince the route was removed
+                            _ expect(router.state.errors).toEqual
+                                { 
+                                    @ root new ErrorResponseImpl(404, "Not Found", Error('No route matches URL "/foo"'), true)
+                            _ cleanup(router)
+            _ describe
+                @ "router.dispose"
+                => 
+                    _ it
+                        @ "should cancel pending navigations"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            let A
+                                await 
+                                    _ t.navigate("/tasks")
+                            _ expect(t.router.state.navigation.state).toBe("loading")
+                            _ t.router.dispose()
+                            _ expect(A.loaders.tasks.signal.aborted).toBe(true)
+                    _ it
+                        @ "should cancel pending fetchers"
+                        async=> 
+                            let t
+                                _ setup
+                                    { 
+                                        @ routes TASK_ROUTES
+                                        [ initialEntries
+                                            @ "/"
+                                        { hydrationData
+                                            { loaderData
+                                                @ root "ROOT DATA"
+                                                @ index "INDEX DATA"
+                            let A
+                                await 
+                                    _ t.fetch("/tasks")
+                            let B
+                                await 
+                                    _ t.fetch("/tasks")
+                            _ t.router.dispose()
+                            _ expect(A.loaders.tasks.signal.aborted).toBe(true)
+                            _ expect(B.loaders.tasks.signal.aborted).toBe(true)

@@ -1,0 +1,112 @@
+module
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        from "react-router-dom"
+    export-default 
+        function App
+            return 
+                div 
+                    h1 
+                        + Basic Example
+                    p 
+                        + This example demonstrates some of the core features of React Router&lf;        including nested
+                        code 
+                            + <Route>
+                        + s,
+                        + {" "}
+                        code 
+                            + <Outlet>
+                        + s,
+                        code 
+                            + <Link>
+                        + s, and using a&lf;        "*" route (aka "splat route") to render a "not found" page when someone&lf;        visits an unrecognized URL.
+                    { 
+                        # 
+                            # Routes nest inside one another. Nested route paths build upon
+                            # parent route paths, and nested route elements render inside
+                            # parent route elements. See the note about <Outlet> below.
+                    < Routes 
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            < Route 
+                                @ index
+                                @ element
+                                    < Home 
+                            < Route 
+                                @ path "about"
+                                @ element
+                                    < About 
+                            < Route 
+                                @ path "dashboard"
+                                @ element
+                                    < Dashboard 
+                            { 
+                                # 
+                                    # Using path="*"" means "match anything", so this route
+                                    # acts like a catch-all for URLs that we don't have explicit
+                                    # routes for.
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+    function Layout
+        return 
+            div 
+                { 
+                    # 
+                        # A "layout route" is a good place to put markup you want to
+                        # share across all the pages on your site, like navigation.
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/about"
+                                + About
+                        li 
+                            < Link 
+                                @ to "/dashboard"
+                                + Dashboard
+                        li 
+                            < Link 
+                                @ to "/nothing-here"
+                                + Nothing Here
+                hr 
+                { 
+                    # 
+                        # An <Outlet> renders whatever child route is currently active,
+                        # so you can think about this <Outlet> as a placeholder for
+                        # the child routes we defined above.
+                < Outlet 
+    function Home
+        return 
+            div 
+                h2 
+                    + Home
+    function About
+        return 
+            div 
+                h2 
+                    + About
+    function Dashboard
+        return 
+            div 
+                h2 
+                    + Dashboard
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

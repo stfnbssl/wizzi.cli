@@ -66,7 +66,7 @@
             else
                 var configPath = config.getPath(cmd)
                 if configPath
-                    _ require('./src/cmds/generate')(cmd)
+                    _ require('./src/cmds/generate')(cmd, args)
                 else
                     _ error(`"${cmd}" is not a valid command!`)
                     _ error(`try wizzi help`, true)

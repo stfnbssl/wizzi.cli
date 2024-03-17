@@ -1,0 +1,197 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Linking
+            as _Linking
+        @ Text
+        @ View
+        from "react-native"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ NativeRouter
+        @ Routes
+        @ Route
+        @ useDeepLinking
+        from "react-router-native"
+    import 
+        @ MockEvent
+        @ mockPromiseThatResolvesImmediatelyWith
+        from "./utils"
+        # Ensures TypeScript understands that Linking is a mock
+    const Linking = jest.mocked(_Linking)
+        # Ensures TypeScript understands that Linking is a mock
+    _ describe
+        @ "deep linking"
+        => 
+            _ describe
+                @ "when there is no initial URL"
+                => 
+                    _ it
+                        @ "stays on the initial route"
+                        => 
+                            _ Linking.getInitialURL.mockImplementation
+                                => 
+                                    return 
+                                        _ mockPromiseThatResolvesImmediatelyWith
+                                            :param string
+                            function Home
+                                _ useDeepLinking()
+                                return 
+                                    < View 
+                                        < Text 
+                                            + Home
+                            function About
+                                return 
+                                    < View 
+                                        < Text 
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < NativeRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            _ expect(renderer.toJSON()).toMatchSnapshot()
+                            _ Linking.getInitialURL.mockRestore()
+            _ describe
+                @ "when there is an initial URL"
+                => 
+                    _ it
+                        @ "navigates to the matching route"
+                        => 
+                            _ Linking.getInitialURL.mockImplementation
+                                => 
+                                    return mockPromiseThatResolvesImmediatelyWith("app:///about")
+                            function Home
+                                _ useDeepLinking()
+                                return 
+                                    < View 
+                                        < Text 
+                                            + Home
+                            function About
+                                return 
+                                    < View 
+                                        < Text 
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < NativeRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            _ expect
+                                _ renderer
+                                    ._ toJSON
+                                ._ toMatchSnapshot
+                            _ Linking.getInitialURL.mockRestore()
+            _ describe
+                @ 'when a "url" event happens'
+                => 
+                    _ it
+                        @ "navigates to the matching route"
+                        => 
+                            _ Linking.getInitialURL.mockImplementation
+                                => 
+                                    return 
+                                        _ mockPromiseThatResolvesImmediatelyWith
+                                            :param string
+                            let listeners
+                                :ref Array
+                                    :param 
+                                        :=> 
+                                            :any 
+                                            param ...args
+                                                :[ 
+                                                    :any 
+                                = []
+                            _ Linking.addEventListener.mockImplementation
+                                => 
+                                    param type
+                                    param listener
+                                    if type !== "url"
+                                        throw 
+                                            new Error
+                                                `lit 
+                                                    + Invalid event type:&nbsp;
+                                                    @ type
+                                                    + 
+                                    _ listeners.push(listener)
+                            function changeURL
+                                param url
+                                    :string 
+                                let event
+                                    new MockEvent
+                                        @ "url"
+                                        { 
+                                            @ url
+                                _ listeners.forEach
+                                    => 
+                                        param listener
+                                        _ listener(event)
+                            function Home
+                                _ useDeepLinking()
+                                return 
+                                    < View 
+                                        < Text 
+                                            + Home
+                            function About
+                                return 
+                                    < View 
+                                        < Text 
+                                            + About
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < NativeRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/home"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "home"
+                                                        @ element
+                                                            < Home 
+                                                    < Route 
+                                                        @ path "about"
+                                                        @ element
+                                                            < About 
+                            _ expect(renderer.toJSON()).toMatchSnapshot()
+                            _ TestRenderer.act
+                                => 
+                                    _ changeURL("app:///about")
+                            _ expect(renderer.toJSON()).toMatchSnapshot()
+                            _ Linking.addEventListener.mockRestore()
+                            _ Linking.getInitialURL.mockRestore()

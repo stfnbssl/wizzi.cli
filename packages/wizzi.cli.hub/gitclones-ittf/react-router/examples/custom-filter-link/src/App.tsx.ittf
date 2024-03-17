@@ -1,0 +1,223 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        @ useSearchParams
+        @ useParams
+        from "react-router-dom"
+    :import-type 
+        @ LinkProps
+        from "react-router-dom"
+    import 
+        @ VisuallyHidden
+        from "@reach/visually-hidden"
+    import 
+        @ brands
+        @ filterByBrand
+        @ getSneakerById
+        @ SNEAKERS
+        from "./snkrs"
+    export-default 
+        function App
+            return 
+                div 
+                    h1 
+                        + Custom Filter Link Example
+                    p 
+                        + This example demonstrates how to create a "filter link" like one that is&lf;        commonly used to filter a list of products on an e-commerce website. The
+                        code 
+                            + <BrandLink>
+                        + component is a custom
+                        + {" "}
+                        code 
+                            + <Link>
+                        + that knows whether or not it is currently&lf;        "active" by what is in the URL query string.
+                    < Routes 
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            < Route 
+                                @ index
+                                @ element
+                                    < SneakerGrid 
+                            < Route 
+                                @ path "/sneakers/:id"
+                                @ element
+                                    < SneakerView 
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+    :interface BrandLinkProps
+        :extends Omit
+            :param 
+                :ref LinkProps
+            :param 
+                :literal "to"
+        :p brand
+            :string 
+    function BrandLink
+        { 
+            @ brand
+            @ children
+            ... props
+            :ref BrandLinkProps
+        let [searchParams] = useSearchParams()
+        let isActive = searchParams.get("brand") === brand
+        return 
+            < Link 
+                @ to
+                    `lit 
+                        + /?brand=
+                        @ brand
+                        + 
+                @ {...props}
+                @ style
+                    { 
+                        @ ...props.style
+                        @ color
+                            iif isActive
+                                then "red"
+                                else "black"
+                + {children}
+    function Layout
+        return 
+            div 
+                nav 
+                    h3 
+                        + Filter by brand
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + All
+                        { 
+                            _ brands.map
+                                => 
+                                    param brand
+                                    li 
+                                        @ key {brand}
+                                        < BrandLink 
+                                            @ brand {brand}
+                                            + {brand}
+                hr 
+                < Outlet 
+    function SneakerGrid
+        let [searchParams] = useSearchParams()
+        let brand = searchParams.get("brand")
+        const sneakers
+            _ React.useMemo
+                => 
+                    if !brand
+                        return SNEAKERS
+                    return filterByBrand(brand)
+                [ 
+                    @ brand
+        return 
+            main 
+                h2 
+                    + Sneakers
+                div 
+                    @ style
+                        { 
+                            @ display "grid"
+                            @ gridTemplateColumns "repeat(auto-fill, minmax(250px, 1fr))"
+                            @ gap "12px 24px"
+                    { 
+                        _ sneakers.map
+                            => 
+                                param snkr
+                                let name
+                                    `lit 
+                                        + 
+                                        @ snkr.brand
+                                        + &nbsp;
+                                        @ snkr.model
+                                        + &nbsp;
+                                        @ snkr.colorway
+                                        + 
+                                return 
+                                    div 
+                                        @ key {snkr.id}
+                                        @ style
+                                            { 
+                                                @ position "relative"
+                                        img 
+                                            @ width {200}
+                                            @ height {200}
+                                            @ src {snkr.imageUrl}
+                                            @ alt {name}
+                                            @ style
+                                                { 
+                                                    @ borderRadius "8px"
+                                                    @ width "100%"
+                                                    @ height "auto"
+                                                    @ aspectRatio "1 / 1"
+                                        < Link 
+                                            @ style
+                                                { 
+                                                    @ position "absolute"
+                                                    @ inset 0
+                                            @ to
+                                                `lit 
+                                                    + /sneakers/
+                                                    @ snkr.id
+                                                    + 
+                                            < VisuallyHidden 
+                                                + {name}
+                                        div 
+                                            p 
+                                                + {name}
+    function SneakerView
+        let 
+            { 
+                @ id
+            =
+                _ useParams
+                    :param 
+                        :literal "id"
+        if !id
+            return 
+                < NoMatch 
+        let snkr = getSneakerById(id)
+        if !snkr
+            return 
+                < NoMatch 
+        let name
+            `lit 
+                + 
+                @ snkr.brand
+                + &nbsp;
+                @ snkr.model
+                + &nbsp;
+                @ snkr.colorway
+                + 
+        return 
+            div 
+                h2 
+                    + {name}
+                img 
+                    @ width {400}
+                    @ height {400}
+                    @ style
+                        { 
+                            @ borderRadius "8px"
+                            @ maxWidth "100%"
+                            @ aspectRatio "1 / 1"
+                    @ src {snkr.imageUrl}
+                    @ alt {name}
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

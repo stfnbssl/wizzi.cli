@@ -1,0 +1,527 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom/client"
+    import 
+        @ act
+        from "react-dom/test-utils"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ Link
+        from "react-router-dom"
+    function click
+        param anchor
+            :ref HTMLAnchorElement
+        param eventInit
+            :ref MouseEventInit
+            :optional 
+        let event
+            new MouseEvent
+                @ "click"
+                { 
+                    @ view window
+                    @ bubbles true
+                    @ cancelable true
+                    @ ...eventInit
+        _ anchor.dispatchEvent(event)
+        return event
+    _ describe
+        @ "A <Link> click"
+        => 
+            let node
+                :ref HTMLDivElement
+            _ beforeEach
+                => 
+                    set node = document.createElement("div")
+                    _ document.body.appendChild(node)
+            _ afterEach
+                => 
+                    _ document.body.removeChild(node)
+                    set node =
+                        :! null
+            _ it
+                @ "navigates to the new page"
+                => 
+                    function Home
+                        return 
+                            div 
+                                h1 
+                                    + Home
+                                < Link 
+                                    @ to "../about"
+                                    + About
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/home"
+                                    < Routes 
+                                        < Route 
+                                            @ path "home"
+                                            @ element
+                                                < Home 
+                                        < Route 
+                                            @ path "about"
+                                            @ element
+                                                h1 
+                                                    + About
+                    let anchor = node.querySelector("a")
+                    _ expect(anchor).not.toBeNull()
+                    let event
+                        :ref MouseEvent
+                    _ act
+                        => 
+                            set event = click(anchor)
+                    _ expect(event.defaultPrevented).toBe(true)
+                    let h1 = node.querySelector("h1")
+                    _ expect(h1).not.toBeNull()
+                    _ expect(h1?.textContent).toEqual("About")
+            _ it
+                @ "navigates to the new page when using an absolute URL on the same origin"
+                => 
+                    function Home
+                        return 
+                            div 
+                                h1 
+                                    + Home
+                                < Link 
+                                    @ to "http://localhost/about"
+                                    + About
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/home"
+                                    < Routes 
+                                        < Route 
+                                            @ path "home"
+                                            @ element
+                                                < Home 
+                                        < Route 
+                                            @ path "about"
+                                            @ element
+                                                h1 
+                                                    + About
+                    let anchor = node.querySelector("a")
+                    _ expect(anchor).not.toBeNull()
+                    let event
+                        :ref MouseEvent
+                    _ act
+                        => 
+                            set event = click(anchor)
+                    _ expect(event.defaultPrevented).toBe(true)
+                    let h1 = node.querySelector("h1")
+                    _ expect(h1).not.toBeNull()
+                    _ expect(h1?.textContent).toEqual("About")
+            _ describe
+                @ "when an external absolute URL is specified"
+                => 
+                    _ it
+                        @ "does not prevent default"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "https://remix.run"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            let event
+                                :ref MouseEvent
+                            _ act
+                                => 
+                                    set event = click(anchor)
+                            _ expect(event.defaultPrevented).toBe(false)
+                    _ it
+                        @ "calls provided listener"
+                        => 
+                            let handlerCalled
+                            let defaultPrevented
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "https://remix.run"
+                                            @ onClick
+                                                => 
+                                                    param e
+                                                    set handlerCalled = true
+                                                    set defaultPrevented = e.defaultPrevented
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            _ act
+                                => 
+                                    _ click(node.querySelector("a"))
+                            _ expect(handlerCalled).toBe(true)
+                            _ expect(defaultPrevented).toBe(false)
+            _ describe
+                @ "when a same-origin/different-basename absolute URL is specified"
+                => 
+                    _ it
+                        @ "does not prevent default"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "http://localhost/not/base"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/base/home"
+                                            @ basename "/base"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            let event
+                                :ref MouseEvent
+                            _ act
+                                => 
+                                    set event = click(anchor)
+                            _ expect(event.defaultPrevented).toBe(false)
+                    _ it
+                        @ "calls provided listener"
+                        => 
+                            let handlerCalled
+                            let defaultPrevented
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "http://localhost/not/base"
+                                            @ onClick
+                                                => 
+                                                    param e
+                                                    set handlerCalled = true
+                                                    set defaultPrevented = e.defaultPrevented
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/base/home"
+                                            @ basename "/base"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                            _ act
+                                => 
+                                    _ click(node.querySelector("a"))
+                            _ expect(handlerCalled).toBe(true)
+                            _ expect(defaultPrevented).toBe(false)
+            _ describe
+                @ "when reloadDocument is specified"
+                => 
+                    _ it
+                        @ "does not prevent default"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ reloadDocument
+                                            @ to "../about"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            let event
+                                :ref MouseEvent
+                            _ act
+                                => 
+                                    set event = click(anchor)
+                            _ expect(event.defaultPrevented).toBe(false)
+                    _ it
+                        @ "calls provided listener"
+                        => 
+                            let handlerCalled
+                            let defaultPrevented
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ reloadDocument
+                                            @ to "../about"
+                                            @ onClick
+                                                => 
+                                                    param e
+                                                    set handlerCalled = true
+                                                    set defaultPrevented = e.defaultPrevented
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            _ act
+                                => 
+                                    _ click(node.querySelector("a"))
+                            _ expect(handlerCalled).toBe(true)
+                            _ expect(defaultPrevented).toBe(false)
+            _ describe
+                @ "when preventDefault is used on the click handler"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            function Home
+                                function handleClick
+                                    param event
+                                        :ref React.MouseEvent
+                                            :param 
+                                                :ref HTMLAnchorElement
+                                    _ event.preventDefault()
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            @ onClick {handleClick}
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    _ click(anchor)
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")
+            _ describe
+                @ "with a right click"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    let RightMouseButton = 2
+                                        # https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+                                    _ click
+                                        @ anchor
+                                        { 
+                                            @ button RightMouseButton
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")
+            _ describe
+                @ "when the link is supposed to open in a new window"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            @ target "_blank"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    _ click(anchor)
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")
+            _ describe
+                @ "when the modifier keys are used"
+                => 
+                    _ it
+                        @ "stays on the same page"
+                        => 
+                            function Home
+                                return 
+                                    div 
+                                        h1 
+                                            + Home
+                                        < Link 
+                                            @ to "../about"
+                                            + About
+                            _ act
+                                => 
+                                    _ ReactDOM.createRoot(node).render
+                                        < MemoryRouter 
+                                            @ initialEntries
+                                                [ 
+                                                    @ "/home"
+                                            < Routes 
+                                                < Route 
+                                                    @ path "home"
+                                                    @ element
+                                                        < Home 
+                                                < Route 
+                                                    @ path "about"
+                                                    @ element
+                                                        h1 
+                                                            + About
+                            let anchor = node.querySelector("a")
+                            _ expect(anchor).not.toBeNull()
+                            _ act
+                                => 
+                                    _ click
+                                        @ anchor
+                                        { 
+                                            @ ctrlKey true
+                            let h1 = node.querySelector("h1")
+                            _ expect(h1).not.toBeNull()
+                            _ expect(h1?.textContent).toEqual("Home")

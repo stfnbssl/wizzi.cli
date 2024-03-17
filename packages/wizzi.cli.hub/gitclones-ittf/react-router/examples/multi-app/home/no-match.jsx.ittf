@@ -1,0 +1,16 @@
+module
+    kind react
+    import 
+        @ Link
+        from "react-router-dom"
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page of the app
+    export 
+        @ NoMatch

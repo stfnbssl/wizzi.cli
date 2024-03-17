@@ -1,0 +1,254 @@
+module
+    kind react
+    const path = require("path")
+        # FIXME: @remix-run/router isn't being automatically versioned
+    const 
+        { 
+            @ execSync
+        = require("child_process")
+    const fsp = require("fs/promises")
+    const chalk = require("chalk")
+    const semver = require("semver")
+    const 
+        { 
+            @ ensureCleanWorkingDirectory
+            @ getPackageVersion
+            @ invariant
+            @ prompt
+            @ updateExamplesPackageConfig
+            @ updatePackageConfig
+        = require("./utils")
+    const 
+        { 
+            @ EXAMPLES_DIR
+        = require("./constants")
+        #
+            # *
+            # * @param {string} currentVersion
+            # * @param {string} givenVersion
+            # * @param {string} [prereleaseId]
+            # * @returns {string}
+            # 
+    function getNextVersion
+        param currentVersion
+        param givenVersion
+        param prereleaseId
+        _ invariant
+            set givenVersion != null
+            `lit 
+                + Missing next version. Usage: node version.js [nextVersion]
+        if /^pre/.test(givenVersion)
+            _ invariant
+                set prereleaseId != null
+                `lit 
+                    + Missing prerelease id. Usage: node version.js&nbsp;
+                    @ givenVersion
+                    + &nbsp;[prereleaseId]
+        let nextVersion
+        if givenVersion === "experimental"
+            let hash
+                _ execSync
+                    `lit 
+                        + git rev-parse --short HEAD
+                    ._ toString
+                    ._ trim
+            set nextVersion =
+                `lit 
+                    + 0.0.0-experimental-
+                    @ hash
+                    + 
+        else
+            set nextVersion = semver.inc(currentVersion, givenVersion, prereleaseId)
+                # @ts-ignore
+        _ invariant
+            set nextVersion != null
+            `lit 
+                + Invalid version specifier:&nbsp;
+                @ givenVersion
+                + 
+        return nextVersion
+        #
+            # *
+            # * @param {string} currentVersion
+            # * @param {string} givenVersion
+            # * @param {string} [prereleaseId]
+            # * @returns {string}
+            # 
+    async-function run
+        try 
+            let args = process.argv.slice(2)
+            let givenVersion = args[0]
+            let prereleaseId = args[1]
+            let isExperimental = givenVersion === "experimental"
+                # 0. Make sure the working directory is clean
+            _ ensureCleanWorkingDirectory()
+                # 0. Make sure the working directory is clean
+                # 1. Get the next version number
+            let currentRouterVersion
+                await 
+                    _ getPackageVersion("router")
+                # 1. Get the next version number
+            let currentVersion
+                await 
+                    _ getPackageVersion("react-router")
+            let version = semver.valid(givenVersion)
+            if version == null
+                set version = getNextVersion(currentVersion, givenVersion, prereleaseId)
+            let routerVersion = currentRouterVersion
+                # We will only bump the router version if this is an experimental
+                # 2. Confirm the next version number
+            let answer
+                await 
+                    _ prompt
+                        `lit 
+                            + Are you sure you want to bump version&nbsp;
+                            @ currentVersion
+                            + &nbsp;to&nbsp;
+                            @ version
+                            + ? [Yn]&nbsp;
+                # 2. Confirm the next version number
+            if answer === false
+                return 0
+            if isExperimental
+                set routerVersion = version
+                    # 2.5. Update @remix-run/router version
+                await 
+                    _ updatePackageConfig
+                        @ "router"
+                        => 
+                            param config
+                            set config.version = routerVersion
+                    # 2.5. Update @remix-run/router version
+                _ console.log
+                    _ chalk.green
+                        `lit 
+                            + &nbsp; Updated @remix-run/router to version&nbsp;
+                            @ version
+                            + 
+            await 
+                _ updatePackageConfig
+                    @ "react-router"
+                    => 
+                        param config
+                        set config.version = version
+                        if isExperimental
+                            set config.dependencies["@remix-run/router"] = routerVersion
+                # 3. Update react-router version
+            _ console.log
+                _ chalk.green
+                    `lit 
+                        + &nbsp; Updated react-router to version&nbsp;
+                        @ version
+                        + 
+                # 4. Update react-router-dom version + react-router dep
+            await 
+                _ updatePackageConfig
+                    @ "react-router-dom"
+                    => 
+                        param config
+                        set config.version = version
+                        if isExperimental
+                            set config.dependencies["@remix-run/router"] = routerVersion
+                        set config.dependencies["react-router"] = version
+                # 4. Update react-router-dom version + react-router dep
+            _ console.log
+                _ chalk.green
+                    `lit 
+                        + &nbsp; Updated react-router-dom to version&nbsp;
+                        @ version
+                        + 
+                # 4.1 Update react-router-dom-v5-compat version + react-router dep
+            await 
+                _ updatePackageConfig
+                    @ "react-router-dom-v5-compat"
+                    => 
+                        param config
+                        set config.version = version
+                        set config.dependencies["react-router"] = version
+                # 4.1 Update react-router-dom-v5-compat version + react-router dep
+            _ console.log
+                _ chalk.green
+                    `lit 
+                        + &nbsp; Updated react-router-dom-v5-compat to version&nbsp;
+                        @ version
+                        + 
+                # 5. Update react-router-native version + react-router dep
+            await 
+                _ updatePackageConfig
+                    @ "react-router-native"
+                    => 
+                        param config
+                        set config.version = version
+                        set config.dependencies["react-router"] = version
+                # 5. Update react-router-native version + react-router dep
+            _ console.log
+                _ chalk.green
+                    `lit 
+                        + &nbsp; Updated react-router-native to version&nbsp;
+                        @ version
+                        + 
+                # 6. Update react-router and react-router-dom versions in the examples
+            let examples
+                await 
+                    _ fsp.readdir(EXAMPLES_DIR)
+                # 6. Update react-router and react-router-dom versions in the examples
+            for 
+                left
+                    const example
+                of examples
+                let stat
+                    await 
+                        _ fsp.stat(path.join(EXAMPLES_DIR, example))
+                if !stat.isDirectory()
+                    continue 
+                await 
+                    _ updateExamplesPackageConfig
+                        @ example
+                        => 
+                            param config
+                            if config.dependencies["@remix-run/router"]
+                                set config.dependencies["@remix-run/router"] = routerVersion
+                            if config.dependencies["react-router"]
+                                set config.dependencies["react-router"] = version
+                            if config.dependencies["react-router-dom"]
+                                set config.dependencies["react-router-dom"] = version
+                # 7. Commit and tag
+            _ execSync
+                `lit 
+                    + git commit --all --message="Version&nbsp;
+                    @ version
+                    + "
+                # 7. Commit and tag
+            _ execSync
+                `lit 
+                    + git tag -a -m "Version&nbsp;
+                    @ version
+                    + " v
+                    @ version
+                    + 
+            _ console.log
+                _ chalk.green
+                    `lit 
+                        + &nbsp; Committed and tagged version&nbsp;
+                        @ version
+                        + 
+            if givenVersion !== "experimental"
+                _ console.log
+                    _ chalk.red
+                        `lit 
+                            + &nbsp; 🚨 @remix-run/router isn't handled by this script, do it manually!
+        catch error
+            _ console.log()
+            _ console.error
+                _ chalk.red
+                    `lit 
+                        + &nbsp;&nbsp;
+                        @ error.message
+                        + 
+            _ console.log()
+            return 1
+        return 0
+    _ run().then
+        => 
+            param code
+            _ process.exit(code)

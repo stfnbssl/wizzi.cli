@@ -1,0 +1,265 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as ReactDOM
+        from "react-dom/client"
+    import 
+        @ act
+        from "react-dom/test-utils"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useSearchParams
+        from "react-router-dom"
+    _ describe
+        @ "useSearchParams"
+        => 
+            let node
+                :ref HTMLDivElement
+            _ beforeEach
+                => 
+                    set node = document.createElement("div")
+                    _ document.body.appendChild(node)
+            _ afterEach
+                => 
+                    _ document.body.removeChild(node)
+                    set node =
+                        :! null
+            _ it
+                @ "reads and writes the search string"
+                => 
+                    function SearchPage
+                        let queryRef
+                            _ React.useRef
+                                :param 
+                                    :ref HTMLInputElement
+                                @ null
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ q ""
+                        let query
+                            :! 
+                                _ searchParams.get("q")
+                        function handleSubmit
+                            param event
+                                :ref React.FormEvent
+                                    :param 
+                                        :ref HTMLFormElement
+                            _ event.preventDefault()
+                            if queryRef.current
+                                _ setSearchParams
+                                    { 
+                                        @ q queryRef.current.value
+                        return 
+                            div 
+                                p 
+                                    + The current query is "
+                                    + {query}
+                                    + ".
+                                form 
+                                    @ onSubmit {handleSubmit}
+                                    input 
+                                        @ name "q"
+                                        @ defaultValue {query}
+                                        @ ref {queryRef}
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/search?q=Michael+Jackson"
+                                    < Routes 
+                                        < Route 
+                                            @ path "search"
+                                            @ element
+                                                < SearchPage 
+                    let form
+                        :! 
+                            _ node.querySelector("form")
+                    _ expect(form).toBeDefined()
+                    let queryInput
+                        :! 
+                            _ node.querySelector
+                                :param 
+                                    :ref HTMLInputElement
+                                @ "input[name=q]"
+                    _ expect(queryInput).toBeDefined()
+                    _ expect(node.innerHTML).toMatch(/The current query is "Michael Jackson"/)
+                    _ act
+                        => 
+                            set queryInput.value = "Ryan Florence"
+                            _ form.dispatchEvent
+                                new Event
+                                    @ "submit"
+                                    { 
+                                        @ bubbles true
+                                        @ cancelable true
+                    _ expect(node.innerHTML).toMatch(/The current query is "Ryan Florence"/)
+            _ it
+                @ "updates searchParams when a function is provided to setSearchParams (functional updates)"
+                => 
+                    function SearchPage
+                        let queryRef
+                            _ React.useRef
+                                :param 
+                                    :ref HTMLInputElement
+                                @ null
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ q ""
+                        let query
+                            :! 
+                                _ searchParams.get("q")
+                        let queryNew
+                            :! 
+                                _ searchParams.get("new")
+                        function handleSubmit
+                            param event
+                                :ref React.FormEvent
+                                    :param 
+                                        :ref HTMLFormElement
+                            _ event.preventDefault()
+                            if queryRef.current
+                                _ setSearchParams
+                                    => 
+                                        param cur
+                                        _ cur.set
+                                            @ "q"
+                                            `lit 
+                                                + 
+                                                _ cur.get("q")
+                                                + &nbsp;- appended
+                                        _ cur.set("new", "Ryan Florence")
+                                        return cur
+                        return 
+                            div 
+                                p 
+                                    + The current query is "
+                                    + {query}
+                                    + ".
+                                p 
+                                    + The new query is "
+                                    + {queryNew}
+                                    + "
+                                form 
+                                    @ onSubmit {handleSubmit}
+                                    input 
+                                        @ name "q"
+                                        @ defaultValue {query}
+                                        @ ref {queryRef}
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/search?q=Michael+Jackson"
+                                    < Routes 
+                                        < Route 
+                                            @ path "search"
+                                            @ element
+                                                < SearchPage 
+                    let form
+                        :! 
+                            _ node.querySelector("form")
+                    _ expect(form).toBeDefined()
+                    let queryInput
+                        :! 
+                            _ node.querySelector
+                                :param 
+                                    :ref HTMLInputElement
+                                @ "input[name=q]"
+                    _ expect(queryInput).toBeDefined()
+                    _ expect(node.innerHTML).toMatch(/The current query is "Michael Jackson"/)
+                    _ expect(node.innerHTML).toMatch(/The new query is ""/)
+                    _ act
+                        => 
+                            _ form.dispatchEvent
+                                new Event
+                                    @ "submit"
+                                    { 
+                                        @ bubbles true
+                                        @ cancelable true
+                    _ expect(node.innerHTML).toMatch(/The current query is "Michael Jackson - appended"/)
+                    _ expect(node.innerHTML).toMatch(/The new query is "Ryan Florence"/)
+            _ it
+                @ "allows removal of search params when a default is provided"
+                => 
+                    function SearchPage
+                        let [searchParams, setSearchParams]
+                            _ useSearchParams
+                                { 
+                                    @ value "initial"
+                        return 
+                            div 
+                                p 
+                                    + The current value is "
+                                    + {searchParams.get("value")}
+                                    + ".
+                                button 
+                                    @ onClick
+                                        => 
+                                            _ setSearchParams
+                                                { 
+                                    + Click
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/search?value=initial"
+                                    < Routes 
+                                        < Route 
+                                            @ path "search"
+                                            @ element
+                                                < SearchPage 
+                    let button
+                        :! 
+                            _ node.querySelector
+                                :param 
+                                    :ref HTMLInputElement
+                                @ "button"
+                    _ expect(button).toBeDefined()
+                    _ expect(node.innerHTML).toMatch(/The current value is "initial"/)
+                    _ act
+                        => 
+                            _ button.dispatchEvent
+                                new Event
+                                    @ "click"
+                                    { 
+                                        @ bubbles true
+                    _ expect(node.innerHTML).toMatch(/The current value is ""/)
+            _ it
+                @ "returns initial default values in search params"
+                => 
+                    function SearchPage
+                        let [searchParams]
+                            _ useSearchParams
+                                { 
+                                    @ a "1"
+                                    @ b "2"
+                        return 
+                            p 
+                                + {searchParams.toString()}
+                    _ act
+                        => 
+                            _ ReactDOM.createRoot(node).render
+                                < MemoryRouter 
+                                    @ initialEntries
+                                        [ 
+                                            @ "/search?value=initial"
+                                    < Routes 
+                                        < Route 
+                                            @ path "search"
+                                            @ element
+                                                < SearchPage 
+                    _ expect(node.innerHTML).toMatchInlineSnapshot
+                        `lit 
+                            + "<p>value=initial&amp;a=1&amp;b=2</p>"

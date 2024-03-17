@@ -1,0 +1,123 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useParams
+        @ useNavigate
+        @ Navigate
+        from "react-router-dom"
+    _ describe
+        @ "GH Issue #8165"
+        => 
+            _ it
+                @ "works"
+                => 
+                    const Content
+                        => 
+                            return 
+                                div 
+                                    h3 
+                                        + Level 2
+                                    < Routes 
+                                        < Route 
+                                            @ path "tab"
+                                            @ element
+                                                span 
+                                                    + TAB TEST
+                                        < Route 
+                                            @ index
+                                            @ element
+                                                < Navigate 
+                                                    @ to "tab"
+                                    div 
+                                        + Other:
+                                    < Routes 
+                                        < Route 
+                                            @ path "*"
+                                            @ element
+                                                span 
+                                                    + TAB TEST
+                    const Root
+                        => 
+                            const 
+                                { 
+                                    @ lang
+                                = useParams()
+                            const nav = useNavigate()
+                            _ React.useEffect
+                                => 
+                                    if lang !== "en"
+                                        _ nav("en")
+                                [ 
+                                    @ lang
+                                    @ nav
+                            return 
+                                < React.Fragment
+                                    h2 
+                                        + Level 1
+                                    < Routes 
+                                        < Route 
+                                            @ path "*"
+                                            @ element
+                                                < Content 
+                    function App
+                        return 
+                            div 
+                                @ className "App"
+                                h1 
+                                    + Level 0
+                                < Routes 
+                                    < Route 
+                                        @ path "*"
+                                        @ element
+                                            < Root 
+                                    < Route 
+                                        @ path ":lang/*"
+                                        @ element
+                                            < Root 
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/en/tab"
+                                        < App 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <div&lf;
+                            + &nbsp;       className="App"&lf;
+                            + &nbsp;     >&lf;
+                            + &nbsp;       <h1>&lf;
+                            + &nbsp;         Level 0&lf;
+                            + &nbsp;       </h1>&lf;
+                            + &nbsp;       <h2>&lf;
+                            + &nbsp;         Level 1&lf;
+                            + &nbsp;       </h2>&lf;
+                            + &nbsp;       <div>&lf;
+                            + &nbsp;         <h3>&lf;
+                            + &nbsp;           Level 2&lf;
+                            + &nbsp;         </h3>&lf;
+                            + &nbsp;         <span>&lf;
+                            + &nbsp;           TAB TEST&lf;
+                            + &nbsp;         </span>&lf;
+                            + &nbsp;         <div>&lf;
+                            + &nbsp;           Other:&lf;
+                            + &nbsp;         </div>&lf;
+                            + &nbsp;         <span>&lf;
+                            + &nbsp;           TAB TEST&lf;
+                            + &nbsp;         </span>&lf;
+                            + &nbsp;       </div>&lf;
+                            + &nbsp;     </div>&lf;
+                            + &nbsp;  &nbsp;

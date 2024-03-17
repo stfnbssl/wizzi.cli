@@ -1,0 +1,55 @@
+module
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        from "react-router-dom"
+    export-default 
+        function Dashboard
+            return 
+                < Routes 
+                    < Route 
+                        @ path "/"
+                        @ element
+                            < DashboardLayout 
+                        < Route 
+                            @ index
+                            @ element
+                                < DashboardIndex 
+                        < Route 
+                            @ path "messages"
+                            @ element
+                                < Messages 
+                # These routes are defined when this component is loaded on demand via
+                # dynamic import() on the home page!
+    function DashboardLayout
+        return 
+            div 
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/dashboard"
+                                + Dashboard Home
+                        li 
+                            < Link 
+                                @ to "/dashboard/messages"
+                                + Messages
+                hr 
+                < Outlet 
+    function DashboardIndex
+        return 
+            div 
+                h2 
+                    + Dashboard Index
+    function Messages
+        return 
+            div 
+                h2 
+                    + Messages
+                ul 
+                    li 
+                        + Message 1
+                    li 
+                        + Message 2

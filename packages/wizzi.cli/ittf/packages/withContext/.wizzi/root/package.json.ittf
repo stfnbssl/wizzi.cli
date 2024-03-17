@@ -1,0 +1,40 @@
+﻿{
+    $include versions
+
+	name "@wizzi/cli"
+    version '${wzCtx.version}'
+	author
+		{
+			name "Stefano Bassoli"
+			email "stfn.bssl@gmail.com"
+	private false
+	licenses
+		[
+			{
+				type "MIT"
+				url "https://github.com/stfnbssl/wizzi.cli/tree/master/packages/wizzi.cli/license.txt"
+	main "bin/wz.js"
+	{ engines
+		node ">=8"
+	preferGlobal true
+    { scripts
+		artifact:basic "node index -s ittf\artifacts\basic\index.html.ittf -d ittf\artifacts\basic -c ittf\artifacts\basic\index"
+		artifact:withContext "node index -s ittf\artifacts\withContext -d ittf\artifacts\withContext -c ittf\artifacts\withContext\index --ctx ittf\artifacts\withContext\wzCtx.json.ittf"
+		folder:basic "node index -s ittf\folders\basic -d ittf\folders\basic_generated -c ittf\folders\basic\index"
+		folder:withContext "node index -s ittf\folders\withContext -d ittf\folders\withContext_generated -c ittf\folders\withContext\index --ctx ittf\folders\withContext\wzCtx.json.ittf"
+		job:basic "node index job -c ittf\jobs\basic.job"
+		wizzify:default "node index fy -s ittf\wizzificables -d ittf\wizzified"
+		metify:starters "node index metify -s ittf\metificables\wizziStarters -d ittf\metas\def"
+	{ bin
+		wz "bin/wz.js"
+	{ dependencies
+        @babel/core "^7.0.0"
+        chalk "^2.4.1"
+        commander "^7.0.0"
+        inquirer "^7.3.3"
+        isomorphic-git "latest"
+		minimist "^1.2.0"
+        memfs "latest"
+        node-fetch "^2.0.0"
+        @wizzi/factory "^0.8.12"
+        @wizzi/utils "^0.8.6"

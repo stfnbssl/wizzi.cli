@@ -1,0 +1,21 @@
+module
+    const fakeAuthProvider
+        { 
+            @ isAuthenticated false
+            m signin
+                param callback
+                    :ref VoidFunction
+                set fakeAuthProvider.isAuthenticated = true
+                _ setTimeout(callback, 100)
+                    # fake async
+            m signout
+                param callback
+                    :ref VoidFunction
+                set fakeAuthProvider.isAuthenticated = false
+                _ setTimeout(callback, 100)
+        #
+            # *
+            # * This represents some generic auth provider API, like Firebase.
+            # 
+    export 
+        @ fakeAuthProvider

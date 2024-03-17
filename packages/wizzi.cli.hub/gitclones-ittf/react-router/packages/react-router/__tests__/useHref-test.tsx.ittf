@@ -1,0 +1,381 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useHref
+        from "react-router"
+    function ShowHref
+        { 
+            @ to
+            :{ 
+                :p to
+                    :string 
+        return 
+            pre 
+                + {useHref(to)}
+    _ describe
+        @ "useHref"
+        => 
+            _ describe
+                @ "to a child route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "advanced-react"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         /courses/advanced-react&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "courses"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "advanced-react"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /courses/advanced-react&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "courses"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "advanced-react/"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /courses/advanced-react/&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "to a sibling route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "../about"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         /about&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "/courses/"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../about"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /about&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "courses"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../about/"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /about/&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "to a parent route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses/advanced-react"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses"
+                                                        < Route 
+                                                            @ path "advanced-react"
+                                                            @ element
+                                                                < ShowHref 
+                                                                    @ to ".."
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         /courses&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "when the URL has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses/advanced-react/"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "courses"
+                                                                < Route 
+                                                                    @ path "advanced-react"
+                                                                    @ element
+                                                                        < ShowHref 
+                                                                            @ to ".."
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /courses&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+                    _ describe
+                        @ "when the href has a trailing slash"
+                        => 
+                            _ it
+                                @ "returns the correct href"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/courses/advanced-react"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "courses"
+                                                                < Route 
+                                                                    @ path "advanced-react"
+                                                                    @ element
+                                                                        < ShowHref 
+                                                                            @ to "../"
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /courses/&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;
+            _ describe
+                @ "to an absolute route"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses/advanced-react"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses/advanced-react"
+                                                        @ element
+                                                            < ShowHref 
+                                                                @ to "/users"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         /users&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+            _ describe
+                @ "with a to value that has more .. segments than are in the URL"
+                => 
+                    _ it
+                        @ "returns the correct href"
+                        => 
+                            let renderer
+                                :ref TestRenderer.ReactTestRenderer
+                            _ TestRenderer.act
+                                => 
+                                    set renderer =
+                                        _ TestRenderer.create
+                                            < MemoryRouter 
+                                                @ initialEntries
+                                                    [ 
+                                                        @ "/courses/react-fundamentals"
+                                                < Routes 
+                                                    < Route 
+                                                        @ path "courses"
+                                                        < Route 
+                                                            @ path "react-fundamentals"
+                                                            @ element
+                                                                < ShowHref 
+                                                                    @ to "../../../courses"
+                            _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                `lit 
+                                    + &lf;
+                                    + &nbsp;       <pre>&lf;
+                                    + &nbsp;         /courses&lf;
+                                    + &nbsp;       </pre>&lf;
+                                    + &nbsp;    &nbsp;
+                    _ describe
+                        @ "and no additional segments"
+                        => 
+                            _ it
+                                @ "links to the root /"
+                                => 
+                                    let renderer
+                                        :ref TestRenderer.ReactTestRenderer
+                                    _ TestRenderer.act
+                                        => 
+                                            set renderer =
+                                                _ TestRenderer.create
+                                                    < MemoryRouter 
+                                                        @ initialEntries
+                                                            [ 
+                                                                @ "/home"
+                                                        < Routes 
+                                                            < Route 
+                                                                @ path "/home"
+                                                                @ element
+                                                                    < ShowHref 
+                                                                        @ to "../../.."
+                                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                                        `lit 
+                                            + &lf;
+                                            + &nbsp;         <pre>&lf;
+                                            + &nbsp;           /&lf;
+                                            + &nbsp;         </pre>&lf;
+                                            + &nbsp;      &nbsp;

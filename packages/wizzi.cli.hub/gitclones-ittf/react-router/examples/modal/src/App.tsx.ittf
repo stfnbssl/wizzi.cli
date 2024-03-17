@@ -1,0 +1,242 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        @ Routes
+        @ Route
+        @ Outlet
+        @ Link
+        @ useLocation
+        @ useNavigate
+        @ useParams
+        from "react-router-dom"
+    import 
+        @ Dialog
+        from "@reach/dialog"
+    import "@reach/dialog/styles.css"
+    import 
+        @ IMAGES
+        @ getImageById
+        from "./images"
+    export-default 
+        function App
+            let location = useLocation()
+                # The `backgroundLocation` state is the location that we were at when one of
+                # the gallery links was clicked. If it's there, use it as the location for
+                # the <Routes> so we show the gallery in the background, behind the modal.
+            let state
+                @expr location.state
+                    :as 
+                        :{ 
+                            :p backgroundLocation
+                                :optional 
+                                :ref Location
+                # The `backgroundLocation` state is the location that we were at when one of
+                # the gallery links was clicked. If it's there, use it as the location for
+                # the <Routes> so we show the gallery in the background, behind the modal.
+            return 
+                div 
+                    h1 
+                        + Modal Example
+                    p 
+                        + This is an example of how to create a contextual modal navigation with&lf;        React Router where the navigation path the user takes determines if the&lf;        page is rendered in the modal or not (popularized by pinterest,&lf;        instagram, and others in the 2010s). This type of modal is typically&lf;        used as a kind of "detail" view to focus on a particular object in a&lf;        collection (like a pinterest board) while not taking you completely out&lf;        of context of the parent page. But, when the same URL is visited&lf;        directly (rather than from the collection page) it renders as it's own&lf;        full page instead of in a modal.
+                    p 
+                        + In this example, notice how the URL updates when the modal opens (if you&lf;        are viewing the example in StackBlitz you may need to open in a new&lf;        browser window). Even though the URL is updated to the specific item in&lf;        the modal, the background page is still showing behind it.
+                    p 
+                        + Next, copy and paste the URL to a new browser tab and notice that it&lf;        shows that specific item not in a modal, but directly on the page. This&lf;        is the view that someone would see if they clicked on a link that you&lf;        sent them when you had the modal open. They don't have the context you&lf;        did when you opened the modal, so they don't see it in the context of&lf;        the background page.
+                    < Routes 
+                        @ location {state?.backgroundLocation || location}
+                        < Route 
+                            @ path "/"
+                            @ element
+                                < Layout 
+                            < Route 
+                                @ index
+                                @ element
+                                    < Home 
+                            < Route 
+                                @ path "gallery"
+                                @ element
+                                    < Gallery 
+                            < Route 
+                                @ path "/img/:id"
+                                @ element
+                                    < ImageView 
+                            < Route 
+                                @ path "*"
+                                @ element
+                                    < NoMatch 
+                    { 
+                        # 
+                            # Show the modal when a `backgroundLocation` is set
+                    { 
+                        && 
+                            + state?.backgroundLocation
+                            < Routes 
+                                < Route 
+                                    @ path "/img/:id"
+                                    @ element
+                                        < Modal 
+    function Layout
+        return 
+            div 
+                nav 
+                    ul 
+                        li 
+                            < Link 
+                                @ to "/"
+                                + Home
+                        li 
+                            < Link 
+                                @ to "/gallery"
+                                + Gallery
+                hr 
+                < Outlet 
+    function Home
+        return 
+            div 
+                h2 
+                    + Home
+                h3 
+                    + Featured Images
+                ul 
+                    li 
+                        < Link 
+                            @ to "/img/1"
+                            + Image 1
+                    li 
+                        < Link 
+                            @ to "/img/2"
+                            + Image 2
+    function Gallery
+        let location = useLocation()
+        return 
+            div 
+                @ style
+                    { 
+                        @ padding "0 24px"
+                h2 
+                    + Gallery
+                div 
+                    @ style
+                        { 
+                            @ display "grid"
+                            @ gridTemplateColumns "repeat(auto-fit, minmax(200px, 1fr))"
+                            @ gap "24px"
+                    { 
+                        _ IMAGES.map
+                            => 
+                                param image
+                                < Link 
+                                    @ key {image.id}
+                                    @ to
+                                        `lit 
+                                            + /img/
+                                            @ image.id
+                                            + 
+                                        # This is the trick! Set the `backgroundLocation` in location state
+                                        # so that when we open the modal we still see the current page in
+                                        # the background.
+                                    @ state
+                                        { 
+                                            @ backgroundLocation location
+                                        # This is the trick! Set the `backgroundLocation` in location state
+                                        # so that when we open the modal we still see the current page in
+                                        # the background.
+                                    img 
+                                        @ width {200}
+                                        @ height {200}
+                                        @ style
+                                            { 
+                                                @ width "100%"
+                                                @ aspectRatio "1 / 1"
+                                                @ height "auto"
+                                                @ borderRadius "8px"
+                                        @ src {image.src}
+                                        @ alt {image.title}
+    function ImageView
+        let 
+            { 
+                @ id
+            =
+                _ useParams
+                    :param 
+                        :literal "id"
+        let image = getImageById(Number(id))
+        if !image
+            return 
+                div 
+                    + Image not found
+        return 
+            div 
+                h1 
+                    + {image.title}
+                img 
+                    @ width {400}
+                    @ height {400}
+                    @ src {image.src}
+                    @ alt ""
+    function Modal
+        let navigate = useNavigate()
+        let 
+            { 
+                @ id
+            =
+                _ useParams
+                    :param 
+                        :literal "id"
+        let image = getImageById(Number(id))
+        let buttonRef
+            _ React.useRef
+                :param 
+                    :ref HTMLButtonElement
+                @ null
+        function onDismiss
+            _ navigate(-1)
+        if !image
+            return null
+        return 
+            < Dialog 
+                @ aria-labelledby "label"
+                @ onDismiss {onDismiss}
+                @ initialFocusRef {buttonRef}
+                div 
+                    @ style
+                        { 
+                            @ display "grid"
+                            @ justifyContent "center"
+                            @ padding "8px 8px"
+                    h1 
+                        @ id "label"
+                        @ style
+                            { 
+                                @ margin 0
+                        + {image.title}
+                    img 
+                        @ style
+                            { 
+                                @ margin "16px 0"
+                                @ borderRadius "8px"
+                                @ width "100%"
+                                @ height "auto"
+                        @ width {400}
+                        @ height {400}
+                        @ src {image.src}
+                        @ alt ""
+                    button 
+                        @ style
+                            { 
+                                @ display "block"
+                        @ ref {buttonRef}
+                        @ onClick {onDismiss}
+                        + Close
+    function NoMatch
+        return 
+            div 
+                h2 
+                    + Nothing to see here!
+                p 
+                    < Link 
+                        @ to "/"
+                        + Go to the home page

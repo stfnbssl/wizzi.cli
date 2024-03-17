@@ -1,0 +1,960 @@
+module
+    import "@testing-library/jest-dom"
+    import 
+        @ act
+        @ render
+        @ screen
+        @ waitFor
+        from "@testing-library/react"
+    import 
+        as React
+        from "react"
+    :import-type 
+        @ LoaderFunction
+        from "react-router"
+    import 
+        @ RouterProvider
+            as ReactRouter_RouterPRovider
+        from "react-router"
+    import 
+        @ Outlet
+        @ RouterProvider
+            as ReactRouterDom_RouterProvider
+        @ createBrowserRouter
+        @ createHashRouter
+        @ createMemoryRouter
+        @ useLoaderData
+        @ useRouteError
+        from "react-router-dom"
+    import getHtml from "../../react-router/__tests__/utils/getHtml"
+    import 
+        @ createDeferred
+        @ tick
+        from "../../router/__tests__/utils/utils"
+    let didAssertMissingHydrateFallback = false
+    _ describe
+        @ "v7_partialHydration"
+        => 
+            _ describe
+                @ "createBrowserRouter"
+                => 
+                    _ testPartialHydration(createBrowserRouter, ReactRouterDom_RouterProvider)
+            _ describe
+                @ "createHashRouter"
+                => 
+                    _ testPartialHydration(createHashRouter, ReactRouterDom_RouterProvider)
+            _ describe
+                @ "createMemoryRouter"
+                => 
+                    _ testPartialHydration(createMemoryRouter, ReactRouter_RouterPRovider)
+    function testPartialHydration
+        param createTestRouter
+            :union 
+                :typeof createBrowserRouter
+                :typeof createHashRouter
+                :typeof createMemoryRouter
+        param RouterProvider
+            :union 
+                :typeof ReactRouterDom_RouterProvider
+                :typeof ReactRouter_RouterPRovider
+        let consoleWarn
+            :ref jest.SpyInstance
+        _ beforeEach
+            => 
+                set consoleWarn =
+                    _ jest.spyOn(console, "warn").mockImplementation
+                        => 
+        _ afterEach
+            => 
+                _ consoleWarn.mockRestore()
+        _ it
+            @ "does not handle partial hydration by default"
+            async=> 
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader
+                                            => 
+                                                + "INDEX"
+                                        @ HydrateFallback
+                                            => 
+                                                p 
+                                                    + Should not see me
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - undefined&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "supports partial hydration w/leaf fallback"
+            async=> 
+                let dfd = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        @ HydrateFallback
+                                            => 
+                                                p 
+                                                    + Index Loading...
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         Index Loading...&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ dfd.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "supports partial hydration w/root fallback"
+            async=> 
+                let dfd = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                @ HydrateFallback
+                                    => 
+                                        p 
+                                            + Root Loading...
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         Root Loading...&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ dfd.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "supports partial hydration w/no fallback"
+            async=> 
+                let dfd = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd.promise
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + "<div />"
+                    # We can't assert this in all 3 test executions because we use `warningOnce`
+                    # internally to avoid logging on every render
+                if !didAssertMissingHydrateFallback
+                    set didAssertMissingHydrateFallback = true
+                        # eslint-disable-next-line jest/no-conditional-expect
+                    _ expect(consoleWarn).toHaveBeenCalledWith("No `HydrateFallback` element provided to render during initial hydration")
+                        # eslint-disable-next-line jest/no-conditional-expect
+                _ dfd.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "deprecates fallbackElement"
+            async=> 
+                let dfd1 = createDeferred()
+                let dfd2 = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        +
+                                            @expr dfd1.promise
+                                @ HydrateFallback
+                                    => 
+                                        p 
+                                            + Root Loading...
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader
+                                            => 
+                                                +
+                                                    @expr dfd2.promise
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                                @ fallbackElement
+                                    p 
+                                        + fallbackElement...
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;         "<div>&lf;
+                        + &nbsp;           <p>&lf;
+                        + &nbsp;             Root Loading...&lf;
+                        + &nbsp;           </p>&lf;
+                        + &nbsp;         </div>"&lf;
+                        + &nbsp;      &nbsp;
+                _ expect(consoleWarn).toHaveBeenCalledWith("`<RouterProvider fallbackElement>` is deprecated when using " + "`v7_partialHydration`, use a `HydrateFallback` component instead")
+                _ dfd1.resolve("ROOT DATA")
+                _ dfd2.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "does not re-run loaders that don't have loader data due to errors"
+            async=> 
+                let spy = jest.fn()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader spy
+                                        @ HydrateFallback
+                                            => 
+                                                p 
+                                                    + Index Loading...
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                                        m ErrorBoundary
+                                            let error
+                                                _ useRouteError()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                p 
+                                                    + {error}
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                                { errors
+                                    @ index "INDEX ERROR"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         INDEX ERROR&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ expect(spy).not.toHaveBeenCalled()
+        _ it
+            @ "lets users force hydration loader execution with loader.hydrate=true"
+            async=> 
+                let dfd = createDeferred()
+                let indexLoader
+                    :ref LoaderFunction
+                    =
+                        => 
+                            +
+                                @expr dfd.promise
+                set indexLoader.hydrate = true
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader
+                                    => 
+                                        + "ROOT"
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader indexLoader
+                                        @ HydrateFallback
+                                            => 
+                                                p 
+                                                    + Index Loading...
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                                    @ index "INDEX INITIAL"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX INITIAL&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ dfd.resolve("INDEX UPDATED")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX UPDATED/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX UPDATED&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "supports partial hydration w/lazy initial routes (leaf fallback)"
+            async=> 
+                let dfd = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ path "/"
+                                m Component
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                + Root
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ HydrateFallback
+                                            => 
+                                                p 
+                                                    + Index Loading...
+                                        m lazy
+                                            async
+                                            await 
+                                                _ tick()
+                                            return 
+                                                { 
+                                                    @ loader
+                                                        => 
+                                                            +
+                                                                @expr dfd.promise
+                                                    m Component
+                                                        let data
+                                                            _ useLoaderData()
+                                                                :as 
+                                                                    :string 
+                                                        return 
+                                                            h2 
+                                                                { 
+                                                                    `lit 
+                                                                        + Index -&nbsp;
+                                                                        @ data
+                                                                        + 
+                        { 
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Root&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         Index Loading...&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ dfd.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Root&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "supports partial hydration w/lazy initial routes (root fallback)"
+            async=> 
+                let dfd = createDeferred()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ path "/"
+                                m Component
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                + Root
+                                            < Outlet 
+                                @ HydrateFallback
+                                    => 
+                                        p 
+                                            + Loading...
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        m lazy
+                                            async
+                                            await 
+                                                _ tick()
+                                            return 
+                                                { 
+                                                    @ loader
+                                                        => 
+                                                            +
+                                                                @expr dfd.promise
+                                                    m Component
+                                                        let data
+                                                            _ useLoaderData()
+                                                                :as 
+                                                                    :string 
+                                                        return 
+                                                            h2 
+                                                                { 
+                                                                    `lit 
+                                                                        + Index -&nbsp;
+                                                                        @ data
+                                                                        + 
+                        { 
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         Loading...&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ dfd.resolve("INDEX DATA")
+                await 
+                    _ waitFor
+                        => 
+                            _ screen.getByText(/INDEX DATA/)
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Root&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <h2>&lf;
+                        + &nbsp;         Index - INDEX DATA&lf;
+                        + &nbsp;       </h2>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+        _ it
+            @ "preserves hydrated errors for non-hydrating loaders"
+            async=> 
+                let dfd = createDeferred()
+                let rootSpy
+                    :ref LoaderFunction
+                    =
+                        _ jest.fn
+                            => 
+                                +
+                                    @expr dfd.promise
+                set rootSpy.hydrate = true
+                let indexSpy = jest.fn()
+                let router
+                    _ createTestRouter
+                        [ 
+                            { 
+                                @ id "root"
+                                @ path "/"
+                                @ loader rootSpy
+                                m Component
+                                    let data
+                                        _ useLoaderData()
+                                            :as 
+                                                :string 
+                                    return 
+                                        < React.Fragment
+                                            h1 
+                                                { 
+                                                    `lit 
+                                                        + Home -&nbsp;
+                                                        @ data
+                                                        + 
+                                            < Outlet 
+                                [ children
+                                    { 
+                                        @ id "index"
+                                        @ index true
+                                        @ loader indexSpy
+                                        m Component
+                                            let data
+                                                _ useLoaderData()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                h2 
+                                                    { 
+                                                        `lit 
+                                                            + Index -&nbsp;
+                                                            @ data
+                                                            + 
+                                        m ErrorBoundary
+                                            let error
+                                                _ useRouteError()
+                                                    :as 
+                                                        :string 
+                                            return 
+                                                p 
+                                                    + {error}
+                        { 
+                            { hydrationData
+                                { loaderData
+                                    @ root "HYDRATED ROOT"
+                                { errors
+                                    @ index "INDEX ERROR"
+                            { future
+                                @ v7_partialHydration true
+                let 
+                    { 
+                        @ container
+                    =
+                        _ render
+                            < RouterProvider 
+                                @ router {router}
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - HYDRATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         INDEX ERROR&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ expect(router.state.initialized).toBe(false)
+                await 
+                    _ act
+                        => 
+                            _ dfd.resolve("UPDATED ROOT")
+                _ expect(getHtml(container)).toMatchInlineSnapshot
+                    `lit 
+                        + &lf;
+                        + &nbsp;     "<div>&lf;
+                        + &nbsp;       <h1>&lf;
+                        + &nbsp;         Home - UPDATED ROOT&lf;
+                        + &nbsp;       </h1>&lf;
+                        + &nbsp;       <p>&lf;
+                        + &nbsp;         INDEX ERROR&lf;
+                        + &nbsp;       </p>&lf;
+                        + &nbsp;     </div>"&lf;
+                        + &nbsp;  &nbsp;
+                _ expect(rootSpy).toHaveBeenCalledTimes(1)
+                _ expect(indexSpy).not.toHaveBeenCalled()

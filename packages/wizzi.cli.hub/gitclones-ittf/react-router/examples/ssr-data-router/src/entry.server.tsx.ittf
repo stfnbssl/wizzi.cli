@@ -1,0 +1,88 @@
+module
+    :import-type 
+        as express
+        from "express"
+    import 
+        as React
+        from "react"
+    import ReactDOMServer from "react-dom/server"
+    import 
+        @ createStaticHandler
+        @ createStaticRouter
+        @ StaticRouterProvider
+        from "react-router-dom/server"
+    import 
+        @ routes
+        from "./App"
+    export 
+        async-function render
+            param request
+                :ref express.Request
+            param response
+                :ref express.Response
+            let 
+                { 
+                    @ query
+                    @ dataRoutes
+                = createStaticHandler(routes)
+            let remixRequest = createFetchRequest(request, response)
+            let context
+                await 
+                    _ query(remixRequest)
+            if context instanceof Response
+                throw context
+            let router = createStaticRouter(dataRoutes, context)
+            return 
+                _ ReactDOMServer.renderToString
+                    < React.StrictMode 
+                        < StaticRouterProvider 
+                            @ router {router}
+                            @ context {context}
+                            @ nonce "the-nonce"
+    export 
+        function createFetchRequest
+            param req
+                :ref express.Request
+            param res
+                :ref express.Response
+            :return
+                :ref Request
+            let origin
+                `lit 
+                    + 
+                    @ req.protocol
+                    + ://
+                    _ req.get("host")
+                    + 
+                # Note: This had to take originalUrl into account for presumably vite's proxying
+            let url = new URL(req.originalUrl || req.url, origin)
+                # Note: This had to take originalUrl into account for presumably vite's proxying
+            let controller = new AbortController()
+            _ res.on
+                @ "close"
+                => 
+                    _ controller.abort()
+            let headers = new Headers()
+            for 
+                left
+                    let [key, values]
+                of Object.entries(req.headers)
+                if values
+                    if Array.isArray(values)
+                        for 
+                            left
+                                let value
+                            of values
+                            _ headers.append(key, value)
+                    else
+                        _ headers.set(key, values)
+            let init
+                :ref RequestInit
+                =
+                    { 
+                        @ method req.method
+                        @ headers
+                        @ signal controller.signal
+            if req.method !== "GET" && req.method !== "HEAD"
+                set init.body = req.body
+            return new Request(url.href, init)

@@ -1,0 +1,232 @@
+module
+    :import-type 
+        @ MemoryHistory
+        from "@remix-run/router"
+        #
+            # eslint-disable jest/expect-expect
+    import 
+        @ createMemoryHistory
+        from "@remix-run/router"
+    import Listen from "./TestSequences/Listen"
+    import InitialLocationHasKey from "./TestSequences/InitialLocationHasKey"
+    import PushNewLocation from "./TestSequences/PushNewLocation"
+    import PushSamePath from "./TestSequences/PushSamePath"
+    import PushState from "./TestSequences/PushState"
+    import PushMissingPathname from "./TestSequences/PushMissingPathname"
+    import PushRelativePathnameWarning from "./TestSequences/PushRelativePathnameWarning"
+    import ReplaceNewLocation from "./TestSequences/ReplaceNewLocation"
+    import ReplaceSamePath from "./TestSequences/ReplaceSamePath"
+    import ReplaceState from "./TestSequences/ReplaceState"
+    import EncodedReservedCharacters from "./TestSequences/EncodedReservedCharacters"
+    import GoBack from "./TestSequences/GoBack"
+    import GoForward from "./TestSequences/GoForward"
+    import ListenPopOnly from "./TestSequences/ListenPopOnly"
+    _ describe
+        @ "a memory history"
+        => 
+            let history
+                :ref MemoryHistory
+            _ beforeEach
+                => 
+                    set history = createMemoryHistory()
+            _ it
+                @ "has an index property"
+                => 
+                    _ expect(typeof history.index).toBe("number")
+            _ it
+                @ "knows how to create hrefs"
+                => 
+                    const href
+                        _ history.createHref
+                            { 
+                                @ pathname "/the/path"
+                                @ search "?the=query"
+                                @ hash "#the-hash"
+                    _ expect(href).toEqual("/the/path?the=query#the-hash")
+            _ it
+                @ "knows how to create hrefs from strings"
+                => 
+                    const href = history.createHref("/the/path?the=query#the-hash")
+                    _ expect(href).toEqual("/the/path?the=query#the-hash")
+            _ it
+                @ "does not encode the generated path"
+                => 
+                    const encodedHref
+                        _ history.createHref
+                            { 
+                                @ pathname "/%23abc"
+                    _ expect(encodedHref).toEqual("/%23abc")
+                    const unencodedHref
+                        _ history.createHref
+                            { 
+                                @ pathname "/#abc"
+                    _ expect(unencodedHref).toEqual("/#abc")
+            _ describe
+                @ "the initial location"
+                => 
+                    _ it
+                        @ "has a key"
+                        => 
+                            _ InitialLocationHasKey(history)
+            _ describe
+                @ "listen"
+                => 
+                    _ it
+                        @ "does not immediately call listeners"
+                        => 
+                            _ Listen(history)
+                    _ it
+                        @ "calls listeners only for POP actions"
+                        => 
+                            _ ListenPopOnly(history)
+            _ describe
+                @ "push"
+                => 
+                    _ it
+                        @ "pushes the new location"
+                        => 
+                            _ PushNewLocation(history)
+                    _ it
+                        @ "pushes the same location"
+                        async=> 
+                            await 
+                                _ PushSamePath(history)
+                    _ it
+                        @ "pushes with state"
+                        => 
+                            _ PushState(history)
+                    _ it
+                        @ "reuses the current location pathname"
+                        => 
+                            _ PushMissingPathname(history)
+                    _ it
+                        @ "issues a warning on relative pathnames"
+                        => 
+                            _ PushRelativePathnameWarning(history)
+            _ describe
+                @ "replace"
+                => 
+                    _ it
+                        @ "replaces with a new location"
+                        => 
+                            _ ReplaceNewLocation(history)
+            _ describe
+                @ "replace the same path"
+                => 
+                    _ it
+                        @ "replaces with the same location"
+                        => 
+                            _ ReplaceSamePath(history)
+                    _ it
+                        @ "replaces the state"
+                        => 
+                            _ ReplaceState(history)
+            _ describe
+                @ "location created with encoded/unencoded reserved characters"
+                => 
+                    _ it
+                        @ "produces different location objects"
+                        => 
+                            _ EncodedReservedCharacters(history)
+            _ describe
+                @ "go"
+                => 
+                    _ it
+                        @ "goes back"
+                        async=> 
+                            await 
+                                _ GoBack(history)
+                    _ it
+                        @ "goes forward"
+                        async=> 
+                            await 
+                                _ GoForward(history)
+    _ describe
+        @ "a memory history without an onPopState callback"
+        => 
+            _ it
+                @ "fails gracefully on go() calls"
+                => 
+                    let history = createMemoryHistory()
+                    _ history.push("/page1")
+                    _ history.push("/page2")
+                    _ expect(history.location.pathname).toBe("/page2")
+                    _ history.go(-2)
+                    _ expect(history.location.pathname).toBe("/")
+                    _ history.go(1)
+                    _ expect(history.location.pathname).toBe("/page1")
+    _ describe
+        @ "a memory history with some initial entries"
+        => 
+            _ it
+                @ "clamps the initial index to a valid value"
+                => 
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/one"
+                                    @ "/two"
+                                    @ "/three"
+                                @ initialIndex 3
+                                    # invalid
+                    _ expect(history.index).toBe(2)
+            _ it
+                @ "starts at the last entry by default"
+                => 
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    @ "/one"
+                                    @ "/two"
+                                    @ "/three"
+                    _ expect(history.index).toBe(2)
+                    _ expect(history.location).toMatchObject
+                        { 
+                            @ pathname "/three"
+                            @ search ""
+                            @ hash ""
+                            @ state null
+                            @ key expect.any(String)
+                    _ history.go(-1)
+                    _ expect(history.index).toBe(1)
+                    _ expect(history.location).toMatchObject
+                        { 
+                            @ pathname "/two"
+                            @ search ""
+                            @ hash ""
+                            @ state null
+                            @ key expect.any(String)
+            _ it
+                @ "allows initial entries to have state and keys"
+                => 
+                    let history
+                        _ createMemoryHistory
+                            { 
+                                [ initialEntries
+                                    { 
+                                        @ pathname "/one"
+                                        @ state "1"
+                                        @ key "1"
+                                    { 
+                                        @ pathname "/two"
+                                        @ state "2"
+                                        @ key "2"
+                    _ expect(history.index).toBe(1)
+                    _ expect(history.location).toMatchObject
+                        { 
+                            @ pathname "/two"
+                            @ search ""
+                            @ hash ""
+                            @ state "2"
+                            @ key "2"
+                    _ history.go(-1)
+                    _ expect(history.index).toBe(0)
+                    _ expect(history.location).toMatchObject
+                        { 
+                            @ pathname "/one"
+                            @ search ""
+                            @ hash ""
+                            @ state "1"
+                            @ key "1"

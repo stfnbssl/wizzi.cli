@@ -1,0 +1,6 @@
+module
+    kind es6
+    function sumX
+        param a
+        param b
+        return a + b + ${wzCtx.x}

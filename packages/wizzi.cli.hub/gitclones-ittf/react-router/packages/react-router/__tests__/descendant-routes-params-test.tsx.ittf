@@ -1,0 +1,86 @@
+module
+    import 
+        as React
+        from "react"
+    import 
+        as TestRenderer
+        from "react-test-renderer"
+    import 
+        @ MemoryRouter
+        @ Routes
+        @ Route
+        @ useParams
+        from "react-router"
+    _ describe
+        @ "Descendant <Routes>"
+        => 
+            _ it
+                @ "receive all params from ancestor <Routes>"
+                => 
+                    function ShowParams
+                        return 
+                            p 
+                                + The params are
+                                + {JSON.stringify(useParams())}
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/users/mj/messages/123"
+                                        < Routes 
+                                            < Route 
+                                                @ path "users/:userId/*"
+                                                @ element
+                                                    < Routes 
+                                                        < Route 
+                                                            @ path "messages/:messageId"
+                                                            @ element
+                                                                < ShowParams 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <p>&lf;
+                            + &nbsp;       The params are&nbsp;&lf;
+                            + &nbsp;       {"userId":"mj","*":"messages/123","messageId":"123"}&lf;
+                            + &nbsp;     </p>&lf;
+                            + &nbsp;  &nbsp;
+            _ it
+                @ "overrides params of the same name from ancestor <Routes>"
+                => 
+                    function ShowParams
+                        return 
+                            p 
+                                + The params are
+                                + {JSON.stringify(useParams())}
+                    let renderer
+                        :ref TestRenderer.ReactTestRenderer
+                    _ TestRenderer.act
+                        => 
+                            set renderer =
+                                _ TestRenderer.create
+                                    < MemoryRouter 
+                                        @ initialEntries
+                                            [ 
+                                                @ "/users/mj/messages/123"
+                                        < Routes 
+                                            < Route 
+                                                @ path "users/:id/*"
+                                                @ element
+                                                    < Routes 
+                                                        < Route 
+                                                            @ path "messages/:id"
+                                                            @ element
+                                                                < ShowParams 
+                    _ expect(renderer.toJSON()).toMatchInlineSnapshot
+                        `lit 
+                            + &lf;
+                            + &nbsp;     <p>&lf;
+                            + &nbsp;       The params are&nbsp;&lf;
+                            + &nbsp;       {"id":"123","*":"messages/123"}&lf;
+                            + &nbsp;     </p>&lf;
+                            + &nbsp;  &nbsp;
