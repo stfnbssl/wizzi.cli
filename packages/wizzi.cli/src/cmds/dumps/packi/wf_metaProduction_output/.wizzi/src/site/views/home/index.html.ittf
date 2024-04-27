@@ -1,9 +1,0 @@
-html
-    $
-        var opt = {
-            title: 'Hello site home'
-        }
-    html/layouts/demo(&opt)
-        div
-            a Demo
-                href /demo

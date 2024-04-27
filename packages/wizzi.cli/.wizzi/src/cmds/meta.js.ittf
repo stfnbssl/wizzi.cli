@@ -3,7 +3,7 @@
     +
 	const path = require('path')
 	const wizzi = require('@wizzi/factory')
-	const wizziUtils = require('wizzi-utils')
+	const wizziUtils = require('@wizzi/utils')
 	const file = wizziUtils.file
     const verify = wizziUtils.verify
     const config = require('../utils/config')

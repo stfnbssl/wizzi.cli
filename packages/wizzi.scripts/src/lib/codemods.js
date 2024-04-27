@@ -12,8 +12,8 @@ var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_ag
 
 var path = require('path');
 var util = require('util');
-var file = require('wizzi-utils').file;
-var verify = require('wizzi-utils').verify;
+var file = require('@wizzi/utils').file;
+var verify = require('@wizzi/utils').verify;
 var Codemods = (function () {
     function Codemods() {
         _classCallCheck(this, Codemods);

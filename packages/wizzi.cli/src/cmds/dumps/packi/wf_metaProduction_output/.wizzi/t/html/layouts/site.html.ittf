@@ -1,9 +1,0 @@
-$group
-    $params &opt
-    head
-        title ${opt.title}
-    body
-        h1 ${opt.title}
-        $hook
-        footer
-            p meta ittf source file: json:/___template/__dot__wizzi/t/html/layouts/site.html.ittf.ittf

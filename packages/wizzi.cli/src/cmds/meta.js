@@ -1,14 +1,14 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
-    package: wizzi-js@
+    package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\meta.js.ittf
-    utc time: Mon, 04 Mar 2024 21:42:47 GMT
+    utc time: Fri, 26 Apr 2024 11:13:43 GMT
 */
 'use strict';
 
 const path = require('path');
 const wizzi = require('@wizzi/factory');
-const wizziUtils = require('wizzi-utils');
+const wizziUtils = require('@wizzi/utils');
 const file = wizziUtils.file;
 const verify = wizziUtils.verify;
 const config = require('../utils/config');

@@ -2,7 +2,7 @@ module
     import path from 'path'
     import 
         @ fSystem 
-        from 'wizzi-utils'
+        from '@wizzi/utils'
     import
         @ PackiFiles
         from '../features/packi/types'

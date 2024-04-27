@@ -1,4 +1,0 @@
-${'$'}group 
-   $ 
-       var prod = { name: "wizziMeta", isPackageMain: true };
-   wizziMeta/ittf/folderTemplates/index.json(&prod) 

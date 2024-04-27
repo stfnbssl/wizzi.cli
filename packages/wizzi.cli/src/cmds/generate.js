@@ -1,8 +1,8 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
-    package: wizzi-js@
+    package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generate.js.ittf
-    utc time: Mon, 04 Mar 2024 21:42:47 GMT
+    utc time: Fri, 26 Apr 2024 11:13:43 GMT
 */
 'use strict';
 const path = require('path');
@@ -16,8 +16,12 @@ const commons = require('./commons');
 
 const kCommandName = "main";
 
-module.exports = (name) => {
+module.exports = (name, args) => {
 
+    
+    const legacyVersion = args && (args.l || args.legacy) || null;
+    console.log("Wizzi.CLI. Generate. name: ", name || 'DEFAULT', __filename);
+    console.log("Wizzi.CLI. Generate. legacyVersion: ", legacyVersion || 'NONE', __filename);
     
     const checker = new commons.commandChecker(kCommandName);
     
@@ -75,12 +79,12 @@ module.exports = (name) => {
             generateSchemas(configInstance.schemas, path.dirname(configInstance.wfjobPath), configInstance.destPath, configInstance.packageName || configInstance.wfjobName, {
                 items: x_pluginsItems, 
                 baseFolder: x_pluginsBaseFolder
-             })
+             }, legacyVersion)
         }
     })
 }
 ;
-function generateSchemas(schemasToGen, wfJobFolder, destPath, packageName, plugins) {
+function generateSchemas(schemasToGen, wfJobFolder, destPath, packageName, plugins, legacyVersion) {
     async.mapSeries(schemasToGen, function(schemaName, callback) {
         // loog 'wizzi-cli.generate.Generating schema ' + schemaName
         var options = {};
@@ -94,9 +98,10 @@ function generateSchemas(schemasToGen, wfJobFolder, destPath, packageName, plugi
             configOptions: options, 
             wfschema: {
                 name: schemaName, 
-                ittfDocumentUri: path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wfschema.ittf'), 
+                ittfDocumentUri: path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wzschema.ittf'), 
                 outputPackageFolder: destPath
-             }
+             }, 
+            legacyVersion: legacyVersion
          }, function(err, result) {
             if (err) {
                 throw new Error('Package: ' + packageName + ' schema ' + schemaName + '  wizzi models production error: ' + (util.inspect(err, {

@@ -17,7 +17,7 @@
 			param name
             param args
             +
-            const legacyVersion = args.l || args.legacy
+            const legacyVersion = args && (args.l || args.legacy) || null
             log "Wizzi.CLI. Generate. name: ", name || 'DEFAULT'
             log "Wizzi.CLI. Generate. legacyVersion: ", legacyVersion || 'NONE'
             +
@@ -114,7 +114,7 @@
                         @ configOptions options
                         { wfschema
                             @ name schemaName
-                            @ ittfDocumentUri path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wfschema.ittf')
+                            @ ittfDocumentUri path.join(wfJobFolder, 'lib', 'wizzi', 'schemas', schemaName + '.wzschema.ittf')
                             @ outputPackageFolder destPath
                         @ legacyVersion legacyVersion
                     function 

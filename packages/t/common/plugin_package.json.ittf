@@ -50,7 +50,6 @@
 			lodash "^4.17.20"
             $if !!isDevelopment == false
                 wizzi-mtree "${versions['wizzi-mtree']}"
-                wizzi-utils "${versions['@wizzi/utils']}"
 			$hook
             
 	
@@ -60,5 +59,4 @@
             expect.js "^0.3.1"
             $if isDevelopment
                 wizzi-mtree "file:../../wizzi-mtree/dist"
-                wizzi-utils "file:../../wizzi-utils/dist"
 			$hook devDependencies

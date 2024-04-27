@@ -3,7 +3,7 @@ module
     import wizzi from 'wizzi'
     import
         @ fSystem
-        from 'wizzi-utils'
+        from '@wizzi/utils'
     import
         @ JsonComponents
         @ JsonDocumentDto

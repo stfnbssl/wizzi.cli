@@ -1,33 +1,38 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
-    package: wizzi-js@
-    primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.scripts\.wizzi-override\src\commands\help.js.ittf
-    utc time: Sun, 28 Jan 2024 19:38:08 GMT
+    package: @wizzi/plugin.js@0.8.9
+    primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.scripts\.wizzi\src\commands\help.js.ittf
+    utc time: Thu, 25 Apr 2024 08:28:04 GMT
 */
 'use strict';
 const menus = {
     main: [
         "", 
-        "index help pandoc", 
-        "index help babel", 
-        ""
+        "", 
+        "wzCtx.App.CLIName [noarguments] | configname | [command] <options>", 
+        "", 
+        "noarguments ......... execute ... using wizzi.config.js", 
+        "configname .......... execute ... using wizzi.config.<configname>.js", 
+        "first ............... execute ...", 
+        "version ............. show package version", 
+        "help ................ show help menu for a command"
     ].join('\n'), 
-    pandoc: [
+    create: [
         "", 
         "", 
-        "index pandoc <file-path | folder-path> <options>", 
+        "wzCtx.App.CLIName create <options>", 
         "", 
-        "file-path ............ source file path relative to cwd folder", 
-        "folder-path .......... source folder path relative to cwd folder", 
-        "options:", 
-        "  --scan [--folder] ................. scan the folder <folder-path>", 
-        "  [--output | -o] <folder-path> ..... output folder", 
-        ""
+        "--kind | -k <kindname> ... the project kind <kindname>", 
+        "", 
+        "valid kindnames:", 
+        "  webpack", 
+        "  express", 
+        "  plugin"
     ].join('\n'), 
-    babel: [
+    fy: [
         "", 
         "", 
-        "index babel <options>", 
+        "wzCtx.App.CLIName fy <options>", 
         "", 
         "[--source | -s] <file | folder> .... the source file or folder", 
         "[--dest | -d] <file | folder> ...... the destination file or folder"

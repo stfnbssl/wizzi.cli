@@ -47,7 +47,6 @@
 			lodash "^4.17.4"
 			$hook
             wizzi "${versions['wizzi']}"
-            wizzi-utils "${versions['wizzi-utils']}"
             wizzi-js "${versions['wizzi-js']}"
 	
 	peerDependencies

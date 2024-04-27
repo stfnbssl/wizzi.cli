@@ -1,11 +1,11 @@
 /*
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.ts\lib\artifacts\ts\module\gen\main.js
-    package: wizzi.plugin.ts@
+    package: @wizzi/plugin.ts@
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli.hub\.wizzi-override\src\actions\gitrepo.ts.ittf
-    utc time: Fri, 02 Feb 2024 10:28:47 GMT
+    utc time: Thu, 25 Apr 2024 08:28:32 GMT
 */
 import path from 'path';
-import {fSystem} from 'wizzi-utils';
+import {fSystem} from '@wizzi/utils';
 import {PackiFiles} from '../features/packi/types';
 import {githubApiCalls} from '../features/github';
 import {wizziProds} from '../features/wizzi';

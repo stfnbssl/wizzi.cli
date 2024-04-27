@@ -2,7 +2,7 @@
     $$ $include v08/env/vars
     
     name "wizzi.cli"
-    version "0.8.4"
+    version "0.8.5"
     description "Wizzi Command Line Interface"
     { author
         name "Stefano Bassoli"

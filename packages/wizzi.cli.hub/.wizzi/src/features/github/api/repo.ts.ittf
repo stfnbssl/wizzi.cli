@@ -9,7 +9,7 @@ module
         from 'memfs'
     import
         @ fSystem
-        from 'wizzi-utils'
+        from '@wizzi/utils'
     import
         @ PackiFiles
         from '../../packi/types'

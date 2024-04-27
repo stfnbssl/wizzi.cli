@@ -6,7 +6,7 @@ module
     import stringify from 'json-stringify-safe'
     import
         @ fSystem
-        from 'wizzi-utils'
+        from '@wizzi/utils'
     import wizzi from 'wizzi'
     $if wzCtx.Build.useWizziJsonFactory
         import wizziTools from 'wizzi-tools'
@@ -14,7 +14,7 @@ module
         @ ittfScanner
         @ ittfGraph
         @ verify
-        from 'wizzi-utils'
+        from '@wizzi/utils'
     $if wzCtx.Build.useWizziJsonFactory
         import
             @ packiFilePrefix
