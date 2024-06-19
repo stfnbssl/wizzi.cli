@@ -1,6 +1,6 @@
 {
     "name": "@wizzi/cli",
-    "version": "0.8.5",
+    "version": "0.8.7",
     "author": {
         "name": "Stefano Bassoli",
         "email": "stfn.bssl@gmail.com"
@@ -18,7 +18,7 @@
     },
     "preferGlobal": true,
     "scripts": {
-        "metify": "node index metify -n tsRemixApp -s C:\\My\\wizzi\\stfnbssl\\wizzifiables\\remix-start-wizzi -d C:\\My\\wizzi\\stfnbssl\\wizzi.metas\\packages\\wizzi.meta.ts.remix\\ittf\\_"
+        "wizzify": "node index fy -s ittf\\wizzificables -d ittf\\wizzified"
     },
     "bin": {
         "wz": "bin/wz.js"
@@ -32,7 +32,7 @@
         "minimist": "^1.2.0",
         "memfs": "latest",
         "node-fetch": "^2.0.0",
-        "@wizzi/factory": "^0.8.35",
-        "@wizzi/utils": "^0.8.21"
+        "@wizzi/factory": "^0.8.37",
+        "@wizzi/utils": "^0.8.23"
     }
 }

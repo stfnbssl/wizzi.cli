@@ -1,7 +1,7 @@
 $group
    +
    export
-       async-function generateWizziModelTypes
+       async-function generateWizziModelDom
            param request
                :ref WizziModelTypesRequest
            r_promise_async${'('}
@@ -17,7 +17,7 @@ $group
                            _ plugins.push(item)
                else
                    _ plugins.push('wizzi-core')
-               info 'wizziProds.generateWizziModelTypes.plugins', plugins
+               info 'wizziProds.generateWizziModelDom.plugins', plugins
                for var k in mTreeBuildupContext
                    info '- mTreeBuildupContext property', k, mTreeBuildupContext[k]
                for var k in globalContext
@@ -44,13 +44,13 @@ $group
                            if err
                                r_reject${'('} )
                                    {
-                                       @ message "wizziProds.generateWizziModelTypes.generateModelDoms.error"
+                                       @ message "wizziProds.generateWizziModelDom.generateModelDoms.error"
                                        { err
                            success 'WIZZI MODEL TYPES GENERATED FOR SCHEMA ' + request.wfschemaName
                            return resolve(request.wfschemaName)
                catch ex
-                   error "wizziProds.generateWizziModelTypes.error", ex
+                   error "wizziProds.generateWizziModelDom.error", ex
                    r_reject${'('} )
                        {
-                           @ message "wizziProds.generateWizziModelTypes.error"
+                           @ message "wizziProds.generateWizziModelDom.error"
                            @ err ex

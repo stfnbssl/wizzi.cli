@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generate.js.ittf
-    utc time: Fri, 26 Apr 2024 11:13:43 GMT
+    utc time: Fri, 24 May 2024 18:26:48 GMT
 */
 'use strict';
 const path = require('path');
@@ -12,6 +12,7 @@ const async = require('async');
 const chalk = require('chalk');
 const wizzi = require('@wizzi/factory');
 const config = require('../utils/config');
+const filemod = require('../utils/filemod');
 const commons = require('./commons');
 
 const kCommandName = "main";
@@ -48,6 +49,7 @@ module.exports = (name, args) => {
         chalk.red('generation failed')
         return ;
     }
+    filemod.deleteTypeModuleFromPackageJson(path.join(path.dirname(configPath), "package.json"))
     wizzi.executeWizziJob({
         storeKind: 'filesystem', 
         config: {
@@ -94,7 +96,7 @@ function generateSchemas(schemasToGen, wfJobFolder, destPath, packageName, plugi
                 pluginsBaseFolder: plugins.baseFolder
              };
         }
-        wizzi.generateWizziModelTypes({
+        wizzi.generateWizziModelDom({
             configOptions: options, 
             wfschema: {
                 name: schemaName, 

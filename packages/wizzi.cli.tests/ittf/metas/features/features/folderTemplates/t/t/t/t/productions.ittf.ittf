@@ -11,9 +11,9 @@ $group
     $file features/wizzi/t/productions/generateFolderArtifacts.ts.ittf.ittf
        ${'$'}group
            ${'$'}include features/features/wizzi/tfolder/productions/generateFolderArtifacts.ts
-    $file features/wizzi/t/productions/generateWizziModelTypes.ts.ittf.ittf
+    $file features/wizzi/t/productions/generateWizziModelDom.ts.ittf.ittf
        ${'$'}group
-           ${'$'}include features/features/wizzi/tfolder/productions/generateWizziModelTypes.ts
+           ${'$'}include features/features/wizzi/tfolder/productions/generateWizziModelDom.ts
     $file features/wizzi/t/productions/getCodeAST.ts.ittf.ittf
        ${'$'}group
            ${'$'}include features/features/wizzi/tfolder/productions/getCodeAST.ts

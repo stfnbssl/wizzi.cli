@@ -2,7 +2,7 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\factory.js.ittf
-    utc time: Fri, 26 Apr 2024 11:13:43 GMT
+    utc time: Fri, 24 May 2024 18:26:48 GMT
 */
 'use strict';
 
@@ -68,6 +68,7 @@ md.createJsonWizziFactoryAndJsonFs = function(packiFiles, extraPlugin, extraMeta
 ;
 md.getDefaultPlugins = function() {
     return [
+            "./wizzi.plugin.bin/index.js", 
             "./wizzi.plugin.css/index.js", 
             "./wizzi.plugin.docx/index.js", 
             "./wizzi.plugin.graphql/index.js", 
@@ -79,7 +80,9 @@ md.getDefaultPlugins = function() {
             "./wizzi.plugin.pandoc/index.js", 
             "./wizzi.plugin.pdf/index.js", 
             "./wizzi.plugin.ppt/index.js", 
+            "./wizzi.plugin.prisma/index.js", 
             "./wizzi.plugin.text/index.js", 
+            "./wizzi.plugin.toml/index.js", 
             "./wizzi.plugin.ts/index.js", 
             "./wizzi.plugin.svg/index.js", 
             "./wizzi.plugin.wzjob/index.js", 

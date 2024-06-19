@@ -78,6 +78,7 @@
             "./wizzi.plugin.md/index.js"
             "./wizzi.plugin.svg/index.js"
             "./wizzi.plugin.text/index.js"
+            "./wizzi.plugin.toml/index.js"
             "./wizzi.plugin.ts/index.js"
             "./wizzi.plugin.xml/index.js"
             "./wizzi.plugin.yaml/index.js"

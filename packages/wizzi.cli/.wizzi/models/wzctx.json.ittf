@@ -2,7 +2,7 @@
     $$ $include v08/env/vars
     
     name "wizzi.cli"
-    version "0.8.5"
+    version "0.8.7"
     description "Wizzi Command Line Interface"
     { author
         name "Stefano Bassoli"
@@ -18,6 +18,7 @@
         useWizziFactory true
         { wizziFactory
             [ plugins
+                "bin"
                 "css"
                 "docx"
                 "graphql"
@@ -29,7 +30,9 @@
                 "pandoc"
                 "pdf"
                 "ppt"
+                "prisma"
                 "text"
+                "toml"
                 "ts"
                 "svg"
                 "wzjob"

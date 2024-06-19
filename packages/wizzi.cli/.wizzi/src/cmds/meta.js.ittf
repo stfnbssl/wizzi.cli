@@ -115,6 +115,7 @@
             @ metaCtxPath
             @ pluginsInfo
             a_cb(metaCtx)
+                success JSON.stringify(metaCtx, null, 4)
                 _ factory.createJsonWizziFactoryAndJsonFs
                     {
                     @ pluginsInfo

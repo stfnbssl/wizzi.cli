@@ -1,6 +1,5 @@
 ﻿{
     $include versions
-
 	name "@wizzi/cli"
     version '${wzCtx.version}'
 	author
@@ -18,6 +17,7 @@
 		node ">=8"
 	preferGlobal true
     { scripts
+		wizzify "node index fy -s ittf\wizzificables -d ittf\wizzified"
 		$* move to wizzi.cli.tests
 		artifact:basic "node index -s ittf\artifacts\basic\index.html.ittf -d ittf\artifacts\basic -c ittf\artifacts\basic\index"
 		artifact:withContext "node index -s ittf\artifacts\withContext -d ittf\artifacts\withContext -c ittf\artifacts\withContext\index --ctx ittf\artifacts\withContext\wzCtx.json.ittf"
@@ -30,9 +30,8 @@
 		folder:logbot "node index -s C:\My\wizzi\stfnbssl\lavori\logbot\ittf -d C:\My\wizzi\stfnbssl\lavori\logbot\yaml-from-ittf"
 		metify:starters "node index metify -s ittf\metificables\wizziStarters -d ittf\metas\def"
 		metify:2 "node index metify -s C:\\My\\wizzi\\stfnbssl\\wizzifiables\\epic-stack-wizzi -d C:\\My\\wizzi\\stfnbssl\\wizzifiables\\epic-stack-meta" 
+		metify:3 "node index metify -n tsRemixApp -s C:\My\wizzi\stfnbssl\wizzifiables\remix-start-wizzi -d C:\My\wizzi\stfnbssl\wizzi.metas\packages\wizzi.meta.ts.remix\ittf\_"
 		*$
-		metify "node index metify -n tsRemixApp -s C:\My\wizzi\stfnbssl\wizzifiables\remix-start-wizzi -d C:\My\wizzi\stfnbssl\wizzi.metas\packages\wizzi.meta.ts.remix\ittf\_"
-		
 	{ bin
 		wz "bin/wz.js"
 	{ dependencies
@@ -44,5 +43,5 @@
 		minimist "^1.2.0"
         memfs "latest"
         node-fetch "^2.0.0"
-        @wizzi/factory "^0.8.35"
-        @wizzi/utils "^0.8.21"
+        @wizzi/factory "^0.8.37"
+        @wizzi/utils "^0.8.23"

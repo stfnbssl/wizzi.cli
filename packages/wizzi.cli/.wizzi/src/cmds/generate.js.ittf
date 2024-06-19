@@ -8,6 +8,7 @@
     const chalk = require('chalk')
 	const wizzi = require('@wizzi/factory')
     const config = require('../utils/config')
+    const filemod = require('../utils/filemod')
     const commons = require('./commons')
     +
     const kCommandName = "main"
@@ -51,6 +52,11 @@
                 _ chalk.red
                     @ 'generation failed'
                 return
+
+            _ filemod.deleteTypeModuleFromPackageJson
+                _ path.join
+                    _ path.dirname(configPath)
+                    @ "package.json"
 
             _ wizzi.executeWizziJob
 				{ 
@@ -109,7 +115,7 @@
                         {
                             @ plugins plugins.items
                             @ pluginsBaseFolder plugins.baseFolder
-                _ wizzi.generateWizziModelTypes
+                _ wizzi.generateWizziModelDom
                     { 
                         @ configOptions options
                         { wfschema

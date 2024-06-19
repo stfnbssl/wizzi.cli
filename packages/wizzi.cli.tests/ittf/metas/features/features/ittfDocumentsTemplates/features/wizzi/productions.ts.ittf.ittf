@@ -52,7 +52,7 @@ $group
    ${'$'}include productions/mTree
    ${'$'}include productions/generateArtifact
    ${'$'}include productions/generateFolderArtifacts
-   ${'$'}include productions/generateWizziModelTypes
+   ${'$'}include productions/generateWizziModelDom
    ${'$'}include productions/transformModel
    ${'$'}include productions/executeMetaProduction
    ${'$'}include productions/metaGenerate
