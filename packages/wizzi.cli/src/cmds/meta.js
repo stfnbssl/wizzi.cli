@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\meta.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 
 const path = require('path');
 const wizzi = require('@wizzi/factory');
@@ -19,7 +18,6 @@ const factory = require('../factory');
 const kCommandName = "meta";
 
 module.exports = (args) => {
-
     const name = args._[1];
     const configPath = args.c || args.config;
     
@@ -72,7 +70,6 @@ module.exports = (args) => {
         items: checker.metaPluginsItems, 
         metaPluginsBaseFolder: checker.metaPluginsBaseFolder
      }, configInstance.globalContext, (err, result) => {
-    
         if (err) {
             console.log("[31m%s[0m", "");
             console.log("[31m%s[0m", "");
@@ -93,12 +90,11 @@ module.exports = (args) => {
 ;
 function generateMeta(metaCtxPath, destPath, pluginsInfo, metaPluginsInfo, globalContext, callback) {
     loadMetaContext(metaCtxPath, pluginsInfo, (err, metaCtx) => {
-    
         if (err) {
             return callback(err);
         }
+        console.log("[32m%s[0m", JSON.stringify(metaCtx, null, 4));
         factory.createJsonWizziFactoryAndJsonFs({}, pluginsInfo, metaPluginsInfo, (err, wf_and_jsonFs) => {
-        
             if (err) {
                 return callback(err);
             }
@@ -111,7 +107,6 @@ function generateMeta(metaCtxPath, destPath, pluginsInfo, metaPluginsInfo, globa
                  }, 
                 globalContext: globalContext
              }, (err, wizziPackiFiles) => {
-            
                 if (err) {
                     console.log("[31m%s[0m", err);
                     throw err;
@@ -132,7 +127,6 @@ function generateMeta(metaCtxPath, destPath, pluginsInfo, metaPluginsInfo, globa
 }
 function loadMetaContext(metaCtxPath, pluginsInfo, callback) {
     factory.createWizziFactory({}, pluginsInfo, (err, wf) => {
-    
         if (err) {
             return callback(err);
         }
@@ -143,7 +137,6 @@ function loadMetaContext(metaCtxPath, pluginsInfo, callback) {
                  }
              }
          }, (err, wizziModel) => {
-        
             if (err) {
                 return callback(err);
             }

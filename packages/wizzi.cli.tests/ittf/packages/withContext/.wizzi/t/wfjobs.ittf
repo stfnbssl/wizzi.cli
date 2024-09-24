@@ -315,4 +315,4 @@ $group
             src ./**/*.svg
             extension svg
     $else
-        $throw wfjob name not managed: ${name}
+        $throw wzjob name not managed: ${name}

@@ -1196,9 +1196,9 @@
             "wizziConfigFiles": [],
             "isPlugin": true,
             "schemas": {
-                "wfjob": {
-                    "name": "wfjob",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\t\\.wizzi\\lib\\wizzi\\schemas\\wfjob\\wfjob.wfschema.ittf",
+                "wzjob": {
+                    "name": "wzjob",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\t\\.wizzi\\lib\\wizzi\\schemas\\wzjob\\wzjob.wfschema.ittf",
                     "content": null
                 },
                 "wfschema": {
@@ -2887,9 +2887,9 @@
             ],
             "isPlugin": true,
             "schemas": {
-                "wfjob": {
-                    "name": "wfjob",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\wizzi\\schemas\\wfjob\\wfjob.wfschema.ittf",
+                "wzjob": {
+                    "name": "wzjob",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\wizzi\\schemas\\wzjob\\wzjob.wfschema.ittf",
                     "content": null
                 },
                 "wzjob": {
@@ -2899,11 +2899,11 @@
                 }
             },
             "artifacts": {
-                "wfjob/document": {
-                    "name": "wfjob/document",
-                    "schema": "wfjob",
+                "wzjob/document": {
+                    "name": "wzjob/document",
+                    "schema": "wzjob",
                     "artifact": "document",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\artifacts\\wfjob\\document\\gen\\main.js.ittf",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\artifacts\\wzjob\\document\\gen\\main.js.ittf",
                     "content": null
                 },
                 "wzjob/document": {
@@ -2915,11 +2915,11 @@
                 }
             },
             "transformations": {
-                "wfjob/extended": {
-                    "name": "wfjob/extended",
-                    "schema": "wfjob",
+                "wzjob/extended": {
+                    "name": "wzjob/extended",
+                    "schema": "wzjob",
                     "artifact": "extended",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\artifacts\\wfjob\\extended\\trans\\main.js.ittf",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzjob\\.wizzi-override\\lib\\artifacts\\wzjob\\extended\\trans\\main.js.ittf",
                     "content": null
                 },
                 "wzjob/extended": {
@@ -2950,9 +2950,9 @@
             ],
             "isPlugin": true,
             "schemas": {
-                "wfjob": {
-                    "name": "wfjob",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\wizzi\\schemas\\wfjob\\wfjob.wfschema.ittf",
+                "wzjob": {
+                    "name": "wzjob",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\wizzi\\schemas\\wzjob\\wzjob.wfschema.ittf",
                     "content": null
                 },
                 "wfschema": {
@@ -2967,11 +2967,11 @@
                 }
             },
             "artifacts": {
-                "wfjob/document": {
-                    "name": "wfjob/document",
-                    "schema": "wfjob",
+                "wzjob/document": {
+                    "name": "wzjob/document",
+                    "schema": "wzjob",
                     "artifact": "document",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\artifacts\\wfjob\\document\\gen\\main.js.ittf",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\artifacts\\wzjob\\document\\gen\\main.js.ittf",
                     "content": null
                 },
                 "wfschema/document": {
@@ -3025,11 +3025,11 @@
                 }
             },
             "transformations": {
-                "wfjob/extended": {
-                    "name": "wfjob/extended",
-                    "schema": "wfjob",
+                "wzjob/extended": {
+                    "name": "wzjob/extended",
+                    "schema": "wzjob",
                     "artifact": "extended",
-                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\artifacts\\wfjob\\extended\\trans\\main.js.ittf",
+                    "fullPath": "C:\\My\\wizzi\\stfnbssl\\wizzi.plugins\\packages\\wizzi.plugin.wzschema\\.wizzi\\lib\\artifacts\\wzjob\\extended\\trans\\main.js.ittf",
                     "content": null
                 },
                 "wfschema/extended": {

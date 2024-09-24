@@ -11,8 +11,9 @@ module
             @ deleteTypeModuleFromPackageJson
                 function
                     param pkgJsonPath
+                    let json
                     try
-                        const json = require(pkgJsonPath)
+                        set json = require(pkgJsonPath)
                     catch ex
                         error 'filemod.deleteTypeModuleFromPackageJson', ex
                         return

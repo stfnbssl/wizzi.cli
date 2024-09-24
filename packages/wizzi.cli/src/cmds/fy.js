@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\fy.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 const path = require('path');
 const fs = require('fs');
 const wizziUtils = require('@wizzi/utils');
@@ -20,14 +19,12 @@ var _wf = null;
 const kCommandName = "fy";
 
 module.exports = (args, accessToken) => {
-
     // loog 'fy.accessToken', accessToken, args.git
     
     const checker = new commons.commandChecker(kCommandName);
     
     if (args.git) {
         wizzifyGitRepo(args, accessToken, (err, result) => {
-        
             if (err) {
                 console.log("[31m%s[0m", 'err', err);
                 throw new Error(err.message);
@@ -79,7 +76,6 @@ module.exports = (args, accessToken) => {
             excludesDef.push(path.join(checker.sourcePath, item))
         }
         wizzifyFolder(checker.sourcePath, checker.destPath, args.f || args.from || null, args.t || args.to || null, excludesDef, (err, result) => {
-        
             if (err) {
                 console.log("[31m%s[0m", 'err', err);
                 throw new Error(err.message);
@@ -95,7 +91,6 @@ module.exports = (args, accessToken) => {
     // loog 'ok. source && dest are files'
     else {
         wizzifyFile(checker.sourcePath, checker.destPath, (err, notUsed) => {
-        
             if (err) {
                 console.log("[31m%s[0m", 'err', err);
                 throw new Error(err.message);
@@ -122,7 +117,6 @@ function wizzifyGitRepo(args, accessToken, callback) {
         name, 
         token: accessToken
      }, branch, kind).then((result) => {
-    
         // loog 'wizzifyGitRepo.result', Object.keys(result.files)
         if (result.files) {
             for (var k in result.files) {
@@ -132,7 +126,6 @@ function wizzifyGitRepo(args, accessToken, callback) {
         }
         const destIttfFolder = path.join(destFolder, ".wizzi");
         wizzifyFolder(destFolder, destIttfFolder, null, null, [], (err, notUsed) => {
-        
             if (err) {
                 return callback(err);
             }
@@ -146,7 +139,6 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
     // loog 'wizzifyFolder.sourceFolder', sourceFolder
     // loog 'wizzifyFolder.destFolder', destFolder
     getWizziFactory((err, wf) => {
-    
         if (err) {
             return callback(err);
         }
@@ -154,7 +146,6 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
             deep: true, 
             documentContent: false
          }, (err, files) => {
-        
             if (err) {
                 return callback(err);
             }
@@ -185,7 +176,6 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
                     // loog ndx+1, '/', files.length, sourcePath,'has no wizzifier'
                     if (verify.isEmpty(wizzifyExtension) || !wf.canWizzify(wizzifyExtension)) {
                         return file.copyFile(sourcePath, path.join(destFolder, files[ndx].relPath), (err, result) => {
-                            
                                 if (err) {
                                     console.log("[31m%s[0m", 'copying file', sourcePath);
                                     console.log("[31m%s[0m", err);
@@ -210,19 +200,16 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
                     wf.getWizziIttfFromText(sourceTextOrBuffer, wizzifyExtension, {
                         sourceFilepath: sourcePath
                      }, (err, result) => {
-                    
                         if (err) {
                             console.log("[31m%s[0m", 'on file', sourcePath);
                             console.log("[31m%s[0m", err);
                             return process.nextTick(() => 
-                                
                                     run(ndx+1)
                                 );
                         }
                         file.write(destPath, result);
                         console.log('Done. Wizzify file', destPath);
                         return process.nextTick(() => 
-                            
                                 run(ndx+1)
                             );
                     }
@@ -231,7 +218,6 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
                 catch (ex) {
                     console.log("[31m%s[0m", 'in file', sourcePath, 'message', ex.message);
                     process.nextTick(() => 
-                    
                         run(ndx+1)
                     )
                 } 
@@ -244,13 +230,11 @@ function wizzifyFolder(sourceFolder, destFolder, from, to, excludes, callback) {
 }
 function wizzifyFile(sourcePath, destPath, callback) {
     getWizziFactory((err, wf) => {
-    
         if (err) {
             return callback(err);
         }
         try {
             wf.getWizziIttfFromText(file.read(sourcePath), getWizzifyExtension(sourcePath), (err, result) => {
-            
                 if (err) {
                     return callback(err);
                 }
@@ -291,7 +275,6 @@ function getWizziFactory(callback) {
         items: factory.getDefaultPlugins(), 
         pluginsBaseFolder: factory.getDefaultPluginsBaseFolder()
      }, (err, wf) => {
-    
         if (err) {
             return callback(err);
         }

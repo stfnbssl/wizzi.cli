@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\factory.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 
 const wizzi = require('@wizzi/factory');
 const wizziUtils = require('@wizzi/utils');
@@ -32,7 +31,6 @@ md.createJsonWizziFactoryAndJsonFs = function(packiFiles, extraPlugin, extraMeta
     const jsonDocuments = [];
     console.log('createJsonWizziFactoryAndJsonFs', __filename);
     Object.keys(packiFiles).map((value) => {
-    
         if (packiFiles[value].type === 'CODE' && packiFiles[value].contents && packiFiles[value].contents.length > 0) {
             const filePath = ensurePackiFilePrefix(value);
             jsonDocuments.push({
@@ -43,7 +41,6 @@ md.createJsonWizziFactoryAndJsonFs = function(packiFiles, extraPlugin, extraMeta
     }
     )
     wizzi.JsonComponents.createJsonFs(jsonDocuments, (err, jsonFs) => {
-    
         if (err) {
             return callback(err);
         }
@@ -52,7 +49,6 @@ md.createJsonWizziFactoryAndJsonFs = function(packiFiles, extraPlugin, extraMeta
             plugins: extraPlugin, 
             metaPlugins: extraMetaPlugins
          }, (err, wf) => {
-        
             if (err) {
                 return callback(err);
             }
@@ -102,7 +98,6 @@ md.createContextFromFile = function(filePath, previousContext, extraPlugin, call
     if (fInfo.isIttfDocument) {
         if (fInfo.schema == 'json') {
             md.createWizziFactory({}, extraPlugin, (err, wf) => {
-            
                 if (err) {
                     return callback(err);
                 }
@@ -114,7 +109,6 @@ md.createContextFromFile = function(filePath, previousContext, extraPlugin, call
                         
                      }
                  }, null, (err, result) => {
-                
                     if (err) {
                         console.log("[31m%s[0m", 'err', err);
                         throw new Error(err.message);
@@ -136,12 +130,10 @@ md.createContextFromFile = function(filePath, previousContext, extraPlugin, call
     else {
         if (fInfo.mime == 'json') {
             vfile((err, vfileImpl) => {
-            
                 if (err) {
                     return callback(err);
                 }
                 vfileImpl.read(filePath, (err, result) => {
-                
                     if (err) {
                         return callback(err);
                     }

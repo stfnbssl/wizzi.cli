@@ -1,4 +1,4 @@
-﻿wfjob whitContext/job
+﻿wzjob whitContext/job
 	
     $
         var jobCtx = {
@@ -15,23 +15,23 @@
     
     line ittf-models
         cwd-folder ${jobCtx.ittf_models_folder}
-        wfjobs(any_json, &jobCtx)
+        wzjobs(any_json, &jobCtx)
 
 	line ittf-root
         cwd-folder ${jobCtx.ittf_root_folder}
         dest-folder ${jobCtx.dest_folder}/
 
-		wfjobs(any_js, &jobCtx)
-		wfjobs(any_json, &jobCtx)
-		wfjobs(any_html, &jobCtx)
-		wfjobs(any_md, &jobCtx)
-		wfjobs(any_text, &jobCtx)
-		wfjobs(.gitignore, &jobCtx)
+		wzjobs(any_js, &jobCtx)
+		wzjobs(any_json, &jobCtx)
+		wzjobs(any_html, &jobCtx)
+		wzjobs(any_md, &jobCtx)
+		wzjobs(any_text, &jobCtx)
+		wzjobs(.gitignore, &jobCtx)
 
 	line ittf-src
         cwd-folder ${jobCtx.ittf_src_folder}
         dest-folder ${jobCtx.dest_folder}/src
-		wfjobs(any_js, &jobCtx)
+		wzjobs(any_js, &jobCtx)
 
 	production
 		dest-folder ${jobCtx.dest_folder}

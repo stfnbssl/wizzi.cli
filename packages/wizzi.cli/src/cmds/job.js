@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\job.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 const path = require('path');
 const wizzi = require('@wizzi/factory');
 const config = require('../utils/config');
@@ -13,7 +12,6 @@ const commons = require('./commons');
 const kCommandName = "job";
 
 module.exports = (args) => {
-
     
     const checker = new commons.commandChecker(kCommandName);
     
@@ -30,8 +28,8 @@ module.exports = (args) => {
     else {
         return checker.checkOut();
     }
-    checker.checkNotEmpty(configInstance.wfjobName, 'wfjobName')
-    checker.checkFile(configInstance.wfjobPath, 'wfjobPath')
+    checker.checkNotEmpty(configInstance.wzjobName, 'wzjobName')
+    checker.checkFile(configInstance.wzjobPath, 'wzjobPath')
     checker.checkNotEmpty(configInstance.pluginsBaseFolder, 'pluginsBaseFolder', {
         message: "in config file " + checker.configPath
      })
@@ -51,8 +49,8 @@ module.exports = (args) => {
             pluginsBaseFolder: checker.pluginsBaseFolder
          }, 
         job: {
-            name: checker.wfjobName, 
-            ittfDocumentUri: checker.wfjobPath, 
+            name: checker.wzjobName, 
+            ittfDocumentUri: checker.wzjobPath, 
             productionOptions: wizzi.productionOptions({
                 indentSpaces: 4, 
                 basedir: __dirname, 
@@ -70,7 +68,7 @@ module.exports = (args) => {
         if (err) {
             console.log("[31m%s[0m", "");
             console.log("[31m%s[0m", "");
-            wizzi.printWizziJobError(configInstance.wfjobName, err);
+            wizzi.printWizziJobError(configInstance.wzjobName, err);
             console.log("[31m%s[0m", "");
             console.log("[31m%s[0m", "");
         }

@@ -126,7 +126,7 @@ $group
                    @ 'wizzi-web'
                [ vue
                    @ 'wizzi-web'
-               [ wfjob
+               [ wzjob
                    @ 'wizzi-core'
                [ wfschema
                    @ 'wizzi-core'

@@ -1,7 +1,7 @@
 const path = require('path');
 module.exports = {
-    wfjobName: "wizzi-cli-job",
-    wfjobPath: path.join(__dirname, '.wizzi', 'generate.wfjob.ittf'), 
+    wzjobName: "wizzi-cli-job",
+    wzjobPath: path.join(__dirname, '.wizzi', 'generate.wzjob.ittf'), 
     plugins: [
         "./wizzi.plugin.css/index.js", 
         "./wizzi.plugin.graphql/index.js", 

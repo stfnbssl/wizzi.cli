@@ -70,7 +70,7 @@
                     @ ""
 					@ "wz job <jobname> <options>"
 					@ ""
-					@ "jobname .... the name of the job definition file: <jobname>.wfjob.ittf"
+					@ "jobname .... the name of the job definition file: <jobname>.wzjob.ittf"
 					@ "options:"
                     @ "  [--config | -c] <configname> ...... the name of the job configuration file: <configname>.config.js"
 					@ "    . The <configname>.config.js file is searched in the current and up folders"

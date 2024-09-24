@@ -1,0 +1,1 @@
+./node_modules/.bin/ts-node src/index.ts down wizzihub -d C:\My\wizzi\stfnbssl\wizzi.cli\packages -m xxxx

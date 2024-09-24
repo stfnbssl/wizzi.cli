@@ -1,4 +1,4 @@
-﻿wfjob basic/job
+﻿wzjob basic/job
 
 	# Generates a javascript module
 	# from a single ittf document of schema `js`

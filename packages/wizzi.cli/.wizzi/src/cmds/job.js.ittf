@@ -32,11 +32,11 @@
 				return
 					_ checker.checkOut()
 			_ checker.checkNotEmpty
-				@ configInstance.wfjobName
-				@ 'wfjobName'
+				@ configInstance.wzjobName
+				@ 'wzjobName'
 			_ checker.checkFile
-				@ configInstance.wfjobPath
-				@ 'wfjobPath'
+				@ configInstance.wzjobPath
+				@ 'wzjobPath'
 			_ checker.checkNotEmpty
 				@ configInstance.pluginsBaseFolder
 				@ 'pluginsBaseFolder'
@@ -59,8 +59,8 @@
 						@ plugins checker.pluginsItems
                         @ pluginsBaseFolder checker.pluginsBaseFolder
 					{ job
-						@ name checker.wfjobName
-						@ ittfDocumentUri checker.wfjobPath
+						@ name checker.wzjobName
+						@ ittfDocumentUri checker.wzjobPath
 						@ productionOptions
 							_ wizzi.productionOptions
 								{ 
@@ -77,7 +77,7 @@
 					if err
 						error ""
 						error ""
-						_ wizzi.printWizziJobError(configInstance.wfjobName, err)
+						_ wizzi.printWizziJobError(configInstance.wzjobName, err)
 						error ""
 						error ""
 					else

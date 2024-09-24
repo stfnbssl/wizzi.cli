@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\features\github\api\repo.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 const fetch = require('node-fetch');
 const path = require('path');
 const git = require('isomorphic-git');
@@ -24,22 +23,18 @@ const wizzifs = fSystem.vfile(fs);
 var md = module.exports = {};
 md.getRepository = async function(owner, repo, accessToken) {
     return new Promise((resolve, reject) => 
-        
             fetch(`https://api.github.com/repos/${owner}/${repo}`, getOptions(accessToken)).then((response) => {
-            
                 if (!response.ok) {
                     throw new Error(response.status.toString());
                 }
                 return response.json();
             }
             ).then(async (responseData) => {
-            
                 responseData._contents = await md.getContents(owner, repo, accessToken);
                 ;
                 resolve(responseData)
             }
             ).catch(err => 
-            
                 reject(err)
             )
         
@@ -50,21 +45,17 @@ md.getRepository = async function(owner, repo, accessToken) {
 md.getContents = async function(owner, repo, accessToken) {
     console.log('getContents.enter', owner, repo, accessToken, __filename);
     return new Promise((resolve, reject) => 
-        
             fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, getOptions(accessToken)).then((response) => {
-            
                 if (!response.ok) {
                     throw new Error(response.status.toString());
                 }
                 response.json();
             }
             ).then((responseData) => {
-            
                 console.log('getContents', responseData, __filename);
                 return resolve(responseData);
             }
             ).catch(err => 
-            
                 reject(err)
             )
         
@@ -76,9 +67,7 @@ md.cloneBranch = async function(repo, branch, kind) {
     volume.reset();
     const dir = '/' + repo.name;
     return new Promise((resolve, reject) => 
-        
             fs.mkdir(dir, async (err) => {
-            
                 if (err) {
                     return reject(err);
                 }
@@ -92,7 +81,6 @@ md.cloneBranch = async function(repo, branch, kind) {
                             singleBranch: true, 
                             depth: 10, 
                             onAuth: (url) => {
-                            
                                 return 
                                     // oauth2format 'github'
                                     {
@@ -107,7 +95,6 @@ md.cloneBranch = async function(repo, branch, kind) {
                      });
                     const packies = {};
                     files.forEach((file) => {
-                    
                         if (file.relPath.startsWith('.git/') == false) {
                             if (kind === 'all' || kind === 'ittf' && file.relPath.endsWith('.ittf') == true) {
                                 packies[file.relPath] = {

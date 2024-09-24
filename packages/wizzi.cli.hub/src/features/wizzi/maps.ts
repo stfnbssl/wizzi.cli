@@ -116,7 +116,7 @@ const schemaPluginMap: {
     vue: [
         'wizzi-web'
     ], 
-    wfjob: [
+    wzjob: [
         'wizzi-core'
     ], 
     wfschema: [

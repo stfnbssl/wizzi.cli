@@ -1,0 +1,35 @@
+wzjob demo.ts.node.git-override/job
+    
+    $
+        var jobCtx = {
+            ittf_models_folder: path.join(__dirname, '..', '.wizzi', 'models'),
+            ittf_src_folder: path.join(__dirname, 'src'),
+            ittf_root_folder: path.join(__dirname, 'root'),
+            dest_folder: path.join(__dirname, '..'),
+            job_model: 'wzCtx'
+        }
+    
+    model ${jobCtx.job_model}
+        schema json
+        src ${jobCtx.ittf_models_folder}/wzctx.json.ittf
+    
+    line ittf-src
+        cwd-folder ${jobCtx.ittf_src_folder}
+        dest-folder ${jobCtx.dest_folder}/src
+        wzjobs(any_js, &jobCtx)
+        wzjobs(any_ts, &jobCtx)
+        wzjobs(any_tsx, &jobCtx)
+        wzjobs(any_css, &jobCtx)
+        wzjobs(any_json, &jobCtx)
+        wzjobs(any_md, &jobCtx)
+        wzjobs(any_plain, &jobCtx, js)
+        wzjobs(any_plain, &jobCtx, d.ts)
+        wzjobs(any_plain, &jobCtx, html)
+        wzjobs(any_plain, &jobCtx, html.ittf)
+        wzjobs(any_plain, &jobCtx, css)
+        wzjobs(any_plain, &jobCtx, css.ittf)
+        wzjobs(any_plain_image, &jobCtx)
+    
+    production
+        dest-folder ${jobCtx.dest_folder}
+        line-ref ittf-src

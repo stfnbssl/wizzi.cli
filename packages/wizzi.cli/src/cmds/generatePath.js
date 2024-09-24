@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generatePath.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 const path = require('path');
 const wizziUtils = require('@wizzi/utils');
 const file = wizziUtils.file;
@@ -17,7 +16,6 @@ const commons = require('./commons');
 const kCommandName = "main";
 
 module.exports = (args) => {
-
     
     const checker = new commons.commandChecker(kCommandName);
     
@@ -90,7 +88,6 @@ module.exports = (args) => {
         items: checker.pluginsItems || factory.getDefaultPlugins(), 
         pluginsBaseFolder: checker.pluginsBaseFolder || factory.getDefaultPluginsBaseFolder()
      }, checker, (err, context) => {
-    
         if (err) {
             console.log("[31m%s[0m", 'err', err);
             throw new Error(err.message);
@@ -105,7 +102,6 @@ module.exports = (args) => {
             items: checker.pluginsItems || factory.getDefaultPlugins(), 
             pluginsBaseFolder: checker.pluginsBaseFolder || factory.getDefaultPluginsBaseFolder()
          }, (err, wf) => {
-        
             if (err) {
                 console.log("[31m%s[0m", 'err', err);
                 throw new Error(err.message);
@@ -119,7 +115,6 @@ module.exports = (args) => {
                  }, {
                     destFolder: checker.destPath
                  }, (err, result) => {
-                
                     if (err) {
                         console.log("[31m%s[0m", 'err', err);
                         throw new Error(err.message);
@@ -139,7 +134,6 @@ module.exports = (args) => {
                         
                      }
                  }, null, (err, result) => {
-                
                     if (err) {
                         console.log("[31m%s[0m", 'err', err);
                         throw new Error(err.message);
@@ -181,7 +175,6 @@ function loadContexts(contextFiles, plugins, checker, callback) {
             return callback(null, progressiveContext);
         }
         factory.createContextFromFile(checker[contextFile], progressiveContext, plugins, (err, context) => {
-        
             if (err) {
                 return callback(err);
             }

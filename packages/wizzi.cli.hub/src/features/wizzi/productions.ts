@@ -523,7 +523,7 @@ export async function metaGenerate(files: packiTypes.PackiFiles, context: any): 
         );
 }
 
-export async function executeJob(wfjobFilePath: string, packiFiles: packiTypes.PackiFiles, context: any):  Promise<JsonFs> {
+export async function executeJob(wzjobFilePath: string, packiFiles: packiTypes.PackiFiles, context: any):  Promise<JsonFs> {
 
     return new Promise(async (resolve, reject) => {
         
@@ -534,11 +534,11 @@ export async function executeJob(wfjobFilePath: string, packiFiles: packiTypes.P
                         packiFiles
                      });
             }
-            wfjobFilePath = ensurePackiFilePrefix(wfjobFilePath);
+            wzjobFilePath = ensurePackiFilePrefix(wzjobFilePath);
             const jsonwf = await createJsonFsAndFactory(packiFiles);
             jsonwf.wf.executeJob({
                 name: '', 
-                path: wfjobFilePath, 
+                path: wzjobFilePath, 
                 productionOptions: {
                     
                  }, 
@@ -561,20 +561,20 @@ export async function executeJobs(packiFiles: packiTypes.PackiFiles, context: an
         // TODO catch error
         async (resolve, reject) => {
         
-            const wfjobFilePaths = Object.keys(packiFiles).filter(k => 
+            const wzjobFilePaths = Object.keys(packiFiles).filter(k => 
             
-                k.endsWith('.wfjob.ittf')
+                k.endsWith('.wzjob.ittf')
             );
             const jsonwf = await createJsonFsAndFactory(packiFiles);
             const execJob = (index: number):  void => {
             
-                if (index == wfjobFilePaths.length) {
+                if (index == wzjobFilePaths.length) {
                     return resolve(jsonwf.jsonFs);
                 }
-                const wfjobFilePath = ensurePackiFilePrefix(wfjobFilePaths[index]);
+                const wzjobFilePath = ensurePackiFilePrefix(wzjobFilePaths[index]);
                 jsonwf.wf.executeJob({
                     name: '', 
-                    path: wfjobFilePath, 
+                    path: wzjobFilePath, 
                     productionOptions: {
                         
                      }, 

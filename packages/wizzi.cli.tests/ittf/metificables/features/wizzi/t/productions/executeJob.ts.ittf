@@ -3,7 +3,7 @@ $group
         +
         export
             async-function executeJob
-                param wfjobFilePath
+                param wzjobFilePath
                     :string
                 param packiFiles
                     :ref packiTypes.PackiFiles
@@ -25,14 +25,14 @@ $group
                                             @ action 'wizzi.productions.executeJob'
                                             @ message 'packiFiles parameter must be an object of type PackiFiles'
                                             @ packiFiles
-                            set wfjobFilePath = ensurePackiFilePrefix(wfjobFilePath)
+                            set wzjobFilePath = ensurePackiFilePrefix(wzjobFilePath)
                             const jsonwf
                                 await
                                     _ createJsonFsAndFactory(packiFiles)
                             _ jsonwf.wf.executeJob
                                 {
                                     @ name ''
-                                    @ path wfjobFilePath
+                                    @ path wzjobFilePath
                                     { productionOptions
                                     @ globalContext context || {}
                                 =>
@@ -57,11 +57,11 @@ $group
                         async=>
                             param resolve
                             param reject
-                            const wfjobFilePaths
+                            const wzjobFilePaths
                                 _ Object.keys(packiFiles).filter
                                     =>
                                         param k
-                                        _ k.endsWith('.wfjob.ittf')
+                                        _ k.endsWith('.wzjob.ittf')
                             # TODO catch error
                             const jsonwf
                                 await
@@ -72,13 +72,13 @@ $group
                                         :number
                                     :return
                                         :void
-                                    if index == wfjobFilePaths.length
+                                    if index == wzjobFilePaths.length
                                         return resolve(jsonwf.jsonFs)
-                                    const wfjobFilePath = ensurePackiFilePrefix(wfjobFilePaths[index])
+                                    const wzjobFilePath = ensurePackiFilePrefix(wzjobFilePaths[index])
                                     _ jsonwf.wf.executeJob
                                         {
                                             @ name ''
-                                            @ path wfjobFilePath
+                                            @ path wzjobFilePath
                                             { productionOptions
                                             @ globalContext context || {}
                                         =>
@@ -115,11 +115,11 @@ $group
                                 @ request.pluginsBaseFolder
                                 @ plugins
                                 @ globalContext
-                    info 'STARTING WIZZI JOB', request.wfjobIttfDocumentUri
+                    info 'STARTING WIZZI JOB', request.wzjobIttfDocumentUri
                     _ wf.executeJob
                         {
-                            @ name request.wfjobName || path.basename(request.wfjobIttfDocumentUri)
-                            @ path request.wfjobIttfDocumentUri
+                            @ name request.wzjobName || path.basename(request.wzjobIttfDocumentUri)
+                            @ path request.wzjobIttfDocumentUri
                             { productionOptions
                             @ globalContext globalContext
                         =>
@@ -132,7 +132,7 @@ $group
                                     {
                                         @ message "wizziProds.executeJobFs.wf.executeJob.error"
                                         { err
-                            success 'WIZZI JOB Executed', request.wfjobIttfDocumentUri
+                            success 'WIZZI JOB Executed', request.wzjobIttfDocumentUri
                             return resolve(result)
                 catch ex
                     error "wizziProds.executeJobFs.error", ex

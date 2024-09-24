@@ -2,9 +2,8 @@
     artifact generator: C:\My\wizzi\stfnbssl\wizzi.plugins\packages\wizzi.plugin.js\lib\artifacts\js\module\gen\main.js
     package: @wizzi/plugin.js@0.8.9
     primary source IttfDocument: C:\My\wizzi\stfnbssl\wizzi.cli\packages\wizzi.cli\.wizzi\src\cmds\generate.js.ittf
-    utc time: Fri, 24 May 2024 18:26:48 GMT
+    utc time: Sat, 31 Aug 2024 07:19:49 GMT
 */
-'use strict';
 const path = require('path');
 const util = require('util');
 const fs = require('fs');
@@ -18,7 +17,6 @@ const commons = require('./commons');
 const kCommandName = "main";
 
 module.exports = (name, args) => {
-
     
     const legacyVersion = args && (args.l || args.legacy) || null;
     console.log("Wizzi.CLI. Generate. name: ", name || 'DEFAULT', __filename);
@@ -58,8 +56,8 @@ module.exports = (name, args) => {
             pluginsBaseFolder: x_pluginsBaseFolder
          }, 
         job: {
-            name: configInstance.wfjobName, 
-            ittfDocumentUri: configInstance.wfjobPath, 
+            name: configInstance.wzjobName, 
+            ittfDocumentUri: configInstance.wzjobPath, 
             productionOptions: wizzi.productionOptions({
                 indentSpaces: 4, 
                 basedir: __dirname, 
@@ -75,10 +73,10 @@ module.exports = (name, args) => {
          }
      }, function(err) {
         if (err) {
-            return wizzi.printWizziJobError(configInstance.wfjobName, err);
+            return wizzi.printWizziJobError(configInstance.wzjobName, err);
         }
         if (configInstance.schemas && configInstance.schemas.length > 0) {
-            generateSchemas(configInstance.schemas, path.dirname(configInstance.wfjobPath), configInstance.destPath, configInstance.packageName || configInstance.wfjobName, {
+            generateSchemas(configInstance.schemas, path.dirname(configInstance.wzjobPath), configInstance.destPath, configInstance.packageName || configInstance.wzjobName, {
                 items: x_pluginsItems, 
                 baseFolder: x_pluginsBaseFolder
              }, legacyVersion)

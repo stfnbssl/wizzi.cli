@@ -6,7 +6,7 @@ module
 
     _ job
         {
-            @ c "wfjobs/first"
+            @ c "wzjobs/first"
             [ _
                 @ "job"
-                @ "wfjobs/first"
+                @ "wzjobs/first"

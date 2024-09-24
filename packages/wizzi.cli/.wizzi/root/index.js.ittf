@@ -68,6 +68,11 @@
                 if configPath
                     _ require('./src/cmds/generate')(cmd, args)
                 else
-                    _ error(`"${cmd}" is not a valid command!`)
-                    _ error(`try wizzi help`, true)
+                    set configPath = config.getPathCjs(cmd)
+                    if configPath
+                        _ require('./src/cmds/generate')(cmd, args)
+                    else
+                        _ error(`"${cmd}" is not a valid command!`)
+                        _ error(`try wizzi help`, true)
             break
+

@@ -1,0 +1,224 @@
+$group
+
+    var youTubePlayer
+        # YT.Player initialized by onYouTubeIframeAPIReady().
+    var videoPlayer
+        # html element player initialized by onPlayerReady().
+    
+    function onYouTubeIframeAPIReady
+        ${'$'}${'$'}var videoId = "frYIj2FGmMA"
+        var videoId = "NONE"
+        var suggestedQuality = 'tiny'
+        var height = 300
+        var width = 400
+
+        log "#### Entering onYouTubeIframeAPIReady"
+        
+        function onError
+            param event
+            log 'youTubePlayer.onError', event.data
+            _ youTubePlayer.personalPlayer.errors.push(event.data)
+        
+        function onPlayerReady
+            param event
+            log "#### Entering onPlayerReady"
+            log 'youTubePlayer.onPlayerReady.event.target', event.target
+            set videoPlayer = event.target
+            log 'onPlayerReady.videoPlayer', videoPlayer
+            _ videoPlayer.loadVideoById
+                { 
+                    @ suggestedQuality
+                    @ videoId
+            _ videoPlayer.pauseVideo()
+            _ youTubePlayerDisplayFixedInfos()
+        
+        function onStateChange
+            param event
+            log 'videoPlayer.onStateChange', event.target.getVolume()
+            var volume = Math.round(event.target.getVolume())
+        
+        # https://developers.google.com/youtube/player_parameters
+        set youTubePlayer =
+            new YT.Player
+                @ 'YouTube-player'
+                { 
+                    @ videoId "frYIj2FGmMA"
+                    @ height
+                    @ width
+                    ${'$'}*
+                    { playerVars
+                        @ 'autohide' 0
+                        @ 'cc_load_policy' 0
+                        @ 'controls' 2
+                        @ 'disablekb' 1
+                        @ 'iv_load_policy' 3
+                        @ 'modestbranding' 1
+                        @ 'rel' 0
+                        @ 'showinfo' 0
+                        @ 'start' 3
+                        @ 'origin' "http://localhost:5100"
+                    *$
+                    { events
+                        @ 'onError' onError
+                        @ 'onReady' onPlayerReady
+                        @ 'onStateChange' onStateChange
+       
+        set youTubePlayer.personalPlayer =
+            { 
+                @ 'currentTimeSliding' false
+                @ 'errors' []
+
+        set document.getElementById('YouTube-player').sandbox += ' allow-presentation'
+
+        info "onYouTubeIframeAPIReady Done"
+    
+    function videoPlayerActive
+        return videoPlayer && videoPlayer.hasOwnProperty('getPlayerState')
+    
+    function youTubePlayerChangeVideoId
+        param videoId
+        param time
+        const seconds = timeToSeconds(time)
+        log "YT.PlayerState", YT.PlayerState
+        if videoPlayer
+          log 'youTubePlayerChangeVideoId', 
+            \b videoPlayer.loadVideoByUrl,
+            \b videoPlayer.loadVideoById, 
+            \b time, seconds,
+            \b "youTubePlayer.keys()", youTubePlayer
+          _ videoPlayer.loadVideoById
+              { 
+                  @ suggestedQuality 'tiny'
+                  @ videoId
+                  @ startSeconds seconds
+            _ videoPlayerDisplayFixedInfos()
+        else
+          _ alert("videoPlayer not created") 
+    
+    function youTubePlayerCurrentTimeChange
+        param currentTime
+        # param currentTime: 0 <= number <= 100
+        set youTubePlayer.personalPlayer.currentTimeSliding = false
+        log 'youTubePlayerCurrentTimeChange', videoPlayerActive(), currentTime, videoPlayer.getDuration()
+        if videoPlayerActive()
+            _ videoPlayer.seekTo(currentTime * videoPlayer.getDuration() / 100, true)
+        
+    function youTubePlayerCurrentTimeSlide
+        set youTubePlayer.personalPlayer.currentTimeSliding = true
+    
+    function youTubePlayerDisplayFixedInfos
+        if youTubePlayerActive()
+        
+    function youTubePlayerDisplayInfos
+        if (this.nbCalls === undefined) || (this.nbCalls >= 3)
+            set this.nbCalls = 0
+        else
+            set ++this.nbCalls
+        var indicatorDisplay
+            op+ 
+                op+ 
+                    + '<span id="indicator-display" title="timing of informations refreshing">'
+                    [ 
+                        @ '|'
+                        @ '/'
+                        @ String.fromCharCode(8212)
+                        @ '\\'
+                        .[ this.nbCalls
+                + '</span>'
+        
+        if videoPlayerActive()
+            var state = videoPlayer.getPlayerState()
+            var current = videoPlayer.getCurrentTime()
+            var duration = videoPlayer.getDuration()
+            var currentPercent
+                ( 
+                    iif current && duration
+                        then current * 100 / duration
+                        else 0
+            var fraction
+                ( 
+                    iif videoPlayer.hasOwnProperty('getVideoLoadedFraction')
+                        then videoPlayer.getVideoLoadedFraction()
+                        else 0
+            var url = videoPlayer.getVideoUrl()
+            if !current
+                set current = 0
+            if !duration
+                set duration = 0
+            var volume = videoPlayer.getVolume()
+            if !youTubePlayer.personalPlayer.currentTimeSliding
+                ${'$'}${'$'} set document.getElementById('YouTube-player-progress').value = currentPercent
+            set document.getElementById('YouTube-player-infos').innerHTML = (indicatorDisplay + 'URL: <a class="url" href="' + url + '">' + url + '</a><br>' + 'Quality: <strong>' + youTubePlayer.getPlaybackQuality() + '</strong>' + ' &mdash; Available quality: <strong>' + youTubePlayer.getAvailableQualityLevels() + '</strong><br>' + 'State <strong>' + state + '</strong>: <strong>' + youTubePlayerStateValueToDescription(state) + '</strong><br>' + 'Loaded: <strong>' + (fraction * 100).toFixed(1) + '</strong>%<br>' + 'Duration: <strong>' + current.toFixed(2) + '</strong>/<strong>' + duration.toFixed(2) + '</strong>s = <strong>' + currentPercent.toFixed(2) + '</strong>%<br>' + 'Volume: <strong>' + volume + '</strong>%')
+            set document.getElementById('YouTube-player-errors').innerHTML = '<div>Errors: <strong>' + youTubePlayer.personalPlayer.errors + '</strong></div>'
+        else
+            set document.getElementById('YouTube-player-infos').innerHTML = indicatorDisplay
+    
+    function youTubePlayerPause
+        if youTubePlayerActive()
+            _ youTubePlayer.pauseVideo()
+    
+    function youTubePlayerPlay
+        log 'youTubePlayerPlay', youTubePlayerActive()
+        if youTubePlayerActive()
+            _ youTubePlayer.playVideo()
+    
+    function youTubePlayerStateValueToDescription
+        param state
+        param unknow
+        # See values:
+        # https://developers.google.com/youtube/iframe_api_reference#Playback_status
+        var STATES
+            { 
+                @ '-1' 'unstarted'
+                @ '0' 'ended'
+                @ '1' 'playing'
+                @ '2' 'paused'
+                @ '3' 'buffering'
+                @ '5' 'video cued'
+        return 
+            ( 
+                iif state in STATES
+                    then STATES[state]
+                    else unknow
+    
+    function videoPlayerStop
+        if videoPlayerActive()
+            _ videoPlayer.stopVideo()
+            _ videoPlayer.clearVideo()
+    
+    function videoPlayerVolumeChange
+        param volume
+        # param volume: 0 <= number <= 100
+        if videoPlayerActive()
+            _ videoPlayer.setVolume(volume)
+
+    function timeToSeconds
+        param time
+        if time && time.length > 0
+          const parts = time.split(':')
+          for var i=0; i<parts.length; i++
+            set parts[i] = parseInt(parts[i])
+          log 'timeToSeconds', parts
+          if parts.length == 1
+            return parts[0]
+          elif parts.length == 2
+            return parts[0] * 60 + parts[1]
+          elif parts.length == 3
+            return parts[0] * 3600 + parts[1] * 60 + parts[2]
+          else
+            return 0
+        else
+          return 0
+    
+    iife 
+        function init
+            var tag = document.createElement('script')
+            set tag.src = 'https://www.youtube.com/iframe_api'
+            var first_script_tag = document.getElementsByTagName('script')[0]
+            _ first_script_tag.parentNode.insertBefore(tag, first_script_tag)
+            _ setInterval(youTubePlayerDisplayInfos, 1000)
+        if window.addEventListener
+            _ window.addEventListener('load', init)
+        else
+            if window.attachEvent
+                _ window.attachEvent('onload', init)
